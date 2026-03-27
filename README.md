@@ -9,7 +9,7 @@ Note that because so much of the public QC data reflects corrected amounts (incl
 
 2_state_reg_trees.R generates a png and pdf regression tree for each state. You can easily modify to just do one state. Modify the features list as appropriate.
 
-3_regression_trees_income_errors generates very large pngs for three types of errors using data from all states (2022-2023, but easy to change): overissuance errors regarding earned income, overissuance errors regarding unearned income, and underissuance errors. The idea is to find patterns across all states that can be tested and optimized with internal state data using a grid search. I'll revise the grid search scripts if there's demand.  
+3_regression_trees_income_errors.R generates very large pngs for three types of errors using data from all states (2022-2023, but easy to change): overissuance errors regarding earned income, overissuance errors regarding unearned income, and underissuance errors. The idea is to find patterns across all states that can be tested and optimized with internal state data using a grid search. I'll revise the grid search scripts if there's demand.  
 
 If you're interested in using the public QC data exactly as it is in the first script, it can be found here (2017-2023): 
 https://github.com/AdamXiaoRose/SNAP_error_rate_support/blob/main/model/model_variables_new.csv
