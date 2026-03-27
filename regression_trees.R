@@ -1,31 +1,4 @@
 
-
-reg_model_data <- df_cert_only %>% select("payment_error_i",features,"rescaled_weight","race_ethnicity","total_error_amount", "unit_composition_error", "element1", "error_flag")
-
-table(reg_model_data$error_flag, reg_model_data$payment_error_i)
-
-reg_model_data <- reg_model_data %>% filter(!(payment_error_i=="No" & error_flag==1))
-
-reg_model_data <- reg_model_data %>% select(-c(HH_head_LF_status_c, ReportingRequirements, BBCE, rescaled_weight, race_ethnicity, unit_composition_error,
-                                       gross_inc_to_poverty_FS, raw_gross, raw_net, wages_salaries, utilities, regioncd, payment_error_i, error_flag))
-
-reg_model_data$rawben_rel_max[reg_model_data$rawben_rel_max>1] <- 1
-table(model_data$rawben_rel_max>1)
-#model_data$rawben_rel_max <- NULL
-
-table(reg_model_data$element1)
-#379 errors where rawben_rel_max is higher than 1, suggesting a HH composition error
-#model_data$year <- NULL
-reg_model_data$element1 <- NULL
-
-reg_model_data$cat_elig <- as.integer(reg_model_data$cat_elig!="0")
-reg_model_data$non_elderly_disabled_i <- as.integer(reg_model_data$non_elderly_disabled_i=="TRUE")
-reg_model_data$homeless <- as.integer(reg_model_data$homeless=="TRUE")
-reg_model_data$rent_mortage <- NULL
-reg_model_data <- drop_na(reg_model_data) 
-
-summary(reg_model_data)
-
 ## should be revised to be about number of errors and avg dollars per error, but currently
 # measures what proportion of total error dollars are captured by predictions at each depth
 calculate_error_capture_by_depth <- function(tree_model, data, outcome_var, max_depth = 5) {
@@ -405,22 +378,4 @@ results_output <- fit_trees_comprehensive(
 
 
 
-for(state in names(results_output$tree_models)) {
-  results_output$tree_models[[state]]$frame$var <- 
-    gsub("_", " ", results_output$tree_models[[state]]$frame$var)
-}
-
-
-# Access results dataframe
-results_df <- results_output$results
-write.csv(results_df, "state_split_vars.csv", row.names=F)
-
-# Plot a specific state's tree (high quality)
-plot_state_tree(results_output$tree_models, "District_of_Columbia",
-                save_path = "DC_regtree_w_uncounted_2017_2022.png",
-                width_inches = 60, height_inches = 16, dpi = 300)
-
-# Plot all trees and save to files (high quality, 300 dpi, 14x12 inches)
-plot_all_trees(results_output$tree_models,
-               output_dir = "state_plots_2017_2023_ex_rule1")
 

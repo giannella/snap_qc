@@ -298,6 +298,10 @@ reg_model_data <- reg_model_data %>%
   )
 
 
+reg_model_data$rawnet_allow_negative <- reg_model_data$recovered_fsearn + reg_model_data$recovered_fsunearn - reg_model_data$original_fstotded
+reg_model_data$rawben_no_cap <- reg_model_data$maximum_benefit_for_HH_size - (0.3 * reg_model_data$rawnet_allow_negative) # Rawben without cap (+0.0255)
+reg_model_data$rawben_no_cap_rel_max <- reg_model_data$rawben_no_cap / reg_model_data$maximum_benefit_for_HH_size # Rawben without cap rel max (+0.0018)
+
 
 reg_model_data <- reg_model_data %>%  mutate(shelter_to_gross_income_ratio = as.integer(as.numeric(shelter_expenses) / as.numeric(recovered_fsearn + recovered_fsunearn + 1)))
 
@@ -305,5 +309,77 @@ reg_model_data <- reg_model_data %>% mutate(earned_by_hh_size = recovered_fsearn
                                             unearned_by_hh_size = recovered_fsunearn / cert_HH_size_FS_n,
                                             gross_by_hh_size = as.integer((recovered_fsearn + recovered_fsunearn) / (cert_HH_size_FS_n)),
                                             deductions_by_hh_size = original_fstotded / cert_HH_size_FS_n)
+
+
+
+# ── Income type variables ─────────────────────────────────────────────────────
+income_vars <- c(
+  "FSWAGES",    # Wages and salaries
+  "FSSLFEMP",   # Self-employment income
+  "FSOTHERN",   # Other earned income
+  "FSSSI",      # SSI benefits
+  "FSTANF",     # TANF payments
+  "FSGA",       # General Assistance benefits
+  "FSSOCSEC",   # Social Security income
+  "FSUNEMP",    # Unemployment compensation
+  "FSVET",      # Veterans' benefits
+  "FSWCOMP",    # Workers' compensation
+  "FSEDLOAN",   # Educational grants and loans
+  "FSCSUPRT",   # Child support payment income received
+  "FSDEEM",     # Deemed income
+  "FSCONT",     # Contributions / charity / in-kind
+  "FSOTHGOV",   # Other government benefits
+  "FSOTHUN",    # Other unearned income
+  "FSDIVER",    # State diversion payments
+  "FSWGESUP",   # Wage supplementation income
+  "FSENERGY",   # Energy assistance income
+  "FSEITC",     # Earned income tax credit
+  "FSFOSTER"    # Foster care income
+)
+
+# ── Deduction type variables ──────────────────────────────────────────────────
+deduction_vars <- c(
+  "FSSTDDED",     # Standard deduction
+  "FSERNDED",     # Earned income deduction
+  "FSDEPDED",     # Dependent care deduction
+  "FSSLTDED",     # Excess shelter expense deduction
+  "FSMEDDED",     # Medical expense deduction
+  "FSCSDED",      # Child support payment deduction
+  "HOMELESS_DED"  # Homeless household shelter deduction
+)
+
+# ── Create count variables ────────────────────────────────────────────────────
+# n_income_types: number of distinct income sources with a value > 0
+# n_deduction_types: number of distinct deductions with a value > 0
+
+#switched from reg to income df here
+
+income_and_clean_data <- income_and_clean_data %>%
+  mutate(
+    n_income_types = rowSums(
+      across(all_of(tolower(income_vars)), ~ !is.na(.) & . > 0),
+      na.rm = TRUE
+    ),
+    n_deduction_types = rowSums(
+      across(all_of(tolower(deduction_vars)), ~ !is.na(.) & . > 0),
+      na.rm = TRUE
+    )
+  )
+
+all_vars <- c(income_vars, deduction_vars)
+setdiff(tolower(all_vars), names(income_and_clean_data))
+
+income_and_clean_data$count_divisible_by_100 <- rowSums(
+  sapply(income_and_clean_data[, tolower(all_vars)], function(x) x > 0 & x %% 100 == 0),
+  na.rm = TRUE
+)
+
+# ── Quick check ───────────────────────────────────────────────────────────────
+cat("=== n_income_types ===\n")
+print(table(income_and_clean_data$n_income_types, useNA = "ifany"))
+
+cat("\n=== n_deduction_types ===\n")
+print(table(income_and_clean_data$n_deduction_types, useNA = "ifany"))
+
 
 summary(reg_model_data[301:306])

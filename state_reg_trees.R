@@ -2,21 +2,53 @@ library(tidyverse)
 library(rpart)
 library(rpart.plot)
 
-source("regression_tree_plots.R")
-states <- unique(income_and_clean_data$state)
 
-table(income_and_clean_data$element1)
+source("regression_tree_plots_simplified.R")
+source("regression_tree_functions.R")
 
-features <- c(features, "n_income_types", "n_deduction_types")
+states <- unique(reg_model_data$state)
 
-#features_old <- features
+table(reg_model_data$element1)
+names(reg_model_data)
 
 
+features <- c(
+  "cert_HH_size_FS_n",            # certified household size
+  "HH_size_rel_cert_HH_size",     # ratio of people in HH to cert HH size
+  "children_i",                   # children indicator
+  "elderly_or_disabled_i",       # combined indicator
+  "deductions_by_hh_size",          # deductions by HH size
+  "expedited_i",                  # expedited service
+  "cat_elig",                     # categorical eligibility 
+ # "rawben_rel_max",
+  "med_expenses",
+  "shelter_expenses",
+  "utilities",
+  "married",
+  "shelter_to_gross_income_ratio",
+  "homeless",
+  "earned_by_hh_size",
+  "unearned_by_hh_size",
+  "gross_by_hh_size",
+  "lf_composition",
+  "n_income_types", 
+  "n_deduction_types", 
+  "count_divisible_by_10",
+  "DemonstrationsElderlyDisability",
+  "rawben_no_cap_rel_max",
+ "months_since_cert_n"
+)
+
+#check that all features in the model since this will fail silently in the function
+setdiff(features, names(reg_model_data))
+
+tree_results <- list()
+tree_models <- list()
 
 for (state in states) {
   
   # Filter to this state
-  subset_data <- income_and_clean_data[income_and_clean_data$state=="Tennessee",] %>%
+  subset_data <- reg_model_data[reg_model_data$state=="Tennessee",] %>%
     filter(state == !!state)
   
   if (nrow(subset_data) == 0) {
