@@ -5,8 +5,11 @@ Putting this out on my github with an Apache 2.0 license as an assurance that an
 
 Note that because so much of the public QC data reflects corrected amounts (including most, but not all, of the variables with the prefix "raw"), we have to reconstruct uncorrected values in order to have something that's similar to what a state agency would see prior to finding an error. We do this for earned and unearned income errors in the first script and so the resulting dataset is only focused on earned and unearned income errors. If you are using internal data, you can ignore the first script and just change the feature list in the second script to match the variables you have. 
 
-If you're interested in using the public QC data referenced in the first script, it can be found here: 
+1_data_munging_and_income_var_recovery.R is about feature engineering from the public data available at snapqcdata.net, including reconstructing the values just mentioned. 
+2_state_reg_trees.R generates a png and pdf regression tree for each state. You can easily modify to just do one state. Modify the features list as appropriate.
+3_regression_trees_income_errors generates very large pngs for three types of errors using data from all states (2022-2023, but easy to change): overissuance errors regarding earned income, overissuance errors regarding unearned income, and underissuance errors. The idea is to find patterns across all states that can be tested and optimized with internal state data using a grid search. I'll revise the grid search scripts if there's demand.  
+
+If you're interested in using the public QC data exactly as it is in the first script, it can be found here (2017-2023): 
 https://github.com/AdamXiaoRose/SNAP_error_rate_support/blob/main/model/model_variables_new.csv
 
 The main goal of putting up this repo is to make it unambiguous that anyone can freely use ideas / materials they've seen me present regarding SNAP QC. I'll continue adding to and cleaning up the code based on what's useful so please reach out. 
-
