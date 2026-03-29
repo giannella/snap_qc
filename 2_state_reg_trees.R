@@ -36,7 +36,7 @@ features <- c(
   "n_deduction_types", 
   "count_divisible_by_10",
   "DemonstrationsElderlyDisability",
-#  "rawben_no_cap_rel_max",
+ # "rawben_no_cap_rel_max",
  "months_since_cert_n"
 )
 
@@ -49,7 +49,7 @@ tree_models <- list()
 for (state in states) {
   
   # Filter to this state
-  subset_data <- reg_model_data %>%
+  subset_data <- reg_model_data %>% 
     filter(state == !!state)
   
   if (nrow(subset_data) == 0) {

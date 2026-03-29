@@ -121,6 +121,7 @@ plot_state_tree <- function(tree_models,
          paste0("How to read this: each node shows the avg error amount\n",
                 "(in dollars, all cases) on top and n below.\n",
                 "Color reflects the avg error dollar amount in that node\n",
+                "Child-parent nodes combining >=1 and <1 due to rounding\n",
                 "(green = low $, red = high $)."),
          cex = 1.1, adj = c(1, 1))
   }
@@ -196,6 +197,7 @@ plot_pooled_tree <- function(tree_model,
                 "amount (all cases) and total n.\n",
                 "Color reflects the avg error dollar amount in that node\n",
                 "(green = low $, red = high $).\n",
+                "Child-parent nodes combining >=1 and <1 due to rounding\n",
                 "Only public data excluding ineligible cases is used."),
          cex = 1.1, adj = c(1, 1))
   }
