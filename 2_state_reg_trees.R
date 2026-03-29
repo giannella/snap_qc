@@ -21,7 +21,7 @@ features <- c(
   "deductions_by_hh_size",          # deductions by HH size
   "expedited_i",                  # expedited service
   "cat_elig",                     # categorical eligibility 
-  "rawben_rel_max",
+  #"rawben_rel_max",
   "med_expenses",
   "shelter_expenses",
   "utilities",
@@ -36,7 +36,7 @@ features <- c(
   "n_deduction_types", 
   "count_divisible_by_10",
   "DemonstrationsElderlyDisability",
- # "rawben_no_cap_rel_max",
+  "rawben_no_cap_rel_max",
  "months_since_cert_n"
 )
 
@@ -135,8 +135,8 @@ for (state in states) {
   tree_results[[state]] <- results
   
   # Plot tree
-  plot_path <- paste0("state_income_error_trees_any_timeper/", state, "_reg_2017_2023_income_errors.png")
-  dir.create("state_income_error_trees_any_timeper", showWarnings = FALSE, recursive = TRUE)
+  plot_path <- paste0("state_income_error_trees_any_timeper/using_uncapped_ben_rel_max/", state, "_reg_2017_2023_income_errors.png")
+  dir.create("state_income_error_trees_any_timeper/using_uncapped_ben_rel_max/", showWarnings = FALSE, recursive = TRUE)
   
   plot_pooled_tree(
     tree_model    = tree_model,
