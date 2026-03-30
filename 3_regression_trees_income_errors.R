@@ -33,7 +33,7 @@ features <- c(
   "deductions_by_hh_size",          # deductions by HH size
   "expedited_i",                  # expedited service
   "cat_elig",                     # categorical eligibility 
-  # "rawben_rel_max",
+ # "rawben_rel_max",
   "med_expenses",
   "shelter_expenses",
   "utilities",
@@ -98,7 +98,7 @@ for (error_type in error_types) {
     control = rpart.control(
       cp = 0.000001,
       minsplit = 20,
-      maxdepth = 8,
+      maxdepth = 6,
       xval = 10
     )
   )
@@ -147,7 +147,7 @@ for (error_type in error_types) {
   tree_results[[error_type]] <- results
   
   # Plot tree
-  plot_path <- paste0("income_error_trees/", error_type, "_2022_2023_any_timeper.png")
+  plot_path <- paste0("income_error_trees/", error_type, "_2022_2023_any_timeper_small.png")
   dir.create("income_error_trees", showWarnings = FALSE, recursive = TRUE)
   
   plot_pooled_tree(
@@ -157,8 +157,8 @@ for (error_type in error_types) {
                        "Errors"),
     predictor_vars = predictor_vars,
     save_path = plot_path,
-    width_inches = 120,
-    height_inches = 30,
+    width_inches = 60,
+    height_inches = 20,
     dpi = 300
   )
 }
