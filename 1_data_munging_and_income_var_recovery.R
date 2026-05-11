@@ -1,7 +1,6 @@
 library(tidyverse)
 
 df <- read_csv("model_variables_new.csv", show_col_types = FALSE)
-
 case_details <- read_csv("case_details.csv")
 names(case_details)
 
@@ -22,7 +21,7 @@ df <- df %>%
 
 df$overpayment_error_i <- as.factor(df$overpayment_error_i)
 
-#### variable clearning / recoding ###
+#### variable cleaning / recoding ###
 
 #if we can't get the amterr to be close to the difference between fsben and rawben, we drop the case. excludes about 7% of errors.
 errors <- subset(df, status!="amount correct")
