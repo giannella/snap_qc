@@ -256,28 +256,33 @@ reg_model_data %>%
   ) %>%
   print()
 
-# Add error_category for underissuance and overissuance for earned and unearned 
 reg_model_data <- reg_model_data %>%
   mutate(
-    error_category = case_when(
-      has_earned_inc_error ~ "earned_income",
-      has_unearned_inc_error ~ "unearned_income",
-      TRUE ~ "other"
-    ),
-    
-    # Ensure status is clean
-    status_clean = tolower(trimws(status)),
-    
-    # Create combined category for tree stratification
     error_status = case_when(
-      error_category == "earned_income" & status_clean == "overissuance" ~ "earned_overissuance",
-      error_category == "earned_income" & status_clean == "underissuance" ~ "underissuance",
-      error_category == "unearned_income" & status_clean == "overissuance" ~ "unearned_overissuance",
-      error_category == "unearned_income" & status_clean == "underissuance" ~ "underissuance",
-      TRUE ~ NA_character_
+      has_earned_inc_error & status == 2 ~ "earned_overissuance",
+      has_earned_inc_error & status == 3 ~ "underissuance",
+      has_unearned_inc_error & status == 2 ~ "unearned_overissuance",
+      has_unearned_inc_error & status == 3 ~ "underissuance",
+      TRUE ~ NA_character_), 
+    error_timing = case_when(
+      timeper1 == 2 ~ "at_certification",
+      timeper1 %in% c(1,3) ~ "before_or_after_certification",
+      TRUE ~ "unknown"
+    ),
+    most_recent_action = case_when(
+      action_type_c == 1 ~ "certification",
+      action_type_c == 2 ~ "recertification",
+      TRUE ~ NA
     )
   )
 
+table(reg_model_data$error_status)
+table(reg_model_data$error_status, reg_model_data$has_unearned_inc_error)
+table(reg_model_data$timeper1, reg_model_data$error_status)
+table(reg_model_data$timeper1, reg_model_data$error_timing)
+table(reg_model_data$error_timing,reg_model_data$most_recent_action)
+
+reg_model_data %>% group_by(status) %>% summarize(mean(total_error_amount))
 #now we'll create a variable for benefit amount relative to max that includes buffers for households whose net income would be negative if that was allowed - 
 #this reflects a buffer amount in terms of the magnitude of an mistake required to cause an actual error
 reg_model_data$rawnet_allow_negative <- reg_model_data$recovered_fsearn + reg_model_data$recovered_fsunearn - reg_model_data$original_fstotded

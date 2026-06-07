@@ -33,7 +33,7 @@ features <- c(
   "deductions_by_hh_size",          # deductions by HH size
   "expedited_i",                  # expedited service
   "cat_elig",                     # categorical eligibility 
- # "rawben_rel_max",
+  "rawben_rel_max",
   "med_expenses",
   "shelter_expenses",
   "utilities",
@@ -48,7 +48,7 @@ features <- c(
   "n_deduction_types", 
   "count_divisible_by_10",
   "DemonstrationsElderlyDisability",
-  "rawben_no_cap_rel_max",
+#  "rawben_no_cap_rel_max",
   "months_since_cert_n"
 )
 

@@ -284,29 +284,29 @@ find_optimal_overissuance_thresholds <- function(grid_results,
 
 # ── Example usage ─────────────────────────────────────────────────────────────
 #
-# # Run grid search by state
-# results <- run_overissuance_grid_by_geography(
-#   data                        = income_and_clean_data,
-#   geography_var               = "state",
-#   error_amount_var            = "total_error_amount",
-#   error_threshold             = 52,
-#   earned_by_hh_size_range     = seq(0, 600, by = 50),
-#   rawben_rel_max_range_lower  = seq(0, 1, by = 0.1),
-#   rawben_rel_max_range_upper  = seq(0, 1, by = 0.1),
-#   shelter_by_hh_size_range = seq(0, 800, by = 100),
-#   shelter_to_gross_income_ratio_range = seq(0, 2, by = 0.1),
-#   min_error_dollars           = 5000
-# )
-#
-# # Option 1: Maximize dollars per case (efficiency) while maintaining precision
-# optimal <- find_optimal_overissuance_thresholds(
-#   grid_results      = results,
-#   optimize_for      = "dollars_per_case",
-#   min_precision     = 0.50,
-#   max_flagged_pct   = 0.30,
-#   min_dollar_recall = 0.20
-# )
-#
+# Run grid search by state
+results <- run_overissuance_grid_by_geography(
+  data                        = income_and_clean_data,
+  geography_var               = "state",
+  error_amount_var            = "total_error_amount",
+  error_threshold             = 52,
+  earned_by_hh_size_range     = seq(0, 600, by = 50),
+  rawben_rel_max_range_lower  = seq(0, 1, by = 0.1),
+  rawben_rel_max_range_upper  = seq(0, 1, by = 0.1),
+  shelter_by_hh_size_range = seq(0, 800, by = 100),
+  shelter_to_gross_income_ratio_range = seq(0, 2, by = 0.1),
+  min_error_dollars           = 5000
+)
+
+# Option 1: Maximize dollars per case (efficiency) while maintaining precision
+optimal <- find_optimal_overissuance_thresholds(
+  grid_results      = results,
+  optimize_for      = "dollars_per_case",
+  min_precision     = 0.50,
+  max_flagged_pct   = 0.30,
+  min_dollar_recall = 0.20
+)
+
 # # Option 2: Maximize dollar recall (coverage) while maintaining precision
 # optimal_recall <- find_optimal_overissuance_thresholds(
 #   grid_results    = results,

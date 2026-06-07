@@ -258,18 +258,18 @@ find_optimal_underissuance_thresholds <- function(grid_results,
 
 # Example usage:
 # 
-# # Run grid search by state
-# results <- run_underissuance_grid_by_geography(
-#   data = income_and_clean_data,
-#   geography_var = "state",
-#   error_amount_var = "total_error_amount",
-#   overthreshold_var = "overthreshold",
-#   earned_by_hh_size_range = seq(0, 600, by = 50),
-#   rawben_rel_max_range = seq(0.5, 1.0, by = 0.05),
-#   shelter_by_hh_size_range = seq(0, 800, by = 100),
-#   min_error_dollars = 5000
-# )
-# 
+# Run grid search by state
+results <- run_underissuance_grid_by_geography(
+  data = income_and_clean_data,
+  geography_var = "state",
+  error_amount_var = "total_error_amount",
+  overthreshold_var = "overthreshold",
+  earned_by_hh_size_range = seq(0, 600, by = 50),
+  rawben_rel_max_range = seq(0.5, 1.0, by = 0.05),
+  shelter_by_hh_size_range = seq(0, 800, by = 100),
+  min_error_dollars = 5000
+)
+
 # # Option 1: Maximize dollars per case (efficiency) while maintaining precision
 # optimal <- find_optimal_underissuance_thresholds(
 #   grid_results = results,

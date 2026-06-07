@@ -6,38 +6,42 @@ source("helper_functions/regression_tree_plots_simplified.R")
 source("helper_functions/regression_tree_functions.R")
 
 states <- unique(reg_model_data$state)
-
 table(reg_model_data$element1)
 names(reg_model_data)
+reg_model_data$unc_rawben_rel_max
+
+reg_model_data$rawben_rel_max = reg_model_data$raw_benefit_amount/reg_model_data$rawbenmax
+reg_model_data$deductions_by_hh_size = reg_model_data$fstotded/reg_model_data$cert_HH_size_FS_n
+
 
 #main decision here is whether to use rawben_no_cap_rel_max (harder to construct) vs. rawben_rel_max (easier to construct)
 #those are defined in the 1_data_munging_and_income_var_recovery.R script
 
 features <- c(
   "cert_HH_size_FS_n",            # certified household size
-  "HH_size_rel_cert_HH_size",     # ratio of people in HH to cert HH size
   "children_i",                   # children indicator
-  "elderly_or_disabled_i",       # combined indicator
+  "elderly_disabled_i",       # combined indicator
   "deductions_by_hh_size",          # deductions by HH size
   "expedited_i",                  # expedited service
   "cat_elig",                     # categorical eligibility 
-  #"rawben_rel_max",
-  "med_expenses",
+  "rawben_rel_max",
+  "medical_deductions",
   "shelter_expenses",
   "utilities",
   "married",
-  "shelter_to_gross_income_ratio",
+  "shelter_to_gross_ratio",
   "homeless",
   "earned_by_hh_size",
   "unearned_by_hh_size",
   "gross_by_hh_size",
   "lf_composition",
+  "percent_abawd",
   "n_income_types", 
   "n_deduction_types", 
-  "count_divisible_by_10",
-  "DemonstrationsElderlyDisability",
-  "rawben_no_cap_rel_max",
- "months_since_cert_n"
+ # "DemonstrationsElderlyDisability",
+  "unc_rawben_rel_max",
+ "months_since_cert_n",
+ "count_divisible_by_100"
 )
 
 #check that all features in the model since this will fail silently in the function
@@ -45,6 +49,7 @@ setdiff(features, names(reg_model_data))
 
 tree_results <- list()
 tree_models <- list()
+states = c("Washington")
 
 for (state in states) {
   
@@ -135,7 +140,7 @@ for (state in states) {
   tree_results[[state]] <- results
   
   # Plot tree
-  plot_path <- paste0("state_income_error_trees_any_timeper/using_uncapped_ben_rel_max/", state, "_reg_2017_2023_income_errors.png")
+  plot_path <- paste0("state_income_error_trees_any_timeper/using_uncapped_ben_rel_max/", state, "_reg_2017_2024_income_errors.png")
   dir.create("state_income_error_trees_any_timeper/using_uncapped_ben_rel_max/", showWarnings = FALSE, recursive = TRUE)
   
   plot_pooled_tree(

@@ -1,0 +1,23 @@
+"rule_id","rule","n_conditions","role","coefficient","importance","workload_pct","n_flagged","errors_caught","clean_flagged","precision","recall","dollar_recall","lift","base_rate"
+"rule464","shelter_expenses >= 1292 & gross_by_hh_size < 328.3 & rawben_rel_max < 0.9052",3,"INCLUDE",0.482,0.026,0.3,111,68,43,0.613,0.018,0.003,6.13,0.1
+"rule421","shelter_expenses >= 1280 & gross_by_hh_size < 403.8 & unc_rawben_rel_max < 0.929",3,"INCLUDE",7.52,0.768,1.1,389,185,204,0.476,0.05,0.011,4.76,0.1
+"rule385","gross_by_hh_size < 498.4 & unc_rawben_rel_max < 0.9609 & shelter_expenses >= 978.5",3,"INCLUDE",14.119,2.702,3.8,1407,568,839,0.404,0.154,0.039,4.04,0.1
+"rule416","gross_by_hh_size < 500.1 & rawben_rel_max < 0.9618 & shelter_expenses >= 977.5",3,"INCLUDE",0.368,0.071,3.9,1431,575,856,0.402,0.156,0.039,4.02,0.1
+"rule28","unearned_by_hh_size < 431.6 & unc_rawben_rel_max < 1.117 & shelter_expenses >= 1330",3,"INCLUDE",4.674,1.211,7.2,2674,887,1787,0.332,0.24,0.077,3.32,0.1
+"rule218","gross_by_hh_size < 627.5 & rawben_rel_max < 0.9667 & gross_by_hh_size < 247.2",3,"INCLUDE",13.673,2.234,2.7,1014,301,713,0.297,0.081,0.028,2.97,0.1
+"rule305","gross_by_hh_size < 513.4 & shelter_expenses >= 598 & unc_rawben_rel_max < 1.213",3,"INCLUDE",2.259,0.699,10.7,3963,1141,2822,0.288,0.309,0.114,2.88,0.1
+"rule488","gross_by_hh_size < 480.9 & shelter_expenses >= 519 & unc_rawben_rel_max < 1.213",3,"INCLUDE",8.596,2.65,10.6,3930,1114,2816,0.283,0.301,0.115,2.83,0.1
+"rule398","unearned_by_hh_size < 225.5 & shelter_expenses >= 338.5 & unc_rawben_rel_max < 1.213",3,"INCLUDE",15.75,6.445,21.3,7860,2214,5646,0.282,0.599,0.214,2.82,0.1
+"rule380","unearned_by_hh_size < 185.9 & shelter_expenses >= 255.5 & unc_rawben_rel_max < 1.212",3,"INCLUDE",7.011,2.843,20.7,7666,2145,5521,0.28,0.581,0.209,2.8,0.1
+"rule431","gross_by_hh_size < 474.2 & shelter_expenses >= 487.5 & unc_rawben_rel_max < 1.213",3,"INCLUDE",2.075,0.645,10.8,4004,1117,2887,0.279,0.302,0.117,2.79,0.1
+"rule277","shelter_expenses >= 1820",1,"INCLUDE",5.551,1.133,4.4,1611,423,1188,0.263,0.114,0.044,2.63,0.1
+"rule371","gross_by_hh_size < 502.6 & shelter_expenses >= 329.5 & unc_rawben_rel_max < 1.213",3,"INCLUDE",3.204,1.134,14.7,5430,1425,4005,0.262,0.386,0.158,2.62,0.1
+"rule445","gross_by_hh_size < 494.4 & shelter_expenses >= 335.5 & unc_rawben_rel_max < 1.231",3,"INCLUDE",9.498,3.357,14.6,5407,1401,4006,0.259,0.379,0.156,2.59,0.1
+"rule221","gross_by_hh_size < 727.5 & unc_rawben_rel_max < 0.9737",2,"INCLUDE",3.172,1.323,22.4,8282,1979,6303,0.239,0.536,0.227,2.39,0.1
+"rule460","gross_by_hh_size < 719.1 & shelter_expenses >= 329.5 & unc_rawben_rel_max < 1.227",3,"INCLUDE",3.242,1.374,23.5,8679,2051,6628,0.236,0.555,0.238,2.36,0.1
+"rule402","gross_by_hh_size < 719 & shelter_expenses >= 229.5 & unc_rawben_rel_max < 1.213",3,"INCLUDE",7.273,3.121,24.3,8988,2096,6892,0.233,0.567,0.244,2.33,0.1
+"rule236","cert_HH_size_FS_n >= 3.5 & gross_by_hh_size >= 357.1",2,"INCLUDE",-9.753,2.451,6.8,2503,553,1950,0.221,0.15,0.071,2.21,0.1
+"rule111","unearned_by_hh_size < 421.2 & unc_rawben_rel_max < 1.116",2,"INCLUDE",0.484,0.23,34.2,12648,2785,9863,0.22,0.754,0.346,2.2,0.1
+"rule194","elderly_disabled_i %in% c(""FALSE"") & unc_rawben_rel_max < 1.143",2,"INCLUDE",4.076,1.906,32.3,11948,2598,9350,0.217,0.703,0.325,2.17,0.1
+"rule155","cert_HH_size_FS_n >= 3.5",1,"INCLUDE",-1.493,0.524,14.4,5308,1144,4164,0.216,0.31,0.152,2.16,0.1
+"rule356","gross_by_hh_size < 513.1 & unc_rawben_rel_max < 0.9716 & shelter_expenses < 978",3,"INCLUDE",-0.542,0.156,9.1,3351,695,2656,0.207,0.188,0.098,2.07,0.1
