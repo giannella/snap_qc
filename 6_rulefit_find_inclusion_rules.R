@@ -145,7 +145,7 @@ model_data <- model_data %>% sample_n(size=nrow(model_data))
 table(model_data$over_threshold)
 
 fit <- pre(formula = form, data = model_data[c(".target", pv)], family = fam,
-           ntrees = 1000,
+           ntrees = 5000,
            maxdepth = 4L,
            learnrate = 0.01,
            type = "rules",
@@ -160,7 +160,7 @@ fit <- pre(formula = form, data = model_data[c(".target", pv)], family = fam,
            verbose = TRUE)
 
 fit2_rf <- pre(formula = form, data = model_data[c(".target", pv)], family = fam,
-           ntrees = 3000,
+           ntrees = 1000,
            maxdepth = 4L,
            learnrate = 0.005,
            type = "rules",
@@ -171,7 +171,7 @@ fit2_rf <- pre(formula = form, data = model_data[c(".target", pv)], family = fam
            removecomplements = T,
            nfolds = 3,
            randomForest = T,
-           mtry=1,
+           mtry=2,
            verbose = TRUE)
 
 get_rules <- function(pp)
@@ -187,7 +187,7 @@ imp <- pre::importance(fit2_rf, penalty.par.val = PENALTY, plot = FALSE)$baseimp
 rules <- rules0 %>% left_join(select(imp, rule, imp), by = "rule") %>%
   rename(rule_id = rule, rule_text = description)
 
-## ── 4. Score rules; keep INCLUDE-direction (dirtier than average) ─────────────
+## ── 4. Score rules; keep INCLUDE-direction ─────────────
 
 ie <- model_data$.is_error
 base_dens <- if (!all(is.na(md_dollars))) sum(md_dollars, na.rm = TRUE) / nrow(model_data) else NA_real_
@@ -295,10 +295,10 @@ if (length(pool) == 0) {
                 gsub("  OR  ", "\n    OR ", ops$net[i])))
 }
 
-## ── 6. Validate before adopting ───────────────────────────────────────────────
+## ── 6. Validation - ideally 2025 data ───────────────────────────────────────────────
 # In-sample precision is optimistic. Re-check a chosen net on a holdout period:
   net_v <- strsplit(ops$net[ops$recall_floor == 0.80], "  OR  ")[1]
-  test  <- earned_income_df[earned_income_df$year == "2018", ]
+  test  <- earned_income_df[earned_income_df$year == "2025", ]
   te <- eval(TARGET_IS_ERROR, envir = test); te[is.na(te)] <- FALSE
   td <- ifelse(te, abs(replace(test[[ERR_AMT_COL]], is.na(test[[ERR_AMT_COL]]), 0)), 0)
   f  <- Reduce(`|`, lapply(net_v, flag_rule, data = test))

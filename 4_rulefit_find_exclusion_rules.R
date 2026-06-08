@@ -12,21 +12,17 @@
 #   "dollars"  maximize DOLLAR DENSITY = recoverable error $ per retained case.
 #              Safety = don't drop error DOLLARS.      Cost = err_dollars_lost.
 #
-# Both views are computed for every rule regardless of the toggle; the toggle
-# only decides which model is fit, how EXCLUDE/KEEP is called, how the shortlist
-# is filtered/sorted, and which headline the portfolio prints.
+# The toggle decides which model is fit, how EXCLUDE/KEEP is called, how the shortlist
+# is filtered/sorted, and which headline the portfolio prints. 
+# Both counts and dollars will be computed either way.
 #
 # RuleFit implementation: {pre} (Prediction Rule Ensembles; Fokkema 2020, JSS).
-#
-# Thresholds are starting points learned from THIS pile. Use the
-# threshold sweep (Section 6) to re-tune a single cutoff on internal data to the
-# safety level you want (e.g. "keep 98% of error dollars").
 # ──────────────────────────────────────────────────────────────────────────────
 
 library(pre)
 library(dplyr)
 
-set.seed(42)
+set.seed(111)
 
 ## ── 0. Config ─────────────────────────────────────────────────────────────────
 
