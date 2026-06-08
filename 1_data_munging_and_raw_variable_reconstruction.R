@@ -818,8 +818,6 @@ saveRDS(mydata, paste0(folder, "final.rds"))
 
 #df <- haven::read_sav("final.sav")
 df <- readRDS("final.rds")
-names(df) <- tolower(names(df))
-
 #some filtering and adding an overpayment error variable
 
 #### variable cleaning / recoding ###
@@ -834,12 +832,12 @@ summary(df$min_age)
 summary(df$max_age)
 
 df <- df %>%
-  mutate(children_present = if_else(min_age < 18, T, F))
+  mutate(children_present = if_else(fsnkid > 0, T, F))
 table(df$min_age, df$children_present)
 
 df <- df %>%
   mutate(
-    elderly_present = if_else(max_age >59, T, F))
+    elderly_present = if_else(FSNELDER > 0, T, F))
 table(df$max_age, df$elderly_present)
 
 
@@ -875,7 +873,7 @@ df$married[is.na(df$married)] <- 0
 
 table(df$lf_composition, df$count_abawd>0)
 table(df$status)
-
+df$rawgross <- NULL
 reg_model_data <- df %>%
   rename(cert_HH_size_FS_n = rawusize, #reported unit size for case (raw variable)
          single_female_head = fsngmom, #Indicator of single-female–headed unit
@@ -895,23 +893,24 @@ reg_model_data <- df %>%
          action_type_c = actntype, #most recent action type
          adjusted_allotment = benfix,
          medical_deductions = rawmedded,
-         percent_abawd = pct_abawd) %>%
+         percent_abawd = pct_abawd,
+         rawgross = rawgrinc,
+         utilities = rawutil) 
+
+reg_model_data <- reg_model_data %>% 
   mutate(state = as.factor(state_name),
-         year = as.factor(year),
+         year = as.factor(fiscal_year),
          HH_size_n = as.integer(cert_HH_size_FS_n),
          earned_by_hh_size = rawearn / HH_size_n,
          unearned_by_hh_size = rawunearn / HH_size_n,
-         rawgross = rawgrinc,
          rawben_rel_max = raw_benefit_amount / maximum_benefit_for_HH_size, 
-         gross_by_hh_size =  rawgrinc / HH_size_n,
-         shelter_expenses = rent + util,
-         shelter_to_gross_ratio = (rent + util) / rawgross,
+         gross_by_hh_size =  rawgross / HH_size_n,
+         shelter_expenses = rawrent + utilities,
+         shelter_to_gross_ratio = (rawrent + utilities) / rawgross,
          medical_deductions_by_hh_size = medical_deductions / HH_size_n,
-         utilities = util,
          elderly_disabled_i = fsnelder>0 | fsndis>0,
          total_deductions_by_hh_size = total_deductions / HH_size_n,
-  ) %>%
-  mutate(homeless = as.factor(homeded!=1))
+         homeless = as.factor(homeded!=1))
 
 
 # ── Income type variables ─────────────────────────────────────────────────────
@@ -1046,3 +1045,4 @@ reg_model_data <- reg_model_data %>%
       TRUE ~ NA
     )
   )
+
