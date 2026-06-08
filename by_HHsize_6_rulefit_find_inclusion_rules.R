@@ -53,8 +53,8 @@ features <- c(
   "percent_abawd", "unc_rawben_rel_max", #"n_income_types", "n_deduction_types",
   "months_since_cert_n", "count_divisible_by_100"
 ) 
-earned_income_df$over_threshold <- as.integer(as.character(earned_income_df$over_threshold))
-setdiff(features, names(earned_income_df))
+focal_df$over_threshold <- as.integer(as.character(focal_df$over_threshold))
+setdiff(features, names(focal_df))
 TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold == 1)
 ERR_AMT_COL     <- "total_error_amount"
 
@@ -121,61 +121,62 @@ inclusion_perf <- function(flag, is_error, err_dollars = NULL) {
 # hh_size. Returns NULL tables for a stratum too small or with no selected rules.
 
 run_for_hh <- function(earned_income_df, hh_label) {
-
+  
   is_error <- eval(TARGET_IS_ERROR, envir = earned_income_df)
   is_error[is.na(is_error)] <- FALSE
   earned_income_df$.is_error <- is_error
-
+  
   if (!is.na(ERR_AMT_COL) && ERR_AMT_COL %in% names(earned_income_df)) {
     raw_amt <- earned_income_df[[ERR_AMT_COL]]; raw_amt[is.na(raw_amt)] <- 0
     err_dollars_all <- ifelse(is_error, abs(raw_amt), 0)
   } else err_dollars_all <- rep(NA_real_, nrow(earned_income_df))
   if (OBJECTIVE == "dollars" && all(is.na(err_dollars_all)))
     stop("OBJECTIVE = 'dollars' requires ERR_AMT_COL present in earned_income_df.")
-
+  
   cat(sprintf("\n\n#################### HOUSEHOLD SIZE %s ####################\n", hh_label))
   cat(sprintf("  N = %d | errors = %d (%.1f%%) | clean = %d\n",
               nrow(earned_income_df), sum(is_error), 100 * mean(is_error), sum(!is_error)))
-
+  
   # predictors present and varying, with the stratifier removed
   pv <- setdiff(features, HH_SIZE_COL)
   pv <- pv[pv %in% names(earned_income_df)]
   pv <- pv[sapply(earned_income_df[pv], function(x)
     !all(is.na(x)) && length(unique(x[!is.na(x)])) > 1)]
-
+  
   model_cols <- c(".is_error", pv)
   complete   <- stats::complete.cases(earned_income_df[model_cols])
   model_data <- earned_income_df[complete, , drop = FALSE]
   cat(sprintf("  N (model) = %d (dropped %d NA rows)\n", nrow(model_data), sum(!complete)))
-
+  
   # pre() needs numeric/factor inputs; coerce char/logical, drop now-constant cols
   to_factor <- pv[vapply(model_data[pv], function(x) is.character(x) || is.logical(x), logical(1))]
   for (v in to_factor) model_data[[v]] <- factor(model_data[[v]])
   model_data[pv] <- lapply(model_data[pv], function(x) if (is.factor(x)) droplevels(x) else x)
   pv <- pv[vapply(model_data[pv], function(x) length(unique(x)) > 1, logical(1))]
-
+  
   empty <- list(rule_table = NULL, shortlist = NULL, net_path = NULL, ops = NULL)
   if (nrow(model_data) < 30 || length(pv) == 0) {
     cat("  too few rows or predictors; skipping this stratum\n")
     return(empty)
   }
-
-  # Class rebalancing: keep all errors, sample 14 clean cases per error.
-  has_errors        <- model_data %>% filter(over_threshold == "1" & fiscal_year > 2019)
-  no_errors_sampled <- model_data %>%
-    filter(over_threshold == "0" & fiscal_year > 2019) %>%
-    sample_n(size = nrow(has_errors) * 14)
+  
+  # Class rebalancing: keep all errors, sample 14 clean cases per error (capped at
+  # the clean cases available, so thin strata use all of them rather than erroring).
+  has_errors <- model_data %>% filter(over_threshold == "1" & fiscal_year > 2019)
+  no_errors  <- model_data %>% filter(over_threshold == "0" & fiscal_year > 2019)
+  n_clean    <- min(nrow(has_errors) * 14, nrow(no_errors))
+  no_errors_sampled <- no_errors %>% sample_n(size = n_clean)
   model_data <- bind_rows(has_errors, no_errors_sampled)
   model_data <- model_data %>% sample_n(size = nrow(model_data))
   table(model_data$over_threshold)
-
+  
   # md_dollars must be recomputed from the rebalanced rows
   amt <- model_data[[ERR_AMT_COL]]; amt[is.na(amt)] <- 0
   md_dollars <- ifelse(model_data$.is_error, abs(amt), 0)
   ie         <- model_data$.is_error
   base_rate  <- mean(ie)
   base_dens  <- if (!all(is.na(md_dollars))) sum(md_dollars) / nrow(model_data) else NA_real_
-
+  
   if (OBJECTIVE == "dollars") {
     model_data$.target <- md_dollars; fam <- "gaussian"
   } else {
@@ -183,18 +184,18 @@ run_for_hh <- function(earned_income_df, hh_label) {
                                  levels = c("error", "clean")); fam <- "binomial"
   }
   form <- as.formula(paste(".target ~", paste(pv, collapse = " + ")))
-
+  
   fit <- pre(
     formula           = form,
     data              = model_data[c(".target", pv)],
     family            = fam,
-    ntrees            = 1000,
+    ntrees            = 2500,
     maxdepth          = 4L,
     learnrate         = 0.01,
     type              = "rules",
     use.grad          = TRUE,
     tree.unbiased     = FALSE,   # rpart, much faster than ctree at this n
-    sampfrac          = 0.5,
+    sampfrac          = .75,
     removeduplicates  = TRUE,
     removecomplements = TRUE,
     nfolds            = 5,
@@ -202,7 +203,7 @@ run_for_hh <- function(earned_income_df, hh_label) {
     # mtry            = 3,
     verbose           = TRUE
   )
-
+  
   get_rules <- function(pp)
     coef(fit, penalty.par.val = pp) %>% filter(rule != "(Intercept)", coefficient != 0)
   penalty <- PENALTY
@@ -218,7 +219,7 @@ run_for_hh <- function(earned_income_df, hh_label) {
   imp <- pre::importance(fit, penalty.par.val = penalty, plot = FALSE)$baseimps
   rules <- rules0 %>% left_join(select(imp, rule, imp), by = "rule") %>%
     rename(rule_id = rule, rule_text = description)
-
+  
   eval_one <- function(rd) {
     flag <- flag_rule(rd, model_data)
     perf <- inclusion_perf(flag, ie, md_dollars)
@@ -232,7 +233,7 @@ run_for_hh <- function(earned_income_df, hh_label) {
     perf
   }
   rule_eval <- bind_rows(lapply(rules$rule_text, eval_one))
-
+  
   rule_table <- rules %>% bind_cols(rule_eval) %>%
     mutate(n_conditions = count_conditions(rule_text),
            coefficient = round(coefficient, 3), importance = round(imp, 3)) %>%
@@ -243,11 +244,11 @@ run_for_hh <- function(earned_income_df, hh_label) {
               dollar_recall = round(dollar_recall, 3),
               lift = round(lift, 2), base_rate = round(base_rate, 3)) %>%
     arrange(role, desc(precision))
-
+  
   shortlist <- rule_table %>%
     filter(role == "INCLUDE", precision >= MIN_PRECISION, workload_pct / 100 >= MIN_SUPPORT) %>%
     arrange(desc(precision))
-
+  
   # Inclusion NET: greedily OR INCLUDE-direction rules; earliest crossing of each
   # recall floor is the highest-precision net that still hits it.
   pool <- rule_table %>% filter(role == "INCLUDE") %>% pull(rule)
@@ -258,7 +259,7 @@ run_for_hh <- function(earned_income_df, hh_label) {
     val_tot <- sum(protect); err_tot <- sum(ie); N_m <- nrow(model_data)
     doll_tot <- if (!all(is.na(md_dollars))) sum(md_dollars, na.rm = TRUE) else NA_real_
     flags <- lapply(pool, flag_rule, data = model_data)
-
+    
     flagged <- rep(FALSE, N_m); remaining <- seq_along(pool); path <- list(); step <- 0
     repeat {
       best <- NULL; best_score <- -Inf; best_new <- NULL
@@ -285,7 +286,7 @@ run_for_hh <- function(earned_income_df, hh_label) {
     }
     net_path <- bind_rows(path) %>%
       mutate(across(c(workload_pct, precision, recall_obj, recall, dollar_recall), ~ round(.x, 4)))
-
+    
     ops <- lapply(NET_FLOORS, function(fl) {
       ok <- net_path[net_path$recall_obj >= fl, , drop = FALSE]
       if (nrow(ok) == 0) return(NULL)
@@ -296,7 +297,7 @@ run_for_hh <- function(earned_income_df, hh_label) {
              net = paste(net_path$rule_added[seq_len(pt$step)], collapse = "  OR  "))
     }) %>% bind_rows()
   }
-
+  
   list(rule_table = rule_table, shortlist = shortlist, net_path = net_path, ops = ops)
 }
 
@@ -313,18 +314,18 @@ ops_all        <- bind_rows(lapply(results, `[[`, "ops"))
 
 cat("\n\n================= ALL SELECTED RULES (by household size) =================\n")
 print(as.data.frame(rule_table_all))
-write.csv(rule_table_all, file.path(out_dir, "inclusion_rules_all.csv"), row.names = FALSE)
+write.csv(rule_table_all, file.path(out_dir, "by_HHsize_inclusion_rules_all.csv"), row.names = FALSE)
 
 cat("\n\n================= HIGH-PRECISION RULES (by household size) =================\n")
 print(as.data.frame(shortlist_all))
-write.csv(shortlist_all, file.path(out_dir, "inclusion_rules_highprecision.csv"), row.names = FALSE)
+write.csv(shortlist_all, file.path(out_dir, "by_HHsize_inclusion_rules_highprecision.csv"), row.names = FALSE)
 
-write.csv(net_path_all, file.path(out_dir, "net_frontier_path.csv"), row.names = FALSE)
+write.csv(net_path_all, file.path(out_dir, "by_HHsize_net_frontier_path.csv"), row.names = FALSE)
 
 cat("\n\n================= NET OPERATING POINTS (by household size) =================\n")
 print(as.data.frame(ops_all %>% select(hh_size, recall_floor, precision, recall_obj,
                                        n_flagged, workload_pct, errors_caught, n_rules)))
-write.csv(ops_all, file.path(out_dir, "net_operating_points.csv"), row.names = FALSE)
+write.csv(ops_all, file.path(out_dir, "by_HHsize_net_operating_points.csv"), row.names = FALSE)
 
 cat("\n-- rules in each net (by household size) --\n")
 for (i in seq_len(nrow(ops_all)))

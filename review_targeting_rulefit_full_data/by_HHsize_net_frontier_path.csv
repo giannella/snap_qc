@@ -1,0 +1,53 @@
+"hh_size","step","rule_added","n_flagged","workload_pct","precision","recall_obj","recall","dollar_recall","errors_caught"
+"1",1,"unc_rawben_rel_max >= 1.845 & utilities < 625 & months_since_cert_n >= 4.5 & total_deductions < 880",122,1.0256,0.541,0.099,0.0832,0.099,66
+"1",2,"unc_rawben_rel_max < 1.626 & rawearn >= 288 & rawben_rel_max < 0.9702 & expedited_i %in% c(""TRUE"")",203,1.7066,0.5369,0.1578,0.1375,0.1578,109
+"1",3,"rawunearn < 499.5 & unc_rawben_rel_max >= 1.757 & utilities < 474.5 & months_since_cert_n >= 2.5",280,2.3539,0.4893,0.203,0.1728,0.203,137
+"1",4,"rawunearn < 2.5 & total_deductions >= 63.1 & months_since_cert_n >= 4.5 & utilities < 73",402,3.3796,0.4478,0.2616,0.227,0.2616,180
+"1",5,"rawunearn < 369 & shelter_expenses >= 1022 & months_since_cert_n >= 4.5",578,4.8592,0.4048,0.3293,0.2951,0.3293,234
+"1",6,"rawunearn < 263.5 & cat_elig >= 0.5 & rawben_rel_max < 0.9773",987,8.2976,0.3404,0.4332,0.4237,0.4332,336
+"2",1,"rawunearn < 863.5 & shelter_expenses >= 1539 & rawgross < 1890 & rawben_rel_max < 0.9753",81,1.0365,0.4321,0.0741,0.0672,0.0741,35
+"2",2,"unc_rawben_rel_max >= 1.426 & utilities < 382 & utilities >= 12.5",179,2.2905,0.3743,0.1618,0.1286,0.1618,67
+"2",3,"rawearn >= 0.5 & unc_rawben_rel_max < 0.9876 & rawben_rel_max >= 0.884",358,4.5809,0.2933,0.2417,0.2015,0.2417,105
+"2",4,"shelter_expenses < 1552 & unc_rawben_rel_max >= 1.397 & utilities < 548",589,7.5368,0.2428,0.3282,0.2745,0.3282,143
+"2",5,"shelter_expenses >= 1537 & rawunearn < 1212 & rawben_rel_max < 0.9753",762,9.7505,0.2257,0.3873,0.3301,0.3873,172
+"2",6,"unc_rawben_rel_max >= 1.422 & utilities < 611",877,11.222,0.2132,0.4221,0.3589,0.4221,187
+"3",1,"unc_rawben_rel_max >= 1.194 & utilities < 851 & utilities < 346 & months_since_cert_n >= 2.5",110,1.6047,0.2273,0.0973,0.0547,0.0973,25
+"3",2,"rawgross < 0.5 & cat_elig >= 1.5 & months_since_cert_n >= 3.5",300,4.3764,0.1533,0.1661,0.1007,0.1661,46
+"3",3,"unc_rawben_rel_max >= 0.7231 & rawearn >= 1062",809,11.8016,0.1508,0.3189,0.267,0.3189,122
+"3",4,"utilities >= 669.5 & rawben_rel_max >= 0.7977",1354,19.752,0.1241,0.4492,0.3676,0.4492,168
+"4",1,"unc_rawben_rel_max >= 1.225 & shelter_expenses >= 1140 & utilities < 565.5 & utilities >= 514",15,0.2833,0.5333,0.0343,0.0227,0.0343,8
+"4",2,"unc_rawben_rel_max >= 0.6619 & rawgross >= 1071 & rawgross < 1154 & rawgross >= 1128",36,0.6799,0.4444,0.0748,0.0453,0.0748,16
+"4",3,"unc_rawben_rel_max >= 1.207 & rawunearn >= 53.5 & cat_elig >= 1.5",55,1.0387,0.3818,0.1011,0.0595,0.1011,21
+"4",4,"rawben_rel_max >= 0.5596 & rawearn >= 998 & rawgross < 1156 & shelter_expenses < 1104",94,1.7753,0.3511,0.1444,0.0935,0.1444,33
+"4",5,"months_since_cert_n >= 10.5 & shelter_expenses < 433 & rawunearn < 76",134,2.5307,0.3209,0.1862,0.1218,0.1862,43
+"4",6,"shelter_expenses >= 1714 & rawgross < 2027 & rawben_rel_max < 0.9669 & rawunearn < 967.5",212,4.0038,0.3019,0.2565,0.1813,0.2565,64
+"4",7,"unc_rawben_rel_max >= 1.26 & utilities < 444 & cat_elig >= 0.5 & cat_elig < 1.5",275,5.1936,0.2836,0.3119,0.221,0.3119,78
+"4",8,"unc_rawben_rel_max < 1.182 & rawearn >= 151.5 & total_deductions < 228.8 & rawben_rel_max >= 0.7678",319,6.0246,0.2727,0.3438,0.2465,0.3438,87
+"4",9,"unc_rawben_rel_max >= 0.6473 & shelter_expenses < 1794 & utilities >= 246.5 & shelter_expenses < 343",389,7.3466,0.2416,0.3731,0.2663,0.3731,94
+"4",10,"unc_rawben_rel_max >= 0.5543 & rawearn >= 1001 & rawgross < 1154 & unc_rawben_rel_max < 0.9928",406,7.6676,0.2389,0.3798,0.2748,0.3798,97
+"4",11,"rawben_rel_max >= 0.6406 & rawearn >= 5.5 & rawunearn >= 463 & rawben_rel_max >= 0.8376",458,8.6497,0.2205,0.4013,0.2861,0.4013,101
+"5+",1,"total_deductions >= 964.4 & utilities >= 851 & months_since_cert_n >= 4.5 & rawben_rel_max >= 0.8207",14,0.2361,0.6429,0.0336,0.0211,0.0336,9
+"5+",2,"unc_rawben_rel_max >= 0.5271 & rawearn >= 1046 & shelter_expenses >= 2107 & rawben_rel_max >= 0.9218",24,0.4048,0.5,0.0559,0.0282,0.0559,12
+"5+",3,"percent_abawd < 0.4643 & total_deductions >= 878.8 & rawgross < 2212 & rawgross >= 2187",34,0.5735,0.4412,0.0775,0.0352,0.0775,15
+"5+",4,"percent_abawd >= 0.6333",42,0.7084,0.4286,0.0928,0.0423,0.0928,18
+"5+",5,"shelter_expenses < 1398 & rawearn >= 606 & total_deductions < 180.1 & rawben_rel_max >= 0.8867",52,0.877,0.4038,0.113,0.0493,0.113,21
+"5+",6,"unc_rawben_rel_max >= 0.5997 & rawearn >= 1576 & rawearn < 1598",68,1.1469,0.3824,0.1423,0.061,0.1423,26
+"5+",7,"months_since_cert_n >= 7.5 & utilities >= 902 & rawearn >= 37 & utilities < 1016",87,1.4674,0.3793,0.1645,0.0775,0.1645,33
+"5+",8,"rawben_rel_max >= 0.6081 & rawearn >= 3222 & total_deductions < 1345",101,1.7035,0.3564,0.1845,0.0845,0.1845,36
+"5+",9,"shelter_expenses >= 1818 & shelter_expenses < 1834 & rawearn < 1934",114,1.9228,0.3421,0.1999,0.0915,0.1999,39
+"5+",10,"cat_elig >= 2.5 & rawearn < 1475",131,2.2095,0.3282,0.2178,0.1009,0.2178,43
+"5+",11,"shelter_expenses >= 1626 & rawben_rel_max >= 0.834 & unc_rawben_rel_max < 0.8443",143,2.4119,0.3217,0.2302,0.108,0.2302,46
+"5+",12,"shelter_expenses >= 1298 & rawben_rel_max >= 0.6988 & rawearn >= 1057 & total_deductions < 862.5",163,2.7492,0.3252,0.2467,0.1244,0.2467,53
+"5+",13,"shelter_expenses >= 1536 & shelter_expenses < 1548",187,3.154,0.3209,0.268,0.1408,0.268,60
+"5+",14,"rawben_rel_max >= 0.5959 & rawearn >= 1189 & rawben_rel_max >= 0.8929 & rawben_rel_max < 0.9026",204,3.4407,0.3137,0.2783,0.1502,0.2783,64
+"5+",15,"shelter_expenses >= 1631 & shelter_expenses < 1636",211,3.5588,0.3081,0.2826,0.1526,0.2826,65
+"5+",16,"months_since_cert_n >= 5.5 & shelter_expenses >= 1628 & rawgross < 2223 & shelter_expenses < 1678",222,3.7443,0.2973,0.2888,0.1549,0.2888,66
+"5+",17,"months_since_cert_n >= 5.5 & rawunearn < 0.5 & rawben_rel_max >= 0.7781 & unc_rawben_rel_max < 0.8046",243,4.0985,0.2922,0.2983,0.1667,0.2983,71
+"5+",18,"months_since_cert_n >= 5.5 & shelter_expenses >= 1337 & rawgross < 2569 & rawearn >= 1356",306,5.1611,0.2745,0.3249,0.1972,0.3249,84
+"5+",19,"unc_rawben_rel_max >= 0.5271 & shelter_expenses >= 1378 & shelter_expenses < 1402 & months_since_cert_n >= 3.5",327,5.5153,0.263,0.3344,0.2019,0.3344,86
+"5+",20,"total_deductions >= 964.4 & utilities >= 851 & months_since_cert_n >= 4.5 & rawben_rel_max < 0.8207",364,6.1393,0.2445,0.3462,0.2089,0.3462,89
+"5+",21,"months_since_cert_n >= 7.5 & utilities >= 902 & rawearn >= 388",367,6.1899,0.248,0.3481,0.2136,0.3481,91
+"5+",22,"shelter_expenses >= 1378 & rawben_rel_max >= 0.878 & rawben_rel_max < 0.9598 & rawgross < 1322",385,6.4935,0.2416,0.3536,0.2183,0.3536,93
+"5+",23,"shelter_expenses >= 1378 & rawben_rel_max < 0.878 & shelter_expenses < 1417",446,7.5223,0.2309,0.3686,0.2418,0.3686,103
+"5+",24,"utilities < 960.5 & rawgross < 2012 & rawearn >= 1310 & shelter_expenses >= 1633",487,8.2139,0.2197,0.3782,0.2512,0.3782,107
+"5+",25,"rawearn >= 1046 & rawgross < 2039 & shelter_expenses < 2114",942,15.888,0.1688,0.4786,0.3732,0.4786,159
