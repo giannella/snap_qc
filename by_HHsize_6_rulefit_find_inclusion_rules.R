@@ -302,7 +302,7 @@ run_for_hh <- function(earned_income_df, hh_label) {
 }
 
 ## ── 3. Run every household-size stratum and combine ───────────────────────────
-
+ 
 groups  <- hh_group_of(earned_income_df[[HH_SIZE_COL]])
 results <- lapply(HH_LEVELS, function(lab)
   run_for_hh(earned_income_df[!is.na(groups) & groups == lab, , drop = FALSE], lab))
