@@ -1,0 +1,55 @@
+﻿code,description
+6,eligible person(s) excluded
+7,ineligible person(s) included
+12,"eligible person(s) with no income, resources, or deductible expenses excluded"
+13,eligible person(s) with income excluded
+14,eligible person(s) with resources excluded
+15,eligible person(s) with deductible expenses excluded
+16,newborn improperly excluded
+20,incorrect resource limit applied
+24,resource should have been excluded
+28,incorrect income limit applied
+29,exceeds prescribed limit
+30,resource should have been included
+32,failed to consider or incorrectly considered income of ineligible member
+35,unreported source of income
+36,rounding used/not used or incorrectly applied
+37,all income from source known but not included
+38,more income received from this source than budgeted
+39,employment status changed from unemployed to employed
+40,employment status changed from employed to unemployed
+41,change only in amount of earnings
+42,conversion to monthly amount not used or incorrectly applied
+43,averaging not used or incorrectly applied
+44,less income received from this source than budgeted
+45,cost of doing business not used or incorrectly applied
+46,failed to consider/anticipate month with extra pay date
+52,deduction that should have been included was not
+53,deduction included that should not have been
+54,incorrect standard used (not as a result of change in unit size or move)
+64,incorrect amount used resulting from change in residence
+65,incorrect standard used resulting from change in unit size
+75,benefit/allotment/eligibility incorrectly computed
+77,unit not entitled to transitional benefits
+79,incorrect use of allotment tables
+80,improper prorating of initial month's benefits
+97,not required to be reported or acted upon based on time frames and reporting requirements for allotment differences below the error threshold
+98,transcription or computation errors
+99,other
+111,child support payment(s) not considered or incorrectly applied
+112,retained child support payment(s) not considered or incorrectly applied
+120,variances/errors resulting from noncompliance with this means-tested public assistance program
+123,incorrectly prorated
+124,variances resulting from use of automatic federal information exchange system
+127,pass-through not considered or incorrectly applied
+200,eligible noncitizen excluded
+201,ineligible noncitizen included
+301,unit improperly participating under retrospective budgeting
+302,unit improperly participating under prospective budgeting
+303,unit improperly participating under monthly reporting
+304,unit improperly participating under quarterly reporting
+305,unit improperly participating under semiannual reporting
+306,unit improperly participating under change reporting
+307,unit improperly participating under status reporting
+308,unit improperly participating under 5 hour reporting
+309,unit improperly participating in transitional benefits

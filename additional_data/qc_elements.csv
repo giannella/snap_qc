@@ -1,0 +1,50 @@
+﻿code,description
+111,student status
+130,citizenship and noncitizen status
+140,residency
+150,unit composition
+151,recipient disqualification
+160,employment and training programs
+161,time-limited participation
+162,work registration requirements
+163,voluntary quit/reduced work effort
+164,workfare and comparable workfare
+165,employment status/job availability
+166,acceptance of employment
+170,social security number
+211,bank accounts or cash on hand
+212,nonrecurring lump-sum payment
+213,other liquid assets
+221,real property
+222,vehicles
+224,other nonliquid resources
+225,combined resources
+311,wages and salaries
+312,self-employment
+314,other earned income
+321,earned income deductions
+323,dependent care deduction
+331,rsdi benefits
+332,veterans' benefits
+333,ssi and/or state ssi supplement
+334,unemployment compensation
+335,workers' compensation
+336,other government benefits
+342,contributions
+343,deemed income
+344,"tanf, pa, or ga"
+345,educational grants/scholarships/loans
+346,other unearned income
+350,child support payments received from absent parent
+361,standard deduction
+363,shelter deduction
+364,standard utility allowance
+365,medical expense deductions
+366,child support payment deduction
+371,combined gross income
+372,combined net income
+520,arithmetic computation
+530,transitional benefits
+560,reporting systems
+810,snap simplification project
+820,demonstration projects
