@@ -2,7 +2,7 @@
 # Optimize ONE inclusion rule's thresholds by grid search
 #
 # Parallel to 5_gridsearch_optimize_exclusion_rules.R, but for FLAGGING (inclusion).
-# Takes one multi-condition rule from script 8, e.g.
+# Takes one multi-condition rule from script 6, e.g.
 #   earned_by_hh_size >= 250 & shelter_to_gross_ratio < 0.70 & gross_by_hh_size < 1000
 # and searches round thresholds (operators fixed), scoring each combination as a
 # FLAGGING criterion. Returns the thresholds that MAXIMIZE PRECISION (share of
@@ -82,9 +82,7 @@ inclusion_perf <- function(flag, is_error, err_dollars) {
 
 ## ── 2. Prepare the pile ───────────────────────────────────────────────────────
 
-test_years_df <- reg_model_data %>% filter(fiscal_year>2019)
-
-is_error <- eval(TARGET_IS_ERROR, envir = test_years_df)
+is_error <- eval(TARGET_IS_ERROR, envir = flagged_cases)
 is_error[is.na(is_error)] <- FALSE
 ed <- flagged_cases[[ERR_AMT_COL]]; ed[is.na(ed)] <- 0
 err_dollars <- ifelse(is_error, abs(ed), 0)
@@ -170,9 +168,9 @@ if (nrow(feasible) == 0) {
             file.path(out_dir, "inclusion_gridsearch_feasible.csv"), row.names = FALSE)
 }
 
-test_years_df$rule_1 <- test_years_df$gross_by_hh_size < 350 & test_years_df$unc_rawben_rel_max < 0.6 & test_years_df$shelter_expenses < 1200
-table(test_years_df$rule_1)
-sum(test_years_df$total_error_amount[test_years_df$rule_1], na.rm=T)
+# flagged_cases$rule_1 <- flagged_cases$gross_by_hh_size < 350 & flagged_cases$unc_rawben_rel_max < 0.6 & flagged_cases$shelter_expenses < 1200
+# table(flagged_cases$rule_1)
+# sum(flagged_cases$total_error_amount[flagged_cases$rule_1], na.rm = TRUE)
 
 ## ── 6. Notes ──────────────────────────────────────────────────────────────────
 # - Operators fixed; only thresholds move. Maximize precision subject to recall.

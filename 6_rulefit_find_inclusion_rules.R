@@ -17,30 +17,45 @@ library(dplyr)
 set.seed(111)
 
 ## ── 0. Config ─────────────────────────────────────────────────────────────────
-reg_model_data$fiscal_year
 # `reg_model_data` here = the labelled universe of cases (true errors + clean).
-earned_income_df <- reg_model_data %>% filter(error_status %in% c("earned_overissuance","no_error"))  %>% filter(fiscal_year  %in% c("2022","2023","2024"))
+earned_income_df <- reg_model_data %>%
+  filter(error_status %in% c("earned_overissuance", "no_error")) %>%
+  filter(fiscal_year %in% c("2022", "2023", "2024"))
 table(earned_income_df$element, earned_income_df$error_status)
 table(earned_income_df$over_threshold, earned_income_df$error_status)
 
+unearned_income_df <- reg_model_data %>%
+  filter(error_status %in% c("unearned_overissuance", "no_error")) %>%
+  filter(fiscal_year %in% c("2022", "2023", "2024"))
+table(unearned_income_df$element, unearned_income_df$error_status)
+table(unearned_income_df$over_threshold, unearned_income_df$error_status)
+
+underissuance_df <- reg_model_data %>%
+  filter(error_status %in% c("underissuance", "no_error")) %>%
+  filter(fiscal_year %in% c("2022", "2023", "2024"))
+table(underissuance_df$element, underissuance_df$error_status)
+table(underissuance_df$over_threshold, underissuance_df$error_status)
+
+# change focal_df depending on what kind of error you are exploring
+focal_df <- earned_income_df
 
 OBJECTIVE <- "dollars"      # "counts" or "dollars"
 
 features <- c(
-  "cert_HH_size_FS_n", "children_i", "elderly_disabled_i", #"total_deductions_by_hh_size",
+  "cert_HH_size_FS_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
   "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
   "shelter_expenses", "utilities", "married", "homeless",
   "earned_by_hh_size", "unearned_by_hh_size", "gross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max", #"n_income_types", "n_deduction_types",
   "months_since_cert_n", "count_divisible_by_100"
 )
-earned_income_df$over_threshold = as.integer(as.character(earned_income_df$over_threshold))
-setdiff(features, names(earned_income_df))
+focal_df$over_threshold <- as.integer(as.character(focal_df$over_threshold))
+setdiff(features, names(focal_df))
 TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold == 1)
 ERR_AMT_COL     <- "total_error_amount"
 
 # Individual-rule shortlist (informational; the net does not depend on it)
-MIN_SUPPORT   <- 0.000005   # a rule must FLAG at least 0.5% of cases (footprint, not recall)
+MIN_SUPPORT   <- 0.000005   # a rule must FLAG at least 0.0005% of cases (footprint, not recall)
 MIN_PRECISION <- 0.20    # a rule is "high precision" on its own if >= this
 
 # Inclusion NET: greedily OR rules to climb recall while holding precision high.
@@ -93,31 +108,31 @@ inclusion_perf <- function(flag, is_error, err_dollars = NULL) {
 
 ## ── 2. Prepare the pile ───────────────────────────────────────────────────────
 
-is_error <- eval(TARGET_IS_ERROR, envir = earned_income_df)
+is_error <- eval(TARGET_IS_ERROR, envir = focal_df)
 is_error[is.na(is_error)] <- FALSE
-earned_income_df$.is_error <- is_error
+focal_df$.is_error <- is_error
 
-if (!is.na(ERR_AMT_COL) && ERR_AMT_COL %in% names(earned_income_df)) {
-  raw_amt <- earned_income_df[[ERR_AMT_COL]]; raw_amt[is.na(raw_amt)] <- 0
+if (!is.na(ERR_AMT_COL) && ERR_AMT_COL %in% names(focal_df)) {
+  raw_amt <- focal_df[[ERR_AMT_COL]]; raw_amt[is.na(raw_amt)] <- 0
   err_dollars_all <- ifelse(is_error, abs(raw_amt), 0)
-} else err_dollars_all <- rep(NA_real_, nrow(earned_income_df))
+} else err_dollars_all <- rep(NA_real_, nrow(focal_df))
 if (OBJECTIVE == "dollars" && all(is.na(err_dollars_all)))
-  stop("OBJECTIVE = 'dollars' requires ERR_AMT_COL present in earned_income_df.")
+  stop("OBJECTIVE = 'dollars' requires ERR_AMT_COL present in focal_df.")
 
 base_rate <- mean(is_error)
 cat(sprintf("\n=== Universe (objective: %s) ===\n", toupper(OBJECTIVE)))
 cat(sprintf("  N = %d | errors = %d (%.1f%%) | clean = %d\n",
-            nrow(earned_income_df), sum(is_error), 100 * base_rate, sum(!is_error)))
+            nrow(focal_df), sum(is_error), 100 * base_rate, sum(!is_error)))
 if (!all(is.na(err_dollars_all)))
   cat(sprintf("  error $ = $%s\n", format(round(sum(err_dollars_all)), big.mark = ",")))
 
-pv <- features[features %in% names(earned_income_df)]
-pv <- pv[sapply(earned_income_df[pv], function(x)
+pv <- features[features %in% names(focal_df)]
+pv <- pv[sapply(focal_df[pv], function(x)
   !all(is.na(x)) && length(unique(x[!is.na(x)])) > 1)]
 
 model_cols <- c(".is_error", pv)
-complete   <- stats::complete.cases(earned_income_df[model_cols])
-model_data <- earned_income_df[complete, , drop = FALSE]
+complete   <- stats::complete.cases(focal_df[model_cols])
+model_data <- focal_df[complete, , drop = FALSE]
 md_dollars <- err_dollars_all[complete]
 cat(sprintf("  N (model) = %d (dropped %d NA rows)\n", nrow(model_data), sum(!complete)))
 
@@ -126,7 +141,7 @@ to_factor <- pv[vapply(model_data[pv], function(x) is.character(x) || is.logical
 for (v in to_factor) model_data[[v]] <- factor(model_data[[v]])
 model_data[pv] <- lapply(model_data[pv], function(x) if (is.factor(x)) droplevels(x) else x)
 keep <- vapply(model_data[pv], function(x) length(unique(x)) > 1, logical(1))
-if (any(!keep)) { cat(sprintf("  dropped constant: %s\n", paste(pv[!keep], collapse=", "))); pv <- pv[keep] }
+if (any(!keep)) { cat(sprintf("  dropped constant: %s\n", paste(pv[!keep], collapse = ", "))); pv <- pv[keep] }
 
 ## ── 3. Fit RuleFit ────────────────────────────────────────────────────────────
 
@@ -138,44 +153,35 @@ if (OBJECTIVE == "dollars") {
 }
 form <- as.formula(paste(".target ~", paste(pv, collapse = " + ")))
 
-has_errors <- model_data %>% filter(over_threshold=="1" & fiscal_year>2019)
-no_errors_sampled <- model_data %>% filter(over_threshold=="0" & fiscal_year>2019) %>% sample_n(size=(nrow(has_errors) * 14))
-model_data <- bind_rows(has_errors,no_errors_sampled)
-model_data <- model_data %>% sample_n(size=nrow(model_data))
+has_errors        <- model_data %>% filter(over_threshold == "1" & fiscal_year > 2019)
+no_errors_sampled <- model_data %>%
+  filter(over_threshold == "0" & fiscal_year > 2019) %>%
+  sample_n(size = nrow(has_errors) * 14)
+model_data <- bind_rows(has_errors, no_errors_sampled)
+model_data <- model_data %>% sample_n(size = nrow(model_data))
 table(model_data$over_threshold)
 
-fit <- pre(formula = form, data = model_data[c(".target", pv)], family = fam,
-           ntrees = 5000,
-           maxdepth = 4L,
-           learnrate = 0.01,
-           type = "rules",
-           use.grad = T,
-           tree.unbiased = F,   # rpart, much faster than ctree at this n
-           sampfrac = 0.5,          # ~11k rows per tree; big speedup, still diverse
-           removeduplicates = T,
-           removecomplements = T,
-           nfolds = 5,
-           randomForest = F,
-           #mtry=3,
-           verbose = TRUE)
-
-fit2_rf <- pre(formula = form, data = model_data[c(".target", pv)], family = fam,
-           ntrees = 1000,
-           maxdepth = 4L,
-           learnrate = 0.005,
-           type = "rules",
-           use.grad = T,
-           tree.unbiased = T,   # rpart, much faster than ctree at this n
-           sampfrac = 0.5,          # ~11k rows per tree; big speedup, still diverse
-           removeduplicates = T,
-           removecomplements = T,
-           nfolds = 3,
-           randomForest = T,
-           mtry=2,
-           verbose = TRUE)
+fit <- pre(
+  formula           = form,
+  data              = model_data[c(".target", pv)],
+  family            = fam,
+  ntrees            = 3000,
+  maxdepth          = 4L,
+  learnrate         = 0.01,
+  type              = "rules",
+  use.grad          = TRUE,
+  tree.unbiased     = FALSE,   # rpart, much faster than ctree at this n
+  sampfrac          = 0.5,     # ~11k rows per tree; big speedup, still diverse
+  removeduplicates  = TRUE,
+  removecomplements = TRUE,
+  nfolds            = 5,
+  randomForest      = FALSE,
+  # mtry            = 3,
+  verbose           = TRUE
+)
 
 get_rules <- function(pp)
-  coef(fit2_rf, penalty.par.val = pp) %>% filter(rule != "(Intercept)", coefficient != 0)
+  coef(fit, penalty.par.val = pp) %>% filter(rule != "(Intercept)", coefficient != 0)
 rules0 <- get_rules(PENALTY)
 if (nrow(rules0) == 0 && PENALTY == "lambda.1se") {
   cat("  No rules at lambda.1se -- retrying at lambda.min ...\n")
@@ -183,7 +189,7 @@ if (nrow(rules0) == 0 && PENALTY == "lambda.1se") {
 }
 if (nrow(rules0) == 0)
   stop("No rules at either penalty. Check the target: table(model_data$.is_error).")
-imp <- pre::importance(fit2_rf, penalty.par.val = PENALTY, plot = FALSE)$baseimps
+imp <- pre::importance(fit, penalty.par.val = PENALTY, plot = FALSE)$baseimps
 rules <- rules0 %>% left_join(select(imp, rule, imp), by = "rule") %>%
   rename(rule_id = rule, rule_text = description)
 
@@ -294,14 +300,4 @@ if (length(pool) == 0) {
                 ops$recall_floor[i], ops$precision[i], ops$workload_pct[i],
                 gsub("  OR  ", "\n    OR ", ops$net[i])))
 }
-
-## ── 6. Validation - ideally 2025 data ───────────────────────────────────────────────
-# In-sample precision is optimistic. Re-check a chosen net on a holdout period:
-  net_v <- strsplit(ops$net[ops$recall_floor == 0.80], "  OR  ")[1]
-  test  <- earned_income_df[earned_income_df$year == "2025", ]
-  te <- eval(TARGET_IS_ERROR, envir = test); te[is.na(te)] <- FALSE
-  td <- ifelse(te, abs(replace(test[[ERR_AMT_COL]], is.na(test[[ERR_AMT_COL]]), 0)), 0)
-  f  <- Reduce(`|`, lapply(net_v, flag_rule, data = test))
-  inclusion_perf(f, te, td)
-  
   

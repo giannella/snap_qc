@@ -46,8 +46,8 @@ stopifnot(OBJECTIVE %in% c("dollars", "counts"))
 ## ── 1. Helpers ────────────────────────────────────────────────────────────────
 
 apply_op <- function(x, op, t) switch(op,
-                                      ">=" = x >= t, "<=" = x <= t, ">" = x > t, "<" = x < t, "==" = x == t,
-                                      stop("unsupported operator: ", op))
+  ">=" = x >= t, "<=" = x <= t, ">" = x > t, "<" = x < t, "==" = x == t,
+  stop("unsupported operator: ", op))
 
 # Candidate thresholds: multiples of `step` spanning the data's central range.
 # Build from finite values only (ratios can be Inf/NaN when a denominator is 0).

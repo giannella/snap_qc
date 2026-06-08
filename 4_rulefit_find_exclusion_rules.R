@@ -68,9 +68,9 @@ TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold != 0)
 ERR_AMT_COL <- "total_error_amount"
 
 # Actionability filters for the SHORTLIST (full table is unfiltered).
-MIN_WORKLOAD      <- 0.05   # a rule must remove at least 0.5% of the pile
-MIN_PURITY        <- 0.90    # counts:  >=95% of removed cases must be clean
-MIN_DOLLAR_RECALL <- 0.95    # dollars: a rule may sacrifice <=1% of error $ on its own
+MIN_WORKLOAD      <- 0.05   # a rule must remove at least 5% of the pile
+MIN_PURITY        <- 0.90   # counts:  >=90% of removed cases must be clean
+MIN_DOLLAR_RECALL <- 0.95   # dollars: a rule may sacrifice <=5% of error $ on its own
 
 # Exclusion NET: greedily OR together a few RuleFit rules to cut as much workload
 # as possible at each level of recall. Each rule already carries 2-3 variables
@@ -235,19 +235,19 @@ if (OBJECTIVE == "dollars") {
 form <- as.formula(paste(".target ~", paste(pv, collapse = " + ")))
 
 fit <- pre(
-  formula   = form,
-  data      = model_data[c(".target", pv)],
-  family    = fam,
-  ntrees    = RF_PARAMS$ntrees,
-  maxdepth  = RF_PARAMS$maxdepth,
-  learnrate = RF_PARAMS$learnrate,
-  type      = RF_PARAMS$type,
-  verbose = T, 
-  tree.unbiased=F,
-  use.grad=T,
-  removeduplicates = T,
-  removecomplements = T,
-  nfolds = 5
+  formula           = form,
+  data              = model_data[c(".target", pv)],
+  family            = fam,
+  ntrees            = RF_PARAMS$ntrees,
+  maxdepth          = RF_PARAMS$maxdepth,
+  learnrate         = RF_PARAMS$learnrate,
+  type              = RF_PARAMS$type,
+  verbose           = TRUE,
+  tree.unbiased     = FALSE,
+  use.grad          = TRUE,
+  removeduplicates  = TRUE,
+  removecomplements = TRUE,
+  nfolds            = 5
 )
 
 get_rules <- function(pp)
@@ -357,8 +357,7 @@ if (length(pool) == 0) {
   cat("No EXCLUDE-direction rules to build a net from.\n")
 } else {
   ie       <- model_data$.is_error
-  protect  <- if (OBJECTIVE == "dollars") {md <- md_dollars; md[is.na(md)] <- 0; md}
-  else as.numeric(ie)            # value to protect: $ or error-cases
+  protect  <- if (OBJECTIVE == "dollars") {md <- md_dollars; md[is.na(md)] <- 0; md} else as.numeric(ie)
   val_tot  <- sum(protect)
   err_tot  <- sum(ie)
   N_m      <- nrow(model_data)
