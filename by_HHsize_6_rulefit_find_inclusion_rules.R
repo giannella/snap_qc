@@ -20,7 +20,7 @@ library(dplyr)
 set.seed(111)
 
 ## ── 0. Config ─────────────────────────────────────────────────────────────────
-reg_model_data$fiscal_year
+reg_model_data$rawearn
 # `reg_model_data` here = the labelled universe of cases (true errors + clean).
 earned_income_df <- reg_model_data %>%
   filter(error_status %in% c("earned_overissuance", "no_error")) %>%
@@ -46,13 +46,13 @@ focal_df <- earned_income_df
 OBJECTIVE <- "dollars"      # "counts" or "dollars"
 
 features <- c(
-  "cert_HH_size_FS_n", "children_i", "elderly_disabled_i", #"total_deductions_by_hh_size",
+  "cert_HH_size_FS_n", "children_i", "elderly_disabled_i", "total_deductions",
   "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
   "shelter_expenses", "utilities", "married", "homeless",
-  "earned_by_hh_size", "unearned_by_hh_size", "gross_by_hh_size",
+  "rawearn", "rawunearn", "rawgross",
   "percent_abawd", "unc_rawben_rel_max", #"n_income_types", "n_deduction_types",
   "months_since_cert_n", "count_divisible_by_100"
-)
+) 
 earned_income_df$over_threshold <- as.integer(as.character(earned_income_df$over_threshold))
 setdiff(features, names(earned_income_df))
 TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold == 1)

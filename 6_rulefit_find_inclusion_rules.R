@@ -38,7 +38,7 @@ table(underissuance_df$over_threshold, underissuance_df$error_status)
 
 # change focal_df depending on what kind of error you are exploring
 focal_df <- earned_income_df
-
+ 
 OBJECTIVE <- "dollars"      # "counts" or "dollars"
 
 features <- c(

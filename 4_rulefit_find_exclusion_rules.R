@@ -35,7 +35,7 @@ features <- c(
   "cert_HH_size_FS_n",            # certified household size
   "children_i",                   # children indicator
   "elderly_disabled_i",           # combined indicator
- # "deductions_by_hh_size",        # deductions by HH size
+  "total_deductions_by_hh_size",        
   "expedited_i",                  # expedited service
   "cat_elig",                     # categorical eligibility
   "rawben_rel_max",
@@ -53,7 +53,7 @@ features <- c(
   "n_income_types",
   "n_deduction_types",
   "unc_rawben_rel_max",
-  #"months_since_cert_n",
+  "months_since_cert_n",
   "count_divisible_by_100"
 )
 
