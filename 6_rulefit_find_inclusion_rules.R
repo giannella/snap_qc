@@ -165,13 +165,13 @@ fit <- pre(
   formula           = form,
   data              = model_data[c(".target", pv)],
   family            = fam,
-  ntrees            = 3000,
+  ntrees            = 5000,
   maxdepth          = 4L,
   learnrate         = 0.01,
   type              = "rules",
   use.grad          = TRUE,
   tree.unbiased     = FALSE,   # rpart, much faster than ctree at this n
-  sampfrac          = 0.5,     # ~11k rows per tree; big speedup, still diverse
+  sampfrac          = 0.75,     # ~11k rows per tree; big speedup, still diverse
   removeduplicates  = TRUE,
   removecomplements = TRUE,
   nfolds            = 5,

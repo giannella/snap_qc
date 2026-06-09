@@ -17,7 +17,7 @@
 library(pre)
 library(dplyr)
 
-set.seed(111)
+set.seed(117)
 
 ## ── 0. Config ─────────────────────────────────────────────────────────────────
 reg_model_data$rawearn
@@ -189,13 +189,13 @@ run_for_hh <- function(focal_df, hh_label) {
     formula           = form,
     data              = model_data[c(".target", pv)],
     family            = fam,
-    ntrees            = 5000,
+    ntrees            = 10000,
     maxdepth          = 4L,
-    learnrate         = 0.01,
+    learnrate         = 0.001,
     type              = "rules",
     use.grad          = T,
     tree.unbiased     = F,   # F is rpart, much faster than ctree, also seems to work better
-    sampfrac          = .75,
+    sampfrac          = .5,
     removeduplicates  = TRUE,
     removecomplements = TRUE,
     nfolds            = 5,
