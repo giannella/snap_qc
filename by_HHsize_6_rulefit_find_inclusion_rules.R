@@ -314,18 +314,18 @@ ops_all        <- bind_rows(lapply(results, `[[`, "ops"))
 
 cat("\n\n================= ALL SELECTED RULES (by household size) =================\n")
 print(as.data.frame(rule_table_all))
-write.csv(rule_table_all, file.path(out_dir, "rpart_by_HHsize_inclusion_rules_all.csv"), row.names = FALSE)
+write.csv(rule_table_all, file.path(out_dir, "by_HHsize_inclusion_rules_all.csv"), row.names = FALSE)
 
 cat("\n\n================= HIGH-PRECISION RULES (by household size) =================\n")
 print(as.data.frame(shortlist_all))
-write.csv(shortlist_all, file.path(out_dir, "rpart_by_HHsize_inclusion_rules_highprecision.csv"), row.names = FALSE)
+write.csv(shortlist_all, file.path(out_dir, "by_HHsize_inclusion_rules_highprecision.csv"), row.names = FALSE)
 
-write.csv(net_path_all, file.path(out_dir, "rpart_by_HHsize_net_frontier_path.csv"), row.names = FALSE)
+write.csv(net_path_all, file.path(out_dir, "by_HHsize_net_frontier_path.csv"), row.names = FALSE)
 
 cat("\n\n================= NET OPERATING POINTS (by household size) =================\n")
 print(as.data.frame(ops_all %>% select(hh_size, recall_floor, precision, recall_obj,
                                        n_flagged, workload_pct, errors_caught, n_rules)))
-write.csv(ops_all, file.path(out_dir, "rpart_HHsize_net_operating_points.csv"), row.names = FALSE)
+write.csv(ops_all, file.path(out_dir, "HHsize_net_operating_points.csv"), row.names = FALSE)
 
 cat("\n-- rules in each net (by household size) --\n")
 for (i in seq_len(nrow(ops_all)))
