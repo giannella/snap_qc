@@ -120,32 +120,32 @@ inclusion_perf <- function(flag, is_error, err_dollars = NULL) {
 # Runs the whole analysis on one household-size subset and tags every output with
 # hh_size. Returns NULL tables for a stratum too small or with no selected rules.
 
-run_for_hh <- function(earned_income_df, hh_label) {
+run_for_hh <- function(focal_df, hh_label) {
   
-  is_error <- eval(TARGET_IS_ERROR, envir = earned_income_df)
+  is_error <- eval(TARGET_IS_ERROR, envir = focal_df)
   is_error[is.na(is_error)] <- FALSE
-  earned_income_df$.is_error <- is_error
+  focal_df$.is_error <- is_error
   
-  if (!is.na(ERR_AMT_COL) && ERR_AMT_COL %in% names(earned_income_df)) {
-    raw_amt <- earned_income_df[[ERR_AMT_COL]]; raw_amt[is.na(raw_amt)] <- 0
+  if (!is.na(ERR_AMT_COL) && ERR_AMT_COL %in% names(focal_df)) {
+    raw_amt <- focal_df[[ERR_AMT_COL]]; raw_amt[is.na(raw_amt)] <- 0
     err_dollars_all <- ifelse(is_error, abs(raw_amt), 0)
-  } else err_dollars_all <- rep(NA_real_, nrow(earned_income_df))
+  } else err_dollars_all <- rep(NA_real_, nrow(focal_df))
   if (OBJECTIVE == "dollars" && all(is.na(err_dollars_all)))
-    stop("OBJECTIVE = 'dollars' requires ERR_AMT_COL present in earned_income_df.")
+    stop("OBJECTIVE = 'dollars' requires ERR_AMT_COL present in focal_df.")
   
   cat(sprintf("\n\n#################### HOUSEHOLD SIZE %s ####################\n", hh_label))
   cat(sprintf("  N = %d | errors = %d (%.1f%%) | clean = %d\n",
-              nrow(earned_income_df), sum(is_error), 100 * mean(is_error), sum(!is_error)))
+              nrow(focal_df), sum(is_error), 100 * mean(is_error), sum(!is_error)))
   
   # predictors present and varying, with the stratifier removed
   pv <- setdiff(features, HH_SIZE_COL)
-  pv <- pv[pv %in% names(earned_income_df)]
-  pv <- pv[sapply(earned_income_df[pv], function(x)
+  pv <- pv[pv %in% names(focal_df)]
+  pv <- pv[sapply(focal_df[pv], function(x)
     !all(is.na(x)) && length(unique(x[!is.na(x)])) > 1)]
   
   model_cols <- c(".is_error", pv)
-  complete   <- stats::complete.cases(earned_income_df[model_cols])
-  model_data <- earned_income_df[complete, , drop = FALSE]
+  complete   <- stats::complete.cases(focal_df[model_cols])
+  model_data <- focal_df[complete, , drop = FALSE]
   cat(sprintf("  N (model) = %d (dropped %d NA rows)\n", nrow(model_data), sum(!complete)))
   
   # pre() needs numeric/factor inputs; coerce char/logical, drop now-constant cols
@@ -189,21 +189,21 @@ run_for_hh <- function(earned_income_df, hh_label) {
     formula           = form,
     data              = model_data[c(".target", pv)],
     family            = fam,
-    ntrees            = 2500,
+    ntrees            = 5000,
     maxdepth          = 4L,
     learnrate         = 0.01,
     type              = "rules",
-    use.grad          = TRUE,
-    tree.unbiased     = FALSE,   # rpart, much faster than ctree at this n
+    use.grad          = T,
+    tree.unbiased     = F,   # F is rpart, much faster than ctree, also seems to work better
     sampfrac          = .75,
     removeduplicates  = TRUE,
     removecomplements = TRUE,
     nfolds            = 5,
-    randomForest      = FALSE,
-    # mtry            = 3,
+    randomForest      = F,
+    #mtry            = 3,
     verbose           = TRUE
   )
-  
+  # 
   get_rules <- function(pp)
     coef(fit, penalty.par.val = pp) %>% filter(rule != "(Intercept)", coefficient != 0)
   penalty <- PENALTY
@@ -303,9 +303,9 @@ run_for_hh <- function(earned_income_df, hh_label) {
 
 ## ── 3. Run every household-size stratum and combine ───────────────────────────
  
-groups  <- hh_group_of(earned_income_df[[HH_SIZE_COL]])
+groups  <- hh_group_of(focal_df[[HH_SIZE_COL]])
 results <- lapply(HH_LEVELS, function(lab)
-  run_for_hh(earned_income_df[!is.na(groups) & groups == lab, , drop = FALSE], lab))
+  run_for_hh(focal_df[!is.na(groups) & groups == lab, , drop = FALSE], lab))
 
 rule_table_all <- bind_rows(lapply(results, `[[`, "rule_table"))
 shortlist_all  <- bind_rows(lapply(results, `[[`, "shortlist"))
@@ -314,18 +314,18 @@ ops_all        <- bind_rows(lapply(results, `[[`, "ops"))
 
 cat("\n\n================= ALL SELECTED RULES (by household size) =================\n")
 print(as.data.frame(rule_table_all))
-write.csv(rule_table_all, file.path(out_dir, "by_HHsize_inclusion_rules_all.csv"), row.names = FALSE)
+write.csv(rule_table_all, file.path(out_dir, "rpart_by_HHsize_inclusion_rules_all.csv"), row.names = FALSE)
 
 cat("\n\n================= HIGH-PRECISION RULES (by household size) =================\n")
 print(as.data.frame(shortlist_all))
-write.csv(shortlist_all, file.path(out_dir, "by_HHsize_inclusion_rules_highprecision.csv"), row.names = FALSE)
+write.csv(shortlist_all, file.path(out_dir, "rpart_by_HHsize_inclusion_rules_highprecision.csv"), row.names = FALSE)
 
-write.csv(net_path_all, file.path(out_dir, "by_HHsize_net_frontier_path.csv"), row.names = FALSE)
+write.csv(net_path_all, file.path(out_dir, "rpart_by_HHsize_net_frontier_path.csv"), row.names = FALSE)
 
 cat("\n\n================= NET OPERATING POINTS (by household size) =================\n")
 print(as.data.frame(ops_all %>% select(hh_size, recall_floor, precision, recall_obj,
                                        n_flagged, workload_pct, errors_caught, n_rules)))
-write.csv(ops_all, file.path(out_dir, "by_HHsize_net_operating_points.csv"), row.names = FALSE)
+write.csv(ops_all, file.path(out_dir, "rpart_HHsize_net_operating_points.csv"), row.names = FALSE)
 
 cat("\n-- rules in each net (by household size) --\n")
 for (i in seq_len(nrow(ops_all)))

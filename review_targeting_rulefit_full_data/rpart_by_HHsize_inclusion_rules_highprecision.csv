@@ -1,0 +1,66 @@
+"hh_size","rule_id","rule","n_conditions","role","coefficient","importance","workload_pct","n_flagged","errors_caught","clean_flagged","precision","recall","dollar_recall","lift","base_rate"
+"1","rule91","rawunearn < 499.5 & rawben_rel_max < 0.9777 & expedited_i %in% c(""TRUE"")",3,"INCLUDE",1.182,0.107,0.8,99,44,55,0.444,0.055,0.058,6.67,0.067
+"1","rule95","unc_rawben_rel_max >= 1.78 & months_since_cert_n >= 3.5 & utilities < 465.5",3,"INCLUDE",14.523,1.621,1.3,150,66,84,0.44,0.083,0.1,6.6,0.067
+"1","rule328","unc_rawben_rel_max < 1.813 & rawearn >= 320 & unc_rawben_rel_max < 0.968 & rawben_rel_max >= 0.6329",4,"INCLUDE",13.052,1.797,1.9,230,100,130,0.435,0.126,0.11,6.52,0.067
+"1","rule32","rawunearn < 499.5 & total_deductions >= 63.1 & months_since_cert_n >= 4.5 & rawgross < 0.5",4,"INCLUDE",5.903,1.042,3.2,383,129,254,0.337,0.163,0.191,5.05,0.067
+"1","rule239","unc_rawben_rel_max < 1.824 & rawearn >= 541 & utilities < 23",3,"INCLUDE",2.542,0.302,1.4,170,57,113,0.335,0.072,0.075,5.03,0.067
+"1","rule248","rawunearn < 27.5 & cat_elig >= 0.5 & rawben_rel_max < 0.968",3,"INCLUDE",3.48,0.752,4.9,584,192,392,0.329,0.242,0.218,4.93,0.067
+"1","rule118","rawunearn < 499.5 & shelter_expenses >= 1280",2,"INCLUDE",8.059,1.373,3,356,106,250,0.298,0.134,0.143,4.47,0.067
+"1","rule103","rawunearn < 27.5 & total_deductions >= 18.5 & months_since_cert_n >= 4.5",3,"INCLUDE",4.195,1.062,6.9,819,243,576,0.297,0.306,0.325,4.45,0.067
+"1","rule259","unc_rawben_rel_max < 1.769 & rawearn >= 320 & unc_rawben_rel_max < 0.968",3,"INCLUDE",11.239,2.752,6.4,762,222,540,0.291,0.28,0.246,4.37,0.067
+"1","rule67","rawunearn < 499.5 & unc_rawben_rel_max < 1.832 & rawben_rel_max < 0.9777",3,"INCLUDE",3.351,0.811,6.3,744,214,530,0.288,0.27,0.239,4.31,0.067
+"1","rule57","rawunearn < 499.5 & total_deductions >= 57.8 & months_since_cert_n >= 5.5",3,"INCLUDE",2.911,0.706,6.3,746,214,532,0.287,0.27,0.289,4.3,0.067
+"1","rule79","rawunearn < 366 & total_deductions >= 57.8 & months_since_cert_n >= 4.5",3,"INCLUDE",1.651,0.433,7.4,884,252,632,0.285,0.318,0.342,4.28,0.067
+"1","rule120","rawunearn < 366 & total_deductions >= 57.8 & months_since_cert_n >= 3.5",3,"INCLUDE",5.067,1.485,9.5,1128,299,829,0.265,0.377,0.407,3.98,0.067
+"1","rule5","rawunearn < 499.5 & total_deductions >= 57.8 & months_since_cert_n >= 3.5",3,"INCLUDE",6.998,2.101,10,1192,305,887,0.256,0.385,0.415,3.84,0.067
+"1","rule70","rawunearn < 499.5 & total_deductions >= 57.5 & months_since_cert_n >= 3.5",3,"INCLUDE",0.468,0.141,10,1193,305,888,0.256,0.385,0.415,3.83,0.067
+"1","rule289","rawunearn < 27.5 & rawben_rel_max >= 0.9622 & rawearn < 0.5 & unc_rawben_rel_max >= 1.218",4,"INCLUDE",1.589,0.441,8.4,1001,219,782,0.219,0.276,0.313,3.28,0.067
+"2","rule213","rawunearn < 842.5 & months_since_cert_n >= 3.5 & shelter_expenses >= 993 & utilities < 363.5",4,"INCLUDE",8.506,0.807,0.9,71,27,44,0.38,0.052,0.065,5.7,0.067
+"2","rule248","rawearn >= 966.5 & shelter_expenses >= 1552 & total_deductions < 997.5",3,"INCLUDE",17.665,2.015,1.3,103,38,65,0.369,0.073,0.081,5.53,0.067
+"2","rule7","unc_rawben_rel_max >= 1.42 & utilities < 382",2,"INCLUDE",9.821,1.266,1.7,132,36,96,0.273,0.069,0.096,4.09,0.067
+"2","rule87","shelter_expenses < 1539 & unc_rawben_rel_max >= 1.487 & utilities < 611",3,"INCLUDE",7.595,1.194,2.5,198,53,145,0.268,0.102,0.129,4.02,0.067
+"2","rule218","rawunearn < 602.5 & shelter_expenses >= 993.5 & utilities < 362",3,"INCLUDE",6.365,0.847,1.8,141,36,105,0.255,0.069,0.086,3.83,0.067
+"2","rule154","rawunearn < 599.5 & shelter_expenses >= 1424",2,"INCLUDE",0.743,0.187,6.8,529,107,422,0.202,0.205,0.227,3.03,0.067
+"3","rule83","unc_rawben_rel_max >= 1.33 & utilities < 303.5 & months_since_cert_n >= 2.5 & months_since_cert_n < 4.5",4,"INCLUDE",149.167,6.971,0.2,15,9,6,0.6,0.02,0.039,9,0.067
+"3","rule119","shelter_expenses < 2630 & unc_rawben_rel_max >= 1.34 & utilities < 315.5 & unc_rawben_rel_max < 1.343",4,"INCLUDE",9.455,0.378,0.2,11,6,5,0.545,0.013,0.026,8.18,0.067
+"3","rule8","unc_rawben_rel_max >= 1.208 & utilities < 346 & cat_elig >= 1.5 & months_since_cert_n >= 3.5",4,"INCLUDE",83.715,3.912,0.2,15,8,7,0.533,0.018,0.04,8,0.067
+"3","rule44","shelter_expenses < 1862 & unc_rawben_rel_max >= 1.194 & total_deductions < 386.5 & utilities >= 372",4,"INCLUDE",106.569,4.068,0.1,10,5,5,0.5,0.011,0.02,7.5,0.067
+"3","rule102","unc_rawben_rel_max >= 1.341 & utilities < 315.5 & shelter_expenses < 1278 & shelter_expenses >= 754.5",4,"INCLUDE",33.483,1.143,0.1,8,4,4,0.5,0.009,0.015,7.5,0.067
+"3","rule20","unc_rawben_rel_max >= 1.194 & utilities < 320 & unc_rawben_rel_max >= 1.336 & months_since_cert_n >= 2.5",4,"INCLUDE",3.826,0.226,0.4,24,11,13,0.458,0.024,0.044,6.88,0.067
+"3","rule16","unc_rawben_rel_max >= 1.194 & utilities < 320 & cat_elig >= 1.5 & months_since_cert_n >= 3.5",4,"INCLUDE",22.326,1.204,0.3,20,9,11,0.45,0.02,0.043,6.75,0.067
+"3","rule47","unc_rawben_rel_max >= 1.194 & utilities < 346 & cat_elig >= 1.5 & rawgross < 25",4,"INCLUDE",37.745,2.23,0.4,24,10,14,0.417,0.022,0.047,6.25,0.067
+"3","rule70","unc_rawben_rel_max >= 1.194 & utilities < 320 & cat_elig >= 1.5 & shelter_expenses < 896",4,"INCLUDE",46.253,2.495,0.3,20,8,12,0.4,0.018,0.041,6,0.067
+"3","rule128","unc_rawben_rel_max >= 1.194 & rawunearn >= 359 & months_since_cert_n >= 3.5",3,"INCLUDE",96.055,5.05,0.3,19,7,12,0.368,0.015,0.027,5.53,0.067
+"3","rule132","shelter_expenses >= 2630 & rawearn < 1",2,"INCLUDE",71.817,4.329,0.4,25,9,16,0.36,0.02,0.029,5.4,0.067
+"3","rule113","unc_rawben_rel_max >= 1.194 & utilities < 346 & cat_elig >= 1.5 & total_deductions < 673.6",4,"INCLUDE",1.451,0.093,0.4,28,10,18,0.357,0.022,0.047,5.36,0.067
+"3","rule108","shelter_expenses < 1586 & unc_rawben_rel_max >= 1.254 & utilities < 327",3,"INCLUDE",14.504,1.678,1.4,93,19,74,0.204,0.042,0.077,3.06,0.067
+"3","rule42","shelter_expenses < 1862 & unc_rawben_rel_max >= 1.194 & total_deductions < 386.5",3,"INCLUDE",25.285,2.63,1.1,75,15,60,0.2,0.033,0.052,3,0.067
+"4","rule56","rawben_rel_max >= 0.5547 & rawearn >= 1001 & rawgross < 1156 & rawben_rel_max < 0.7934",4,"INCLUDE",216.406,10.291,0.2,12,7,5,0.583,0.02,0.031,8.75,0.067
+"4","rule92","unc_rawben_rel_max >= 1.223 & utilities < 565.5 & utilities >= 514 & shelter_expenses >= 1159",4,"INCLUDE",109.332,5.615,0.3,14,8,6,0.571,0.023,0.034,8.57,0.067
+"4","rule29","shelter_expenses >= 1166 & rawgross < 1753 & rawgross >= 1102 & rawgross < 1158",4,"INCLUDE",154.257,8.979,0.3,18,8,10,0.444,0.023,0.039,6.67,0.067
+"4","rule22","shelter_expenses >= 1132 & rawgross < 206 & rawunearn >= 52.5",3,"INCLUDE",71.974,2.965,0.2,9,4,5,0.444,0.011,0.023,6.67,0.067
+"4","rule68","unc_rawben_rel_max >= 1.216 & utilities < 530.5 & utilities >= 514",3,"INCLUDE",113.801,5.412,0.2,12,5,7,0.417,0.014,0.025,6.25,0.067
+"4","rule101","rawben_rel_max >= 0.5779 & rawearn >= 1040 & rawearn < 1079",3,"INCLUDE",85.739,5.516,0.4,22,9,13,0.409,0.025,0.034,6.14,0.067
+"4","rule96","rawben_rel_max >= 0.5547 & rawearn >= 1001 & rawgross < 1154 & rawgross >= 1128",4,"INCLUDE",316.879,13.759,0.2,10,4,6,0.4,0.011,0.025,6,0.067
+"4","rule12","unc_rawben_rel_max >= 1.38",1,"INCLUDE",41.248,2.53,0.4,20,8,12,0.4,0.023,0.028,6,0.067
+"4","rule1","unc_rawben_rel_max >= 1.392",1,"INCLUDE",23.634,1.376,0.3,18,7,11,0.389,0.02,0.026,5.83,0.067
+"4","rule17","unc_rawben_rel_max >= 1.21 & rawunearn >= 78 & cat_elig >= 1.5",3,"INCLUDE",104.172,5.156,0.2,13,4,9,0.308,0.011,0.026,4.62,0.067
+"4","rule49","unc_rawben_rel_max >= 1.241 & unc_rawben_rel_max < 1.247",2,"INCLUDE",82.217,4.069,0.2,13,4,9,0.308,0.011,0.021,4.62,0.067
+"4","rule47","rawben_rel_max >= 0.5543 & rawearn >= 1001 & rawgross < 1154 & rawgross >= 1124",4,"INCLUDE",-109.469,5.622,0.3,14,4,10,0.286,0.011,0.025,4.29,0.067
+"4","rule40","shelter_expenses >= 1440 & shelter_expenses < 1450",2,"INCLUDE",119.954,5.462,0.2,11,3,8,0.273,0.008,0.017,4.09,0.067
+"4","rule46","rawben_rel_max >= 0.5543 & rawearn >= 1001 & rawgross < 1154 & rawgross < 1124",4,"INCLUDE",51.299,5.692,1.2,66,15,51,0.227,0.042,0.05,3.41,0.067
+"4","rule95","rawben_rel_max >= 0.5547 & rawearn >= 1001 & rawgross < 1154 & rawgross < 1128",4,"INCLUDE",-8.188,0.935,1.3,70,15,55,0.214,0.042,0.05,3.21,0.067
+"5+","rule24","shelter_expenses >= 1378 & rawgross < 2520 & rawearn >= 1416 & total_deductions < 914.8",4,"INCLUDE",293.651,12.051,0.2,10,6,4,0.6,0.014,0.033,8.35,0.072
+"5+","rule56","utilities >= 851 & months_since_cert_n >= 6.5 & total_deductions >= 994.3 & rawgross < 2300",4,"INCLUDE",124.079,6.234,0.3,15,8,7,0.533,0.019,0.039,7.42,0.072
+"5+","rule33","percent_abawd >= 0.45 & shelter_expenses >= 1099",2,"INCLUDE",178.261,6.544,0.1,8,4,4,0.5,0.009,0.023,6.96,0.072
+"5+","rule16","shelter_expenses >= 1631 & unc_rawben_rel_max >= 0.7779 & months_since_cert_n >= 6.5 & rawben_rel_max < 0.811",4,"INCLUDE",113.706,4.666,0.2,10,5,5,0.5,0.012,0.025,6.96,0.072
+"5+","rule68","rawben_rel_max >= 0.5971 & rawearn >= 1110 & shelter_expenses >= 2048 & rawben_rel_max >= 0.9243",4,"INCLUDE",96.249,4.502,0.2,13,5,8,0.385,0.012,0.028,5.35,0.072
+"5+","rule73","shelter_expenses >= 1311 & rawgross < 2212 & rawgross >= 2194",3,"INCLUDE",159.264,5.847,0.1,8,3,5,0.375,0.007,0.022,5.22,0.072
+"5+","rule1","percent_abawd >= 0.6333",1,"INCLUDE",26.78,0.983,0.1,8,3,5,0.375,0.007,0.015,5.22,0.072
+"5+","rule31","shelter_expenses >= 1634 & rawben_rel_max >= 0.834 & rawben_rel_max < 0.9574 & rawben_rel_max >= 0.9271",4,"INCLUDE",113.403,7.201,0.4,24,8,16,0.333,0.019,0.043,4.64,0.072
+"5+","rule48","shelter_expenses >= 1370 & rawgross < 2214 & rawgross < 2188 & percent_abawd >= 0.3667",4,"INCLUDE",26.921,1.21,0.2,12,4,8,0.333,0.009,0.023,4.64,0.072
+"5+","rule40","shelter_expenses >= 1396 & rawben_rel_max >= 0.8024 & rawben_rel_max < 0.9545 & months_since_cert_n >= 7.5",4,"INCLUDE",70.598,6.769,0.9,55,18,37,0.327,0.042,0.074,4.55,0.072
+"5+","rule54","utilities >= 851 & months_since_cert_n >= 6.5 & total_deductions >= 994.3",3,"INCLUDE",31.243,2.941,0.9,53,17,36,0.321,0.04,0.055,4.46,0.072
+"5+","rule61","rawben_rel_max >= 0.5997 & shelter_expenses >= 1631 & shelter_expenses < 1638",3,"INCLUDE",12.241,0.573,0.2,13,4,9,0.308,0.009,0.022,4.28,0.072
+"5+","rule14","shelter_expenses >= 1631 & unc_rawben_rel_max >= 0.7779 & months_since_cert_n >= 6.5",3,"INCLUDE",5.925,0.778,1.8,104,24,80,0.231,0.056,0.092,3.21,0.072
+"5+","rule29","shelter_expenses >= 1634 & rawben_rel_max >= 0.834 & rawben_rel_max < 0.9574",3,"INCLUDE",8.328,1.197,2.1,125,27,98,0.216,0.063,0.106,3.01,0.072
