@@ -94,18 +94,21 @@ mean(abs(mydata$FSSLTDED - mydata$SHELDED) <= 1, na.rm = TRUE) * 100 # 92.36%
 # Load other dataset with the number of dropped observations
 exclusions <- read.csv(paste0(folder, "additional_data/snap_qc_exclusion_all_years.csv"))
 
-# Get state/year/month combos where ineligible_units (exclusions) > 1
-ineligible_combos <- exclusions[exclusions$ineligible_units > 1, 
-                                c("state", "calendar_year", "month_num")]
-mydata <- mydata %>%
-  anti_join(ineligible_combos,
-            by = c("state_name" = "state",
-                   "year" = "calendar_year",
-                   "month" = "month_num"))
-nrow(mydata) # 141977
+## If you want to be very careful, you could exclude state-months where there are more than 1 or even 0 cases not included
+## this drops a lot of state-months and likely a lot of useful signal for most purposes, so it's commented out by default. 
+# # Get state/year/month combos where ineligible_units (exclusions) > 1
+# ineligible_combos <- exclusions[exclusions$ineligible_units > 1, 
+#                                 c("state", "calendar_year", "month_num")]
+# mydata <- mydata %>%
+#   anti_join(ineligible_combos,
+#             by = c("state_name" = "state",
+#                    "year" = "calendar_year",
+#                    "month" = "month_num"))
+# nrow(mydata) # 141977
 
 # See how often states are reporting element2
 # We may want to drop certain states that only report one element
+
 mydata <- mydata %>%
   group_by(state_name) %>%
   mutate(pct_element2 = sum(!is.na(ELEMENT2) & !is.na(ELEMENT1)) / sum(!is.na(ELEMENT1))) %>%
@@ -119,10 +122,11 @@ mydata <- mydata %>%
 mydata <- mydata[!mydata$state_name %in% c("Alaska", "Hawaii", "Guam", "Virgin Islands"), ]
 nrow(mydata) # 135980
 
-# Drop all observations with second error elements 
+# If you wanted to be very careful, you could drop all observations with second error elements 
+## we lose even more signal from errors for most purposes so commenting out by default
 # (to focus on single error rows)
-mydata <- mydata[is.na(mydata$ELEMENT2), ]
-nrow(mydata) # 125307
+#mydata <- mydata[is.na(mydata$ELEMENT2), ]
+#nrow(mydata) # 125307
 
 # Drop all rows if we can't get the amterr to be close 
 # to the difference between fsben and rawben
@@ -816,9 +820,9 @@ cor.test(result$ratio, result$pct_element2)
 #write_sav(mydata, paste0(folder, "final.sav"))
 saveRDS(mydata, paste0(folder, "final.rds"))
 
-#df <- haven::read_sav("final.sav")
-df <- readRDS("final.rds")
-#some filtering and adding an overpayment error variable
+#df <- mydata
+#rm(mydata)
+df <- readRDS(paste0(folder, "final.rds"))
 
 #### variable cleaning / recoding ###
 names(df) <- tolower(names(df))
@@ -837,7 +841,7 @@ table(df$min_age, df$children_present)
 
 df <- df %>%
   mutate(
-    elderly_present = if_else(FSNELDER > 0, T, F))
+    elderly_present = if_else(fsnelder > 0, T, F))
 table(df$max_age, df$elderly_present)
 
 
@@ -907,6 +911,7 @@ reg_model_data <- reg_model_data %>%
          gross_by_hh_size =  rawgross / HH_size_n,
          shelter_expenses = rawrent + utilities,
          shelter_to_gross_ratio = (rawrent + utilities) / rawgross,
+         shelter_expenses_by_hh_size = shelter_expenses/ HH_size_n,
          medical_deductions_by_hh_size = medical_deductions / HH_size_n,
          elderly_disabled_i = fsnelder>0 | fsndis>0,
          total_deductions_by_hh_size = total_deductions / HH_size_n,
@@ -949,10 +954,6 @@ deduction_vars <- c(
   "HOMELESS_DED"  # Homeless household shelter deduction
 )
 
-
-# n_income_types: number of distinct income sources with a value > 0
-# n_deduction_types: number of distinct deductions with a value > 0
-
 reg_model_data <- reg_model_data %>%
   mutate(
     n_income_types = rowSums(
@@ -966,43 +967,11 @@ reg_model_data <- reg_model_data %>%
   )
 
 all_vars <- c(income_vars, deduction_vars)
-table(reg_model_data$n_deduction_types)
-table(reg_model_data$n_income_types)
 
 reg_model_data$count_divisible_by_100 <- rowSums(
   sapply(reg_model_data[, tolower(all_vars)], function(x) x > 0 & x %% 100 == 0),
   na.rm = TRUE
 )
-
-#Ben, this just FYI for the features I'm using in the trees:
-features <- c(
-  "cert_HH_size_FS_n",            # certified household size
-  "children_i",                   # children indicator
-  "elderly_disabled_i",           # combined indicator
-  "total_deductions_by_hh_size",        # deductions by HH size
-  "expedited_i",                  # expedited service
-  "cat_elig",                     # categorical eligibility
-  "rawben_rel_max",
-  "medical_deductions",
-  "shelter_expenses",
-  "utilities",
-  "married",
-  "shelter_to_gross_ratio",
-  "homeless",
-  "earned_by_hh_size",
-  "unearned_by_hh_size",
-  "gross_by_hh_size",
-  "lf_composition",
-  "percent_abawd",
-  "n_income_types",
-  "n_deduction_types",
-  "unc_rawben_rel_max",
-  "months_since_cert_n",
-  "count_divisible_by_100"
-)
-
-table(reg_model_data$action_type_c)
-table(reg_model_data$element)
 
 reg_model_data  <- reg_model_data  %>%
   mutate(has_earned_inc_error = !is.na(element) & tolower(element) %in% c(
