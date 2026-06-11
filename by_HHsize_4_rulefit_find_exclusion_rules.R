@@ -30,7 +30,6 @@ set.seed(111)
 #dataset to be cleaned up - here it's very generic - starting with national data for FY22-24
 flagged_cases <- reg_model_data %>% filter(fiscal_year>2019 & state=="Michigan")
 
-
 ## ── 0. Config ─────────────────────────────────────────────────────────────────
 
 # `flagged_cases` is expected in the environment: the agency's already-prioritized
@@ -96,9 +95,9 @@ out_dir <- "review_precision_rulefit"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 RF_PARAMS <- list(ntrees = 2500, maxdepth = 4L, type = "rules",
-                  learnrate = 0.005, use.grad = TRUE,
+                  learnrate = 0.01, use.grad = TRUE,
                   tree.unbiased     = FALSE,        
-                  verbose=T, randomForest=F, sampfrac=0.5)
+                  randomForest=F, sampfrac=0.5)
 
 # Lasso penalty for selecting rules. "lambda.1se" is sparse (fewer, sturdier
 # rules); "lambda.min" keeps more (use when 1se returns nothing). Each stratum

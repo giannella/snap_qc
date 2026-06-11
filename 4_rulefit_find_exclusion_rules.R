@@ -24,6 +24,8 @@ library(dplyr)
 
 set.seed(111)
 
+flagged_cases <- reg_model_data %>% filter(fiscal_year>2019 & state=="Michigan")
+
 ## ── 0. Config ─────────────────────────────────────────────────────────────────
 
 # `flagged_cases` is expected in the environment: the agency's already-prioritized
@@ -82,7 +84,10 @@ NET_EPS          <- 1        # smoothing so zero-cost rules score as "free" work
 out_dir <- "review_precision_rulefit"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
-RF_PARAMS <- list(ntrees = 5000, maxdepth = 3L, learnrate = 0.001, type = "rules")
+RF_PARAMS <- list(ntrees = 2500, maxdepth = 4L, type = "rules",
+                  learnrate = 0.01, use.grad = TRUE,
+                  tree.unbiased     = FALSE,        
+                  randomForest=F, sampfrac=0.5)
 
 # Lasso penalty for selecting rules. "lambda.1se" is sparse (fewer, sturdier
 # rules); "lambda.min" keeps more (use when 1se returns nothing). The script
@@ -247,7 +252,8 @@ fit <- pre(
   use.grad          = TRUE,
   removeduplicates  = TRUE,
   removecomplements = TRUE,
-  nfolds            = 5
+  nfolds            = 5,
+  sampfrac = RF_PARAMS$sampfrac
 )
 
 get_rules <- function(pp)
