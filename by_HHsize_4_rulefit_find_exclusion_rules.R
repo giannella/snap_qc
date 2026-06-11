@@ -27,6 +27,10 @@ library(dplyr)
 
 set.seed(111)
 
+#dataset to be cleaned up - here it's very generic - starting with national data for FY22-24
+flagged_cases <- reg_model_data %>% filter(fiscal_year>2019 & state=="Michigan")
+
+
 ## ── 0. Config ─────────────────────────────────────────────────────────────────
 
 # `flagged_cases` is expected in the environment: the agency's already-prioritized
@@ -38,7 +42,7 @@ features <- c(
   "cert_HH_size_FS_n",            # certified household size (the stratifier)
   "children_i",                   # children indicator
   "elderly_disabled_i",           # combined indicator
-  "total_deductions",        
+  "total_deductions",        # deductions by HH size
   "expedited_i",                  # expedited service
   "cat_elig",                     # categorical eligibility
   "rawben_rel_max",
@@ -91,7 +95,10 @@ NET_EPS          <- 1        # smoothing so zero-cost rules score as "free" work
 out_dir <- "review_precision_rulefit"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
-RF_PARAMS <- list(ntrees = 5000, maxdepth = 3L, learnrate = 0.001, type = "rules")
+RF_PARAMS <- list(ntrees = 2500, maxdepth = 4L, type = "rules",
+                  learnrate = 0.005, use.grad = TRUE,
+                  tree.unbiased     = FALSE,        
+                  verbose=T, randomForest=F, sampfrac=0.5)
 
 # Lasso penalty for selecting rules. "lambda.1se" is sparse (fewer, sturdier
 # rules); "lambda.min" keeps more (use when 1se returns nothing). Each stratum
@@ -122,12 +129,12 @@ exclusion_perf <- function(excl, is_error, err_dollars = NULL) {
   n_ret     <- N - n_excl
   total_err <- sum(is_error)
   base_prec <- total_err / N
-
+  
   errors_lost     <- sum(excl & is_error)
   clean_excluded  <- sum(excl & !is_error)
   errors_retained <- sum(!excl & is_error)
   ret_prec        <- if (n_ret > 0) errors_retained / n_ret else NA_real_
-
+  
   has_d <- !is.null(err_dollars) && any(!is.na(err_dollars))
   if (has_d) {
     ed <- err_dollars; ed[is.na(ed)] <- 0
@@ -141,7 +148,7 @@ exclusion_perf <- function(excl, is_error, err_dollars = NULL) {
   } else {
     dollars_lost <- base_density <- ret_density <- mean_d_excl <- dollar_recall <- NA_real_
   }
-
+  
   tibble(
     # workload (shared)
     n_excluded              = n_excl,
@@ -171,11 +178,11 @@ exclusion_perf <- function(excl, is_error, err_dollars = NULL) {
 # hh_size. Returns NULL tables for a stratum too small or with no selected rules.
 
 run_for_hh <- function(flagged_cases, hh_label) {
-
+  
   is_error <- eval(TARGET_IS_ERROR, envir = flagged_cases)
   is_error[is.na(is_error)] <- FALSE
   flagged_cases$.is_error <- is_error
-
+  
   if (!is.na(ERR_AMT_COL) && ERR_AMT_COL %in% names(flagged_cases)) {
     raw_amt <- flagged_cases[[ERR_AMT_COL]]; raw_amt[is.na(raw_amt)] <- 0
     err_dollars_all <- ifelse(is_error, abs(raw_amt), 0)
@@ -184,19 +191,19 @@ run_for_hh <- function(flagged_cases, hh_label) {
   }
   if (OBJECTIVE == "dollars" && all(is.na(err_dollars_all)))
     stop("OBJECTIVE = 'dollars' requires ERR_AMT_COL to be present in flagged_cases.")
-
+  
   base_prec <- mean(is_error)
   cat(sprintf("\n\n#################### HOUSEHOLD SIZE %s ####################\n", hh_label))
   cat(sprintf("  N flagged          : %d\n", nrow(flagged_cases)))
   cat(sprintf("  True errors        : %d (%.1f%%)\n", sum(is_error), 100 * base_prec))
   cat(sprintf("  Clean false-flags  : %d (%.1f%%)\n", sum(!is_error), 100 * (1 - base_prec)))
-
+  
   # predictors present and varying, with the stratifier removed
   pv <- setdiff(features, HH_SIZE_COL)
   pv <- pv[pv %in% names(flagged_cases)]
   pv <- pv[sapply(flagged_cases[pv], function(x)
     !all(is.na(x)) && length(unique(x[!is.na(x)])) > 1)]
-
+  
   # glmnet step needs complete cases on modelled columns
   model_cols <- c(".is_error", pv)
   complete   <- stats::complete.cases(flagged_cases[model_cols])
@@ -204,7 +211,7 @@ run_for_hh <- function(flagged_cases, hh_label) {
   md_dollars <- err_dollars_all[complete]
   cat(sprintf("  N (model)          : %d (dropped %d rows w/ NA in predictors)\n",
               nrow(model_data), sum(!complete)))
-
+  
   # {pre} needs numeric/factor inputs; coerce, drop unused levels and constants
   to_factor <- pv[vapply(model_data[pv],
                          function(x) is.character(x) || is.logical(x), logical(1))]
@@ -212,13 +219,13 @@ run_for_hh <- function(flagged_cases, hh_label) {
   model_data[pv] <- lapply(model_data[pv],
                            function(x) if (is.factor(x)) droplevels(x) else x)
   pv <- pv[vapply(model_data[pv], function(x) length(unique(x)) > 1, logical(1))]
-
+  
   empty <- list(rule_table = NULL, shortlist = NULL, net_path = NULL, ops = NULL)
   if (nrow(model_data) < 30 || length(pv) == 0) {
     cat("  too few rows or predictors; skipping this stratum\n")
     return(empty)
   }
-
+  
   if (OBJECTIVE == "dollars") {
     model_data$.target <- md_dollars
     fam <- "gaussian"
@@ -227,9 +234,9 @@ run_for_hh <- function(flagged_cases, hh_label) {
                                  levels = c("error", "clean"))
     fam <- "binomial"
   }
-
+  
   form <- as.formula(paste(".target ~", paste(pv, collapse = " + ")))
-
+  
   fit <- pre(
     formula           = form,
     data              = model_data[c(".target", pv)],
@@ -238,6 +245,7 @@ run_for_hh <- function(flagged_cases, hh_label) {
     maxdepth          = RF_PARAMS$maxdepth,
     learnrate         = RF_PARAMS$learnrate,
     type              = RF_PARAMS$type,
+    sampfrac = RF_PARAMS$sampfrac,
     verbose           = TRUE,
     tree.unbiased     = FALSE,
     use.grad          = TRUE,
@@ -245,11 +253,11 @@ run_for_hh <- function(flagged_cases, hh_label) {
     removecomplements = TRUE,
     nfolds            = 5
   )
-
+  
   get_rules <- function(pp)
     coef(fit, penalty.par.val = pp) %>%
     filter(rule != "(Intercept)", coefficient != 0)
-
+  
   penalty <- PENALTY
   rules0  <- get_rules(penalty)
   if (nrow(rules0) == 0 && penalty == "lambda.1se") {
@@ -261,12 +269,12 @@ run_for_hh <- function(flagged_cases, hh_label) {
     cat("  No rules at either penalty; skipping this stratum\n")
     return(empty)
   }
-
+  
   imp <- pre::importance(fit, penalty.par.val = penalty, plot = FALSE)$baseimps
   rules <- rules0 %>%
     left_join(select(imp, rule, imp), by = "rule") %>%
     rename(rule_id = rule, rule_text = description)
-
+  
   # Direction is decided empirically. counts: EXCLUDE if matched cases are cleaner
   # than the stratum. dollars: EXCLUDE if matched cases carry less $ per case.
   eval_one <- function(rd) {
@@ -282,7 +290,7 @@ run_for_hh <- function(flagged_cases, hh_label) {
     perf
   }
   rule_eval <- bind_rows(lapply(rules$rule_text, eval_one))
-
+  
   rule_table <- rules %>%
     bind_cols(rule_eval) %>%
     mutate(n_conditions = count_conditions(rule_text),
@@ -308,7 +316,7 @@ run_for_hh <- function(flagged_cases, hh_label) {
       dollar_recall_retained  = round(dollar_recall_retained, 3)
     ) %>%
     arrange(role, desc(workload_cut_pct))
-
+  
   if (OBJECTIVE == "dollars") {
     shortlist <- rule_table %>%
       filter(role == "EXCLUDE",
@@ -322,7 +330,7 @@ run_for_hh <- function(flagged_cases, hh_label) {
              workload_cut_pct / 100 >= MIN_WORKLOAD) %>%
       arrange(desc(clean_excluded))
   }
-
+  
   # Exclusion NET: greedily OR EXCLUDE-direction rules, reading off each floor.
   pool <- rule_table %>% filter(role == "EXCLUDE") %>% pull(rule)
   cat(sprintf("  EXCLUDE-direction candidate rules: %d\n", length(pool)))
@@ -334,7 +342,7 @@ run_for_hh <- function(flagged_cases, hh_label) {
     err_tot  <- sum(ie)
     N_m      <- nrow(model_data)
     flags    <- lapply(pool, flag_rule, data = model_data)
-
+    
     excluded <- rep(FALSE, N_m); remaining <- seq_along(pool)
     path <- list(); step <- 0
     repeat {
@@ -367,7 +375,7 @@ run_for_hh <- function(flagged_cases, hh_label) {
       mutate(across(c(workload_cut_pct, recall_retained_obj, dollar_recall_retained,
                       recall_retained), ~ round(.x, 4)),
              err_dollars_lost = round(err_dollars_lost, 0))
-
+    
     ops <- lapply(NET_FLOORS, function(fl) {
       ok <- net_path[net_path$recall_retained_obj >= fl, , drop = FALSE]
       if (nrow(ok) == 0) return(NULL)
@@ -379,7 +387,7 @@ run_for_hh <- function(flagged_cases, hh_label) {
              net = paste(net_path$rule_added[seq_len(pt$step)], collapse = "  OR  "))
     }) %>% bind_rows()
   }
-
+  
   list(rule_table = rule_table, shortlist = shortlist, net_path = net_path, ops = ops)
 }
 
@@ -396,18 +404,18 @@ ops_all        <- bind_rows(lapply(results, `[[`, "ops"))
 
 cat("\n\n================= ALL SELECTED RULES (by household size) =================\n")
 print(as.data.frame(rule_table_all))
-write.csv(rule_table_all, file.path(out_dir, "exclusion_rules_all.csv"), row.names = FALSE)
+write.csv(rule_table_all, file.path(out_dir, "exclusion_rules_by_hh_size_all.csv"), row.names = FALSE)
 
 cat("\n\n================= SHORTLIST (by household size) =================\n")
 print(as.data.frame(shortlist_all))
-write.csv(shortlist_all, file.path(out_dir, "exclusion_rules_shortlist.csv"), row.names = FALSE)
+write.csv(shortlist_all, file.path(out_dir, "exclusion_rules_by_hh_size_shortlist.csv"), row.names = FALSE)
 
-write.csv(net_path_all, file.path(out_dir, "net_frontier_path.csv"), row.names = FALSE)
+write.csv(net_path_all, file.path(out_dir, "exclusion_rules_by_hh_size_net_frontier_path.csv"), row.names = FALSE)
 
 cat("\n\n================= NET OPERATING POINTS (by household size) =================\n")
 print(as.data.frame(ops_all %>% select(hh_size, recall_floor, workload_cut_pct,
                                        n_excluded, recall_retained_obj, errors_lost, n_rules)))
-write.csv(ops_all, file.path(out_dir, "net_operating_points.csv"), row.names = FALSE)
+write.csv(ops_all, file.path(out_dir, "exclusion_rules_by_hh_size_net_operating_points.csv"), row.names = FALSE)
 
 cat("\n-- rules in each net (by household size) --\n")
 for (i in seq_len(nrow(ops_all)))
@@ -415,31 +423,4 @@ for (i in seq_len(nrow(ops_all)))
               ops_all$hh_size[i], ops_all$recall_floor[i], ops_all$workload_cut_pct[i],
               gsub("  OR  ", "\n    OR ", ops_all$net[i])))
 
-## ── 4. SINGLE VARIABLE EXCLUSION TUNING ───────────────────────────────────────
-# IF YOU WANT TO TUNE AN ENTIRE RULE, USE: 5_gridsearch_optimize_exclusion_rules.R
-# Function below is only for tuning a single-variable exclusion cutoff on a data
-# subset you supply (e.g. one household-size stratum).
-#
-#   data       : the flagged pile (must contain .is_error)
-#   var        : numeric predictor to sweep
-#   direction  : "<=" excludes LOW values, ">=" excludes HIGH values
 
-sweep_exclusion <- function(data, var, direction = c("<=", ">="),
-                            grid = NULL, n_grid = 25, err_dollars) {
-  direction <- match.arg(direction)
-  x  <- data[[var]]
-  ie <- data$.is_error
-  if (is.null(grid))
-    grid <- quantile(x, probs = seq(0.05, 0.95, length.out = n_grid), na.rm = TRUE)
-  one <- function(g) {
-    excl <- if (direction == "<=") x <= g else x >= g
-    excl[is.na(excl)] <- FALSE
-    cbind(cutoff = g, exclusion_perf(excl, ie, err_dollars))
-  }
-  out <- do.call(rbind, lapply(unname(grid), one))
-  as_tibble(out) %>%
-    transmute(variable = var, direction = direction, cutoff,
-              workload_cut_pct, recall_retained, retained_precision,
-              dollar_recall_retained, retained_dollar_density) %>%
-    mutate(across(where(is.numeric), ~ round(.x, 3)))
-}
