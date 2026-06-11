@@ -38,7 +38,7 @@ features <- c(
   "cert_HH_size_FS_n",            # certified household size (the stratifier)
   "children_i",                   # children indicator
   "elderly_disabled_i",           # combined indicator
-  "total_deductions",        # deductions by HH size
+  "total_deductions",        
   "expedited_i",                  # expedited service
   "cat_elig",                     # categorical eligibility
   "rawben_rel_max",
