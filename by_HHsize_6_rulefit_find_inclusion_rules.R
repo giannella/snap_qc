@@ -20,7 +20,7 @@ library(dplyr)
 set.seed(117)
 
 ## ── 0. Config ─────────────────────────────────────────────────────────────────
-reg_model_data$rawearn
+
 # `reg_model_data` here = the labelled universe of cases (true errors + clean).
 earned_income_df <- reg_model_data %>%
   filter(error_status %in% c("earned_overissuance", "no_error")) %>%
@@ -72,13 +72,13 @@ MIN_PRECISION <- 0.20    # a rule is "high precision" on its own if >= this
 # Each value is a MINIMUM RECALL the net must reach. Under OBJECTIVE = "dollars"
 # this is recall of TOTAL ERROR DOLLARS (error $ caught / total error $); under
 # "counts" it is recall of error cases. Set a single value to enforce one floor.
-NET_FLOORS    <- c(0.20, 0.30, .40)
+NET_FLOORS    <- c(0.20, 0.30, .40, .50)
 NET_EPS       <- 1       # one clean case; smooths the value-per-clean score
 
-out_dir <- "review_targeting_rulefit_full_data"
+out_dir <- "inclusion_rules"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
-PENALTY   <- "lambda.1se"   # falls back to lambda.min if 1se selects nothing
+PENALTY   <- "lambda.min"   # falls back to lambda.min if 1se selects nothing
 
 stopifnot(OBJECTIVE %in% c("counts", "dollars"))
 
@@ -115,6 +115,103 @@ inclusion_perf <- function(flag, is_error, err_dollars = NULL) {
     dollar_density_flagged = dollar_density, base_rate = base_rate
   )
 }
+
+ERROR_TAG <- paste(sort(setdiff(unique(as.character(focal_df$error_status)), "no_error")),
+                   collapse = "_")
+
+out_file <- function(stem) file.path(out_dir, sprintf("%s_%s.csv", ERROR_TAG, stem))
+
+.dir_of <- function(op) if (op %in% c("<", "<=")) "upper" else if (op %in% c(">", ">=")) "lower" else "eq"
+
+.parse_cond <- function(cond) {
+  cond <- trimws(cond)
+  m <- regmatches(cond, regexec("^(.*?)\\s*(>=|<=|==|>|<)\\s*(-?[0-9]*\\.?[0-9]+)\\s*$", cond))[[1]]
+  if (length(m) == 4)
+    list(type = "num", var = trimws(m[2]), op = m[3], dir = .dir_of(m[3]),
+         thr = as.numeric(m[4]), raw = cond)
+  else
+    list(type = "other", raw = cond)
+}
+.split_rule <- function(rule) lapply(strsplit(rule, " & ", fixed = TRUE)[[1]], .parse_cond)
+
+# (1) collapse repeated same-variable, same-direction bounds to the binding one
+simplify_rule <- function(rule) {
+  conds <- .split_rule(rule)
+  keep  <- rep(TRUE, length(conds))
+  num   <- which(vapply(conds, function(c) c$type == "num" && c$dir != "eq", logical(1)))
+  if (length(num) > 0) {
+    grp <- vapply(num, function(i) paste(conds[[i]]$var, conds[[i]]$dir), character(1))
+    for (g in unique(grp)) {
+      idx <- num[grp == g]
+      if (length(idx) < 2) next
+      dir    <- conds[[idx[1]]]$dir
+      thr    <- vapply(idx, function(i) conds[[i]]$thr, numeric(1))
+      strict <- vapply(idx, function(i) conds[[i]]$op %in% c("<", ">"), logical(1))
+      # binding bound: upper -> smallest threshold, lower -> largest (strict wins ties)
+      ord  <- if (dir == "upper") order(thr, !strict) else order(-thr, !strict)
+      keep[setdiff(idx, idx[ord[1]])] <- FALSE
+    }
+  }
+  raws <- vapply(conds, function(c) c$raw, character(1))
+  keep <- keep & !duplicated(raws)
+  paste(raws[keep], collapse = " & ")
+}
+
+# Structure of a rule for superset comparison: numeric slots keyed by var|op, plus
+# any non-numeric conditions. Two rules are comparable only if these match exactly.
+.rule_struct <- function(rule) {
+  conds <- .split_rule(rule)
+  num <- Filter(function(c) c$type == "num",   conds)
+  oth <- vapply(Filter(function(c) c$type == "other", conds), function(c) c$raw, character(1))
+  keys <- vapply(num, function(c) paste0(c$var, "|", c$op), character(1))
+  list(keys = keys,
+       thr = setNames(vapply(num, function(c) c$thr, numeric(1)), keys),
+       dir = setNames(vapply(num, function(c) c$dir, character(1)), keys),
+       sig = paste(c(sort(keys), sort(oth)), collapse = " ;; "))
+}
+
+# TRUE if rule `a` is a strict superset of `b` (looser-or-equal on every numeric
+# bound, strictly looser on at least one); identical structure is required.
+.is_superset <- function(a, b) {
+  if (a$sig != b$sig || length(a$keys) == 0) return(FALSE)
+  any_strict <- FALSE
+  for (k in a$keys) {
+    at <- a$thr[[k]]; bt <- b$thr[[k]]; d <- a$dir[[k]]
+    if (d == "upper") { if (at < bt) return(FALSE); if (at > bt) any_strict <- TRUE }
+    else if (d == "lower") { if (at > bt) return(FALSE); if (at < bt) any_strict <- TRUE }
+    else if (at != bt) return(FALSE)
+  }
+  any_strict
+}
+
+# (2) simplify each rule, drop exact duplicates, then drop superset rules.
+# `rules` must have a `rule_text` column; an `imp` column (if present) breaks
+# duplicate ties toward the higher-importance copy.
+tidy_rules <- function(rules) {
+  if (nrow(rules) == 0) return(rules)
+  rules$rule_text <- vapply(rules$rule_text, simplify_rule, character(1))
+  
+  imp_vec <- if ("imp" %in% names(rules)) rules$imp else rep(0, nrow(rules))
+  rules <- rules[order(-ifelse(is.na(imp_vec), -Inf, imp_vec)), , drop = FALSE]
+  rules <- rules[!duplicated(rules$rule_text), , drop = FALSE]
+  
+  structs <- lapply(rules$rule_text, .rule_struct)
+  sig  <- vapply(structs, function(s) s$sig, character(1))
+  drop <- rep(FALSE, nrow(rules))
+  for (g in unique(sig)) {
+    ix <- which(sig == g)
+    if (length(ix) < 2) next
+    for (a in ix) {
+      if (drop[a]) next
+      for (b in ix) {
+        if (a != b && .is_superset(structs[[a]], structs[[b]])) { drop[a] <- TRUE; break }
+      }
+    }
+  }
+  rules[!drop, , drop = FALSE]
+}
+
+
 
 ## ── 2. Per-stratum pipeline: prepare, fit, evaluate, build the net ────────────
 # Runs the whole analysis on one household-size subset and tags every output with
@@ -189,13 +286,13 @@ run_for_hh <- function(focal_df, hh_label) {
     formula           = form,
     data              = model_data[c(".target", pv)],
     family            = fam,
-    ntrees            = 10000,
+    ntrees            = 5000,
     maxdepth          = 4L,
-    learnrate         = 0.001,
+    learnrate         = 0.005,
     type              = "rules",
     use.grad          = T,
     tree.unbiased     = F,   # F is rpart, much faster than ctree, also seems to work better
-    sampfrac          = .5,
+    sampfrac          = .2,
     removeduplicates  = TRUE,
     removecomplements = TRUE,
     nfolds            = 5,
@@ -220,6 +317,11 @@ run_for_hh <- function(focal_df, hh_label) {
   rules <- rules0 %>% left_join(select(imp, rule, imp), by = "rule") %>%
     rename(rule_id = rule, rule_text = description)
   
+  n_before <- nrow(rules)
+          rules <- tidy_rules(rules)
+          cat(sprintf("  rules after tidy (drop repeated bounds / supersets): %d of %d\n",
+                      nrow(rules), n_before))
+
   eval_one <- function(rd) {
     flag <- flag_rule(rd, model_data)
     perf <- inclusion_perf(flag, ie, md_dollars)
@@ -307,25 +409,17 @@ groups  <- hh_group_of(focal_df[[HH_SIZE_COL]])
 results <- lapply(HH_LEVELS, function(lab)
   run_for_hh(focal_df[!is.na(groups) & groups == lab, , drop = FALSE], lab))
 
+rule_table_all <- tidy_rules(rule_table_all)
+
 rule_table_all <- bind_rows(lapply(results, `[[`, "rule_table"))
 shortlist_all  <- bind_rows(lapply(results, `[[`, "shortlist"))
 net_path_all   <- bind_rows(lapply(results, `[[`, "net_path"))
 ops_all        <- bind_rows(lapply(results, `[[`, "ops"))
 
-cat("\n\n================= ALL SELECTED RULES (by household size) =================\n")
-print(as.data.frame(rule_table_all))
-write.csv(rule_table_all, file.path(out_dir, "by_HHsize_inclusion_rules_all.csv"), row.names = FALSE)
-
-cat("\n\n================= HIGH-PRECISION RULES (by household size) =================\n")
-print(as.data.frame(shortlist_all))
-write.csv(shortlist_all, file.path(out_dir, "by_HHsize_inclusion_rules_highprecision.csv"), row.names = FALSE)
-
-write.csv(net_path_all, file.path(out_dir, "by_HHsize_net_frontier_path.csv"), row.names = FALSE)
-
-cat("\n\n================= NET OPERATING POINTS (by household size) =================\n")
-print(as.data.frame(ops_all %>% select(hh_size, recall_floor, precision, recall_obj,
-                                       n_flagged, workload_pct, errors_caught, n_rules)))
-write.csv(ops_all, file.path(out_dir, "HHsize_net_operating_points.csv"), row.names = FALSE)
+write.csv(rule_table_all, out_file("by_HHsize_inclusion_rules_all"),          row.names = FALSE)
+write.csv(shortlist_all,  out_file("by_HHsize_inclusion_rules_highprecision"), row.names = FALSE)
+write.csv(net_path_all,   out_file("by_HHsize_net_frontier_path"),            row.names = FALSE)
+write.csv(ops_all,        out_file("by_HHsize_net_operating_points"),            row.names = FALSE)
 
 cat("\n-- rules in each net (by household size) --\n")
 for (i in seq_len(nrow(ops_all)))

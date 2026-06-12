@@ -22,6 +22,8 @@ library(dplyr)
 ## ── 0. Config ─────────────────────────────────────────────────────────────────
 
 # `flagged_cases` expected in the environment. 
+#or use:
+#flagged_cases <- reg_model_data %>% filter(fiscal_year>2019 & state=="")
 
 TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold != 0)
 ERR_AMT_COL     <- "total_error_amount"

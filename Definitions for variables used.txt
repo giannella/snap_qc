@@ -1,0 +1,113 @@
+# Describes the variables used in scripts in this repo
+# Many thanks to Jesse Shaw for putting this together and sharing it back
+# See source documentation for public SNAP QC data: https://snapqcdata.net/sites/default/files/2026-05/FY-2024-Tech-Doc.pdf
+
+model features:
+
+    cert_HH_size_FS_n          # sourced from: rawusize                                   # certified household size / reported unit size for case (raw variable)
+    children_i                 # sourced from: children_present
+                                               if_else(fsnkid > 0, T, F)                  # T/F indicator for whether the case contains children.
+                                                                                            Per FNS: fsnkid = Number of children in unit
+    elderly_disabled_i         # sourced from: fsnelder>0 | fsndis>0                      # T/F indicator for whether the case contains elders or disabled members.
+                                                                                            Per FNS: fsnelder = Number of elderly individuals in unit
+                                                                                                     fsndis = Number of individuals ages 59 and younger with a disability in unit
+    deductions_by_hh_size      # sourced from: Sums several deductions variables and divides by household size (uses reconstructed raw values where possible):
+                                               raw_total_deductions <- rawdepded + rawcsded + rawsltded + rawmedded + rawernded
+                                               total_deductions <- total_deductions
+                                               total_deductions / HH_size_n               # deductions by HH size
+                                               					          # Corresponding corrected (not reconstructed raw) variables from the QC Tech Manual below
+                                                                                          # Per FNS: FSDEPDED = Reported dependent care deduction
+                                                                                                     FSCSDED = Child support payment deduction
+                                                                                                     FSSLTDED = Calculated excess shelter expense deduction
+                                                                                                     FSMEDDED = Calculated medical expense deduction
+                                                                                                     FSERNDED = Calculated earned income deduction
+    expedited_i                # sourced from: expedser<3                                 # expedited service / 1 and 2 are for expedited, 2 is for not timely; 3 means not expedited
+    cat_elig                   # sourced from: cat_elig                                   # categorical eligibility
+                                                                                            Per FNS: CAT_ELIG = Indicator of categorical eligibility status
+                                                                                                     0 = Unit not categorically eligible for benefits
+                                                                                                     1 = Unit reported as eligible through traditional categorical eligibility conferred through SSI, TANF cash assistance, or general assistance and therefore not subject to SNAP income or asset tests; unit subject to State-determined income and/or asset limit on cash public assistance
+                                                                                                     2 = Unit reported as categorically eligible (including BBCE (Broad Based Categorical Eligibility)) conferred through any noncash or in-kind TANF/Maintenance of Effort (MOE) benefit and therefore not subject to SNAP income or asset tests; unit subject to State-determined income and/or asset limit on noncash TANF-funded benefit used to confer categorical eligibility
+                                                                                                     3 = Unit recoded as categorically eligible after being identified as pure cash public assistance or as meeting State-specified criteria for BBCE and therefore not subject to SNAP income or asset tests
+    rawben_rel_max             # sourced from: raw_benefit_amount / maximum_benefit_for_HH_size
+                                                                                          # ratio of benefit amount to the max allowable benefit
+    medical_deductions         # sourced from: rawmedded                                  # Per FNS: FSMEDDED = Calculated medical expense deduction. Calculated as FSMEDDED = MAX(0, FSMEDEXP)
+                                                                                                     FSMEDEXP = Reported medical expenses
+    shelter_expenses           # sourced from: rawrent + utilities                        # Per FNS: RENT = Rent/mortgage amount
+    utilities                  # sourced from: rawutil                                    # Per FNS: UTIL = Utility amount
+    married                    # sourced from: married = as.integer(if_any(rel1:rel16, ~ .x == 2))
+                                               married[is.na(df$married)] <- 0            # fill in 1's for true, 0's for false, then fill remaining missing values to 0
+                                                                                          # Per FNS: REL1 to REL18 = Relationship to head of household
+                                                                                                     1 = Head of household
+                                                                                                     2 = Spouse
+                                                                                                     3 = Parent
+                                                                                                     4 = Daughter, stepdaughter, son, or stepson
+                                                                                                     5 = Other related person (brother, sister, niece, nephew, grandchild, great-grandchild, cousin)
+                                                                                                     6 = Foster child
+                                                                                                     7 = Unrelated person
+    shelter_to_gross_ratio     # sourced from: rawgross = rawgrinc
+                                               shelter_to_gross_ratio = (rawrent + utilities) / rawgross
+                                                                                          # ratio of shelter expenses to gross income
+                                                                                          # Per FNS: FSGRINC = Final gross countable unit income
+    homeless                   # sourced from: as.factor(homeded!=1)                      # fill in 1's to FALSE, everything else to TRUE)
+                                                                                          # Per FNS: HOMEDED = Indicator of homelessness
+                                                                                                     1 = Not homeless
+                                                                                                     2 = Homeless, not receiving standard homeless shelter deduction
+                                                                                                     3 = Homeless, receiving standard homeless shelter deduction
+                                                                                                     4 = Homeless, applying actual expenses toward excess shelter expense deduction
+    earned_by_hh_size          # sourced from: rawearn / HH_size_n                        # ratio of earned income to household size.
+    unearned_by_hh_size        # sourced from: rawunearn / HH_size_n                      # ratio of unearned income to household size.
+    gross_by_hh_size           # sourced from: rawgross / HH_size_n                       # ratio of gross income to household size.
+    lf_composition             # sourced from: min_age = do.call(pmin, c(across(num_range("age", 1:18)), na.rm = TRUE))
+                                               max_age = do.call(pmax, c(across(num_range("age", 1:18)), na.rm = TRUE))
+                                               lf_composition = if_else(min_age > 17 & max_age < 60, "all working age", if_else(max_age < 18 | min_age > 59, "no working age", "mixed ages"))
+                                                                                          # if all hh member ages between 18 and 59, set to "all working age", if all outside of that range then set to "no working age", else set to "mixed ages"
+                                                                                          # Per FNS: AGE1 to AGE 18 = Age (person-level characteristic)
+    percent_abawd              # sourced from: count_abawd = rowSums(across(num_range("abwdst", 1:18), ~ .x %in% 2:5))
+                                               pct_abawd = count_abawd / certhhsz
+                                               percent_abawd = pct_abawd                  # count all abwdst columns that have any value between 2 and 5, and divide my cert hh size to get a pct of hh members that are abawds
+                                                                                          # PER FNS: ABWDST1 to ABWDST18 = ABAWD status (person-level characteristic)
+                                                                                                     CERTHHSZ = Certified unit size
+    n_income_types             # sourced from: rowSums(across(all_of(tolower(income_vars)), ~ !is.na(.) & . > 0), na.rm = TRUE)
+                                                                                          # count of all income types that aren't blank or have values greater than 0
+											  # NOTE: this variable captures CORRECTED data, meaning that it will be misleading for predictive models (e.g., a source of income missed in the case and found in QC will be reflected in these variables).
+                                               note:    income_vars <- c( "FSWAGES",      # Wages and salaries
+                                                                          "FSSLFEMP",     # Self-employment income
+                                                                          "FSOTHERN",     # Other earned income
+                                                                          "FSSSI",        # SSI benefits
+                                                                          "FSTANF",       # TANF payments
+                                                                          "FSGA",         # General Assistance benefits
+                                                                          "FSSOCSEC",     # Social Security income
+                                                                          "FSUNEMP",      # Unemployment compensation
+                                                                          "FSVET",        # Veterans' benefits
+                                                                          "FSWCOMP",      # Workers' compensation
+                                                                          "FSEDLOAN",     # Educational grants and loans
+                                                                          "FSCSUPRT",     # Child support payment income received
+                                                                          "FSDEEM",       # Deemed income
+                                                                          "FSCONT",       # Contributions / charity / in-kind
+                                                                          "FSOTHGOV",     # Other government benefits
+                                                                          "FSOTHUN",      # Other unearned income
+                                                                          "FSDIVER",      # State diversion payments
+                                                                          "FSWGESUP",     # Wage supplementation income
+                                                                          "FSENERGY",     # Energy assistance income
+                                                                          "FSEITC",       # Earned income tax credit
+                                                                          "FSFOSTER"      # Foster care income
+                                                                        )
+    n_deduction_types          # sourced from: rowSums(across(all_of(tolower(deduction_vars)), ~ !is.na(.) & . > 0), na.rm = TRUE)
+                                                                                          # count of all deduction types that aren't blank or have values greater than 0
+                                               note: deduction_vars <- c( "FSSTDDED",     # Standard deduction
+                                                                          "FSERNDED",     # Earned income deduction
+                                                                          "FSDEPDED",     # Dependent care deduction
+                                                                          "FSSLTDED",     # Excess shelter expense deduction
+                                                                          "FSMEDDED",     # Medical expense deduction
+                                                                          "FSCSDED",      # Child support payment deduction
+                                                                          "HOMELESS_DED"  # Homeless household shelter deduction
+                                                                        )
+    unc_rawben_rel_max         # sourced from: mydata$rawben_uncapped / mydata$rawbenmax  # See here for explainer: https://drive.google.com/file/d/14VplWdvlzZrHv5vDYZbyzOYbg0qXVJea/view?usp=sharing
+    months_since_cert_n        # sourced from: lastcert                                   # Per FNS: LASTCERT = Months since last SNAP certification
+    count_divisible_by_100     # sourced from: all_vars <- c(income_vars, deduction_vars)
+                                               count_divisible_by_100 = rowSums(sapply(reg_model_data[, tolower(all_vars)], function(x) x > 0 & x %% 100 == 0), na.rm = TRUE)
+                                                                                          # get the count of all income and deduction columns that have values that are perfectly divisible by 100
+
+model label:
+
+    total_error_amount         # sourced from: amterr                                     # Per FNS: AMTERR = Amount of benefit in error

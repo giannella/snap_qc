@@ -22,19 +22,40 @@ library(dplyr)
 
 # `internal_data` expected in the environment (the universe of cases to search).
 # Either pass an already state-filtered frame, or set STATE / STATE_COL below.
-STATE_COL <- "state"   # column identifying the state; ignored if STATE is NA
-STATE     <- "North Carolina"        # e.g. "NJ"; NA = use internal_data as provided, unfiltered
-internal_data <- reg_model_data
+state_data <- reg_model_data %>% filter(state %in% c("Virginia") & fiscal_year>2019)
 
-# Rule list written by script 6. Point this at the file you want to optimize.
-RULES_CSV <- file.path("review_targeting_rulefit_full_data",
-                       "rpart_by_HHsize_inclusion_rules_highprecision.csv")
+# Rule list(s) written by script 6. Point this at the file you want to optimize.
+#RULES_CSV <- file.path("inclusion_rules",
+#                       "by_HHsize_inclusion_rules_highprecision.csv")
+#if you just read in the csv, you may want to exclude rules that do not flag many cases as these do not indicate any overall pattern
+#rules_df <- read.csv(RULES_CSV, stringsAsFactors = FALSE, check.names = FALSE)
+
+#This is to combine all the rules into a single grid search in the state
+earned_overissuance_RULES_CSV <- read.csv(file.path("inclusion_rules",
+                       "earned_overissuance_by_HHsize_inclusion_rules_highprecision.csv")) %>% 
+  filter(n_flagged > 99) %>% mutate(flag_type="earned_overissuance")
+
+unearned_overissuance_RULES_CSV <- read.csv(file.path("inclusion_rules",
+                       "unearned_overissuance_by_HHsize_inclusion_rules_highprecision.csv")) %>% 
+  filter(n_flagged > 99) %>% mutate(flag_type="unearned_overissuance")
+
+underissuance_RULES_CSV <- read.csv(file.path("inclusion_rules","underissuance_by_HHsize_inclusion_rules_highprecision.csv")) %>% 
+                                      filter(n_flagged > 99) %>% mutate(flag_type="underissuance")
+                                    
+rules_in <- bind_rows(earned_overissuance_RULES_CSV, unearned_overissuance_RULES_CSV, underissuance_RULES_CSV)
+rules_in <- subset(rules_in, n_conditions>1) 
+
+rules_in$rule_text <- rules_in$rule
+if (!"imp" %in% names(rules_in))
+  rules_in$imp <- if ("importance" %in% names(rules_in)) rules_in$importance else 0
+rules_df <- bind_rows(lapply(split(rules_in, rules_in$hh_size), tidy_rules))
+rules_df$rule <- rules_df$rule_text 
 
 TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold != 0)
 ERR_AMT_COL     <- "total_error_amount"
 OBJECTIVE       <- "dollars"     # recall basis: "dollars" or "counts"
 RECALL_FLOOR    <- 0.02          # a tuned rule must still capture at least this share
-PRECISION_FLOOR <- 0.30          # DROP any rule whose optimized precision is below this
+PRECISION_FLOOR <- 0.20          # DROP any rule whose optimized precision is below this
 
 # Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2, 3, 4, 5+.
 HH_SIZE_COL <- "cert_HH_size_FS_n"
@@ -45,7 +66,7 @@ hh_group_of <- function(n) { g <- pmin(n, 5); ifelse(g == 5, "5+", as.character(
 GRID_LO_Q    <- 0.02
 GRID_HI_Q    <- 0.98
 MAX_GRID_PTS <- 20      # cap candidate thresholds per variable
-MAX_COMBOS   <- 12000   # cap total combinations per rule (grids are thinned to fit)
+MAX_COMBOS   <- 6000   # cap total combinations per rule (grids are thinned to fit)
 
 # Rounding STEP per variable. The grid is multiples of `step`; the rule's original
 # threshold is always added so the search never does worse than the rule as written.
@@ -257,18 +278,13 @@ optimize_rule <- function(rule_string, rule_id, hh_label, dat, is_error, err_dol
 
 ## ── 3. Load the state's data and the rule list ────────────────────────────────
 
-state_data <- internal_data
-if (!is.na(STATE)) {
-  if (!STATE_COL %in% names(state_data))
-    stop("STATE is set but STATE_COL '", STATE_COL, "' was not found in internal_data.")
-  state_data <- state_data[!is.na(state_data[[STATE_COL]]) & state_data[[STATE_COL]] == STATE, ,
-                           drop = FALSE]
-}
+
 stopifnot(HH_SIZE_COL %in% names(state_data))
 if (OBJECTIVE == "dollars" && !(ERR_AMT_COL %in% names(state_data)))
   stop("OBJECTIVE = 'dollars' requires ERR_AMT_COL '", ERR_AMT_COL, "' in the data.")
 
-rules_df <- read.csv(RULES_CSV, stringsAsFactors = FALSE, check.names = FALSE)
+
+
 stopifnot(all(c("hh_size", "rule") %in% names(rules_df)))
 rules_df$hh_size <- as.character(rules_df$hh_size)
 if (!"rule_id" %in% names(rules_df))   rules_df$rule_id   <- paste0("rule", seq_len(nrow(rules_df)))
@@ -326,9 +342,15 @@ if (nrow(optimized) > 0) {
   print(as.data.frame(optimized[, show_cols]))
 }
 
+optimized$rule_text <- optimized$optimized_rule
+if (!"imp" %in% names(optimized))
+  optimized$imp <- if ("importance" %in% names(optimized)) optimized$importance else 0
+rules_out <- bind_rows(lapply(split(optimized, optimized$hh_size), tidy_rules))
+rules_out$rule <- rules_out$rule_text 
+
 fname <- sprintf("optimized_highprecision_rules_%s.csv",
                  if (is.na(STATE)) "all_data" else STATE)
-write.csv(optimized, file.path(out_dir, fname), row.names = FALSE)
+write.csv(rules_out, file.path(out_dir, fname), row.names = FALSE)
 
 ## ── 6. Notes ──────────────────────────────────────────────────────────────────
 # - precision            : optimized precision on the state's data (this run).

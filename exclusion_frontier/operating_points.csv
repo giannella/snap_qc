@@ -1,6 +1,0 @@
-"recall_floor","workload_cut_pct","n_excluded","dollar_recall_retained","err_dollars_lost","errors_lost","n_rules","rules"
-1,4.5,24,1,0,0,3,"months_since_cert_n >= 12  |  count_divisible_by_100 >= 2  |  lf_composition == ""no working age"""
-0.99,7.9,42,0.9962,66,1,4,"months_since_cert_n >= 12  |  count_divisible_by_100 >= 2  |  lf_composition == ""no working age""  |  n_deduction_types <= 1"
-0.98,12.8,68,0.9804,343,4,5,"months_since_cert_n >= 12  |  count_divisible_by_100 >= 2  |  lf_composition == ""no working age""  |  n_deduction_types <= 1  |  expedited_i == ""TRUE"""
-0.95,13.9,74,0.9767,408,5,6,"months_since_cert_n >= 12  |  count_divisible_by_100 >= 2  |  lf_composition == ""no working age""  |  n_deduction_types <= 1  |  expedited_i == ""TRUE""  |  cert_HH_size_FS_n >= 9"
-0.9,25.4,135,0.9227,1354,15,8,"months_since_cert_n >= 12  |  count_divisible_by_100 >= 2  |  lf_composition == ""no working age""  |  n_deduction_types <= 1  |  expedited_i == ""TRUE""  |  cert_HH_size_FS_n >= 9  |  rawben_rel_max <= 0.262447  |  unearned_by_hh_size >= 434.125"
