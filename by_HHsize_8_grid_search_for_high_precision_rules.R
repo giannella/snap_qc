@@ -22,7 +22,7 @@ library(dplyr)
 
 # `internal_data` expected in the environment (the universe of cases to search).
 # Either pass an already state-filtered frame, or set STATE / STATE_COL below.
-state_data <- reg_model_data %>% filter(state %in% c("Virginia") & fiscal_year>2019)
+state_data <- reg_model_data %>% filter(state %in% c("Connecticut") & fiscal_year>2019)
 
 # Rule list(s) written by script 6. Point this at the file you want to optimize.
 #RULES_CSV <- file.path("inclusion_rules",
