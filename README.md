@@ -15,7 +15,7 @@ There are two main use cases. If you have your own internal data, you can go dir
 
 In both cases, the scripts expect a data frame in your R environment with one row per case, a column indicating whether the case is a true error, and whatever features you want to use as predictors. You can swap in your own internal data and your own feature list — just update the config section at the top of the script. The `features` vector and the `TARGET_IS_ERROR` expression are the main things to change. See [`Definitions for variables used.txt`](Definitions%20for%20variables%20used.txt) for documentation of the features used in the default setup.
 
-If you want to use national public QC data rather than internal data, see [What data is required?](#What data is required?) below. The national data can be useful for finding more specific patterns since the number of errors in any one state is limited. 
+If you want to use national public QC data rather than internal data, see [What_data_is_required?](#what-data-is-required) below. The national data can be useful for finding more specific patterns since the number of errors in any one state is limited. 
 
 Note that I recommend running all the models stratified by household size (e.g., one model for each household size: 1, 2, 3, 4, 5+), which is what I have in the main directory. The precision-recall curves are better across the board (see results in `compare_models_by_HHsize_vs_pooled/` folder and explore yourself using the `compare_combined_vs_by_hh_size_model_performance.R` script). If this is not an option for you or you have found better results in your state with pooling, see the `code_for_single_model_combined_HH_sizes folder`. 
 
