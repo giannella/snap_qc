@@ -7,7 +7,7 @@ Putting this out on my github with an Apache 2.0 license as an assurance that an
 
 ## Where to start
 
-There are two main use cases, and you can jump directly into either one with your own internal data — no need to run the data munging script or the visualization scripts first.
+There are two main use cases. If you have your own internal data, you can go directly to the corresponding sets of scripts (i.e., no need to run the data munging script or the visualization scripts first).
 
 **I have a pile of cases already flagged for review and want to cut it down** → go to the [EXCL_ scripts](#exclusion-rules-excl_-scripts).
 
@@ -15,48 +15,54 @@ There are two main use cases, and you can jump directly into either one with you
 
 In both cases, the scripts expect a data frame in your R environment with one row per case, a column indicating whether the case is a true error, and whatever features you want to use as predictors. You can swap in your own internal data and your own feature list — just update the config section at the top of the script. The `features` vector and the `TARGET_IS_ERROR` expression are the main things to change. See [`Definitions for variables used.txt`](Definitions%20for%20variables%20used.txt) for documentation of the features used in the default setup.
 
-If you want to use national public QC data rather than internal data, see [Getting data](#getting-data) below.
+If you want to use national public QC data rather than internal data, see [Getting data](#getting-data) below. The national data can be useful for finding more specific patterns since the number of errors in any one state is limited. 
+
+Note that I recommend running all the models stratified by household size (e.g., one model for each household size: 1, 2, 3, 4, 5+), which is what I have in the main directory. The precision-recall curves are better across the board (see results in `compare_models_by_HHsize_vs_pooled/` folder and explore yourself using the `compare_combined_vs_by_hh_size_model_performance.R` script). If this is not an option for you or you have found better results in your state with pooling, see the `code_for_single_model_combined_HH_sizes folder`. 
 
 ---
 
 ## Exclusion rules (EXCL_ scripts)
 
-You have a list of cases flagged for review. These scripts find simple rules that let you safely drop low-risk cases from that pile, leaving a more targeted set for reviewers.
+You have a list of cases flagged for review. These scripts help you find simple rules that let you drop low-risk cases from that pile, leaving a more targeted set for reviewers.
+
 
 1. **`EXCL_find_exclusion_rules_by_hh_size.R`** — runs RuleFit on your flagged cases, stratified by household size (1, 2, 3, 4, 5+), to find candidate exclusion rules. Outputs rule CSVs to `exclusion_rules/`. If your internal data is rich enough, you may be able to stop here and apply the rules directly.
 
-2. **`EXCL_optimize_single_exclusion_rule_by_hh_size_for_a_state.R`** — takes one rule from step 1 and grid-searches its numeric thresholds on a specific state's data, maximizing workload cut while retaining a floor of error dollars.
+2. **`EXCL_optimize_single_exclusion_rule_by_hh_size_for_a_state.R`** — takes one rule from step 1 and grid-searches its numeric thresholds on a specific state's data, maximizing workload cut while retaining a floor of error dollars. This is useful if you have idenfied a small number of rules of interest that you really want to get right. 
 
-3. **`EXCL_optimize_set_of_exclusion_rules_by_hh_size_for_a_state.R`** — same as step 2 but tunes the full exclusion shortlist at once.
+3. **`EXCL_optimize_set_of_exclusion_rules_by_hh_size_for_a_state.R`** — same as step 2 but optimizes the full exclusion shortlist at once. This is useful if you're taking rules from national data and adjusting them to your state. 
 
-The `code_for_single_model_combined_HH_sizes/` folder has pooled-model counterparts (not stratified by household size) if you prefer a single model across all sizes.
+Examples of exclusion rule outputs are in the `exclusion_rules/` folder.
+
 
 ---
 
 ## Inclusion rules (INCL_ scripts)
 
-You don't have a flagging system. These scripts find rules that identify which cases are most likely to have an error, so you can prioritize your review workload.
+These scripts find candidate prioritization rules (i.e., rules that flag cases more likely to have an error). The goal is to increase the yield of review time and you can set the particular strategy for that in the script (e.g., dollar recall with a minimum floor of precision). 
 
-1. **`INCL_find_inclusion_rules_multi_model_by_hh_size.R`** — runs RuleFit separately for each error type (earned overissuance, unearned overissuance, underissuance) and household size. Outputs rule CSVs to `inclusion_rules_by_hh_size/`. If you have a lot of internal labeled data, you may be done after this step.
+1. **`INCL_find_inclusion_rules_multi_model_by_hh_size.R`** — runs RuleFit separately by error type (configurable, but in the script, it's just based on error element and status from the QC data: earned overissuance, unearned overissuance, underissuance) and household size. Outputs rule CSVs to `inclusion_rules_by_hh_size/`. If you have a lot of internal labeled data, you may be done after this step.
 
-2. **`INCL_optimize_single_inclusion_rule_by_hh_size_for_a_state.R`** — takes one rule from step 1 and grid-searches its numeric thresholds for a specific state to maximize precision at a recall floor.
+2. **`INCL_optimize_single_inclusion_rule_by_hh_size_for_a_state.R`** — takes one rule from step 1 (or a rule from any source) and grid-searches its numeric thresholds for a specific state to maximize precision at a recall floor.
 
-3. **`INCL_optimize_set_of_inclusion_rules_by_hh_size_for_a_state.R`** — same as step 2 but tunes all high-precision rules for a state at once.
+3. **`INCL_optimize_set_of_inclusion_rules_by_hh_size_for_a_state.R`** — same as step 2 but tunes all high-precision rules for a state at once. The results will change quite a bit as you modify the OBJECTIVE (dollars vs. counts), OPTIMIZE_FOR (precision vs recall), MIN_FLAGGED (cases flagged by each rule), PRECISION_TARGET (floor for precision). 
 
 The end goal is a state-specific rule list like:
 `inclusion_rules_by_hh_size/final_by_HHsize_inclusion_rules_highprecision.csv`
 
-The `code_for_single_model_combined_HH_sizes/` folder has pooled-model counterparts. The stratified approach consistently outperforms the pooled model on precision-recall.
+Examples of state rule outputs are in the `inclusion_rules_by_hh_size/` folder. 
 
 ---
 
-## Getting data
+## What data is required?
 
-**If you have internal state data**, you can use it directly — just load it into R and point the scripts at it. You don't need the public QC data.
+You don't have to use the national QC data to use these scripts — it's easy to adjust the `features` list and `TARGET_IS_ERROR` expression to work with your own internal data and the variables you'd like to use.
 
-**If you want to use national public data**, download the SNAP QC public-use files from [snapqcdata.net](https://snapqcdata.net) and run `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` to build the `reg_model_data` frame. This is useful for identifying general national patterns or for training rules before tuning them on state-specific data.
+If you want to mine patterns from the national data, it is included in this repo in the `qc_data/` folder, so you don't need to download it separately. The source is [snapqcdata.net](https://snapqcdata.net). The main reason to use it to get started is that there is a lot more error signal. You can train on a much larger number of error cases and identify more detailed patterns than a single state's data might support. The examples in this repo reflect me mining rules from national data then tuning them to states using the `INCL_optimize_*` or `EXCL_optimize_*` scripts.
 
-**If you want to explore patterns visually before rule mining**, `visualize_national_regression_trees_by_type_of_error.R` and `visualize_state_regression_trees_predicting_dollar_amounts.R` plot regression trees by error type and state. See the `state_income_error_trees_any_timeper` folder for examples.
+If you want to use the national data, you'll see the `reg_model_data` data frame in the scripts. Recreate is using `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R`. 
+
+**If you want to explore patterns visually before rule mining**, `visualize_national_regression_trees_by_type_of_error.R` and `visualize_state_regression_trees_predicting_dollar_amounts.R` plot regression trees by error type and state. See the `state_income_error_trees_any_timeper` folder for examples. This is optional.
 
 ---
 
