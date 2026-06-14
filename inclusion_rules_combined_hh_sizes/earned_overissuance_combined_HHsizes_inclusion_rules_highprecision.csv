@@ -1,0 +1,17 @@
+"rule_id","rule","n_conditions","role","coefficient","importance","workload_pct","n_flagged","errors_caught","clean_flagged","precision","recall","dollar_recall","lift","base_rate"
+"rule192","shelter_expenses >= 1729 & gross_by_hh_size < 443.7 & months_since_cert_n >= 7.5 & earned_by_hh_size >= 110.7",4,"INCLUDE",14.179,0.38,0.1,71,19,52,0.268,0.007,0.013,10.35,0.026
+"rule319","cert_HH_size_FS_n >= 3.5 & utilities >= 978.5 & months_since_cert_n >= 6.5 & rawben_rel_max >= 0.7628",4,"INCLUDE",21.318,0.499,0.1,54,14,40,0.259,0.005,0.009,10.03,0.026
+"rule58","cert_HH_size_FS_n >= 1.5 & unc_rawben_rel_max >= 1.662 & unc_rawben_rel_max < 1.908",3,"INCLUDE",45.247,1.179,0.1,67,17,50,0.254,0.007,0.009,9.81,0.026
+"rule368","shelter_expenses >= 2370 & months_since_cert_n >= 3.5 & utilities >= 916.5 & unearned_by_hh_size < 391.5",4,"INCLUDE",16.97,0.468,0.1,75,19,56,0.253,0.007,0.011,9.8,0.026
+"rule86","unearned_by_hh_size < 431.8 & unc_rawben_rel_max < -0.04982 & shelter_expenses >= 1632",3,"INCLUDE",34.662,0.78,0.1,50,12,38,0.24,0.005,0.007,9.28,0.026
+"rule396","earned_by_hh_size >= 42.83 & unc_rawben_rel_max < 0.9919 & unc_rawben_rel_max >= 0.8803 & shelter_expenses >= 1916",4,"INCLUDE",15.298,0.489,0.1,101,24,77,0.238,0.009,0.014,9.19,0.026
+"rule317","cert_HH_size_FS_n >= 3.5 & utilities >= 978.5 & months_since_cert_n >= 6.5",3,"INCLUDE",1.589,0.054,0.1,113,26,87,0.23,0.01,0.012,8.9,0.026
+"rule198","shelter_expenses >= 1976 & unc_rawben_rel_max < -0.01335",2,"INCLUDE",34.173,0.792,0.1,53,12,41,0.226,0.005,0.007,8.76,0.026
+"rule95","cert_HH_size_FS_n >= 2.5 & unc_rawben_rel_max >= 1.428",2,"INCLUDE",7.717,0.195,0.1,63,14,49,0.222,0.005,0.006,8.6,0.026
+"rule119","shelter_expenses >= 1528 & gross_by_hh_size < 445.1 & rawben_rel_max < 0.9778 & months_since_cert_n >= 7.5",4,"INCLUDE",1.547,0.055,0.1,127,28,99,0.22,0.011,0.019,8.53,0.026
+"rule429","cert_HH_size_FS_n >= 4.5 & rawben_rel_max >= 0.6936 & gross_by_hh_size >= 352.5 & months_since_cert_n >= 7.5",4,"INCLUDE",19.771,0.541,0.1,74,16,58,0.216,0.006,0.011,8.36,0.026
+"rule534","shelter_expenses >= 2870 & utilities >= 855",2,"INCLUDE",19.203,0.526,0.1,74,16,58,0.216,0.006,0.009,8.36,0.026
+"rule270","earned_by_hh_size >= 101.1 & months_since_cert_n >= 6.5 & shelter_expenses >= 2128 & rawben_rel_max >= 0.7608",4,"INCLUDE",14.015,0.348,0.1,61,13,48,0.213,0.005,0.008,8.24,0.026
+"rule531","cert_HH_size_FS_n >= 5.5 & utilities >= 903.5 & months_since_cert_n >= 3.5",3,"INCLUDE",10.361,0.249,0.1,57,12,45,0.211,0.005,0.008,8.14,0.026
+"rule516","earned_by_hh_size >= 50.38 & unc_rawben_rel_max < 0.9707 & gross_by_hh_size < 366.8 & shelter_expenses >= 1622",4,"INCLUDE",16.125,0.681,0.2,176,37,139,0.21,0.015,0.025,8.13,0.026
+"rule497","shelter_expenses >= 1816 & shelter_expenses < 1836 & total_deductions_by_hh_size < 228.6",3,"INCLUDE",2.763,0.062,0.1,50,10,40,0.2,0.004,0.008,7.74,0.026

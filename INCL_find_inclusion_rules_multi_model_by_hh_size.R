@@ -9,6 +9,9 @@
 # The model is fit separately within each household-size stratum (1, 2, 3, 4, 5+);
 # every output row is tagged with its hh_size.
 #
+# Script loops through types of errors, builds rules for each type, combines them into a single rule list
+# If you do not have types of errors, just delete the loop or comment out one of the data frame
+#
 # RuleFit ({pre}) mines rules with 2-5 variables each (user defined by maxdepth). We keep
 # the INCLUDE-direction rules and greedily combine them using OR # into a "net" of 
 # rules that most precisely capture cases up to some level of recall (called a "floor"). 
@@ -75,7 +78,7 @@ MIN_PRECISION <- 0.20    # a rule is "high precision" on its own if >= this
 NET_FLOORS    <- c(0.20, 0.30, .40, .50)
 NET_EPS       <- 1       # one clean case; smooths the value-per-clean score
 
-out_dir <- "inclusion_rules"
+out_dir <- "inclusion_rules_by_hh_size"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 PENALTY   <- "lambda.min"   # falls back to lambda.min if 1se selects nothing
@@ -286,13 +289,13 @@ run_for_hh <- function(focal_df, hh_label) {
     formula           = form,
     data              = model_data[c(".target", pv)],
     family            = fam,
-    ntrees            = 5000,
+    ntrees            = 2500,
     maxdepth          = 4L,
     learnrate         = 0.005,
     type              = "rules",
     use.grad          = T,
     tree.unbiased     = F,   # F is rpart, much faster than ctree, also seems to work better
-    sampfrac          = .2,
+    sampfrac          = .15, #lower creates more rules
     removeduplicates  = TRUE,
     removecomplements = TRUE,
     nfolds            = 5,
@@ -405,24 +408,75 @@ run_for_hh <- function(focal_df, hh_label) {
 
 ## ── 3. Run every household-size stratum and combine ───────────────────────────
  
-groups  <- hh_group_of(focal_df[[HH_SIZE_COL]])
-results <- lapply(HH_LEVELS, function(lab)
-  run_for_hh(focal_df[!is.na(groups) & groups == lab, , drop = FALSE], lab))
+out_file <- function(stem) file.path(out_dir, sprintf("%s_%s.csv", ERROR_TAG, stem))
 
-rule_table_all <- tidy_rules(rule_table_all)
+#if you have separate data frames for separate errors, include them below:
+df_list <- list(
+  earned_income   = earned_income_df,
+  unearned_income = unearned_income_df,
+  underissuance   = underissuance_df
+)
 
-rule_table_all <- bind_rows(lapply(results, `[[`, "rule_table"))
-shortlist_all  <- bind_rows(lapply(results, `[[`, "shortlist"))
-net_path_all   <- bind_rows(lapply(results, `[[`, "net_path"))
-ops_all        <- bind_rows(lapply(results, `[[`, "ops"))
+# accumulators
+rule_tables <- list()
+shortlists  <- list()
+net_paths <- list()
+ops_list  <- list()
 
-write.csv(rule_table_all, out_file("by_HHsize_inclusion_rules_all"),          row.names = FALSE)
-write.csv(shortlist_all,  out_file("by_HHsize_inclusion_rules_highprecision"), row.names = FALSE)
-write.csv(net_path_all,   out_file("by_HHsize_net_frontier_path"),            row.names = FALSE)
-write.csv(ops_all,        out_file("by_HHsize_net_operating_points"),            row.names = FALSE)
+#if you do not have different data frames for different errors, comment out the next line starting the for loop and the closing bracket on the loop ~line 461
+for (nm in names(df_list)) {
+  #if you do not have different data frames for different errors, replace df_list[[nm]] with your data
+  focal_df <- df_list[[nm]]
+  
+  #ERROR_TAG <- "all_errors"
+  #if you don't have data frames with different errors, uncomment above, and comment out line below
+  ERROR_TAG <- paste(sort(setdiff(unique(as.character(focal_df$error_status)), "no_error")),
+                     collapse = "_")
+
+  groups  <- hh_group_of(focal_df[[HH_SIZE_COL]])
+  results <- lapply(HH_LEVELS, function(lab)
+    run_for_hh(focal_df[!is.na(groups) & groups == lab, , drop = FALSE], lab))
+  
+  rule_table_all <- bind_rows(lapply(results, `[[`, "rule_table"))
+  shortlist_all  <- bind_rows(lapply(results, `[[`, "shortlist"))
+  net_path_all   <- bind_rows(lapply(results, `[[`, "net_path"))
+  ops_all        <- bind_rows(lapply(results, `[[`, "ops"))
+  
+  # annotate every row with this frame's tag
+  rule_table_all$error_tag <- ERROR_TAG
+  shortlist_all$error_tag  <- ERROR_TAG
+  net_path_all$error_tag   <- ERROR_TAG
+  ops_all$error_tag        <- ERROR_TAG
+  
+  # stash for later
+  rule_tables[[nm]] <- rule_table_all
+  shortlists[[nm]]  <- shortlist_all
+  net_paths[[nm]]   <- net_path_all
+  ops_list[[nm]]    <- ops_all
+  
+  # per-frame outputs (optional — intermediate results that are consolidated later)
+  write.csv(rule_table_all, out_file("by_HHsize_inclusion_rules_all"),          row.names = FALSE)
+  write.csv(shortlist_all,  out_file("by_HHsize_inclusion_rules_highprecision"), row.names = FALSE)
+  write.csv(net_path_all,   out_file("by_HHsize_net_frontier_path"),             row.names = FALSE)
+  write.csv(ops_all,        out_file("by_HHsize_net_operating_points"),          row.names = FALSE)
+}
+
+# below is only needed if you ran the loop above. If you only ran for one data frame, results should already have been written out in the out_dir. 
+rule_table_combined <- bind_rows(rule_tables)
+shortlist_combined  <- bind_rows(shortlists)
+net_path_combined <- bind_rows(net_paths)
+ops_list_combined  <- bind_rows(ops_list)
+
+#this tag is to replace the prefix in the file names once we've combined everything
+ERROR_TAG <- "final"
+
+write.csv(rule_table_combined, out_file("by_HHsize_inclusion_rules_all"),          row.names = FALSE)
+write.csv(shortlist_combined,  out_file("by_HHsize_inclusion_rules_highprecision"), row.names = FALSE)
+write.csv(net_path_combined,   out_file("by_HHsize_net_frontier_path"),            row.names = FALSE)
+write.csv(ops_list_combined,        out_file("by_HHsize_net_operating_points"),            row.names = FALSE)
 
 cat("\n-- rules in each net (by household size) --\n")
-for (i in seq_len(nrow(ops_all)))
+for (i in seq_len(nrow(ops_list_combined)))
   cat(sprintf("\n  [HH %s]  recall >= %.2f  ->  precision %.2f, flag %.1f%% of cases, FLAG a case if it matches ANY of:\n    %s\n",
-              ops_all$hh_size[i], ops_all$recall_floor[i], ops_all$precision[i], ops_all$workload_pct[i],
-              gsub("  OR  ", "\n    OR ", ops_all$net[i])))
+              ops_list_combined$hh_size[i], ops_list_combined$recall_floor[i], ops_list_combined$precision[i], ops_list_combined$workload_pct[i],
+              gsub("  OR  ", "\n    OR ", ops_list_combined$net[i])))

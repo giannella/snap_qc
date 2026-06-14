@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem *)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(INCL)",
+      "Bash(EXCL)",
+      "Bash(compare)",
+      "Bash(optimize)",
+      "Bash(single\")",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\ericg\\\\snap_qc\" | ForEach-Object { $_.Name } | Sort-Object)"
+    ]
+  }
+}

@@ -91,7 +91,7 @@ NET_FLOORS       <- c(1.00, 0.99, 0.98, 0.95, 0.90)
 NET_MIN_TRACE    <- 0.7     # stop extending the net below this recall
 NET_EPS          <- 1        # smoothing so zero-cost rules score as "free" workload
 
-out_dir <- "review_precision_rulefit"
+out_dir <- "exclusion_rules"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 RF_PARAMS <- list(ntrees = 2500, maxdepth = 4L, type = "rules",
