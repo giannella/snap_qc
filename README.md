@@ -47,10 +47,12 @@ These scripts find candidate prioritization rules (i.e., rules that flag cases m
 
 3. **`INCL_optimize_set_of_inclusion_rules_by_hh_size_for_a_state.R`** — same as step 2 but tunes all high-precision rules for a state at once. The results will change quite a bit as you modify the OBJECTIVE (dollars vs. counts), OPTIMIZE_FOR (precision vs recall), MIN_FLAGGED (cases flagged by each rule), PRECISION_TARGET (floor for precision). 
 
-The end goal is a state-specific rule list like:
+An example of a general rule list mined from national data can be found in this file:
 `inclusion_rules_by_hh_size/final_by_HHsize_inclusion_rules_highprecision.csv`
 
-Examples of state rule outputs are in the `inclusion_rules_by_hh_size/` folder. 
+And examples of state rule outputs are in the `inclusion_rules_by_hh_size/` folder.
+
+For a walkthrough of the inclusion rules workflow, see these [slides](https://docs.google.com/presentation/d/1bagahNH8kP_PbISx5s7fsNk1gHvY84w5/edit?slide=id.p1#slide=id.p1), which are the same as the `how_to_use_the_snap_qc_inclusion_rules_scripts.pptx` in this repo.
 
 ---
 
