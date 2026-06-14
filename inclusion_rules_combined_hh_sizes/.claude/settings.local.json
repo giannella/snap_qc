@@ -8,7 +8,11 @@
       "Bash(compare)",
       "Bash(optimize)",
       "Bash(single\")",
-      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\ericg\\\\snap_qc\" | ForEach-Object { $_.Name } | Sort-Object)"
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\ericg\\\\snap_qc\" | ForEach-Object { $_.Name } | Sort-Object)",
+      "Bash(python -c \"import pptx; print\\('python-pptx ok'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -m pip install python-pptx)",
+      "Bash(python *)"
     ]
   }
 }
