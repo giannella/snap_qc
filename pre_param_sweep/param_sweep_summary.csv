@@ -1,0 +1,10 @@
+"sweep","label","method","n_rules","max_recall","precision_at_max"
+"learnrate","0.005","rpart",78,0.833,0.061
+"learnrate","0.01","rpart",78,0.83,0.062
+"maxdepth","4","rpart",82,0.833,0.061
+"ntrees","2500","rpart",69,0.783,0.064
+"sampfrac","0.1","rpart",173,0.993,0.044
+"sampfrac","0.2","rpart",80,0.83,0.062
+"sampfrac","0.3","rpart",18,0.816,0.064
+"sampfrac","0.4","rpart",11,0.703,0.061
+"sampfrac","0.5","rpart",7,0.699,0.062

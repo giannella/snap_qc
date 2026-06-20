@@ -44,10 +44,10 @@ RETAIN_FLOOR    <- 0.97          # a tuned rule must RETAIN at least this share 
 MIN_WORKLOAD_CUT<- 0.05          # DROP a rule that cannot exclude at least this share of cases
 MIN_PURITY      <- 0             # optional: require >= this share of EXCLUDED cases to be clean (0 = off)
 
-# Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2, 3, 4, 5+.
+# Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2-3, 4+.
 HH_SIZE_COL <- "cert_HH_size_FS_n"
-HH_LEVELS   <- c("1", "2", "3", "4", "5+")
-hh_group_of <- function(n) { g <- pmin(n, 5); ifelse(g == 5, "5+", as.character(g)) }
+HH_LEVELS   <- c("1", "2-3", "4+")
+hh_group_of <- function(n) { ifelse(n <= 1, "1", ifelse(n <= 3, "2-3", "4+")) }
 
 # Grid bounds and size controls.
 GRID_LO_Q    <- 0.02

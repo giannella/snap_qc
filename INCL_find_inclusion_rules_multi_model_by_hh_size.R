@@ -6,7 +6,7 @@
 #   "counts"   recall = error CASES caught / all error cases
 #   "dollars"  recall = error DOLLARS caught / all error dollars
 #
-# The model is fit separately within each household-size stratum (1, 2, 3, 4, 5+);
+# The model is fit separately within each household-size stratum (1, 2-3, 4+);
 # every output row is tagged with its hh_size.
 #
 # Script loops through types of errors, builds rules for each type, combines them into a single rule list
@@ -30,6 +30,7 @@ earned_income_df <- reg_model_data %>%
   filter(fiscal_year %in% c("2022", "2023", "2024"))
 table(earned_income_df$element, earned_income_df$error_status)
 table(earned_income_df$over_threshold, earned_income_df$error_status)
+table(earned_income_df$over_threshold, earned_income_df$error_status, earned_income_df$HH_size_n)
 
 unearned_income_df <- reg_model_data %>%
   filter(error_status %in% c("unearned_overissuance", "no_error")) %>%
@@ -48,11 +49,16 @@ focal_df <- earned_income_df
 
 OBJECTIVE <- "dollars"      # "counts" or "dollars"
 
+# Rule MINING objective for the pre() fit. Decoupled from OBJECTIVE: mining under
+# "counts" (binomial) is more robust when errors are scarce, while OBJECTIVE still
+# governs role, the net, and the recall floors (here, dollar recall).
+FIT_OBJECTIVE <- "counts"   # "counts" or "dollars"
+
 features <- c(
-  "cert_HH_size_FS_n", "children_i", "elderly_disabled_i", "total_deductions",
+  "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
   "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
-  "shelter_expenses", "utilities", "married", "homeless",
-  "rawearn", "rawunearn", "rawgross",
+  "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
+  "rawearn_by_hh_size", "rawunearn_by_hh_size", "rawgross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max", #"n_income_types", "n_deduction_types",
   "months_since_cert_n", "count_divisible_by_100"
 ) 
@@ -61,11 +67,10 @@ setdiff(features, names(focal_df))
 TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold == 1)
 ERR_AMT_COL     <- "total_error_amount"
 
-# Household-size stratification. cert_HH_size_FS_n is collapsed to 1, 2, 3, 4, 5+
-# and dropped from the predictors (we stratify on it rather than model it).
+# Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2-3, 4+.
 HH_SIZE_COL <- "cert_HH_size_FS_n"
-HH_LEVELS   <- c("1", "2", "3", "4", "5+")
-hh_group_of <- function(n) { g <- pmin(n, 5); ifelse(g == 5, "5+", as.character(g)) }
+HH_LEVELS   <- c("1", "2-3", "4+")
+hh_group_of <- function(n) { ifelse(n <= 1, "1", ifelse(n <= 3, "2-3", "4+")) }
 
 # Individual-rule shortlist (informational; the net does not depend on it)
 MIN_SUPPORT   <- 0.000005   # a rule must FLAG at least 0.0005% of cases (footprint, not recall)
@@ -84,6 +89,7 @@ dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 PENALTY   <- "lambda.min"   # falls back to lambda.min if 1se selects nothing
 
 stopifnot(OBJECTIVE %in% c("counts", "dollars"))
+stopifnot(FIT_OBJECTIVE %in% c("counts", "dollars"))
 
 ## ── 1. Helpers ────────────────────────────────────────────────────────────────
 
@@ -277,7 +283,9 @@ run_for_hh <- function(focal_df, hh_label) {
   base_rate  <- mean(ie)
   base_dens  <- if (!all(is.na(md_dollars))) sum(md_dollars) / nrow(model_data) else NA_real_
   
-  if (OBJECTIVE == "dollars") {
+  # Fitting target/family is governed by FIT_OBJECTIVE; the net below stays on
+  # OBJECTIVE, so rules can be mined under counts while the net uses dollar recall.
+  if (FIT_OBJECTIVE == "dollars") {
     model_data$.target <- md_dollars; fam <- "gaussian"
   } else {
     model_data$.target <- factor(ifelse(ie, "error", "clean"),
@@ -285,17 +293,23 @@ run_for_hh <- function(focal_df, hh_label) {
   }
   form <- as.formula(paste(".target ~", paste(pv, collapse = " + ")))
   
+  # Shallower trees where errors are scarce: rules with fewer conditions need
+  # fewer events to survive CV. Cutoffs are on error counts, not row counts.
+  n_err <- sum(ie)
+  md <- if (n_err < 500) 3L else 4L
+  cat(sprintf("  maxdepth = %d (errors = %d)\n", md, n_err))
+  
   fit <- pre(
     formula           = form,
     data              = model_data[c(".target", pv)],
     family            = fam,
-    ntrees            = 2500,
-    maxdepth          = 4L,
+    ntrees            = 5000,
+    maxdepth          = md,
     learnrate         = 0.005,
     type              = "rules",
     use.grad          = T,
     tree.unbiased     = F,   # F is rpart, much faster than ctree, also seems to work better
-    sampfrac          = .15, #lower creates more rules
+    sampfrac          = .25, #lower creates more rules
     removeduplicates  = TRUE,
     removecomplements = TRUE,
     nfolds            = 5,
@@ -321,10 +335,10 @@ run_for_hh <- function(focal_df, hh_label) {
     rename(rule_id = rule, rule_text = description)
   
   n_before <- nrow(rules)
-          rules <- tidy_rules(rules)
-          cat(sprintf("  rules after tidy (drop repeated bounds / supersets): %d of %d\n",
-                      nrow(rules), n_before))
-
+  rules <- tidy_rules(rules)
+  cat(sprintf("  rules after tidy (drop repeated bounds / supersets): %d of %d\n",
+              nrow(rules), n_before))
+  
   eval_one <- function(rd) {
     flag <- flag_rule(rd, model_data)
     perf <- inclusion_perf(flag, ie, md_dollars)
@@ -407,7 +421,7 @@ run_for_hh <- function(focal_df, hh_label) {
 }
 
 ## ── 3. Run every household-size stratum and combine ───────────────────────────
- 
+
 out_file <- function(stem) file.path(out_dir, sprintf("%s_%s.csv", ERROR_TAG, stem))
 
 #if you have separate data frames for separate errors, include them below:
@@ -432,7 +446,7 @@ for (nm in names(df_list)) {
   #if you don't have data frames with different errors, uncomment above, and comment out line below
   ERROR_TAG <- paste(sort(setdiff(unique(as.character(focal_df$error_status)), "no_error")),
                      collapse = "_")
-
+  
   groups  <- hh_group_of(focal_df[[HH_SIZE_COL]])
   results <- lapply(HH_LEVELS, function(lab)
     run_for_hh(focal_df[!is.na(groups) & groups == lab, , drop = FALSE], lab))
@@ -480,3 +494,15 @@ for (i in seq_len(nrow(ops_list_combined)))
   cat(sprintf("\n  [HH %s]  recall >= %.2f  ->  precision %.2f, flag %.1f%% of cases, FLAG a case if it matches ANY of:\n    %s\n",
               ops_list_combined$hh_size[i], ops_list_combined$recall_floor[i], ops_list_combined$precision[i], ops_list_combined$workload_pct[i],
               gsub("  OR  ", "\n    OR ", ops_list_combined$net[i])))
+
+# Count how many high-precision rules each variable appears in.
+# Splits each rule on " & " to get all conditions, then strips the operator
+# and threshold from each condition to recover the variable name.
+count_variable_appearances <- function(rules_df) {
+  conditions <- unlist(strsplit(rules_df$rule, " & ", fixed = TRUE))
+  vars <- trimws(gsub("\\s*(>=|<=|==|!=|>|<).*", "", conditions))
+  sort(table(vars), decreasing = TRUE)
+}
+
+cat("\n-- variable appearances in high-precision rules (shortlist_combined) --\n")
+print(count_variable_appearances(shortlist_combined))

@@ -29,9 +29,11 @@ state_data <- reg_model_data %>% filter(state %in% c("Michigan") & fiscal_year>2
 #                       "by_HHsize_inclusion_rules_highprecision.csv")
 #if you just read in the csv, you may want to exclude rules that do not flag many cases as these do not indicate any overall pattern
 
+rules_in <- shortlist_combined %>% filter(n_flagged > 49) 
+
 rules_in <- read.csv(file.path("inclusion_rules_by_hh_size",
                                                     "final_by_HHsize_inclusion_rules_highprecision.csv")) %>% 
-  filter(n_flagged > 99) %>% mutate(flag_type="earned_overissuance")
+  filter(n_flagged > 49) 
 
 rules_in <- subset(rules_in, n_conditions>1) 
 
@@ -44,8 +46,8 @@ rules_df$rule <- rules_df$rule_text
 TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold != 0)
 ERR_AMT_COL     <- "total_error_amount"
 OBJECTIVE       <- "dollars"     # recall basis: "dollars" or "counts"
-RECALL_FLOOR    <- 0.02          # a tuned rule must still capture at least this share
-PRECISION_FLOOR <- 0.20          # DROP any rule whose optimized precision is below this
+RECALL_FLOOR    <- 0.0001          # a tuned rule must still capture at least this share
+PRECISION_FLOOR <- 0.30          # DROP any rule whose optimized precision is below this
 
 ## ── Objective / volume switch ─────────────────────────────────────────────────
 # OPTIMIZE_FOR controls what the grid search maximizes within each rule's stratum:
@@ -56,16 +58,16 @@ PRECISION_FLOOR <- 0.20          # DROP any rule whose optimized precision is be
 #                 clear the recall floor and MIN_FLAGGED), maximize recall. (Loosens
 #                 rules: each rule opens to the widest threshold that keeps precision
 #                 at/above the target, so every rule tends to flag more.)
-OPTIMIZE_FOR     <- "recall"  # "precision" or "recall"
+OPTIMIZE_FOR     <- "precision"  # "precision" or "recall"
 MIN_FLAGGED      <- 10           # ignore any threshold combo flagging fewer than this many cases
-PRECISION_TARGET <- 0.25         # recall-mode only: precision floor to hold while maximizing recall.
+PRECISION_TARGET <- 0.30         # recall-mode only: precision floor to hold while maximizing recall.
 # Set >= PRECISION_FLOOR; PRECISION_FLOOR stays the final drop gate.
 stopifnot(OPTIMIZE_FOR %in% c("precision", "recall"))
 
-# Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2, 3, 4, 5+.
-HH_SIZE_COL <- "cert_HH_size_FS_n"
-HH_LEVELS   <- c("1", "2", "3", "4", "5+")
-hh_group_of <- function(n) { g <- pmin(n, 5); ifelse(g == 5, "5+", as.character(g)) }
+# Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2-3, 4+.
+HH_SIZE_COL <- "HH_size_n"
+HH_LEVELS   <- c("1", "2-3", "4+")
+hh_group_of <- function(n) { ifelse(n <= 1, "1", ifelse(n <= 3, "2-3", "4+")) }
 
 # Grid bounds and size controls.
 GRID_LO_Q    <- 0.02
@@ -367,7 +369,6 @@ if (!"imp" %in% names(optimized))
   optimized$imp <- if ("importance" %in% names(optimized)) optimized$importance else 0
 rules_out <- bind_rows(lapply(split(optimized, optimized$hh_size), tidy_rules))
 rules_out$rule <- rules_out$rule_text 
-STATE <- "Michigan"
 fname <- sprintf("optimized_highprecision_rules_%s.csv",
                  if (is.na(STATE)) "all_data" else STATE)
 write.csv(rules_out, file.path(out_dir, fname), row.names = FALSE)

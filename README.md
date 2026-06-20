@@ -17,7 +17,7 @@ In both cases, the scripts expect a data frame in your R environment with one ro
 
 If you want to use national public QC data rather than internal data, see [What_data_is_required?](#what-data-is-required) below. The national data can be useful for finding more specific patterns since the number of errors in any one state is limited. 
 
-Note that I recommend running all the models stratified by household size (e.g., one model for each household size: 1, 2, 3, 4, 5+), which is what I have in the main directory. The precision-recall curves are better across the board (see results in `compare_models_by_HHsize_vs_pooled/` folder and explore yourself using the `compare_combined_vs_by_hh_size_model_performance.R` script). If this is not an option for you or you have found better results in your state with pooling, see the `code_for_single_model_combined_HH_sizes folder`. 
+Note that I recommend running all the models stratified by household size (e.g., one model for each household size: 1, 2-3, 4+), which is what I have in the main directory. The precision-recall curves are better across the board (see results in `compare_models_by_HHsize_vs_pooled/` folder and explore yourself using the `compare_combined_vs_by_hh_size_model_performance.R` script). If this is not an option for you or you have found better results in your state with pooling, see the `code_for_single_model_combined_HH_sizes folder`. 
 
 ---
 
@@ -26,7 +26,7 @@ Note that I recommend running all the models stratified by household size (e.g.,
 You have a list of cases flagged for review. These scripts help you find simple rules that let you drop low-risk cases from that pile, leaving a more targeted set for reviewers.
 
 
-1. **`EXCL_find_exclusion_rules_by_hh_size.R`** — runs RuleFit on your flagged cases, stratified by household size (1, 2, 3, 4, 5+), to find candidate exclusion rules. Outputs rule CSVs to `exclusion_rules/`. If your internal data is rich enough, you may be able to stop here and apply the rules directly.
+1. **`EXCL_find_exclusion_rules_by_hh_size.R`** — runs RuleFit on your flagged cases, stratified by household size (1, 2-3, 4+), to find candidate exclusion rules. Outputs rule CSVs to `exclusion_rules/`. If your internal data is rich enough, you may be able to stop here and apply the rules directly.
 
 2. **`EXCL_optimize_single_exclusion_rule_by_hh_size_for_a_state.R`** — takes one rule from step 1 and grid-searches its numeric thresholds on a specific state's data, maximizing workload cut while retaining a floor of error dollars. This is useful if you have idenfied a small number of rules of interest that you really want to get right. 
 

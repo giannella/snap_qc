@@ -6,7 +6,7 @@
 # false positives. The goal is to find simple feature/threshold
 # rules that let the agency safely exclude cases, leaving a more targeted set.
 #
-# The model is fit separately within each household-size stratum (1, 2, 3, 4, 5+);
+# The model is fit separately within each household-size stratum (1, 2-3, 4+);
 # every output row is tagged with its hh_size.
 #
 # OBJECTIVE TOGGLE  (set OBJECTIVE in Section 0):
@@ -63,11 +63,10 @@ features <- c(
   "count_divisible_by_100"
 )
 
-# Household-size stratification. cert_HH_size_FS_n is collapsed to 1, 2, 3, 4, 5+
-# and dropped from the predictors (we stratify on it rather than model it).
+# Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2-3, 4+.
 HH_SIZE_COL <- "cert_HH_size_FS_n"
-HH_LEVELS   <- c("1", "2", "3", "4", "5+")
-hh_group_of <- function(n) { g <- pmin(n, 5); ifelse(g == 5, "5+", as.character(g)) }
+HH_LEVELS   <- c("1", "2-3", "4+")
+hh_group_of <- function(n) { ifelse(n <= 1, "1", ifelse(n <= 3, "2-3", "4+")) }
 
 # ── DEFINE THE TARGET ─────────────────────────────────────────────────────────
 # is_error: TRUE  = genuine error, the flag was right, KEEP for review

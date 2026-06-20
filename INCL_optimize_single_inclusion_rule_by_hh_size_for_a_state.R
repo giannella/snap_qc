@@ -8,7 +8,7 @@
 # FLAGGING criterion. Returns the thresholds that MAXIMIZE PRECISION (share of
 # flagged cases that are true errors) while holding RECALL at/above a floor.
 #
-# The search runs separately within each household-size stratum (1, 2, 3, 4, 5+);
+# The search runs separately within each household-size stratum (1, 2-3, 4+);
 # every output row is tagged with its hh_size.
 #
 # Search space: dollar-style variables step by multiples of 50; a ratio gets a
@@ -42,10 +42,10 @@ rule_terms <- list(
   list(var = "shelter_expenses",       op = "<",  step = 50,   original = 978.5)
 )
 
-# Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2, 3, 4, 5+.
+# Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2-3, 4+.
 HH_SIZE_COL <- "cert_HH_size_FS_n"
-HH_LEVELS   <- c("1", "2", "3", "4", "5+")
-hh_group_of <- function(n) { g <- pmin(n, 5); ifelse(g == 5, "5+", as.character(g)) }
+HH_LEVELS   <- c("1", "2-3", "4+")
+hh_group_of <- function(n) { ifelse(n <= 1, "1", ifelse(n <= 3, "2-3", "4+")) }
 
 GRID_LO_Q <- 0.02
 GRID_HI_Q <- 0.98

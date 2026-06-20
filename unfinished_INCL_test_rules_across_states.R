@@ -39,10 +39,10 @@ OBJECTIVE       <- "dollars"   # recall basis used for the floor: "dollars" or "
 RECALL_FLOOR    <- 0.02        # a tuned rule must still capture at least this share on TRAIN
 PREC_FLOOR      <- 0.20        # DROP a (state, rule) whose TRAIN precision is below this
 
-# Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2, 3, 4, 5+.
+# Household-size stratification: cert_HH_size_FS_n collapsed to 1, 2-3, 4+.
 HH_SIZE_COL <- "cert_HH_size_FS_n"
-HH_LEVELS   <- c("1", "2", "3", "4", "5+")
-hh_group_of <- function(n) { g <- pmin(n, 5); ifelse(g == 5, "5+", as.character(g)) }
+HH_LEVELS   <- c("1", "2-3", "4+")
+hh_group_of <- function(n) { ifelse(n <= 1, "1", ifelse(n <= 3, "2-3", "4+")) }
 
 # Minimum stratum sizes (per state, per household size).
 MIN_TRAIN <- 50
