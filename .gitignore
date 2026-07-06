@@ -5,3 +5,6 @@ model_variables_new.csv
 /custom_one_off/*
 .Rhistory
 update_pptx.py
+*.log
+
+~$*

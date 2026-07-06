@@ -1,0 +1,75 @@
+state,hh_size,rule_id,kept,n_train,train_precision,train_recall,train_dollar_recall,train_n_flagged,n_test,test_precision,test_recall,test_dollar_recall,test_n_flagged,precision_drop,csv_precision,optimized_rule
+Virginia,4,rule948,TRUE,137,0.6,0.231,0.177,10,113,NA,0,0,0,NA,0.227,rawben_rel_max < 0.55 & rawgross < 2700 & rawearn >= 2150 & cat_elig >= 0.5
+Virginia,5+,rule256,TRUE,108,0.583,0.368,0.52,12,73,0.333,0.286,0.175,12,0.25,0.282,rawearn >= 1050 & rawgross < 3050 & months_since_cert_n >= 6
+Virginia,5+,rule96,TRUE,108,0.545,0.316,0.303,11,73,0.333,0.071,0.042,3,0.212,0.211,percent_abawd < 0.4 & shelter_expenses >= 600 & rawben_rel_max >= 0.4 & rawearn >= 2300
+Virginia,5+,rule58,TRUE,108,0.545,0.316,0.507,11,73,0.1,0.071,0.042,10,0.445,0.204,shelter_expenses >= 1000 & rawben_rel_max >= 0.45 & months_since_cert_n >= 6
+Virginia,2,rule863,TRUE,347,0.545,0.125,0.135,11,180,0,0,0,3,0.545,0.251,months_since_cert_n >= 5 & rawearn >= 1200 & utilities < 75
+Virginia,1,rule469,TRUE,1074,0.5,0.069,0.108,10,697,NA,0,0,0,NA,0.361,rawunearn < 26.5 & total_deductions >= 250 & months_since_cert_n >= 8 & utilities < 78
+Virginia,5+,rule109,TRUE,108,0.5,0.263,0.243,10,73,0.3,0.214,0.211,10,0.2,0.204,total_deductions < 1250 & months_since_cert_n >= 6.5 & rawben_rel_max >= 0.6 & shelter_expenses >= 600
+Virginia,2,rule1024,TRUE,347,0.5,0.104,0.175,10,180,0,0,0,2,0.5,0.29,"rawearn < 2500 & unc_rawben_rel_max < 0.15 & elderly_disabled_i %in% c(""FALSE"")"
+Virginia,2,rule2294,TRUE,347,0.5,0.104,0.175,10,180,0,0,0,2,0.5,0.331,"rawearn < 2500 & rawben_rel_max < 0.15 & elderly_disabled_i %in% c(""FALSE"")"
+Virginia,2,rule3496,TRUE,347,0.455,0.104,0.188,11,180,NA,0,0,0,NA,0.241,"shelter_expenses < 1100 & unc_rawben_rel_max < 0 & elderly_disabled_i %in% c(""FALSE"")"
+Virginia,5+,rule215,TRUE,108,0.455,0.263,0.356,11,73,0.222,0.143,0.192,9,0.232,0.222,percent_abawd < 0.75 & months_since_cert_n >= 5 & unc_rawben_rel_max >= 0.7 & rawearn >= 700
+Virginia,1,rule3010,TRUE,1074,0.455,0.069,0.125,11,697,0,0,0,4,0.455,0.413,unc_rawben_rel_max >= 1.35 & rawunearn < 0.5 & months_since_cert_n >= 8
+Virginia,1,rule777,TRUE,1074,0.455,0.069,0.125,11,697,0,0,0,4,0.455,0.339,rawgross < 3 & months_since_cert_n >= 8 & total_deductions >= 150
+Virginia,2,rule305,TRUE,347,0.429,0.125,0.134,14,180,0.133,0.105,0.093,15,0.295,0.292,rawben_rel_max < 0.9 & rawearn >= 450 & rawearn < 1200
+Virginia,1,rule160,TRUE,1074,0.429,0.083,0.145,14,697,0,0,0,3,0.429,0.409,rawunearn < 150 & shelter_expenses >= 600 & months_since_cert_n >= 9
+Virginia,2,rule1178,TRUE,347,0.417,0.104,0.188,12,180,NA,0,0,0,NA,0.232,"rawben_rel_max < 0.05 & elderly_disabled_i %in% c(""FALSE"")"
+Virginia,5+,rule166,TRUE,108,0.417,0.263,0.266,12,73,NA,0,0,0,NA,0.232,shelter_expenses >= 1000 & rawben_rel_max >= 0.4 & rawearn >= 2300 & utilities >= 400
+Virginia,2,rule5312,TRUE,347,0.417,0.104,0.188,12,180,NA,0,0,0,NA,0.247,"months_since_cert_n < 11 & rawben_rel_max < 0.05 & elderly_disabled_i %in% c(""FALSE"")"
+Virginia,2,rule15173,TRUE,347,0.417,0.104,0.053,12,180,0,0,0,3,0.417,0.219,utilities >= 125 & utilities < 275 & rawben_rel_max < 0.9
+Virginia,1,rule458,TRUE,1074,0.4,0.056,0.093,10,697,0.333,0.021,0.026,3,0.067,0.285,rawunearn < 600 & cat_elig >= 0.5 & total_deductions >= 57.1 & months_since_cert_n >= 14
+Virginia,1,rule421,TRUE,1074,0.4,0.056,0.093,10,697,0.167,0.021,0.026,6,0.233,0.22,rawunearn < 600 & total_deductions >= 66 & months_since_cert_n >= 14
+Virginia,1,rule150,TRUE,1074,0.4,0.056,0.093,10,697,0,0,0,4,0.4,0.241,rawunearn < 700 & total_deductions >= 28.6 & months_since_cert_n >= 19
+Virginia,1,rule194,TRUE,1074,0.4,0.056,0.095,10,697,0,0,0,5,0.4,0.406,unc_rawben_rel_max >= 1.6 & utilities < 425 & months_since_cert_n >= 8
+Virginia,2,rule569,TRUE,347,0.4,0.083,0.043,10,180,0,0,0,4,0.4,0.317,unc_rawben_rel_max >= -0.65 & utilities < 200 & utilities >= 125
+Virginia,1,rule793,TRUE,1074,0.4,0.056,0.095,10,697,0,0,0,5,0.4,0.396,unc_rawben_rel_max >= 1.6 & utilities < 425 & months_since_cert_n >= 8
+Virginia,1,rule90,TRUE,1074,0.4,0.056,0.095,10,697,0,0,0,5,0.4,0.347,unc_rawben_rel_max >= 1.6 & months_since_cert_n >= 8 & utilities < 425
+Virginia,3,rule91,TRUE,219,0.385,0.192,0.175,13,140,NA,0,0,0,NA,0.21,shelter_expenses < 450 & unc_rawben_rel_max >= -0.65 & cat_elig >= 1.5 & months_since_cert_n >= 8
+Virginia,1,rule1015,TRUE,1074,0.364,0.056,0.077,11,697,0,0,0,2,0.364,0.737,"rawgross < 350 & elderly_disabled_i %in% c(""TRUE"") & unc_rawben_rel_max >= 1.5"
+Virginia,1,rule1066,TRUE,1074,0.364,0.056,0.077,11,697,0,0,0,2,0.364,0.702,"unc_rawben_rel_max >= 1.5 & elderly_disabled_i %in% c(""TRUE"") & rawunearn < 300"
+Virginia,2,rule488,TRUE,347,0.364,0.083,0.116,11,180,0,0,0,1,0.364,0.246,rawearn >= 1700 & rawben_rel_max < 0.15 & unc_rawben_rel_max >= -0.1
+Virginia,1,rule2322,TRUE,1074,0.333,0.056,0.085,12,697,1,0.021,0.04,1,-0.667,0.266,rawgross >= 1250 & unc_rawben_rel_max >= 0.6
+Virginia,1,rule3166,TRUE,1074,0.333,0.069,0.125,15,697,0,0,0,1,0.333,0.347,total_deductions >= 650 & rawgross < 350
+Virginia,2,rule4339,TRUE,347,0.333,0.083,0.058,12,180,0,0,0,8,0.333,0.39,"shelter_expenses < 700 & rawgross >= 800 & elderly_disabled_i %in% c(""FALSE"") & total_deductions < 300"
+Virginia,1,rule3859,TRUE,1074,0.312,0.069,0.083,16,697,0.429,0.128,0.12,14,-0.116,0.215,medical_deductions >= 50 & unc_rawben_rel_max >= 0.75
+Virginia,3,rule438,TRUE,219,0.312,0.192,0.312,16,140,0.333,0.083,0.09,3,-0.021,0.205,shelter_expenses >= 1500 & rawgross < 3050
+Virginia,1,rule10431,TRUE,1074,0.308,0.056,0.046,13,697,0.158,0.064,0.054,19,0.15,0.432,rawunearn < 1050 & rawben_rel_max < 0.75 & months_since_cert_n < 22 & unc_rawben_rel_max >= 0.7
+Virginia,2,rule284,TRUE,347,0.3,0.062,0.043,10,180,NA,0,0,0,NA,0.243,shelter_expenses >= 1200 & rawearn >= 1700
+Virginia,1,rule2878,TRUE,1074,0.3,0.042,0.046,10,697,0.125,0.021,0.021,8,0.175,0.508,"rawgross < 450 & elderly_disabled_i %in% c(""TRUE"") & total_deductions < 850 & total_deductions >= 100"
+Virginia,1,rule113,TRUE,1074,0.3,0.042,0.029,10,697,0.071,0.021,0.015,14,0.229,0.481,rawearn >= 700 & rawben_rel_max < 0.85 & rawgross < 1100
+Virginia,1,rule1263,TRUE,1074,0.3,0.042,0.029,10,697,0.071,0.021,0.015,14,0.229,0.481,rawearn >= 700 & rawgross < 1100 & unc_rawben_rel_max < 0.8177
+Virginia,1,rule1786,TRUE,1074,0.3,0.042,0.046,10,697,0,0,0,15,0.3,0.683,"elderly_disabled_i %in% c(""TRUE"") & rawunearn < 400 & unc_rawben_rel_max < 1.95 & unc_rawben_rel_max >= 1.234"
+Virginia,1,rule2805,TRUE,1074,0.3,0.042,0.092,10,697,0,0,0,2,0.3,0.444,"elderly_disabled_i %in% c(""TRUE"") & rawgross < 100 & months_since_cert_n >= 18"
+Virginia,1,rule2058,TRUE,1074,0.286,0.056,0.059,14,697,0.188,0.064,0.075,16,0.098,0.316,unc_rawben_rel_max < 0.8 & unc_rawben_rel_max >= 0.7 & utilities < 200
+Virginia,1,rule325,TRUE,1074,0.286,0.056,0.059,14,697,0,0,0,6,0.286,0.443,"elderly_disabled_i %in% c(""FALSE"") & rawben_rel_max < 0.85 & months_since_cert_n >= 7.5"
+Virginia,2,rule9634,TRUE,347,0.286,0.083,0.1,14,180,0,0,0,5,0.286,0.216,months_since_cert_n < 3 & unc_rawben_rel_max < 1.95 & unc_rawben_rel_max >= 1.15 & total_deductions < 850
+Virginia,1,rule2542,TRUE,1074,0.282,0.153,0.145,39,697,0.364,0.085,0.142,11,-0.082,0.251,unc_rawben_rel_max < 1 & rawgross >= 800 & unc_rawben_rel_max >= 0.8
+Virginia,1,rule3008,TRUE,1074,0.273,0.042,0.05,11,697,0,0,0,6,0.273,0.285,unc_rawben_rel_max >= 1.9 & rawunearn < 300
+Virginia,1,rule613,TRUE,1074,0.273,0.042,0.069,11,697,0,0,0,4,0.273,0.318,unc_rawben_rel_max >= 1.55 & utilities < 75
+Virginia,2,rule617,TRUE,347,0.273,0.062,0.043,11,180,0,0,0,6,0.273,0.266,"unc_rawben_rel_max >= 0.1 & total_deductions >= 900 & children_i %in% c(""TRUE"")"
+Virginia,1,rule638,TRUE,1074,0.273,0.042,0.069,11,697,0,0,0,4,0.273,0.224,unc_rawben_rel_max >= 1.55 & utilities < 75
+Virginia,1,rule803,TRUE,1074,0.273,0.042,0.069,11,697,0,0,0,4,0.273,0.283,unc_rawben_rel_max >= 1.55 & utilities < 75
+Virginia,1,rule2987,TRUE,1074,0.25,0.056,0.046,16,697,0.174,0.085,0.102,23,0.076,0.222,rawben_rel_max < 0.75 & unc_rawben_rel_max >= 0.7
+Virginia,1,rule13,TRUE,1074,0.25,0.042,0.03,12,697,0,0,0,10,0.25,0.562,"rawben_rel_max < 0.5 & elderly_disabled_i %in% c(""FALSE"") & total_deductions < 300"
+Virginia,1,rule251,TRUE,1074,0.231,0.042,0.105,13,697,NA,0,0,0,NA,0.309,rawunearn < 50 & shelter_expenses >= 1400
+Virginia,2,rule183,TRUE,347,0.231,0.062,0.093,13,180,0.056,0.053,0.084,18,0.175,0.271,shelter_expenses < 450 & unc_rawben_rel_max >= 1.15 & utilities < 425
+Virginia,1,rule1870,TRUE,1074,0.231,0.042,0.092,13,697,0,0,0,3,0.231,0.395,"months_since_cert_n >= 16 & rawgross < 250 & elderly_disabled_i %in% c(""TRUE"") & utilities < 425"
+Virginia,1,rule2022,TRUE,1074,0.222,0.056,0.039,18,697,0.062,0.021,0.015,16,0.16,0.526,"rawben_rel_max < 0.85 & elderly_disabled_i %in% c(""FALSE"") & unc_rawben_rel_max >= 0.35"
+Virginia,1,rule751,TRUE,1074,0.216,0.222,0.151,74,697,0.118,0.128,0.147,51,0.099,0.393,unc_rawben_rel_max < 1.15 & rawearn >= 0 & rawben_rel_max < 0.75 & rawben_rel_max >= 0.6
+Virginia,1,rule3366,TRUE,1074,0.214,0.042,0.046,14,697,0,0,0,3,0.214,0.295,rawgross >= 1288 & rawunearn < 850 & rawgross < 1550
+Virginia,2,rule2489,TRUE,347,0.208,0.104,0.11,24,180,0.069,0.105,0.097,29,0.139,0.365,"elderly_disabled_i %in% c(""TRUE"") & rawunearn < 850"
+Virginia,1,rule3748,TRUE,1074,0.2,0.028,0.075,10,697,NA,0,0,0,NA,0.218,shelter_expenses >= 1750 & utilities < 425
+Virginia,1,rule536,TRUE,1074,0.2,0.028,0.075,10,697,NA,0,0,0,NA,0.393,"elderly_disabled_i %in% c(""FALSE"") & shelter_expenses >= 1550"
+Virginia,1,rule4292,TRUE,1074,0.2,0.056,0.039,20,697,0.045,0.021,0.015,22,0.155,0.669,"rawearn < 1050 & rawben_rel_max < 0.85 & elderly_disabled_i %in% c(""FALSE"")"
+Virginia,1,rule637,TRUE,1074,0.2,0.056,0.039,20,697,0.045,0.021,0.015,22,0.155,0.678,"rawben_rel_max < 0.85 & elderly_disabled_i %in% c(""FALSE"") & rawearn < 1050"
+Virginia,1,rule181,TRUE,1074,0.2,0.028,0.048,10,697,0,0,0,1,0.2,0.432,unc_rawben_rel_max < 0.7 & rawearn >= 1050 & months_since_cert_n >= 9 & rawben_rel_max < 0.75
+Virginia,1,rule1738,FALSE,1074,0.171,0.472,0.466,199,697,0.161,0.489,0.529,143,0.01,0.26,"rawben_rel_max >= 0.6 & elderly_disabled_i %in% c(""TRUE"") & shelter_expenses < 1600"
+Virginia,1,rule660,FALSE,1074,0.143,0.028,0.06,14,697,0.091,0.021,0.022,11,0.052,0.205,"elderly_disabled_i %in% c(""FALSE"") & months_since_cert_n >= 11"
+Virginia,1,rule1926,FALSE,1074,0.143,0.083,0.061,42,697,0.059,0.085,0.064,68,0.084,0.654,"rawgross < 900 & elderly_disabled_i %in% c(""TRUE"") & months_since_cert_n >= 17 & cat_elig < 1.5"
+Virginia,1,rule9836,FALSE,1074,0.136,0.042,0.057,22,697,0.042,0.064,0.035,71,0.094,0.226,rawunearn < 850 & unc_rawben_rel_max < 0.15
+Virginia,1,rule2207,FALSE,1074,0.135,0.069,0.09,37,697,0.083,0.064,0.048,36,0.052,0.569,"rawgross < 550 & elderly_disabled_i %in% c(""TRUE"") & expedited_i %in% c(""FALSE"")"
+Virginia,1,rule749,FALSE,1074,0.127,0.111,0.116,63,697,0.097,0.064,0.078,31,0.03,0.283,unc_rawben_rel_max < 1 & rawearn >= 250 & rawben_rel_max < 0.85
+Virginia,1,rule2453,FALSE,1074,0.111,0.056,0.1,36,697,0,0,0,15,0.111,0.53,"count_divisible_by_100 < 0.5 & rawgross < 0.5 & elderly_disabled_i %in% c(""TRUE"")"
+Virginia,1,rule3242,FALSE,1074,0.103,0.056,0.1,39,697,0,0,0,15,0.103,0.532,"rawgross < 0.5 & elderly_disabled_i %in% c(""TRUE"") & utilities < 425"
+Virginia,1,rule3708,FALSE,1074,0.09,0.458,0.341,368,697,0.094,0.809,0.718,404,-0.004,0.574,"elderly_disabled_i %in% c(""TRUE"") & rawgross < 1000 & cat_elig < 1.5"

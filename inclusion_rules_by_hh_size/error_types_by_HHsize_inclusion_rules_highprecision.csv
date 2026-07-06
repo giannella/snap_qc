@@ -1,0 +1,400 @@
+hh_size,rule_id,rule,n_conditions,workload_pct,n_flagged,errors_caught,clean_flagged,precision,recall,dollar_recall,error_tag
+1,rule4594,rawgross < 4 & count_divisible_by_100 >= 0.5 & shelter_expenses < 79.5,3,0.1,12,8,4,0.667,0.01,0.01,earned_overissuance
+1,rule1883,"rawunearn < 27.5 & rawben_rel_max < 0.9584 & expedited_i %in% c(""TRUE"") & shelter_expenses < 877",4,0.4,44,27,17,0.614,0.034,0.038,earned_overissuance
+1,rule913,"rawearn >= 593 & unc_rawben_rel_max < 0.9737 & rawben_rel_max < 0.3295 & expedited_i %in% c(""TRUE"")",4,0.2,25,15,10,0.6,0.019,0.024,earned_overissuance
+1,rule1598,"rawearn >= 676.5 & rawben_rel_max < 0.5178 & expedited_i %in% c(""TRUE"")",3,0.3,36,21,15,0.583,0.026,0.031,earned_overissuance
+1,rule589,rawunearn < 497.5 & unc_rawben_rel_max >= 1.848 & shelter_expenses < 606,3,0.2,19,11,8,0.579,0.014,0.015,earned_overissuance
+1,rule2771,rawunearn < 494.5 & unc_rawben_rel_max < 0.9668 & shelter_expenses >= 293.5 & rawgross < 974,4,0.6,66,34,32,0.515,0.043,0.034,earned_overissuance
+1,rule5002,total_deductions < 799.5 & count_divisible_by_100 < 1.5 & unc_rawben_rel_max >= 1.471 & shelter_expenses < 303.5,4,0.2,18,9,9,0.5,0.011,0.012,earned_overissuance
+1,rule3877,unc_rawben_rel_max >= 1.986 & shelter_expenses >= 1407,2,0.3,32,15,17,0.469,0.019,0.019,earned_overissuance
+1,rule1254,rawunearn < 492.5 & unc_rawben_rel_max < 0.7526 & months_since_cert_n >= 8.5,3,0.8,97,45,52,0.464,0.057,0.053,earned_overissuance
+1,rule183,rawearn >= 683 & rawben_rel_max >= 0.376 & unc_rawben_rel_max < 0.8238,3,1.9,228,102,126,0.447,0.129,0.096,earned_overissuance
+1,rule20,rawunearn < 27.5 & unc_rawben_rel_max < 0.9769 & unc_rawben_rel_max >= 0.4365 & rawearn >= 672.5,4,2.2,260,113,147,0.435,0.142,0.111,earned_overissuance
+1,rule4292,rawben_rel_max >= 0.2643 & rawearn >= 4 & rawben_rel_max < 0.972 & rawunearn >= 839.5,4,0.6,76,33,43,0.434,0.042,0.028,earned_overissuance
+1,rule2324,"elderly_disabled_i %in% c(""FALSE"") & rawben_rel_max < 0.9777 & expedited_i %in% c(""TRUE"")",3,0.8,97,42,55,0.433,0.053,0.055,earned_overissuance
+1,rule3420,rawearn >= 3 & unc_rawben_rel_max < 0.9771 & rawearn < 192.5 & rawunearn < 1155,4,0.5,58,25,33,0.431,0.032,0.022,earned_overissuance
+1,rule961,rawearn >= 595.5 & months_since_cert_n < 10.5 & rawben_rel_max >= 0.3486 & unc_rawben_rel_max < 0.8046,4,2,233,100,133,0.429,0.126,0.092,earned_overissuance
+1,rule5280,rawearn >= 3 & unc_rawben_rel_max < 0.972 & rawben_rel_max >= 0.7776,3,1.5,173,74,99,0.428,0.093,0.086,earned_overissuance
+1,rule154,"rawunearn < 27.5 & rawben_rel_max < 0.8141 & expedited_i %in% c(""FALSE"") & unc_rawben_rel_max >= 0.351",4,1.9,229,97,132,0.424,0.122,0.088,earned_overissuance
+1,rule3469,rawunearn < 367.5 & unc_rawben_rel_max < 0.823 & rawben_rel_max >= 0.334,3,2.4,290,123,167,0.424,0.155,0.116,earned_overissuance
+1,rule4759,rawearn >= 1.5 & unc_rawben_rel_max < 0.9266 & rawearn < 683.5 & months_since_cert_n >= 5.5,4,0.9,104,44,60,0.423,0.055,0.04,earned_overissuance
+1,rule4338,rawunearn >= 620.5 & shelter_expenses >= 1658 & rawben_rel_max < 0.9526 & rawunearn < 1786,4,0.3,31,13,18,0.419,0.016,0.015,earned_overissuance
+1,rule3705,rawearn >= 267.5 & rawben_rel_max < 0.972 & unc_rawben_rel_max >= 0.6081,3,2.2,261,108,153,0.414,0.136,0.118,earned_overissuance
+1,rule1410,unc_rawben_rel_max >= 1.571 & months_since_cert_n >= 4.5 & shelter_expenses >= 1281 & shelter_expenses < 1792,4,0.8,92,38,54,0.413,0.048,0.053,earned_overissuance
+1,rule3202,unc_rawben_rel_max >= 1.229 & utilities < 346 & months_since_cert_n >= 7.5,3,0.6,76,31,45,0.408,0.039,0.047,earned_overissuance
+1,rule212,rawunearn < 365.5 & total_deductions < 106.2 & utilities >= 9.5 & shelter_expenses < 40.5,4,0.3,37,15,22,0.405,0.019,0.018,earned_overissuance
+1,rule1147,rawearn >= 872 & months_since_cert_n >= 3.5 & utilities >= 477,3,1.1,129,52,77,0.403,0.066,0.056,earned_overissuance
+1,rule4445,rawearn >= 3 & unc_rawben_rel_max < 0.9737 & rawearn < 726 & months_since_cert_n >= 4.5,4,1.1,136,54,82,0.397,0.068,0.051,earned_overissuance
+1,rule1711,rawunearn < 0.5 & months_since_cert_n >= 3.5 & unc_rawben_rel_max < 0.823,3,2.4,284,111,173,0.391,0.14,0.13,earned_overissuance
+1,rule2782,rawunearn < 757.5 & rawgross < 759.5 & shelter_expenses >= 1208 & months_since_cert_n >= 3.5,4,1.3,159,62,97,0.39,0.078,0.091,earned_overissuance
+1,rule538,rawunearn < 26.5 & total_deductions < 47.5 & count_divisible_by_100 >= 0.5,3,0.2,18,7,11,0.389,0.009,0.008,earned_overissuance
+1,rule1018,rawearn >= 314.5 & rawben_rel_max < 0.6136 & months_since_cert_n >= 7.5,3,1,122,47,75,0.385,0.059,0.056,earned_overissuance
+1,rule1863,rawunearn < 27.5 & utilities >= 9.5 & shelter_expenses < 48.5,3,0.6,68,26,42,0.382,0.033,0.029,earned_overissuance
+1,rule1360,rawunearn >= 261 & rawearn >= 1 & months_since_cert_n >= 5.5 & rawearn < 509,4,0.7,84,32,52,0.381,0.04,0.025,earned_overissuance
+1,rule1391,rawunearn < 491.5 & total_deductions >= 251.8 & months_since_cert_n >= 4.5 & utilities < 352.5,4,1.5,175,66,109,0.377,0.083,0.096,earned_overissuance
+1,rule4284,total_deductions >= 856.5 & rawunearn < 1128 & rawben_rel_max < 0.9771 & rawearn >= 1131,4,1.3,153,56,97,0.366,0.071,0.06,earned_overissuance
+1,rule3435,rawunearn < 15.5 & months_since_cert_n >= 4.5 & shelter_expenses >= 29.5 & utilities < 375,4,2.1,244,89,155,0.365,0.112,0.121,earned_overissuance
+1,rule481,unc_rawben_rel_max < 1.82 & rawearn >= 1028 & rawben_rel_max >= 0.2663 & utilities >= 340.5,4,1.7,203,74,129,0.365,0.093,0.065,earned_overissuance
+1,rule5040,rawearn >= 3 & unc_rawben_rel_max < 0.9804 & rawgross < 1090,3,2.4,289,105,184,0.363,0.132,0.109,earned_overissuance
+1,rule1767,unc_rawben_rel_max >= 1.769 & months_since_cert_n >= 3.5 & utilities < 708.5,3,2.5,293,105,188,0.358,0.132,0.154,earned_overissuance
+1,rule5012,count_divisible_by_100 < 1.5 & total_deductions >= 834.3 & shelter_expenses < 1120 & shelter_expenses >= 1084,4,0.2,28,10,18,0.357,0.013,0.013,earned_overissuance
+1,rule3606,"rawgross < 3 & expedited_i %in% c(""FALSE"") & unc_rawben_rel_max >= 1.218 & utilities < 51",4,1.1,130,46,84,0.354,0.058,0.066,earned_overissuance
+1,rule2408,rawunearn < 27.5 & total_deductions >= 29.5 & months_since_cert_n >= 5.5 & utilities < 300.5,4,1.7,205,72,133,0.351,0.091,0.098,earned_overissuance
+1,rule839,rawunearn >= 2 & rawearn >= 1.5 & rawearn < 74,3,0.5,61,21,40,0.344,0.026,0.019,earned_overissuance
+1,rule244,rawearn >= 574.5 & rawben_rel_max >= 0.08093 & rawben_rel_max < 0.806,3,3.6,426,146,280,0.343,0.184,0.145,earned_overissuance
+1,rule142,rawunearn < 584.5 & unc_rawben_rel_max >= 0.8117 & shelter_expenses >= 1292 & rawearn < 3.5,4,1.5,184,63,121,0.342,0.079,0.091,earned_overissuance
+1,rule1083,rawearn < 859 & utilities < 598.5 & unc_rawben_rel_max >= 1.872,3,2.1,252,86,166,0.341,0.108,0.121,earned_overissuance
+1,rule1587,rawunearn < 492.5 & unc_rawben_rel_max < 0.8117 & rawben_rel_max >= 0.2972 & rawearn < 1380,4,2.1,249,82,167,0.329,0.103,0.079,earned_overissuance
+1,rule1967,rawunearn < 754.5 & shelter_expenses >= 1214 & utilities >= 835.5,3,0.9,113,37,76,0.327,0.047,0.049,earned_overissuance
+1,rule976,rawunearn < 778 & total_deductions < 501.5 & rawearn >= 435 & shelter_expenses < 50,4,1.1,132,43,89,0.326,0.054,0.056,earned_overissuance
+1,rule4069,shelter_expenses < 2164 & unc_rawben_rel_max >= 2.028,2,0.8,101,32,69,0.317,0.04,0.043,earned_overissuance
+1,rule1181,rawunearn >= 754.5 & rawearn >= 1 & total_deductions >= 529,3,0.9,105,33,72,0.314,0.042,0.03,earned_overissuance
+1,rule865,"elderly_disabled_i %in% c(""FALSE"") & rawben_rel_max < 0.9608 & total_deductions < 1010 & unc_rawben_rel_max >= 0.2655",4,4.1,489,153,336,0.313,0.193,0.151,earned_overissuance
+1,rule5113,rawgross < 0.5 & shelter_expenses >= 17 & utilities < 78,3,1.7,208,65,143,0.312,0.082,0.091,earned_overissuance
+1,rule3769,shelter_expenses >= 1788 & months_since_cert_n >= 7.5,2,0.8,90,28,62,0.311,0.035,0.038,earned_overissuance
+1,rule1615,rawunearn < 3 & unc_rawben_rel_max < 0.823,2,4.5,533,166,367,0.311,0.209,0.18,earned_overissuance
+1,rule1730,rawunearn < 496.5 & unc_rawben_rel_max < 0.9777 & rawben_rel_max >= 0.8719,3,0.9,104,32,72,0.308,0.04,0.04,earned_overissuance
+1,rule4767,rawearn >= 428.5 & utilities < 13.5,2,1.7,208,61,147,0.293,0.077,0.08,earned_overissuance
+1,rule1251,rawunearn < 492.5 & unc_rawben_rel_max >= 1.776 & utilities < 645.5,3,3.7,445,128,317,0.288,0.161,0.184,earned_overissuance
+1,rule486,unc_rawben_rel_max >= 1.82 & utilities >= 386.5 & shelter_expenses >= 1050,3,2.3,270,77,193,0.285,0.097,0.111,earned_overissuance
+1,rule493,rawunearn < 475.5 & rawben_rel_max >= 0.97 & unc_rawben_rel_max >= 1.646 & utilities < 465.5,4,3,354,101,253,0.285,0.127,0.146,earned_overissuance
+1,rule4575,shelter_expenses >= 1196 & rawunearn < 482.5,2,3.7,435,120,315,0.276,0.151,0.161,earned_overissuance
+1,rule4732,rawgross < 26 & total_deductions >= 12 & total_deductions < 303.5,3,1,124,34,90,0.274,0.043,0.043,earned_overissuance
+1,rule2648,rawunearn < 772 & shelter_expenses < 1982 & unc_rawben_rel_max >= 1.57 & months_since_cert_n >= 4.5,4,4,474,130,344,0.274,0.164,0.192,earned_overissuance
+1,rule2407,rawunearn < 27.5 & total_deductions >= 29.5 & months_since_cert_n >= 5.5 & utilities >= 300.5,4,3.9,467,127,340,0.272,0.16,0.167,earned_overissuance
+1,rule3076,unc_rawben_rel_max < 1.911 & shelter_expenses >= 1786,2,1.5,177,48,129,0.271,0.061,0.068,earned_overissuance
+1,rule4003,"elderly_disabled_i %in% c(""FALSE"") & rawgross >= 1543",2,1.8,211,57,154,0.27,0.072,0.074,earned_overissuance
+1,rule4936,total_deductions >= 1120 & total_deductions < 1137,2,0.3,30,8,22,0.267,0.01,0.011,earned_overissuance
+1,rule3092,unc_rawben_rel_max >= 1.248 & months_since_cert_n >= 4.5 & total_deductions < 679.8,3,4.2,494,131,363,0.265,0.165,0.197,earned_overissuance
+1,rule3617,percent_abawd < 0.5 & rawearn >= 4 & unc_rawben_rel_max < 0.9738,3,5.8,694,180,514,0.259,0.227,0.187,earned_overissuance
+1,rule1728,rawunearn < 496.5 & unc_rawben_rel_max < 0.9777 & rawben_rel_max < 0.8719 & total_deductions < 928,4,4.7,559,143,416,0.256,0.18,0.154,earned_overissuance
+1,rule3916,percent_abawd >= 0.5 & total_deductions >= 375.2,2,4.5,538,137,401,0.255,0.173,0.182,earned_overissuance
+1,rule1467,rawunearn < 488 & unc_rawben_rel_max >= 1.648 & months_since_cert_n >= 2.5,3,5.1,609,155,454,0.255,0.195,0.231,earned_overissuance
+1,rule76,rawunearn < 15.5 & total_deductions >= 59.5 & months_since_cert_n < 4.5 & rawben_rel_max < 0.9217,4,3,352,89,263,0.253,0.112,0.093,earned_overissuance
+1,rule217,rawunearn < 365.5 & total_deductions >= 106.2 & months_since_cert_n >= 3.5,3,9.6,1143,288,855,0.252,0.363,0.39,earned_overissuance
+1,rule4352,total_deductions >= 516.5 & rawunearn < 719 & months_since_cert_n >= 9.5 & utilities >= 584.5,4,1.3,157,38,119,0.242,0.048,0.051,earned_overissuance
+1,rule2747,rawunearn < 26.5 & total_deductions >= 28.5 & months_since_cert_n >= 4.5 & rawearn >= 7.5,4,3.5,421,102,319,0.242,0.129,0.119,earned_overissuance
+1,rule5218,count_divisible_by_100 >= 0.5 & rawunearn >= 687 & utilities < 364.5 & utilities >= 172.5,4,0.2,29,7,22,0.241,0.009,0.008,earned_overissuance
+1,rule5270,total_deductions >= 945.5 & total_deductions < 959.5,2,0.4,46,11,35,0.239,0.014,0.013,earned_overissuance
+1,rule210,rawunearn < 365.5 & total_deductions < 106.2 & utilities >= 9.5,3,1,115,27,88,0.235,0.034,0.034,earned_overissuance
+1,rule95,rawunearn < 778 & total_deductions < 836.1 & unc_rawben_rel_max < 1.767 & rawgross >= 776.5,4,4,476,110,366,0.231,0.139,0.118,earned_overissuance
+1,rule4325,rawben_rel_max >= 0.5804 & rawgross >= 1028 & rawunearn < 1070,3,2.5,301,69,232,0.229,0.087,0.074,earned_overissuance
+1,rule3624,rawgross < 27.5 & count_divisible_by_100 < 0.5 & shelter_expenses >= 17,3,7.7,913,209,704,0.229,0.264,0.298,earned_overissuance
+1,rule4351,total_deductions >= 516.5 & rawunearn < 719 & months_since_cert_n >= 9.5 & utilities < 584.5,4,1.2,137,31,106,0.226,0.039,0.042,earned_overissuance
+1,rule886,rawunearn < 26.5 & unc_rawben_rel_max >= 1.868 & shelter_expenses >= 615,3,5.1,604,136,468,0.225,0.172,0.196,earned_overissuance
+1,rule3277,rawunearn >= 488 & rawearn >= 2.5 & rawunearn < 996.5,3,1.2,138,30,108,0.217,0.038,0.027,earned_overissuance
+1,rule5285,shelter_expenses >= 1012 & utilities < 363.5 & shelter_expenses < 1100,3,0.4,51,11,40,0.216,0.014,0.013,earned_overissuance
+1,rule4812,unc_rawben_rel_max >= 0.6534 & rawben_rel_max < 0.6976 & rawunearn >= 963.5 & total_deductions < 556,4,0.2,24,5,19,0.208,0.006,0.006,earned_overissuance
+1,rule1114,"elderly_disabled_i %in% c(""FALSE"") & unc_rawben_rel_max >= 1.825 & utilities >= 416",3,3.5,413,86,327,0.208,0.108,0.123,earned_overissuance
+1,rule3565,unc_rawben_rel_max < 1.219 & rawearn >= 26.5 & rawunearn >= 710.5,3,1.6,193,39,154,0.202,0.049,0.033,earned_overissuance
+1,rule3402,unc_rawben_rel_max >= 1.653 & shelter_expenses < 1927,2,7.6,908,183,725,0.202,0.231,0.26,earned_overissuance
+1,rule4871,total_deductions >= 1016 & months_since_cert_n >= 18.5 & months_since_cert_n < 24.5,3,0.4,50,10,40,0.2,0.013,0.013,earned_overissuance
+2-3,rule309,shelter_expenses >= 1346 & rawunearn < 288.5 & months_since_cert_n >= 9.5 & shelter_expenses < 1456,4,0.2,24,12,12,0.5,0.012,0.013,earned_overissuance
+2-3,rule1180,rawearn < 3 & count_divisible_by_100 >= 1.5,2,0.1,22,10,12,0.455,0.01,0.009,earned_overissuance
+2-3,rule677,shelter_expenses >= 1878 & rawben_rel_max >= 0.6414 & unc_rawben_rel_max < 0.6839,3,0.2,23,10,13,0.435,0.01,0.01,earned_overissuance
+2-3,rule363,rawearn >= 711.5 & shelter_expenses >= 1842 & rawgross < 1968 & rawben_rel_max < 0.9204,4,0.6,90,37,53,0.411,0.038,0.037,earned_overissuance
+2-3,rule65,rawearn >= 1050 & unc_rawben_rel_max >= 0.7612 & shelter_expenses >= 1574 & rawben_rel_max < 0.8335,4,0.4,52,21,31,0.404,0.021,0.02,earned_overissuance
+2-3,rule281,rawearn >= 1026 & rawben_rel_max >= 0.2885 & utilities >= 902 & total_deductions < 1048,4,0.5,78,30,48,0.385,0.031,0.023,earned_overissuance
+2-3,rule1670,rawearn >= 1122 & rawearn < 2124 & shelter_expenses >= 1949,3,0.7,105,39,66,0.371,0.04,0.038,earned_overissuance
+2-3,rule1348,"rawearn >= 32.5 & unc_rawben_rel_max < 0.9909 & rawearn < 189.5 & elderly_disabled_i %in% c(""TRUE"")",4,0.3,39,14,25,0.359,0.014,0.009,earned_overissuance
+2-3,rule234,rawearn >= 711.5 & utilities >= 902 & rawben_rel_max >= 0.642,3,0.7,98,35,63,0.357,0.036,0.032,earned_overissuance
+2-3,rule492,"rawearn < 810.5 & unc_rawben_rel_max >= 1.507 & elderly_disabled_i %in% c(""FALSE"")",3,0.3,45,16,29,0.356,0.016,0.017,earned_overissuance
+2-3,rule1993,unc_rawben_rel_max < 1.335 & shelter_expenses >= 2503 & rawearn < 293.5,3,0.3,37,13,24,0.351,0.013,0.017,earned_overissuance
+2-3,rule1400,rawunearn < 942 & shelter_expenses >= 1562 & shelter_expenses < 1606 & rawearn < 210,4,0.2,35,12,23,0.343,0.012,0.018,earned_overissuance
+2-3,rule1932,shelter_expenses >= 1540 & rawgross < 1868 & rawearn >= 1088,3,1.2,183,60,123,0.328,0.061,0.061,earned_overissuance
+2-3,rule592,rawearn >= 3 & unc_rawben_rel_max < 0.9795 & rawearn < 198 & months_since_cert_n >= 3.5,4,0.3,46,15,31,0.326,0.015,0.013,earned_overissuance
+2-3,rule75,rawunearn < 842.5 & shelter_expenses >= 1068 & shelter_expenses < 1088 & rawunearn >= 253,4,0.2,25,8,17,0.32,0.008,0.009,earned_overissuance
+2-3,rule1627,rawearn >= 733 & rawgross < 2314 & utilities >= 902,3,0.9,125,40,85,0.32,0.041,0.035,earned_overissuance
+2-3,rule1506,"rawunearn >= 431 & rawearn >= 0.5 & rawearn < 123 & elderly_disabled_i %in% c(""TRUE"")",4,0.3,48,15,33,0.312,0.015,0.011,earned_overissuance
+2-3,rule1656,rawearn >= 3 & unc_rawben_rel_max < 0.993 & rawearn < 198,3,0.6,90,26,64,0.289,0.027,0.019,earned_overissuance
+2-3,rule857,unc_rawben_rel_max >= 1.487 & months_since_cert_n >= 8.5,2,0.5,71,20,51,0.282,0.02,0.029,earned_overissuance
+2-3,rule841,total_deductions >= 269.1 & rawgross < 0.5 & unc_rawben_rel_max < 1.233,3,0.3,49,13,36,0.265,0.013,0.019,earned_overissuance
+2-3,rule1774,shelter_expenses >= 2336 & rawben_rel_max >= 0.8097,2,0.7,109,28,81,0.257,0.029,0.035,earned_overissuance
+2-3,rule642,rawearn >= 1026 & utilities >= 645.5 & rawben_rel_max >= 0.7437,3,1.3,198,50,148,0.253,0.051,0.05,earned_overissuance
+2-3,rule2164,rawunearn < 834.5 & rawunearn >= 829.5,2,0.2,24,6,18,0.25,0.006,0.008,earned_overissuance
+2-3,rule1995,unc_rawben_rel_max >= 1.335 & utilities < 339.5,2,1.3,184,44,140,0.239,0.045,0.068,earned_overissuance
+2-3,rule1064,total_deductions >= 1730 & total_deductions < 1861,2,0.3,39,9,30,0.231,0.009,0.007,earned_overissuance
+2-3,rule1398,rawunearn < 942 & shelter_expenses >= 1562 & shelter_expenses < 1606,3,0.7,98,22,76,0.224,0.022,0.03,earned_overissuance
+2-3,rule510,rawearn >= 963.5 & shelter_expenses < 1902 & rawearn < 1148 & rawben_rel_max < 0.5265,4,0.4,54,11,43,0.204,0.011,0.007,earned_overissuance
+2-3,rule1303,shelter_expenses < 1836 & unc_rawben_rel_max >= 1.47 & utilities < 485,3,1.8,270,54,216,0.2,0.055,0.073,earned_overissuance
+4+,rule336,rawearn >= 1054 & rawgross < 1173 & rawben_rel_max < 0.8216,3,0.2,22,11,11,0.5,0.014,0.017,earned_overissuance
+4+,rule42,rawearn >= 1018 & utilities >= 851 & months_since_cert_n >= 8.5 & rawearn < 2364,4,0.3,34,17,17,0.5,0.022,0.024,earned_overissuance
+4+,rule1069,rawearn >= 1041 & rawgross < 1194 & total_deductions < 345,3,0.3,32,14,18,0.438,0.018,0.02,earned_overissuance
+4+,rule104,rawearn >= 801.5 & months_since_cert_n >= 10.5 & utilities >= 851,3,0.3,31,13,18,0.419,0.017,0.014,earned_overissuance
+4+,rule785,rawearn >= 641 & rawearn < 723.5 & rawben_rel_max < 0.8643,3,0.2,25,10,15,0.4,0.013,0.013,earned_overissuance
+4+,rule818,total_deductions >= 446.3 & total_deductions < 447.1,2,0.1,15,6,9,0.4,0.008,0.008,earned_overissuance
+4+,rule955,shelter_expenses >= 1252 & unc_rawben_rel_max >= 0.7847 & rawearn >= 1110 & total_deductions < 860.4,4,0.3,31,12,19,0.387,0.015,0.018,earned_overissuance
+4+,rule722,shelter_expenses >= 1377 & rawgross < 1800 & rawearn >= 1713,3,0.2,28,10,18,0.357,0.013,0.009,earned_overissuance
+4+,rule382,rawearn >= 1044 & rawben_rel_max >= 0.7618 & months_since_cert_n >= 6.5 & shelter_expenses >= 1585,4,0.7,76,27,49,0.355,0.035,0.044,earned_overissuance
+4+,rule994,rawearn >= 243 & rawben_rel_max < 0.6066 & rawgross >= 3146 & rawgross < 3158,4,0.2,23,8,15,0.348,0.01,0.007,earned_overissuance
+4+,rule873,rawearn >= 1016 & rawgross < 1912 & months_since_cert_n >= 10.5,3,0.5,58,20,38,0.345,0.026,0.03,earned_overissuance
+4+,rule608,rawearn >= 1018 & rawben_rel_max >= 0.7619 & rawben_rel_max < 0.7643,3,0.2,18,6,12,0.333,0.008,0.007,earned_overissuance
+4+,rule436,rawearn >= 644.5 & rawearn < 725 & rawben_rel_max < 0.8857,3,0.3,33,11,22,0.333,0.014,0.014,earned_overissuance
+4+,rule239,rawearn >= 774 & total_deductions < 274.5 & rawgross < 1165,3,0.6,67,21,46,0.313,0.027,0.029,earned_overissuance
+4+,rule907,unc_rawben_rel_max < 1.26 & rawearn >= 1048 & rawearn < 1073,3,0.2,29,9,20,0.31,0.012,0.009,earned_overissuance
+4+,rule749,rawearn >= 1048 & months_since_cert_n >= 6.5 & utilities >= 902,3,0.8,89,27,62,0.303,0.035,0.034,earned_overissuance
+4+,rule869,shelter_expenses >= 1302 & rawben_rel_max >= 0.7989 & rawgross >= 1116 & rawgross < 1194,4,0.4,41,12,29,0.293,0.015,0.025,earned_overissuance
+4+,rule1056,shelter_expenses >= 975.5 & rawgross < 10 & months_since_cert_n < 0.5,3,0.4,41,12,29,0.293,0.015,0.013,earned_overissuance
+4+,rule939,shelter_expenses >= 1252 & unc_rawben_rel_max >= 1.159 & months_since_cert_n < 0.5,3,0.3,38,11,27,0.289,0.014,0.014,earned_overissuance
+4+,rule1064,rawearn >= 151.5 & utilities < 304.5 & utilities >= 286.5 & married < 0.5,4,0.8,90,25,65,0.278,0.032,0.017,earned_overissuance
+4+,rule699,rawearn >= 797.5 & total_deductions < 179.7,2,0.3,36,10,26,0.278,0.013,0.018,earned_overissuance
+4+,rule644,rawearn >= 242 & total_deductions < 76.4,2,0.2,22,6,16,0.273,0.008,0.011,earned_overissuance
+4+,rule914,total_deductions >= 1826 & months_since_cert_n >= 4.5,2,0.4,41,11,30,0.268,0.014,0.015,earned_overissuance
+4+,rule430,shelter_expenses >= 1302 & rawben_rel_max >= 0.5961 & rawben_rel_max < 0.6088,3,0.3,38,10,28,0.263,0.013,0.011,earned_overissuance
+4+,rule827,months_since_cert_n >= 10.5 & rawearn >= 1280 & rawearn < 2066,3,0.7,80,21,59,0.262,0.027,0.027,earned_overissuance
+4+,rule1040,unc_rawben_rel_max < 1.38 & rawgross >= 1122 & rawgross < 1154,3,0.5,58,15,43,0.259,0.019,0.032,earned_overissuance
+4+,rule397,shelter_expenses >= 1278 & unc_rawben_rel_max >= 1.267 & utilities >= 517.5,3,0.4,47,12,35,0.255,0.015,0.018,earned_overissuance
+4+,rule515,rawearn >= 121 & rawgross < 1892 & rawben_rel_max < 0.9931 & shelter_expenses >= 1687,4,1.4,163,41,122,0.252,0.053,0.071,earned_overissuance
+4+,rule556,total_deductions >= 668.9 & rawgross < 210 & shelter_expenses >= 1652,3,0.6,65,16,49,0.246,0.021,0.022,earned_overissuance
+4+,rule328,shelter_expenses >= 1698 & utilities >= 851 & rawearn < 3420 & rawearn >= 1389,4,1.3,155,38,117,0.245,0.049,0.045,earned_overissuance
+4+,rule406,rawearn >= 604.5 & total_deductions < 233.4 & shelter_expenses < 275,3,0.7,87,21,66,0.241,0.027,0.031,earned_overissuance
+4+,rule1062,rawearn >= 151.5 & utilities < 304.5 & utilities >= 286.5,3,1,121,29,92,0.24,0.037,0.019,earned_overissuance
+4+,rule691,rawearn >= 1012 & rawearn < 1152 & utilities < 457.5,3,1,118,27,91,0.229,0.035,0.038,earned_overissuance
+4+,rule299,rawearn >= 775 & utilities >= 867.5 & rawearn < 2426,3,1.3,156,35,121,0.224,0.045,0.043,earned_overissuance
+4+,rule454,total_deductions >= 939.9 & months_since_cert_n >= 6.5 & rawgross < 1926,3,1.1,132,28,104,0.212,0.036,0.048,earned_overissuance
+4+,rule666,rawearn >= 1006 & months_since_cert_n >= 11.5 & shelter_expenses < 1186,3,0.5,57,12,45,0.211,0.015,0.013,earned_overissuance
+4+,rule583,rawearn >= 4237 & rawgross < 4398,2,0.4,49,10,39,0.204,0.013,0.008,earned_overissuance
+4+,rule892,total_deductions >= 1732 & cat_elig >= 1.5,2,0.5,54,11,43,0.204,0.014,0.019,earned_overissuance
+4+,rule520,rawearn >= 1035 & months_since_cert_n >= 6.5 & rawben_rel_max >= 0.69,3,3.2,377,76,301,0.202,0.098,0.107,earned_overissuance
+1,rule2541,"unc_rawben_rel_max >= 1.473 & elderly_disabled_i %in% c(""TRUE"") & rawunearn < 60.5 & shelter_expenses < 950.5",4,2.3,195,144,51,0.738,0.256,0.279,unearned_overissuance
+1,rule5435,"count_divisible_by_100 < 0.5 & total_deductions >= 2.5 & rawgross < 0.5 & elderly_disabled_i %in% c(""TRUE"")",4,3.5,297,212,85,0.714,0.377,0.425,unearned_overissuance
+1,rule1143,"unc_rawben_rel_max >= 1.522 & elderly_disabled_i %in% c(""TRUE"") & rawunearn < 4.5 & months_since_cert_n >= 1.5",4,3.2,271,191,80,0.705,0.34,0.379,unearned_overissuance
+1,rule6940,count_divisible_by_100 < 0.5 & unc_rawben_rel_max >= 1.473 & utilities < 449.5 & months_since_cert_n >= 7.5,4,1.4,115,77,38,0.67,0.137,0.151,unearned_overissuance
+1,rule2553,unc_rawben_rel_max >= 1.788 & utilities < 606 & utilities >= 554.5,3,0.7,56,31,25,0.554,0.055,0.067,unearned_overissuance
+1,rule10781,"elderly_disabled_i %in% c(""TRUE"") & rawgross < 582.5 & total_deductions >= 31",3,5.5,465,247,218,0.531,0.44,0.495,unearned_overissuance
+1,rule5510,count_divisible_by_100 >= 0.5 & rawgross >= 966 & rawben_rel_max >= 0.3746 & rawben_rel_max < 0.7987,4,0.4,36,19,17,0.528,0.034,0.028,unearned_overissuance
+1,rule6109,"rawgross < 0.5 & elderly_disabled_i %in% c(""TRUE"") & expedited_i %in% c(""FALSE"")",3,5,421,219,202,0.52,0.39,0.446,unearned_overissuance
+1,rule3243,unc_rawben_rel_max >= 1.435 & rawunearn < 0.5 & months_since_cert_n >= 6.5,3,3.5,296,153,143,0.517,0.272,0.298,unearned_overissuance
+1,rule9962,unc_rawben_rel_max >= 1.817 & months_since_cert_n >= 6.5,2,2.6,217,111,106,0.512,0.198,0.205,unearned_overissuance
+1,rule11730,count_divisible_by_100 < 0.5 & total_deductions >= 18.8 & rawgross < 0.5 & utilities < 44.5,4,1.5,124,61,63,0.492,0.109,0.127,unearned_overissuance
+1,rule5792,"rawgross < 746.5 & rawben_rel_max >= 0.9039 & elderly_disabled_i %in% c(""TRUE"") & rawunearn < 12.5",4,6.6,557,271,286,0.487,0.482,0.559,unearned_overissuance
+1,rule5607,"rawunearn < 722.5 & elderly_disabled_i %in% c(""TRUE"") & months_since_cert_n < 21.5 & rawgross < 32.5",4,5.8,488,237,251,0.486,0.422,0.487,unearned_overissuance
+1,rule5183,unc_rawben_rel_max >= 1.872 & months_since_cert_n >= 2.5,2,3.7,313,140,173,0.447,0.249,0.27,unearned_overissuance
+1,rule9483,"rawgross < 812.5 & elderly_disabled_i %in% c(""TRUE"") & utilities < 448.5 & total_deductions >= 27",4,5,418,186,232,0.445,0.331,0.349,unearned_overissuance
+1,rule4592,"rawunearn < 813.5 & elderly_disabled_i %in% c(""TRUE"") & utilities < 380.5 & total_deductions >= 30",4,4.2,357,157,200,0.44,0.279,0.29,unearned_overissuance
+1,rule12006,total_deductions >= 2.5 & rawgross < 24.5 & unc_rawben_rel_max < 1.716 & percent_abawd < 0.5,4,1.9,156,68,88,0.436,0.121,0.154,unearned_overissuance
+1,rule7726,"elderly_disabled_i %in% c(""TRUE"") & rawgross < 12.5 & shelter_expenses >= 959.5 & total_deductions < 1285",4,0.6,52,22,30,0.423,0.039,0.04,unearned_overissuance
+1,rule11990,rawgross < 24.5 & unc_rawben_rel_max >= 1.214 & utilities < 426 & shelter_expenses < 958.5,4,4.1,342,138,204,0.404,0.246,0.278,unearned_overissuance
+1,rule5504,"count_divisible_by_100 < 0.5 & rawunearn < 721.5 & elderly_disabled_i %in% c(""TRUE"") & months_since_cert_n >= 9.5",4,4.2,358,143,215,0.399,0.254,0.276,unearned_overissuance
+1,rule8088,"months_since_cert_n >= 4.5 & rawgross < 682 & elderly_disabled_i %in% c(""TRUE"")",3,7,592,235,357,0.397,0.418,0.464,unearned_overissuance
+1,rule7202,"rawunearn < 803.5 & elderly_disabled_i %in% c(""TRUE"") & utilities < 508 & total_deductions >= 30.5",4,6.4,537,209,328,0.389,0.372,0.393,unearned_overissuance
+1,rule9187,"rawunearn < 806.5 & elderly_disabled_i %in% c(""TRUE"") & shelter_expenses < 605.5 & utilities >= 279",4,2.5,211,74,137,0.351,0.132,0.139,unearned_overissuance
+1,rule6656,"count_divisible_by_100 < 0.5 & rawgross < 746.5 & elderly_disabled_i %in% c(""TRUE"")",3,10.9,921,308,613,0.334,0.548,0.609,unearned_overissuance
+1,rule4399,"rawgross < 748 & elderly_disabled_i %in% c(""TRUE"") & shelter_expenses < 604.5 & cat_elig < 1.5",4,5.8,491,161,330,0.328,0.286,0.316,unearned_overissuance
+1,rule4773,count_divisible_by_100 >= 0.5 & shelter_expenses >= 728 & utilities < 634.5 & unc_rawben_rel_max >= 0.4947,4,0.9,79,25,54,0.316,0.044,0.047,unearned_overissuance
+1,rule7134,unc_rawben_rel_max >= 1.214 & rawunearn < 0.5,2,11.6,978,279,699,0.285,0.496,0.572,unearned_overissuance
+1,rule3202,"unc_rawben_rel_max < 2.029 & rawunearn < 813.5 & elderly_disabled_i %in% c(""TRUE"") & utilities < 503.5",4,9.9,836,220,616,0.263,0.391,0.429,unearned_overissuance
+1,rule11772,"unc_rawben_rel_max >= 0.484 & elderly_disabled_i %in% c(""TRUE"") & shelter_expenses < 650.5",3,9.7,819,214,605,0.261,0.381,0.418,unearned_overissuance
+1,rule13034,rawben_rel_max >= 0.3217 & rawben_rel_max < 0.6673 & medical_deductions >= 113.5 & rawunearn < 1380,4,0.9,76,19,57,0.25,0.034,0.021,unearned_overissuance
+1,rule12653,rawben_rel_max >= 0.4196 & rawben_rel_max < 0.7005 & total_deductions >= 600.5 & total_deductions < 652,4,0.5,45,11,34,0.244,0.02,0.017,unearned_overissuance
+1,rule8570,unc_rawben_rel_max < 1.792 & total_deductions >= 2.8 & shelter_expenses < 362.5 & rawearn < 24.5,4,3.9,328,76,252,0.232,0.135,0.151,unearned_overissuance
+1,rule11655,rawunearn < 0.5 & total_deductions >= 5.1 & shelter_expenses >= 721.5,3,8.3,702,157,545,0.224,0.279,0.316,unearned_overissuance
+1,rule11046,rawben_rel_max >= 0.6661 & rawben_rel_max < 0.965 & total_deductions < 427 & shelter_expenses >= 33.5,4,2.4,203,44,159,0.217,0.078,0.07,unearned_overissuance
+1,rule7395,"rawben_rel_max >= 0.4271 & rawunearn < 1338 & utilities < 377.5 & elderly_disabled_i %in% c(""TRUE"")",4,12.7,1069,230,839,0.215,0.409,0.429,unearned_overissuance
+1,rule8301,rawgross < 812.5 & rawben_rel_max < 0.9651 & rawben_rel_max >= 0.5574 & rawunearn >= 241,4,3.6,305,63,242,0.207,0.112,0.097,unearned_overissuance
+2-3,rule625,"elderly_disabled_i %in% c(""TRUE"") & rawunearn < 7.5 & unc_rawben_rel_max >= 1.152",3,1.1,76,51,25,0.671,0.112,0.17,unearned_overissuance
+2-3,rule3141,"elderly_disabled_i %in% c(""TRUE"") & children_i %in% c(""TRUE"") & rawunearn < 204",3,0.7,48,26,22,0.542,0.057,0.076,unearned_overissuance
+2-3,rule1609,"elderly_disabled_i %in% c(""TRUE"") & rawunearn < 7.5 & married < 0.5",3,1,68,35,33,0.515,0.077,0.114,unearned_overissuance
+2-3,rule4389,unc_rawben_rel_max < 0.5103 & count_divisible_by_100 >= 0.5 & utilities >= 477.5,3,0.6,38,15,23,0.395,0.033,0.019,unearned_overissuance
+2-3,rule1850,count_divisible_by_100 >= 0.5 & rawben_rel_max < 0.9641 & utilities >= 589,3,0.8,53,20,33,0.377,0.044,0.035,unearned_overissuance
+2-3,rule4462,shelter_expenses >= 1513 & utilities < 684.5 & utilities >= 674,3,0.2,16,6,10,0.375,0.013,0.012,unearned_overissuance
+2-3,rule1472,"count_divisible_by_100 < 0.5 & elderly_disabled_i %in% c(""TRUE"") & rawunearn < 283.5",3,2.2,153,55,98,0.359,0.12,0.187,unearned_overissuance
+2-3,rule3433,total_deductions >= 1203 & months_since_cert_n < 3.5 & total_deductions < 1464,3,0.9,60,21,39,0.35,0.046,0.044,unearned_overissuance
+2-3,rule3880,shelter_expenses >= 1680 & shelter_expenses < 1778 & rawearn < 376.5,3,0.8,53,18,35,0.34,0.039,0.059,unearned_overissuance
+2-3,rule3656,rawgross < 0.5 & shelter_expenses >= 749 & shelter_expenses < 818,3,0.6,43,14,29,0.326,0.031,0.042,unearned_overissuance
+2-3,rule2089,count_divisible_by_100 >= 0.5 & rawunearn < 74.5 & married < 0.5,3,2.4,162,52,110,0.321,0.114,0.106,unearned_overissuance
+2-3,rule1781,count_divisible_by_100 >= 0.5 & rawunearn < 96.5 & unc_rawben_rel_max < 1.138,3,1.7,119,37,82,0.311,0.081,0.068,unearned_overissuance
+2-3,rule898,total_deductions >= 1205 & rawgross < 2684 & months_since_cert_n < 5.5,3,1.6,107,32,75,0.299,0.07,0.083,unearned_overissuance
+2-3,rule3714,utilities < 368 & shelter_expenses >= 762.5 & shelter_expenses < 780.5,3,0.4,27,8,19,0.296,0.018,0.014,unearned_overissuance
+2-3,rule3801,rawunearn >= 987.5 & rawgross < 1067 & rawben_rel_max < 0.6773,3,0.5,31,9,22,0.29,0.02,0.018,unearned_overissuance
+2-3,rule1213,"elderly_disabled_i %in% c(""FALSE"") & count_divisible_by_100 >= 0.5 & rawunearn < 96.5",3,2.6,180,52,128,0.289,0.114,0.113,unearned_overissuance
+2-3,rule4426,rawgross < 0.5 & utilities >= 160.5 & utilities < 366.5,3,1.4,93,26,67,0.28,0.057,0.061,unearned_overissuance
+2-3,rule2551,shelter_expenses >= 1606 & rawgross < 2402 & rawgross >= 2038,3,1.3,87,24,63,0.276,0.053,0.049,unearned_overissuance
+2-3,rule3178,"elderly_disabled_i %in% c(""TRUE"") & rawben_rel_max >= 0.2794 & rawgross >= 1994",3,1.4,94,25,69,0.266,0.055,0.051,unearned_overissuance
+2-3,rule1565,count_divisible_by_100 >= 0.5 & total_deductions < 195.5 & rawgross >= 511,3,0.7,49,13,36,0.265,0.028,0.015,unearned_overissuance
+2-3,rule1832,shelter_expenses >= 1208 & rawgross < 0.5,2,2.7,183,46,137,0.251,0.101,0.137,unearned_overissuance
+2-3,rule3085,shelter_expenses >= 1974 & months_since_cert_n >= 5.5 & total_deductions < 1297,3,0.9,63,15,48,0.238,0.033,0.037,unearned_overissuance
+2-3,rule4569,months_since_cert_n < 2.5 & rawben_rel_max < 0.9727 & rawben_rel_max >= 0.936,3,0.7,51,12,39,0.235,0.026,0.031,unearned_overissuance
+2-3,rule4523,rawunearn >= 1004 & total_deductions >= 609.5 & cat_elig >= 1.5,3,1.7,117,27,90,0.231,0.059,0.05,unearned_overissuance
+2-3,rule301,shelter_expenses >= 1752 & rawben_rel_max < 0.9903 & rawgross < 2415,3,2.5,173,40,133,0.231,0.088,0.093,unearned_overissuance
+2-3,rule1726,shelter_expenses >= 1668 & shelter_expenses < 1806 & utilities < 705.5,3,1.3,88,20,68,0.227,0.044,0.061,unearned_overissuance
+2-3,rule610,count_divisible_by_100 >= 0.5 & total_deductions < 170.3,2,1.8,124,28,96,0.226,0.061,0.045,unearned_overissuance
+2-3,rule2867,shelter_expenses < 2270 & unc_rawben_rel_max >= 0.1512 & rawunearn >= 2033,3,1.4,93,21,72,0.226,0.046,0.037,unearned_overissuance
+2-3,rule1211,count_divisible_by_100 >= 0.5 & rawben_rel_max < 0.9602 & rawgross < 1220,3,1.5,103,23,80,0.223,0.05,0.035,unearned_overissuance
+2-3,rule3540,count_divisible_by_100 >= 0.5 & shelter_expenses < 1604 & total_deductions < 244.6,3,2.2,153,32,121,0.209,0.07,0.048,unearned_overissuance
+2-3,rule3546,"count_divisible_by_100 >= 0.5 & expedited_i %in% c(""TRUE"")",2,1.1,72,15,57,0.208,0.033,0.035,unearned_overissuance
+2-3,rule2449,shelter_expenses >= 2170 & total_deductions < 1532,2,1.8,121,25,96,0.207,0.055,0.072,unearned_overissuance
+2-3,rule3767,shelter_expenses >= 1683 & shelter_expenses < 1779,2,1.6,107,22,85,0.206,0.048,0.066,unearned_overissuance
+2-3,rule1760,unc_rawben_rel_max >= 1.387 & utilities < 506.5,2,3,203,41,162,0.202,0.09,0.123,unearned_overissuance
+2-3,rule2987,"elderly_disabled_i %in% c(""TRUE"") & rawunearn < 838.5",2,5.6,385,77,308,0.2,0.168,0.24,unearned_overissuance
+4+,rule172,"elderly_disabled_i %in% c(""TRUE"") & rawunearn < 0.5",2,0.8,32,18,14,0.562,0.064,0.095,unearned_overissuance
+4+,rule5938,"months_since_cert_n >= 1.5 & elderly_disabled_i %in% c(""TRUE"") & rawunearn < 596",3,1.1,48,21,27,0.438,0.075,0.104,unearned_overissuance
+4+,rule1829,rawunearn >= 1602 & total_deductions >= 700 & total_deductions < 1079,3,0.9,37,15,22,0.405,0.053,0.038,unearned_overissuance
+4+,rule7198,rawben_rel_max >= 0.7153 & rawunearn >= 1118 & months_since_cert_n >= 8.5,3,0.9,37,15,22,0.405,0.053,0.065,unearned_overissuance
+4+,rule9940,shelter_expenses < 2420 & rawunearn >= 2484 & rawunearn < 2673,3,0.5,20,8,12,0.4,0.028,0.02,unearned_overissuance
+4+,rule8181,"rawgross < 2060 & elderly_disabled_i %in% c(""TRUE"") & rawunearn < 648",3,1.2,52,20,32,0.385,0.071,0.102,unearned_overissuance
+4+,rule1666,"count_divisible_by_100 < 0.5 & elderly_disabled_i %in% c(""TRUE"") & rawunearn < 598.5",3,1.4,58,22,36,0.379,0.078,0.102,unearned_overissuance
+4+,rule5121,utilities >= 451 & rawunearn >= 2039 & rawben_rel_max >= 0.4485,3,0.9,36,13,23,0.361,0.046,0.058,unearned_overissuance
+4+,rule954,rawunearn >= 1464 & rawben_rel_max >= 0.7101 & shelter_expenses < 1642,3,1.1,46,16,30,0.348,0.057,0.053,unearned_overissuance
+4+,rule9164,shelter_expenses >= 1624 & shelter_expenses < 1647,2,0.7,28,9,19,0.321,0.032,0.028,unearned_overissuance
+4+,rule968,rawunearn >= 2039 & utilities >= 473 & rawben_rel_max >= 0.4113,3,1.1,46,14,32,0.304,0.05,0.061,unearned_overissuance
+4+,rule5588,rawgross < 1745 & rawgross >= 1720,2,0.7,30,9,21,0.3,0.032,0.036,unearned_overissuance
+4+,rule3486,rawunearn >= 2100 & rawgross < 2698 & months_since_cert_n >= 2.5,3,1.2,50,15,35,0.3,0.053,0.059,unearned_overissuance
+4+,rule6194,rawunearn >= 2224 & rawgross < 2674,2,1.3,54,16,38,0.296,0.057,0.048,unearned_overissuance
+4+,rule6578,rawearn < 1428 & rawearn >= 1304 & shelter_expenses >= 1216,3,0.7,28,8,20,0.286,0.028,0.043,unearned_overissuance
+4+,rule3999,rawben_rel_max < 0.988 & rawben_rel_max >= 0.9554 & months_since_cert_n >= 7.5,3,0.7,29,8,21,0.276,0.028,0.038,unearned_overissuance
+4+,rule6870,unc_rawben_rel_max < 1.259 & shelter_expenses >= 1622 & shelter_expenses < 1648,3,0.7,29,8,21,0.276,0.028,0.022,unearned_overissuance
+4+,rule8627,"unc_rawben_rel_max >= 0.7572 & rawben_rel_max < 0.8224 & elderly_disabled_i %in% c(""TRUE"")",3,1.9,80,22,58,0.275,0.078,0.085,unearned_overissuance
+4+,rule591,rawunearn >= 1599 & months_since_cert_n >= 6.5 & months_since_cert_n < 9.5,3,1.3,55,15,40,0.273,0.053,0.053,unearned_overissuance
+4+,rule6629,total_deductions < 374.6 & total_deductions >= 370.5,2,0.5,19,5,14,0.263,0.018,0.02,unearned_overissuance
+4+,rule336,shelter_expenses >= 1978 & total_deductions < 1390 & rawunearn >= 44,3,2.4,100,26,74,0.26,0.093,0.112,unearned_overissuance
+4+,rule393,count_divisible_by_100 >= 0.5 & rawunearn < 56.5 & months_since_cert_n < 3.5,3,1.9,81,21,60,0.259,0.075,0.062,unearned_overissuance
+4+,rule2401,total_deductions < 1182 & shelter_expenses >= 1974 & rawunearn >= 44,3,2,85,22,63,0.259,0.078,0.102,unearned_overissuance
+4+,rule5632,rawunearn >= 1294 & rawben_rel_max >= 0.5735 & rawben_rel_max < 0.6296,3,1.2,51,13,38,0.255,0.046,0.033,unearned_overissuance
+4+,rule10030,"elderly_disabled_i %in% c(""FALSE"") & total_deductions >= 1154 & rawunearn >= 11.5",3,1.2,52,13,39,0.25,0.046,0.029,unearned_overissuance
+4+,rule2875,shelter_expenses >= 1464 & rawunearn >= 461 & shelter_expenses < 1582,3,1.2,52,13,39,0.25,0.046,0.048,unearned_overissuance
+4+,rule4340,rawunearn >= 1026 & shelter_expenses < 1127 & shelter_expenses >= 1068,3,0.8,32,8,24,0.25,0.028,0.022,unearned_overissuance
+4+,rule6739,rawunearn >= 1238 & total_deductions >= 369.6 & total_deductions < 459.9,3,0.9,40,10,30,0.25,0.036,0.041,unearned_overissuance
+4+,rule3328,rawunearn >= 1151 & utilities >= 638.5 & rawben_rel_max >= 0.5264,3,2.1,89,22,67,0.247,0.078,0.092,unearned_overissuance
+4+,rule3853,"elderly_disabled_i %in% c(""TRUE"") & rawgross < 1885 & rawgross >= 1701",3,1.5,62,15,47,0.242,0.053,0.055,unearned_overissuance
+4+,rule1509,count_divisible_by_100 >= 0.5 & rawunearn < 93 & rawben_rel_max >= 0.4038,3,3,127,30,97,0.236,0.107,0.099,unearned_overissuance
+4+,rule2909,unc_rawben_rel_max < 1.372 & rawunearn >= 1266 & rawunearn < 1342,3,1.2,51,12,39,0.235,0.043,0.033,unearned_overissuance
+4+,rule771,rawunearn >= 1024 & rawben_rel_max >= 0.7506 & total_deductions < 597.5,3,1.7,73,17,56,0.233,0.06,0.054,unearned_overissuance
+4+,rule7475,rawgross >= 1088 & rawgross < 1282 & months_since_cert_n < 1.5,3,1,43,10,33,0.233,0.036,0.034,unearned_overissuance
+4+,rule9111,rawgross >= 677.5 & rawben_rel_max >= 0.7955 & rawben_rel_max < 0.8085,3,1.1,48,11,37,0.229,0.039,0.031,unearned_overissuance
+4+,rule5853,total_deductions < 285.6 & utilities >= 504 & utilities < 578.5,3,0.9,40,9,31,0.225,0.032,0.028,unearned_overissuance
+4+,rule5103,rawunearn >= 1148 & rawben_rel_max >= 0.7158 & total_deductions < 720,3,2.6,111,25,86,0.225,0.089,0.083,unearned_overissuance
+4+,rule4450,utilities >= 880.5 & utilities < 922 & rawben_rel_max < 0.851,3,1.2,49,11,38,0.224,0.039,0.03,unearned_overissuance
+4+,rule10907,rawgross >= 1222 & rawgross < 1281,2,1.3,54,12,42,0.222,0.043,0.042,unearned_overissuance
+4+,rule8644,shelter_expenses >= 2152 & total_deductions < 1388 & months_since_cert_n < 2.5,3,1.7,73,16,57,0.219,0.057,0.071,unearned_overissuance
+4+,rule3115,shelter_expenses >= 2295 & rawgross >= 3664,2,1.1,46,10,36,0.217,0.036,0.052,unearned_overissuance
+4+,rule9288,utilities >= 386.5 & total_deductions < 462.2 & total_deductions >= 444,3,1,42,9,33,0.214,0.032,0.047,unearned_overissuance
+4+,rule1627,count_divisible_by_100 >= 0.5 & rawunearn < 93 & unc_rawben_rel_max < 1.063,3,2.6,109,23,86,0.211,0.082,0.075,unearned_overissuance
+4+,rule804,rawunearn >= 964.5 & rawben_rel_max >= 0.7151 & utilities < 424,3,2.4,100,21,79,0.21,0.075,0.051,unearned_overissuance
+4+,rule4436,rawben_rel_max >= 0.3538 & rawben_rel_max < 0.3797 & utilities >= 438,3,0.9,39,8,31,0.205,0.028,0.029,unearned_overissuance
+1,rule2030,unc_rawben_rel_max < -0.001718 & unc_rawben_rel_max >= -0.006995,2,2.1,77,71,6,0.922,0.297,0.39,underissuance
+1,rule2038,unc_rawben_rel_max < -0.001718 & unc_rawben_rel_max >= -0.01 & shelter_expenses >= 466.5,3,1.3,48,44,4,0.917,0.184,0.246,underissuance
+1,rule2258,rawgross >= 1170 & unc_rawben_rel_max >= -0.008775 & unc_rawben_rel_max < -0.001718,3,1.8,65,59,6,0.908,0.247,0.334,underissuance
+1,rule1963,rawearn < 738 & unc_rawben_rel_max < -0.001718 & unc_rawben_rel_max >= -0.01,3,1.8,64,56,8,0.875,0.234,0.29,underissuance
+1,rule21102,rawgross < 1836 & unc_rawben_rel_max < -0.001718 & unc_rawben_rel_max >= -0.014,3,2.3,81,70,11,0.864,0.293,0.386,underissuance
+1,rule11331,"rawben_rel_max < 0.7928 & elderly_disabled_i %in% c(""FALSE"") & rawunearn >= 311",3,2.1,76,56,20,0.737,0.234,0.254,underissuance
+1,rule321,"rawben_rel_max < 0.8024 & elderly_disabled_i %in% c(""FALSE"") & rawunearn >= 345.5",3,2.2,78,57,21,0.731,0.238,0.255,underissuance
+1,rule13573,unc_rawben_rel_max < 0.6525 & rawunearn < 548.5 & rawben_rel_max >= 0.5773,3,0.7,25,18,7,0.72,0.075,0.052,underissuance
+1,rule3930,"rawben_rel_max < 0.8023 & elderly_disabled_i %in% c(""FALSE"") & rawearn < 562",3,2.2,79,56,23,0.709,0.234,0.239,underissuance
+1,rule2274,"unc_rawben_rel_max < 0.686 & elderly_disabled_i %in% c(""FALSE"") & rawearn < 892",3,2.3,82,58,24,0.707,0.243,0.257,underissuance
+1,rule5219,"unc_rawben_rel_max < 0.8043 & elderly_disabled_i %in% c(""FALSE"") & rawearn < 630",3,2.3,83,58,25,0.699,0.243,0.246,underissuance
+1,rule2370,"rawben_rel_max < 0.8023 & elderly_disabled_i %in% c(""FALSE"") & rawgross < 1062",3,3,108,71,37,0.657,0.297,0.255,underissuance
+1,rule5108,"rawben_rel_max < 0.8041 & elderly_disabled_i %in% c(""FALSE"") & total_deductions < 421.1",3,4.2,151,92,59,0.609,0.385,0.392,underissuance
+1,rule9807,"unc_rawben_rel_max < 0.6872 & elderly_disabled_i %in% c(""TRUE"") & rawunearn < 580",3,0.8,28,17,11,0.607,0.071,0.07,underissuance
+1,rule952,"rawben_rel_max < 0.6525 & elderly_disabled_i %in% c(""FALSE"") & rawgross < 1692",3,4.4,157,93,64,0.592,0.389,0.439,underissuance
+1,rule15953,rawearn < 915.5 & rawben_rel_max < 0.6574 & rawearn >= 140.5,3,2,71,40,31,0.563,0.167,0.141,underissuance
+1,rule17705,unc_rawben_rel_max < 0.794 & rawunearn < 590 & months_since_cert_n >= 5.5,3,2.1,75,40,35,0.533,0.167,0.133,underissuance
+1,rule4793,unc_rawben_rel_max < 0.7928 & rawunearn < 576 & rawgross < 1364,3,3.7,131,69,62,0.527,0.289,0.22,underissuance
+1,rule17947,rawearn >= 183.5 & rawgross < 1677 & rawben_rel_max < 0.654,3,4.1,148,77,71,0.52,0.322,0.33,underissuance
+1,rule7248,rawearn >= 446.5 & months_since_cert_n >= 5.5 & months_since_cert_n < 9.5,3,1.6,57,28,29,0.491,0.117,0.106,underissuance
+1,rule2239,rawben_rel_max < 0.8023 & rawunearn < 653.5 & unc_rawben_rel_max >= 0.5916,3,2.6,92,45,47,0.489,0.188,0.114,underissuance
+1,rule2095,rawearn >= 746 & rawgross < 1748 & unc_rawben_rel_max < 0.7938,3,4.2,149,72,77,0.483,0.301,0.307,underissuance
+1,rule4948,rawben_rel_max < 0.8043 & rawunearn < 655 & rawben_rel_max >= 0.6117,3,2.4,85,41,44,0.482,0.172,0.1,underissuance
+1,rule19103,unc_rawben_rel_max < 0.7986 & rawben_rel_max >= 0.4825 & shelter_expenses < 491.5,3,2.8,99,43,56,0.434,0.18,0.121,underissuance
+1,rule15605,"rawearn >= 93.5 & elderly_disabled_i %in% c(""TRUE"") & shelter_expenses < 1040",3,1.7,61,25,36,0.41,0.105,0.103,underissuance
+1,rule16339,"unc_rawben_rel_max < 0.7238 & elderly_disabled_i %in% c(""FALSE"") & rawunearn < 655",3,4.6,166,66,100,0.398,0.276,0.264,underissuance
+1,rule10467,rawearn >= 444.5 & rawgross < 1703 & months_since_cert_n < 9.5,3,5.9,211,79,132,0.374,0.331,0.327,underissuance
+1,rule7988,"rawben_rel_max < 0.8023 & expedited_i %in% c(""FALSE"") & rawunearn < 756.5",3,7.3,261,97,164,0.372,0.406,0.364,underissuance
+1,rule18548,rawgross < 1010 & cat_elig >= 1.5 & rawben_rel_max < 0.6558,3,1.9,68,24,44,0.353,0.1,0.103,underissuance
+1,rule7907,"unc_rawben_rel_max >= -0.001718 & rawearn >= 193 & elderly_disabled_i %in% c(""TRUE"")",3,1.5,55,19,36,0.345,0.079,0.075,underissuance
+1,rule7038,rawben_rel_max < 0.7928 & rawunearn < 819 & utilities >= 321,3,4.1,148,49,99,0.331,0.205,0.173,underissuance
+1,rule17522,shelter_expenses < 515 & utilities >= 343.5 & utilities < 366.5,3,1.1,40,12,28,0.3,0.05,0.054,underissuance
+1,rule20922,unc_rawben_rel_max < 0.6856 & months_since_cert_n < 2.5 & rawunearn < 951.5,3,4.8,171,51,120,0.298,0.213,0.223,underissuance
+1,rule9419,months_since_cert_n < 2.5 & rawben_rel_max < 0.7915 & rawunearn < 956.5,3,5.5,197,57,140,0.289,0.238,0.236,underissuance
+1,rule7094,"shelter_expenses < 1170 & rawearn >= 243 & homeless %in% c(""FALSE"")",3,7,252,70,182,0.278,0.293,0.297,underissuance
+1,rule10994,rawgross >= 910.5 & months_since_cert_n < 2.5 & rawunearn < 956.5,3,3.5,126,35,91,0.278,0.146,0.162,underissuance
+1,rule21735,unc_rawben_rel_max < 0.6487 & utilities >= 672.5 & months_since_cert_n >= 10.5,3,1.8,63,17,46,0.27,0.071,0.075,underissuance
+1,rule16873,rawearn >= 838.5 & percent_abawd < 0.5,2,4,143,38,105,0.266,0.159,0.162,underissuance
+1,rule22777,rawgross >= 1068 & unc_rawben_rel_max >= -0.006995 & utilities < 493.5,3,8.2,293,77,216,0.263,0.322,0.367,underissuance
+1,rule22883,rawgross >= 1236 & unc_rawben_rel_max >= -0.01259 & cat_elig >= 0.5,3,10.1,363,93,270,0.256,0.389,0.466,underissuance
+1,rule6179,unc_rawben_rel_max < 0.6525 & shelter_expenses < 363 & cat_elig >= 0.5,3,9.5,339,77,262,0.227,0.322,0.346,underissuance
+1,rule17898,rawunearn >= 939.5 & months_since_cert_n < 3.5 & rawunearn < 960.5,3,0.6,22,5,17,0.227,0.021,0.013,underissuance
+1,rule23414,rawben_rel_max < 0.275 & unc_rawben_rel_max >= -0.01779 & utilities < 634.5,3,12.3,440,96,344,0.218,0.402,0.491,underissuance
+1,rule18219,rawben_rel_max < 0.5419 & rawgross < 1356 & utilities >= 565.5,3,2,71,15,56,0.211,0.063,0.061,underissuance
+1,rule5719,unc_rawben_rel_max < 0.7305 & utilities >= 663.5 & rawben_rel_max >= 0.2995,3,3,109,23,86,0.211,0.096,0.078,underissuance
+1,rule8354,unc_rawben_rel_max < 0.7532 & utilities >= 663.5 & rawgross < 1680,3,3.7,134,27,107,0.201,0.113,0.11,underissuance
+2-3,rule3188,rawgross >= 972 & unc_rawben_rel_max >= -0.004357 & unc_rawben_rel_max < 0.001676,3,0.3,19,15,4,0.789,0.037,0.052,underissuance
+2-3,rule3743,rawgross >= 991.5 & unc_rawben_rel_max >= -0.005447 & unc_rawben_rel_max < 0.004203,3,0.4,23,16,7,0.696,0.04,0.053,underissuance
+2-3,rule14380,rawben_rel_max < 0.734 & rawben_rel_max >= 0.6839 & utilities >= 719,3,0.5,31,12,19,0.387,0.03,0.027,underissuance
+2-3,rule9977,"rawunearn >= 753.5 & elderly_disabled_i %in% c(""FALSE"") & shelter_expenses < 547.5",3,1.6,97,37,60,0.381,0.092,0.106,underissuance
+2-3,rule1406,rawgross >= 1126 & shelter_expenses < 331 & unc_rawben_rel_max >= 0.1773,3,2.7,162,51,111,0.315,0.127,0.15,underissuance
+2-3,rule5069,unc_rawben_rel_max < 0.8892 & shelter_expenses < 9.5 & rawunearn < 646,3,2.9,177,53,124,0.299,0.132,0.118,underissuance
+2-3,rule12690,rawearn >= 893.5 & months_since_cert_n < 0.5 & shelter_expenses < 936.5,3,1.1,67,19,48,0.284,0.047,0.047,underissuance
+2-3,rule1771,rawben_rel_max < 0.8922 & shelter_expenses < 9.5 & months_since_cert_n < 9.5,3,3.9,236,67,169,0.284,0.167,0.16,underissuance
+2-3,rule7422,rawgross >= 1108 & utilities < 363.5 & rawben_rel_max >= 0.625,3,1.7,104,29,75,0.279,0.072,0.058,underissuance
+2-3,rule2081,rawben_rel_max < 0.9163 & rawearn >= 36.5 & rawearn < 922,3,4.3,260,71,189,0.273,0.177,0.166,underissuance
+2-3,rule10399,"rawben_rel_max < 0.7888 & elderly_disabled_i %in% c(""FALSE"") & rawunearn >= 771",3,4.5,268,73,195,0.272,0.182,0.226,underissuance
+2-3,rule2490,unc_rawben_rel_max < 0.9164 & rawearn >= 0.5 & rawearn < 949,3,4.6,278,74,204,0.266,0.185,0.17,underissuance
+2-3,rule2567,unc_rawben_rel_max < 0.9241 & rawearn >= 0.5 & rawearn < 922,3,4.6,276,72,204,0.261,0.18,0.167,underissuance
+2-3,rule1230,"unc_rawben_rel_max < 0.9038 & elderly_disabled_i %in% c(""FALSE"") & total_deductions < 103.7",3,3.5,208,53,155,0.255,0.132,0.137,underissuance
+2-3,rule4305,rawgross >= 1258 & cat_elig < 0.5 & utilities < 348.5,3,2.3,141,36,105,0.255,0.09,0.098,underissuance
+2-3,rule14719,utilities >= 669.5 & total_deductions < 528.2 & rawunearn < 1626,3,1.3,79,20,59,0.253,0.05,0.061,underissuance
+2-3,rule12894,rawearn >= 827 & rawearn < 922 & total_deductions >= 251.8,3,1,60,15,45,0.25,0.037,0.04,underissuance
+2-3,rule13745,rawgross >= 1061 & rawgross < 1182 & shelter_expenses < 835.5,3,1.8,109,27,82,0.248,0.067,0.062,underissuance
+2-3,rule14110,rawben_rel_max < 0.9163 & shelter_expenses < 9.5 & total_deductions < 244.3,3,3.9,235,58,177,0.247,0.145,0.127,underissuance
+2-3,rule14129,rawgross >= 2916 & unc_rawben_rel_max >= -0.03169 & rawearn < 3203,3,1.2,73,18,55,0.247,0.045,0.05,underissuance
+2-3,rule7961,rawgross >= 1204 & shelter_expenses < 505.5 & months_since_cert_n < 3.5,3,2.8,167,41,126,0.246,0.102,0.128,underissuance
+2-3,rule590,"unc_rawben_rel_max < 0.8992 & elderly_disabled_i %in% c(""FALSE"") & total_deductions < 254.9",3,6.3,381,93,288,0.244,0.232,0.219,underissuance
+2-3,rule3860,rawgross >= 971 & shelter_expenses < 351.5 & rawunearn < 1245,3,3.2,195,47,148,0.241,0.117,0.131,underissuance
+2-3,rule12772,"rawearn < 0.5 & unc_rawben_rel_max < 0.8306 & elderly_disabled_i %in% c(""FALSE"")",3,4.3,257,61,196,0.237,0.152,0.177,underissuance
+2-3,rule6940,unc_rawben_rel_max < 0.9164 & rawunearn < 581.5 & rawunearn >= 333.5,3,2.9,176,41,135,0.233,0.102,0.094,underissuance
+2-3,rule3944,rawgross >= 1013 & utilities < 360.5 & rawben_rel_max >= 0.5458,3,4.1,249,58,191,0.233,0.145,0.139,underissuance
+2-3,rule10310,cat_elig < 0.5 & rawgross >= 1166 & months_since_cert_n < 2.5,3,2.3,136,31,105,0.228,0.077,0.087,underissuance
+2-3,rule10923,rawearn >= 2884 & rawearn < 3265,2,1.1,66,15,51,0.227,0.037,0.045,underissuance
+2-3,rule6248,rawgross >= 1444 & rawgross < 1671 & utilities < 371.5,3,2.6,159,36,123,0.226,0.09,0.09,underissuance
+2-3,rule3638,rawearn >= 35.5 & rawunearn >= 145 & rawgross < 2134,3,6.3,377,85,292,0.225,0.212,0.205,underissuance
+2-3,rule7853,rawben_rel_max < 0.795 & shelter_expenses < 369.5 & months_since_cert_n >= 2.5,3,5.1,304,68,236,0.224,0.17,0.185,underissuance
+2-3,rule10128,rawearn >= 583.5 & rawgross < 1670 & rawben_rel_max < 0.9243,3,9.4,566,124,442,0.219,0.309,0.265,underissuance
+2-3,rule9637,total_deductions < 617.7 & rawgross >= 980 & rawben_rel_max >= 0.6966,3,2.6,155,34,121,0.219,0.085,0.064,underissuance
+2-3,rule2093,rawben_rel_max < 0.8913 & rawearn >= 158 & rawgross < 1890,3,13.4,804,175,629,0.218,0.436,0.397,underissuance
+2-3,rule6292,rawgross >= 992 & shelter_expenses < 467 & months_since_cert_n >= 2.5,3,4.9,292,63,229,0.216,0.157,0.178,underissuance
+2-3,rule9282,rawearn >= 577 & rawearn < 1721 & rawgross >= 1442,3,7.4,444,96,348,0.216,0.239,0.255,underissuance
+2-3,rule6028,rawben_rel_max < 0.8179 & utilities >= 783.5 & utilities < 856,3,1.9,116,25,91,0.216,0.062,0.07,underissuance
+2-3,rule11287,rawben_rel_max < 0.7999 & cat_elig < 0.5 & shelter_expenses >= 802.5,3,2,121,26,95,0.215,0.065,0.056,underissuance
+2-3,rule13752,shelter_expenses >= 1855 & shelter_expenses < 2098 & rawgross >= 1807,3,1.4,84,18,66,0.214,0.045,0.043,underissuance
+2-3,rule1732,rawgross >= 990.5 & rawearn >= 36.5 & months_since_cert_n >= 7.5,3,5.3,319,68,251,0.213,0.17,0.179,underissuance
+2-3,rule3676,rawben_rel_max < 0.7863 & shelter_expenses < 480 & rawgross >= 1126,3,6.3,379,80,299,0.211,0.2,0.237,underissuance
+2-3,rule11405,rawben_rel_max < 0.2169 & unc_rawben_rel_max >= -0.004357 & rawgross >= 1980,3,3.6,219,46,173,0.21,0.115,0.154,underissuance
+2-3,rule9173,"rawben_rel_max < 0.9164 & elderly_disabled_i %in% c(""FALSE"") & rawearn < 1375",3,13.7,824,173,651,0.21,0.431,0.406,underissuance
+2-3,rule14683,rawearn < 1914 & rawearn >= 1466 & months_since_cert_n >= 1.5,3,5,301,63,238,0.209,0.157,0.156,underissuance
+2-3,rule12542,total_deductions >= 973 & rawben_rel_max < 0.4041 & total_deductions < 1211,3,1.4,86,18,68,0.209,0.045,0.043,underissuance
+2-3,rule12774,rawearn >= 0.5 & months_since_cert_n >= 3.5 & rawben_rel_max < 0.9265,3,13.9,835,171,664,0.205,0.426,0.413,underissuance
+2-3,rule5783,rawearn >= 0.5 & rawben_rel_max < 0.9247 & unc_rawben_rel_max >= 0.844,3,2.4,147,30,117,0.204,0.075,0.037,underissuance
+2-3,rule7749,rawben_rel_max < 0.8178 & rawben_rel_max >= 0.6819 & rawgross >= 1082,3,5.6,334,68,266,0.204,0.17,0.137,underissuance
+2-3,rule13123,rawgross >= 964.5 & cat_elig < 0.5 & shelter_expenses < 1116,3,4.6,276,56,220,0.203,0.14,0.143,underissuance
+2-3,rule3880,rawben_rel_max < 0.8952 & rawearn >= 0.5 & utilities < 435.5,3,13,780,158,622,0.203,0.394,0.395,underissuance
+2-3,rule13504,rawearn >= 779.5 & months_since_cert_n < 4.5 & total_deductions < 662,3,6.5,390,79,311,0.203,0.197,0.203,underissuance
+2-3,rule5862,"rawben_rel_max < 0.817 & shelter_expenses < 1655 & elderly_disabled_i %in% c(""FALSE"")",3,21.7,1305,262,1043,0.201,0.653,0.687,underissuance
+2-3,rule8588,months_since_cert_n >= 3.5 & rawearn >= 229 & utilities >= 581.5,3,5.1,308,62,246,0.201,0.155,0.145,underissuance
+2-3,rule4991,rawgross >= 991.5 & utilities < 309.5 & total_deductions >= 283.8,3,4.9,294,59,235,0.201,0.147,0.167,underissuance
+2-3,rule13230,cat_elig < 0.5 & rawgross >= 1108 & rawgross < 1722,3,3.2,194,39,155,0.201,0.097,0.096,underissuance
+4+,rule1807,rawearn >= 1246 & rawunearn >= 136.5 & rawgross < 1928,3,0.6,37,13,24,0.351,0.033,0.02,underissuance
+4+,rule7194,rawben_rel_max >= 0.2111 & rawearn >= 350 & total_deductions < 141.6,3,0.8,46,16,30,0.348,0.041,0.038,underissuance
+4+,rule2873,rawearn >= 348 & total_deductions < 142.8,2,0.8,50,17,33,0.34,0.043,0.039,underissuance
+4+,rule4311,rawearn >= 352 & total_deductions < 321.3 & total_deductions >= 299,3,0.8,47,15,32,0.319,0.038,0.042,underissuance
+4+,rule7570,rawearn >= 4093 & utilities >= 591 & rawben_rel_max >= 0.2061,3,0.6,38,12,26,0.316,0.03,0.03,underissuance
+4+,rule2414,rawben_rel_max < 0.6274 & rawgross < 2159 & shelter_expenses < 346,3,0.9,55,16,39,0.291,0.041,0.045,underissuance
+4+,rule6739,rawearn >= 500.5 & rawunearn >= 734.5 & rawben_rel_max >= 0.6744,3,1.2,69,20,49,0.29,0.051,0.05,underissuance
+4+,rule7851,rawgross >= 954 & shelter_expenses < 712.5 & shelter_expenses >= 687.5,3,0.6,38,11,27,0.289,0.028,0.018,underissuance
+4+,rule7655,rawearn >= 350 & rawunearn >= 724 & rawben_rel_max >= 0.6758,3,1.4,84,23,61,0.274,0.058,0.054,underissuance
+4+,rule5638,rawben_rel_max < 0.5833 & shelter_expenses < 391.5 & total_deductions < 437.3,3,1.3,78,20,58,0.256,0.051,0.065,underissuance
+4+,rule4048,rawben_rel_max < 0.9359 & shelter_expenses < 713 & shelter_expenses >= 675.5,3,0.9,55,14,41,0.255,0.036,0.029,underissuance
+4+,rule1699,rawben_rel_max < 0.9549 & shelter_expenses < 707.5 & shelter_expenses >= 675.5,3,0.9,51,13,38,0.255,0.033,0.028,underissuance
+4+,rule6744,rawearn >= 346.5 & rawunearn >= 737 & rawben_rel_max >= 0.5974,3,2.2,130,32,98,0.246,0.081,0.073,underissuance
+4+,rule136,rawearn >= 451 & total_deductions < 352.4 & total_deductions >= 298.5,3,1.6,93,22,71,0.237,0.056,0.065,underissuance
+4+,rule3198,rawgross >= 1649 & utilities < 344.5 & rawgross < 1991,3,1.8,107,25,82,0.234,0.063,0.066,underissuance
+4+,rule1295,rawgross >= 1609 & rawgross < 1972 & utilities < 352.5,3,2.1,123,28,95,0.228,0.071,0.071,underissuance
+4+,rule1215,rawben_rel_max < 0.9357 & utilities < 302.5 & utilities >= 275.5,3,3,177,39,138,0.22,0.099,0.082,underissuance
+4+,rule8154,total_deductions >= 940.4 & total_deductions < 989.5 & months_since_cert_n < 2.5,3,1.1,64,14,50,0.219,0.036,0.026,underissuance
+4+,rule3744,rawgross >= 3166 & cat_elig >= 1.5 & rawearn < 3314,3,1.8,107,23,84,0.215,0.058,0.076,underissuance
+4+,rule7743,rawgross >= 1100 & utilities < 301.5 & cat_elig < 0.5,3,3.6,210,45,165,0.214,0.114,0.106,underissuance
+4+,rule5789,months_since_cert_n >= 5.5 & shelter_expenses >= 1546 & months_since_cert_n < 7.5,3,2.1,124,26,98,0.21,0.066,0.077,underissuance
+4+,rule4851,rawunearn >= 162 & shelter_expenses >= 1928 & utilities < 732.5,3,1.9,115,24,91,0.209,0.061,0.044,underissuance
+4+,rule5497,rawgross >= 1304 & rawunearn >= 138 & rawunearn < 253.5,3,1.6,97,20,77,0.206,0.051,0.051,underissuance
+4+,rule7039,rawunearn >= 418.5 & shelter_expenses >= 1862 & utilities < 719,3,1.9,115,23,92,0.2,0.058,0.045,underissuance
+4+,rule7231,rawben_rel_max < 0.8883 & rawben_rel_max >= 0.8201 & cat_elig >= 1.5,3,1.6,95,19,76,0.2,0.048,0.03,underissuance

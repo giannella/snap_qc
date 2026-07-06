@@ -5,95 +5,86 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Purpose
 
 R codebase for modeling SNAP (food stamp) payment errors. It mines interpretable decision rules from public USDA SNAP Quality Control (QC) data to help state agencies either:
-- **Exclude** low-risk cases from an existing review pile (improve targeting precision), or
-- **Include / flag** high-risk cases for review when no prior flagging system exists.
+- **Include / flag** high-risk cases for review when no prior flagging system exists, or
+- **Exclude** low-risk cases from an existing review pile.
+
+The repo contains two generations. **v2 (current, recommended)** mines rules with xgboost + ranger and filters them on a Wilson lower confidence bound; work on it by default. **v1 (legacy, {pre}/RuleFit-based)** is preserved unchanged for state agencies already using it — do not rename, move, or alter v1 scripts or their output folders without explicit instruction. v1 scripts carry a two-line breadcrumb header pointing to their v2 successor.
 
 ## Running the Code
 
-All scripts are run interactively in R (RStudio or similar). There is no build system, package, or test suite. Scripts are designed to be sourced top-to-bottom after setting the config section at the top. Key R packages:
+Scripts are run interactively in R (RStudio) or non-interactively via the `run_*.R` runner pattern:
 
-```r
-library(pre)       # RuleFit (Prediction Rule Ensembles) — the core modeling package
-library(ranger)    # Random forests (used in data munging / variable reconstruction)
-library(dplyr)
-library(ggplot2)
-library(haven)     # read .sav SPSS files (public QC data format)
-library(yardstick)
 ```
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" run_incl_v2.R > incl_v2_run.log 2>&1
+```
+
+Runners load `reg_model_data.rds` (a saved copy of the main modelling frame, expected in the repo root) then source the driver. There is no package or build system. **After changing `rule_mining_helpers.R`, always run the regression test**: `Rscript test_rule_mining_helpers.R` (18 checks, all must PASS).
+
+Key v2 packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional bagged-CART engine). v1 additionally needs `pre`. Parse-check scripts with `Rscript -e "invisible(parse('file.R'))"` before running.
 
 ## Data
 
-Public SNAP QC `.sav` files are expected at `C:/Users/ericg/qc/qc_data/` (e.g., `qc_pub_fy2022.sav`). Auxiliary lookup tables (state FIPS, max allotments, standard deductions) live in `additional_data/`. The main modelling frame (`reg_model_data`) is built by script `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` and expected in the R environment for all downstream scripts.
+Public SNAP QC `.sav` files are expected at `C:/Users/ericg/qc/qc_data/`. Auxiliary lookups live in `additional_data/`. The main modelling frame `reg_model_data` is built by `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` (shared by v1 and v2) and cached as `reg_model_data.rds`.
 
-## Script Workflow
+`error_status` values: `earned_overissuance`, `unearned_overissuance`, `underissuance`, `other_error`, `no_error`. A case is an error when `over_threshold != 0` (aligned 1:1 with error_status). Base rates are low: ~8.4% of cases have any over-threshold error; typed frames run 0.4-6% by stratum. `other_error` is the LARGEST error category and is mined in v2 (it never was in v1).
 
-### Step 1 — Data preparation
-`1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R`
-Loads public QC `.sav` files for FY2017–2024, reconstructs income/deduction variables, and produces `reg_model_data` with columns such as `error_status`, `over_threshold`, `total_error_amount`, `fiscal_year`, `state`, `cert_HH_size_FS_n`.
+## v2 Architecture
 
-`error_status` values: `"earned_overissuance"`, `"unearned_overissuance"`, `"underissuance"`, `"no_error"`.
+All logic lives in **`rule_mining_helpers.R`** as a five-stage pipeline; every driver is a thin config + orchestration script:
 
-### Steps 2–3 — Regression tree visualization (EDA)
-`visualize_national_regression_trees_by_type_of_error.R`, `visualize_state_regression_trees_predicting_dollar_amounts.R`
-Plot rpart trees to explore error patterns before rule mining.
+```
+generate -> canonicalize -> dedup -> evaluate -> sweep / shortlist
+```
 
-### Steps 4–5 / EXCL\_\* — Exclusion rules
-Find rules that safely exclude low-risk cases from an existing review pile:
-1. `EXCL_find_exclusion_rules_by_hh_size.R` — runs RuleFit, outputs `exclusion_rules/exclusion_rules_by_hh_size_*.csv`
-2. `EXCL_optimize_single_exclusion_rule_by_hh_size_for_a_state.R` — grid-searches one rule's thresholds for a state
-3. `EXCL_optimize_set_of_exclusion_rules_by_hh_size_for_a_state.R` — grid-searches the full shortlist for a state
+- **generate**: `generate_rules_xgboost()` / `generate_rules_ranger()` / `generate_rules_rpart()` — every tree node's root-to-node path becomes a candidate rule. Features must be numeric/logical/2-level (see `prep_features()`).
+- **canonicalize**: 3-signif-digit thresholds, collapsed bounds, canonical ordering.
+- **dedup**: exact text -> exact coverage -> same-structure dominance (drop a rule only when a looser same-shape rule has an equal-or-better statistic). Overlapping rules with different structure are DELIBERATELY kept — states drop rules on expert judgment and want substitutes. Never re-prune with a joint lasso.
+- **evaluate**: sparse flag index vectors built from a unique-conditions table (memory stays flat at 100k+ rules); every rule scored on train, holdout, and the any-error universe.
+- **filter/sweep**: Wilson LCB of train precision (`wilson_lcb()`), then `precision_sweep()` reports the union's holdout precision/recall/dollar-recall per filter floor. An error caught by several rules counts once. There are NO greedy nets in v2.
 
-Objective: maximize workload cut (cases excluded) while retaining ≥ `RETAIN_FLOOR` of error dollars.
+### Validated settings and principles (2026-07 studies; see modeling_findings.md)
 
-### Steps 6–9 / INCL\_\* — Inclusion rules
-Find rules that flag high-risk cases for review:
-1. `INCL_find_inclusion_rules_multi_model_by_hh_size.R` — runs RuleFit per error type and household size, writes `inclusion_rules_by_hh_size/`
-2. `INCL_optimize_single_inclusion_rule_by_hh_size_for_a_state.R` — grid-searches one rule's thresholds for a state
-3. `by_HHsize_8_grid_search_for_high_precision_rules.R` — optimizes all high-precision rules for a state
-4. `by_HHsize_9_state_by_state_grid_search_and_hold_out_testing.R` — train/test split across every state; assesses rule stability
+- Engines: xgboost (nrounds 1000, eta 0.02, subsample 0.20) + ranger (1000 trees, mtry 2), depth 4. The PAIR beats either alone and beats rpart+ranger.
+- **"Mine big, filter stringently"**: big ensembles extend recall reach; `LCB_Z = 2.326` (99%) removes their selection-multiplicity noise. 90% (1.2816) for exploration only.
+- Raw train precision suffers a strong winner's curse (nominal 0.20 -> ~0.10 holdout); the LCB fixes calibration. Never shortlist on raw precision or on holdout performance.
+- Strata: household size 1 / 2-3 / 4+ (`cert_HH_size_FS_n` collapsed). On v2 engines pooling is nearly as precise, but the coarse split buys recall reach and ~5x filtered inventory; 5-way splits are worse.
+- elderly/disabled: a FEATURE, not a stratum (settled empirically — the ensembles carve the caseload themselves).
+- Frame-relative precision understates deployed precision ~2x; always compute and quote any-error metrics.
+- States: tune thresholds locally only when ~30+ rules qualify on state train data; small states deploy national rules unchanged (small-sample tuning is winner's-curse territory).
 
-Objective: maximize precision (share of flagged cases that are true errors) subject to ≥ `RECALL_FLOOR` of error dollars (or counts).
+### v2 scripts
 
-The **recommended final output** is `inclusion_rules_by_hh_size/final_by_HHsize_inclusion_rules_highprecision.csv`.
-
-## Key Architecture Decisions
-
-### Two modeling paradigms
-- **By-household-size (stratified)**: `INCL_*` / `EXCL_*` scripts. Models are fit separately for HH sizes 1, 2, 3, 4, 5+. The stratifier column (`cert_HH_size_FS_n`, collapsed to `"1"–"4"` and `"5+"`) is dropped from predictors. This approach consistently outperforms the pooled model on precision-recall.
-- **Single pooled model**: `code_for_single_model_combined_HH_sizes/`. Kept for comparison; the stratified approach is preferred.
-
-### RuleFit rule mining (`{pre}` package)
-`pre()` fits an ensemble of rpart trees (controlled by `maxdepth`, `ntrees`, `learnrate`, `sampfrac`) and extracts conjunctive rules (2–5 conditions each). Rules are then greedily OR-combined into a **"net"** that climbs recall while keeping precision high. The net construction is distinct from the `{pre}` prediction itself.
-
-### Precision-recall terminology
-- **Inclusion net**: greedy OR of INCLUDE-direction rules; scored by precision (errors / flagged) and recall (errors caught / all errors).
-- **Exclusion net**: greedy OR of EXCLUDE-direction rules; scored by workload cut (cases dropped) and dollar retention (error $ kept).
-- `OBJECTIVE = "dollars"` or `"counts"` controls whether recall is measured in error dollars or error case counts throughout.
-
-### Parameter tuning
-`optimize_rulefit_params.R` and `single_model_optimize_params.R` sweep `pre()` hyperparameters one-at-a-time and plot precision-recall curves, helping choose `maxdepth`, `ntrees`, etc. before committing to a full rule-mining run.
-
-## Output Files
-
-| Folder | Contents |
+| script | role |
 |---|---|
-| `inclusion_rules_by_hh_size/` | Rule CSVs from INCL scripts; `final_*` files are the curated combined set |
-| `exclusion_rules/` | Rule CSVs from EXCL scripts, including state-optimized results |
-| `state_holdout_rulecheck/` | Cross-state holdout performance (script 9 output) |
-| `state_train_test_rulecheck/` | State-level train/test stability checks |
-| `compare_models_by_HHsize_vs_pooled/` | PR curve comparison CSVs |
-| `pre_param_sweep/` | Parameter sweep results |
-| `inclusion_rules_combined_hh_sizes/` | Pooled-model rule outputs |
+| `rule_mining_helpers.R` + `test_rule_mining_helpers.R` | shared pipeline + regression test |
+| `INCL_find_inclusion_rules_by_hh_size_v2.R` | inclusion rules per mining frame (4 typed + pooled any_error) x stratum -> `inclusion_rules_by_hh_size_v2/` |
+| `EXCL_find_exclusion_rules_by_hh_size_v2.R` | exclusion rules (clean-rate LCB; workload cut vs dollar retention) -> `exclusion_rules_by_hh_size_v2/` |
+| `state_threshold_gridsearch_v2.R` | per-state threshold tuning + holdout test + national-as-is benchmark -> `state_rules_v2/` |
+| `tune_engine_params_v2.R`, `tune_followup_subsample_lcbz_v2.R` | hyperparameter + LCB_Z sweeps -> `parameter_tuning_v2/` |
+| `compare_engines_v2.R`, `compare_engine_combos_v2.R` | engine studies -> `compare_engines_v2/` |
+| `compare_anyerror_vs_typed_frames_v2.R` | typed vs pooled-target mining -> `compare_anyerror_vs_typed_v2/` |
+| `compare_hh_strata_v2.R` | stratification schemes -> `compare_hh_strata_v2/` |
+| `check_esap_coverage_v2.R` | elderly/disabled coverage parity check |
 
-## Common Config Parameters
+Long-running scripts checkpoint mined vocabularies to `.rds` and support `RESUME_FROM_CHECKPOINT` (pre-set it in a runner before `source()`). Comparison outputs from superseded configurations are kept in suffixed/archived copies (e.g., `run1_*` subfolders) — don't delete them.
 
-These appear at the top of every script and should be set before running:
+### Key v2 config knobs
 
-| Parameter | Typical values | Meaning |
+| knob | default | meaning |
 |---|---|---|
-| `OBJECTIVE` | `"dollars"` / `"counts"` | Recall basis for precision-recall optimization |
-| `RECALL_FLOOR` | `0.02` – `0.50` | Minimum recall the net must achieve |
-| `NET_FLOORS` | `c(0.20, 0.30, ...)` | Multiple recall floors to report nets at |
-| `RETAIN_FLOOR` | `0.97` | Exclusion: minimum share of error dollars to keep |
-| `TRAIN_YEARS` / `TEST_YEARS` | `c("2022","2023","2024")` / `c("2018","2019")` | Year splits for train/holdout |
-| `MIN_PRECISION` | `0.20` | Threshold to call a rule "high precision" |
+| `LCB_Z` | 2.326 | filter stringency (one-sided Wilson) |
+| `THRESHOLD_GRID` | .05-.95 | filter floors for the sweep |
+| `MIN_TRAIN_FLAGGED` | 10 | support backstop |
+| `MIN_PRECISION` | 0.20 | shortlist floor, applied to the LCB |
+| `OBJECTIVE` | "dollars" | recall basis for plots/x (counts always also written) |
+| `SIGNIF_DIGITS` | 3 | rule threshold rounding |
+
+## v1 (legacy) — handle with care
+
+v1 = the {pre}-based scripts documented in the README's legacy section: `INCL_find_inclusion_rules_multi_model_by_hh_size.R` (+ `_c50`, `_xrf`), `EXCL_find_exclusion_rules_by_hh_size.R`, the `INCL/EXCL_optimize_*_for_a_state.R` grid searches, `optimize_rulefit_params.R` / `single_model_optimize_params.R`, and `code_for_single_model_combined_HH_sizes/`. Their outputs (`inclusion_rules_by_hh_size/`, `exclusion_rules/`, `parameter_tuning/`, `compare_models_by_HHsize_vs_pooled/`) are consumed by external users — treat as frozen. The 14:1 rebalancing blocks in v1 INCL scripts are commented out by design (original intent); greedy "nets" exist only in v1.
+
+## Reference documents
+
+- `modeling_findings.md` — all empirical results with artifact pointers (winner's curse, engine studies, strata, ESAP, states).
+- `design_drop_pre_architecture.md` — the v2 design rationale and decisions.
+- `Definitions for variables used.txt` — feature dictionary.

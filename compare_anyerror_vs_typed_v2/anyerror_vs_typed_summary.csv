@@ -1,0 +1,4 @@
+"approach","mean_precision","max_dollar_recall","n_rules","n_shortlist_020","delta_vs_typed"
+"Typed (4 frames)",0.176688911445583,1,204402,24198,0
+"Any-error (1 model)",0.167014965385022,1,72072,11384,-0.00967394606056027
+"Combined",0.168863443950947,1,245934,33256,-0.00782546749463525

@@ -1,0 +1,4 @@
+"engine","mean_precision","recall_at_020","precision_at_020","max_recall","n_rules","n_pass_filter","mining_secs","total_secs"
+"rpart (bagged CART)",0.2096,0.473,0.181,0.939,13441,2517,73,794
+"xgboost",0.2186,0.498,0.178,1,28339,1472,69,1422
+"ranger (mtry=2)",0.2181,0.501,0.175,1,26887,2910,101,1651

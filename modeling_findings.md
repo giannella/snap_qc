@@ -1,0 +1,238 @@
+# SNAP QC rule mining — key findings & syntheses (2026-07-04/05 runs)
+
+Working notes for the presentation. Each section lists the supporting artifact
+files. Methods details live in `design_drop_pre_architecture.md`; all numbers
+below are hold-out (train 2022+2024, test 2023) unless noted.
+
+---
+
+## 1. The winner's curse, diagnosed and addressed
+
+Thresholding thousands of mined rules on raw train precision selects for lucky
+rules: a "train precision >= 0.20" shortlist held only ~0.10 median on the
+hold-out. Diagnosis showed this is almost pure selection noise, not model
+overfit or year drift:
+
+- among high-support rules with NO selection applied, train precision is
+  essentially unbiased for hold-out precision (median gap -0.003, r = 0.83);
+- the decay is symmetric (rules selected on HOLD-OUT >= 0.20 have median TRAIN
+  precision 0.116) — textbook regression to the mean;
+- era check: the same rules give ~3.9x lift on 2018-19 vs ~3.5x on 2023 —
+  drift is secondary.
+
+**Fix: threshold on the one-sided Wilson LOWER CONFIDENCE BOUND (LCB) of train precision**
+instead of the point estimate. At matched deployed precision (~0.20), LCB
+selection catches 12.8% of all errors vs 8.2% for absolute thresholds — strictly
+better ranking, and trained precision became roughly calibrated to test precision.
+
+*Artifacts: compare_models_by_HHsize_vs_pooled/ (rawstat_ vs unprefixed runs).*
+
+## 2. Results of dropping {pre} r package in favor of rolling our own
+
+Same rule quality, ~5x cheaper, ~3x smaller memory, and it unlocked analyses
+pre() could not run:
+
+- **Memory**: pre() peaked >40 GB on ONE frame (its internal lasso matrix —
+  paid even when the lasso output is unused). v2 runs in a few GB; works on a
+  16 GB laptop.
+- **Compute**: one pre() frame ~40 min vs four v2 frames (incl. any-error
+  scoring) in ~45 min.
+- **Quality**: matched earned-frame comparison under identical LCB selection —
+  pre: 68 rules, median hold-out 0.134; v2: 29 rules, 0.157 — parity at 1/5
+  the trees.
+- **Unlocked**: the any-error single model (pre's lasso matrix would be
+  ~100+ GB), the other_error frame, 853k-rule head-to-heads, coverage-based +
+  dominance dedup, checkpointed vocabularies, a 15-check regression test.
+- What it did NOT buy: more signal. Best honest per-rule hold-out precision by
+  frame: earned 0.31, underissuance 0.29, other_error 0.40, unearned 0.48.
+- **Engine head-to-head (2026-07-05/06, identical pipeline, 1000 trees/rounds
+  each, any-error frame)**: xgboost + ranger is the best pair — mean precision
+  0.2216 at matched dollar recall and 54.8% dollar recall at the 0.20 floor,
+  vs rpart + ranger 0.2157 / 53.1% and bagged rpart alone (pre's generator)
+  0.2096 / 47.3% (reach capped at 94%). Both pairs beat all singles —
+  vocabulary complementarity again. So pre's CART engine was competitive but
+  not its pipeline's problem; the engines add ~+1pp precision / +7pp dollar
+  recall, while stringent filtering and any-error scoring supply the larger gains.
+  *Artifacts: compare_engines_v2/ (engine_ and combo_ sweeps + summaries).*
+
+*Artifacts: rule_mining_helpers.R, test_rule_mining_helpers.R,
+design_drop_pre_architecture.md.*
+
+## 3. Typed frames vs one any-error model (head-to-head)
+
+Scored on ALL 2023 errors with identical machinery and selection:
+
+- **Typed mining wins, but barely** (+0.5-1pp mean precision at matched
+  recall). One all-errors model gets ~95% of the way at 1/4 the mining cost.
+- **The vocabularies complement**: Combined beats both parents on recall at
+  every FIXED filter floor (only ~7% cross-pool overlap). Best practice: mine
+  both, pool, dedup — cheap on the v2 stack. Hold-out recall of all errors,
+  typed-only vs combined, in both ensemble regimes:
+
+  | floor | typed -> combined (300/500 trees) | typed -> combined (1000/2500) |
+  |---|---|---|
+  | 0.20 | 62.7% -> 66.0% | 68.8% -> 72.9% (dollars 71.2% -> 75.3%) |
+  | 0.30 | 22.0% -> 27.6% | 29.7% -> 36.0% |
+  | 0.35 | 10.9% -> 15.4% | 16.5% -> 21.5% |
+
+  Precision cost at the same floors: ~0.7-2pp. HONEST CAVEAT: at MATCHED
+  RECALL combined runs ~0.5-1pp below typed-only in both runs (at/near the
+  noise band) — so "combine" wins for a state operating at a fixed filter
+  floor (the standard workflow) and roughly ties for a state targeting a
+  precision level. The floor-level recall gain is near-guaranteed mechanically
+  (adding a vocabulary can only grow the union); the measured question was the
+  precision price, which is small. Evidence grade: moderate — consistent
+  across ensemble regimes but a single hold-out year and seed; a year-swap
+  replication (train 2022+2023, test 2024) is the cheap firm-up if this
+  headlines a presentation.
+- Robust to ensemble size (300/500 vs 1000/2500 trees: same ordering).
+
+*Artifacts: compare_anyerror_vs_typed_v2/ (dollar- and counts-basis plots,
+sweep + summary CSVs; small-ensemble run preserved as xgb300rf500_).*
+
+## 4. Engine tuning: what matters and what doesn't
+
+19-config one-at-a-time grid (any-error frame, frontier = mean hold-out
+precision at matched dollar recall):
+
+- **ranger: mtry = 2 beats mtry = 1** (0.223 vs 0.214) — the "pure randomness
+  for diversity" premise was wrong. (Tested once, at 500 trees / 90% LCB;
+  adopted and unchallenged since.) Tree count is a plateau, not a peak: 250
+  trees 0.206, 500 trees 0.214, 1000 trees 0.213 (a 0.001 gap, within noise),
+  2500 trees 0.210 — more trees add inventory and reach, not matched-recall
+  precision, AT A FIXED 90% z. Per §5 we nonetheless adopted 1000 trees: with
+  stringent filtering (z = 2.326) the bigger pool keeps its reach without the
+  precision dilution.
+- **xgboost: eta 0.02 > 0.05, and low subsample (0.15-0.30) beats high
+  (0.60-0.80)** — echoing the old rpart sampfrac finding; values within
+  0.15-0.30 are statistically indistinguishable. Both results are independent
+  of the filter setting; they are the production defaults (eta .02,
+  subsample .20).
+- **Round count only looks like it matters at a loose filter.** At a fixed
+  90% LCB, 100 rounds beat 1000 on the frontier (0.217 vs 0.198) — but that
+  gap is the selection-multiplicity dilution that §5 shows is correctable:
+  under the adopted stringent filter (z = 2.326), the 1000-round pool matches
+  the small pool's precision at the 0.20 floor while extending reach to ~74%
+  dollar recall. Production: 1000 rounds — "mine big, filter stringently."
+- Depth 4~5 >> 3. Inventory (shortlist size) and frontier quality often
+  DISAGREE — e.g. subsample 0.75 gives more rules but a worse frontier.
+
+*Artifacts: parameter_tuning_v2/v2_tuning_{ranger,xgboost}.png, summary CSVs,
+v2_subsample_fine.*
+
+## 5. "Mine big, filter stringently" — the flexible LCB
+
+More mining extends recall reach but dilutes matched-recall precision via
+selection multiplicity (more lucky rules clear any floor). The z-sweep showed
+the dilution is mostly CORRECTABLE in order to keep the potential for greater recall:
+
+- On the 1000-round pool, raising z (80%->99%) recovers precision cleanly and
+  monotonically; on the 100-round pool z barely matters — the multiplicity
+  signature.
+- **1000 rounds @ z=2.33 lands on the same 0.20-floor operating point as 100
+  rounds @ z=1.28 (55% recall @ 17% precision) while ALSO reaching 74% dollar
+  recall at lower floors**.
+- Residual gap (~1/3 of the dilution) is intrinsic marginal-rule quality; no
+  z fixes it.
+
+Production recipe adopted: xgb 1000 rounds / eta .02 / subsample .20, ranger
+1000 trees / mtry 2, z = 2.326. Result: **1,535 filtered-in rules** (vs 834
+under small ensembles at 90%), with better median hold-out quality per frame
+(e.g. other_error 0.212 vs 0.197; unearned 432 rules at 0.284).
+
+*Artifacts: parameter_tuning_v2/v2_lcbz_sweep.png + v2_lcbz_summary.csv;
+inclusion_rules_by_hh_size_v2/ (run1_small_ensembles_z90/ preserved).*
+
+## 6. Frame-relative vs deployed (any-error) performance
+
+A rule mined for one error type flags cases whose OTHER errors count as wins
+in deployment. Any-error precision runs ~2-2.7x the frame-relative number
+(e.g. earned union at the 0.20 floor: 0.080 frame vs 0.178 any-error). All v2
+outputs carry both views; quote the any-error numbers to states.
+
+## 7. other_error: the largest, previously unmodeled category
+
+other_error (deductions, shelter, household composition; 1,377 of 2,994 total
+2023 errors — more than any typed category) had never been mined. It produced
+the single largest filtered-in block (1,082 rules, median hold-out 0.212) —
+heterogeneous or not, it has learnable structure.
+
+## 8. ESAP / elderly-disabled: feature suffices, and why
+
+Decision: NO fourth stratum or separate model. The models carved the caseload
+themselves:
+
+- elderly/disabled HHs are 49.8% of caseload, 48.2% of error cases, 40.9% of
+  error dollars — NOT more error-prone.
+- Their error MIX is what differs: 64% other_error + 18% unearned (the two
+  most detectable types) vs other households' 45% earned (the least
+  detectable). Detection asymmetry is compositional.
+- The unearned frame became a de facto elderly model on its own: 91.8% of its
+  flags are elderly HHs; all 96 of its indicator-using rules REQUIRE
+  elderly/disabled. The earned frame is the mirror image (82% non-elderly
+  flags; its indicator rules require NOT-elderly).
+- Union recall: 26.7% of elderly-HH errors vs 7.2% of other-HH errors (dollar
+  recall 28.2% vs 7.4%); precision slightly HIGHER inside elderly flags
+  (0.219 vs 0.188).
+- The real gap is non-elderly working households (earned-income volatility) —
+  this could lack of signal issue, but also is an area I'm continuing to explore. 
+
+*Artifacts: check_esap_coverage_v2.R (rerun anytime).*
+
+## 9. States: a clean two-regime deployment rule
+
+Seven states, independent grid search (thresholds +/-10-25%) on state
+2022+2024, tested on state 2023. Qualification: >=20 train flags at >=0.20 raw
+precision; tuned variant maximizes train dollar recall. Not recommendations, 
+just a reflection of how this is working right now. 
+
+| state | qualified | tuned: prec @ recall ($) | national as-is: prec @ recall ($) |
+|---|---|---|---|
+| Connecticut | 35 | 0.209 @ 43.0% (49.1%) | 0.228 @ 24.4% (31.8%) |
+| Arizona | 32 | 0.211 @ 20.2% (24.5%) | 0.467 @ 11.8% (9.7%) |
+| North Carolina | 11 | 0.133 @ 26.2% | 0.250 @ 7.7% |
+| Michigan | 6 | 0.140 @ 9.5% | 0.280 @ 9.5% |
+| Virginia | 3 | 0.105 @ 3.3% | 0.158 @ 5.0% |
+| Washington | 3 | 0.048 @ 2.3% | 0.364 @ 9.1% (11.8%) |
+| Louisiana | 3 | 0.000 @ 0% | 0.182 @ 5.3% |
+
+**Rule of thumb: tune locally if ~30+ rules qualify on state train; otherwise
+deploy the national selection at national thresholds unchanged.** Small-sample
+tuning is winner's-curse territory (Louisiana's tuned rules went 0-for-6 on
+test; Washington's collapsed to 5% precision while national-as-is delivered
+36% at 9% recall). Where tuning works it works well: Connecticut catches 43%
+of errors / 49% of error dollars at 21% review precision.
+
+National selection sent to states: up to 60 rules per frame by national train
+LCB (earned admitted at a relaxed 0.15 floor; 186 rules total).
+
+*Artifacts: state_rules_v2/ (per-state rule CSVs with national + tuned
+thresholds side by side; state_union_summary.csv; LCB-criterion run preserved
+in run1_lcb_criterion/).*
+
+## 10. Household-size stratification: split, but split coarsely
+
+Established under the pre-era methodology (June 2026, earned income, greedy
+nets) and the reason the pipeline uses 1 / 2-3 / 4+:
+
+- **1/2-3/4+ stratification: mean precision 0.148 vs pooled (no split) 0.101**
+  at matched recall — a ~47% relative precision gain from splitting at all;
+- the coarse 3-way grouping also beat the standard 5-way 1/2/3/4/5+ (0.127)
+  and 1/2/3-4/5+ (0.139): finer strata thin the training data faster than
+  they add homogeneity;
+- intuition: dollar-scaled features (income/benefit relative to HH size) mean
+  different things at different HH sizes; stratifying lets thresholds differ,
+  while over-splitting starves rule support.
+
+**v2-stack confirmation (2026-07-06).** With
+production engines (deep ensembles, HH size available as a feature) and stiff
+LCB: pooled 0.2256 mean precision vs 1/2-3/4+ 0.2216 vs 5-way 0.2142. The
+pre-era +47% gap does NOT replicate — like the ESAP finding, deep ensembles
+capture most of what stratification provided when the stratifier is a feature.
+The 3-way split still wins where it matters operationally: **reach** (54.8% vs
+48.4% dollar recall at the 0.20 floor) and **filtered rule inventory** (4,279 vs
+809 rules — per-stratum filtering gives rules the within-size support to
+clear the stiff bound). The 5-way split loses either way. 
+
+*Artifacts: compare_models_by_HHsize_vs_pooled/strata_earn_inc_scheme_summary.csv
+(pre-era); compare_hh_strata_v2/ (v2 confirmation).*

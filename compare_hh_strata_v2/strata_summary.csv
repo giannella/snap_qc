@@ -1,0 +1,4 @@
+"scheme","mean_precision","recall_at_020","precision_at_020","max_recall","n_rules","n_pass_filter","total_secs"
+"Pooled (no split)",0.2256,0.484,0.17,1,19022,809,1042
+"1 / 2-3 / 4+",0.2216,0.548,0.171,1,51924,4279,2147
+"1 / 2 / 3 / 4 / 5+",0.2142,0.531,0.169,1,76447,6107,3268

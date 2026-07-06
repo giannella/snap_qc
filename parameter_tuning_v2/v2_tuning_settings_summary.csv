@@ -1,0 +1,20 @@
+"engine","param","setting","n_rules","n_shortlist","mining_secs","total_secs"
+"xgboost","nrounds","nrounds=100",3793,789,8,120
+"xgboost","subsample","subsample=0.5 (base)",10678,1829,23,330
+"xgboost","nrounds","nrounds=1000",31086,4779,65,1024
+"xgboost","max_depth","max_depth=3",4732,817,11,157
+"xgboost","max_depth","max_depth=5",20120,3555,45,726
+"xgboost","eta","eta=0.02",10165,2202,21,327
+"xgboost","eta","eta=0.1",10622,1589,23,336
+"xgboost","subsample","subsample=0.25",10758,1335,22,340
+"xgboost","subsample","subsample=0.75",9888,2199,22,327
+"ranger","num_trees","num_trees=250",6263,827,14,216
+"ranger","min_node_size","min_node_size=20 (base)",11789,1580,26,423
+"ranger","num_trees","num_trees=1000",21267,3009,49,808
+"ranger","num_trees","num_trees=2500",45447,6842,116,1874
+"ranger","max_depth","max_depth=3",5625,693,15,173
+"ranger","max_depth","max_depth=5",19948,2834,40,805
+"ranger","mtry","mtry=2",15024,2959,30,542
+"ranger","mtry","mtry=4",14173,4163,41,565
+"ranger","min_node_size","min_node_size=10",11917,1626,25,421
+"ranger","min_node_size","min_node_size=50",11290,1438,24,395
