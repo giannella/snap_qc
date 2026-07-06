@@ -201,7 +201,12 @@ run_frame <- function(frame_df, frame_name, universe) {
   write.csv(rule_eval, file.path(out_dir, sprintf("%s_rules_all.csv", frame_name)),
             row.names = FALSE)
 
+  # deliverable-time ladder collapse: the state-facing shortlist keeps one rung
+  # per same-structure family (the max-LCB one); the full ladder stays in
+  # *_rules_all.csv and the sweep below still uses every rung for reach
   shortlist <- rule_eval %>% filter(precision_train_lcb >= MIN_PRECISION)
+  shortlist <- shortlist[collapse_ladders(shortlist, shortlist$precision_train_lcb), ,
+                         drop = FALSE]
   write.csv(shortlist, file.path(out_dir, sprintf("%s_rules_highprecision.csv", frame_name)),
             row.names = FALSE)
   cat(sprintf("shortlist (train LCB >= %.2f): %d rules | median holdout precision %.3f | median any-error %.3f\n",

@@ -68,6 +68,8 @@ generate -> canonicalize -> dedup -> evaluate -> sweep / shortlist
 
 Long-running scripts checkpoint mined vocabularies to `.rds` and support `RESUME_FROM_CHECKPOINT` (pre-set it in a runner before `source()`). Comparison outputs from superseded configurations are kept in suffixed/archived copies (e.g., `run1_*` subfolders) — don't delete them.
 
+**State-specific custom work stays out of GitHub**: scripts and outputs tailored to a single state's engagement (custom floors, no-holdout tuning, state-mined rules) go in `custom_one_off/<state>/`, which is gitignored. The public repo carries generic tooling and comparative studies only. Lesson from the Virginia work (2026-07-06, artifacts in `custom_one_off/virginia/`): single-state mining needs a hard support floor (n >= 30) — at state scale the LCB alone does not prevent collapse (median holdout precision 0 at n >= 5); with the floor, rules deflate gently (~1/3) instead.
+
 ### Key v2 config knobs
 
 | knob | default | meaning |

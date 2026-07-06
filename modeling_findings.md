@@ -247,6 +247,18 @@ of errors / 49% of error dollars at 21% review precision.
 National selection sent to states: up to 60 rules per frame by national train
 LCB (earned admitted at a relaxed 0.15 floor; 186 rules total).
 
+**Single-state MINING (2026-07-06, one state, year-split validated):** when
+national rules cover too little of a state's error mix, mining directly on
+state data works ONLY with a hard support floor. At LCB >= 0.30 with n >= 5,
+the mined list collapsed out-of-year (median holdout precision 0.000; 59% of
+rules caught nothing). At raw precision >= 0.30 with n >= 30, it held: median
+train 0.33 -> holdout 0.21 (~1/3 deflation), only ~1% of rules at zero, 57%
+holding >= 0.20, union ~60% recall. Deflation expectations, not the training
+numbers, are what to hand the state. Also: two-sided ladder rules
+(a < x <= b) mean the dominance dedup's nesting assumption bites less at
+state scale — the ladder-collapse post-filter matters more there.
+(State-specific artifacts live outside the repo in custom_one_off/.)
+
 *Artifacts: state_rules_v2/ (per-state rule CSVs with national + tuned
 thresholds side by side; state_union_summary.csv; LCB-criterion run preserved
 in run1_lcb_criterion/).*

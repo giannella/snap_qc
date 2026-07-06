@@ -294,11 +294,16 @@ dedup_exact_coverage <- function(rules_df, idx_tr) {
   drop
 }
 
-# (b) same-structure dominance: within one stratum, group rules by SIGNATURE =
-# the sorted set of (variable, direction) pairs. Members differ only in
-# thresholds, so one covers a superset of another when every bound is looser or
-# equal. Drop rule A when a superset rule B has train stat >= A's: wherever A
-# qualifies, B also qualifies and contains A, so A can never add recall.
+# (b) same-structure dominance with ladder collapse: within one stratum, group
+# rules by SIGNATURE = the sorted set of (variable, direction) pairs. Members
+# differ only in thresholds, so one covers a superset of another when every
+# bound is looser or equal. Drop rule A when a superset rule B has stat >=
+# A's - stat_eps: with stat_eps = 0 this is pure dominance (wherever A
+# qualifies, B also qualifies and contains A, so A can never add recall);
+# stat_eps > 0 (default 0.01) additionally collapses near-twin ladder rungs —
+# a tighter rung whose precision edge over a containing looser rung is within
+# stat_eps is clutter, not information (e.g. thresholds 0.985 vs 0.983 with
+# LCBs 0.208 vs 0.205). Genuinely distinct rungs survive.
 .rule_struct <- function(rule) {
   p <- .parse_rule(rule)
   dir <- ifelse(p$op %in% c("<", "<="), "upper", "lower")
@@ -313,7 +318,7 @@ dedup_exact_coverage <- function(rules_df, idx_tr) {
   all(ifelse(bs$dir == "upper", bs$thr >= as$thr, bs$thr <= as$thr))
 }
 
-dedup_dominated <- function(rules_df, stat) {
+dedup_dominated <- function(rules_df, stat, stat_eps = 0.01) {
   structs <- lapply(rules_df$rule, .rule_struct)
   sig  <- paste(rules_df$hh, vapply(structs, function(s) s$sig, ""))
   drop <- rep(FALSE, nrow(rules_df))
@@ -321,24 +326,27 @@ dedup_dominated <- function(rules_df, stat) {
     ix <- which(sig == g)
     if (length(structs[[ix[1]]]$thr) == 1) {
       # single bound: totally ordered by threshold. Walk from loosest to
-      # tightest keeping a running max of the stat; drop anything not above it.
+      # tightest keeping a running max of the stat; a tighter rung survives
+      # only if it beats every looser rung by MORE than stat_eps.
       loose_first <- if (structs[[ix[1]]]$dir == "upper")
         ix[order(-vapply(structs[ix], function(s) s$thr, 0))]
       else ix[order( vapply(structs[ix], function(s) s$thr, 0))]
       best <- -Inf
       for (a in loose_first) {
-        if (!is.na(stat[a]) && stat[a] > best) best <- stat[a] else drop[a] <- TRUE
+        if (!is.na(stat[a]) && stat[a] > best + stat_eps) best <- stat[a]
+        else drop[a] <- TRUE
       }
     } else {
-      # a rule can only be dominated by one with an equal-or-higher stat, so
-      # order the group by stat and scan upward only; break on first dominator
+      # a rule can only be (eps-)dominated by one whose stat is >= its own
+      # minus stat_eps; order by stat descending and scan candidates with
+      # stat >= stat[a] - stat_eps (a prefix, plus near-ties)
       ord <- ix[order(-stat[ix], na.last = TRUE)]
       for (pos in seq_along(ord)[-1]) {
         a <- ord[pos]
         if (is.na(stat[a])) next
-        for (pos_b in seq_len(pos - 1)) {
-          b <- ord[pos_b]
-          if (drop[b] || is.na(stat[b])) next
+        for (b in ord) {
+          if (b == a || drop[b] || is.na(stat[b])) next
+          if (stat[b] < stat[a] - stat_eps) next
           if (.covers(structs[[b]], structs[[a]]) &&
               !identical(structs[[b]]$thr, structs[[a]]$thr)) { drop[a] <- TRUE; break }
         }
@@ -346,6 +354,25 @@ dedup_dominated <- function(rules_df, stat) {
     }
   }
   drop
+}
+
+# Deliverable-time ladder collapse: within each same-structure family (per
+# stratum), keep ONLY the member with the best stat. Use on state-facing
+# shortlists — the full ladder stays in the *_rules_all.csv outputs, where the
+# sweep still uses looser rungs for reach at low floors. Unlike
+# dedup_dominated, this does not require nesting: it flattens each family to
+# its single most defensible representative. Returns a logical keep vector.
+collapse_ladders <- function(rules_df, stat) {
+  structs <- lapply(rules_df$rule, .rule_struct)
+  sig  <- paste(rules_df$hh, vapply(structs, function(s) s$sig, ""))
+  keep <- rep(FALSE, nrow(rules_df))
+  for (g in unique(sig)) {
+    ix <- which(sig == g)
+    s  <- stat[ix]
+    best <- ix[order(-ifelse(is.na(s), -Inf, s))][1]
+    keep[best] <- TRUE
+  }
+  keep
 }
 
 ## ── 5. Sweep + per-rule evaluation ────────────────────────────────────────────

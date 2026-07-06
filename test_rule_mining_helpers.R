@@ -77,6 +77,27 @@ rdm <- data.frame(rule = c("x1 > 0.6 & x2 <= 0.3", "x1 > 0.5 & x2 <= 0.4"), hh =
 dm <- dedup_dominated(rdm, stat = c(0.30, 0.35))  # B looser AND better -> drop A
 ok("multi-bound dominance", identical(dm, c(TRUE, FALSE)))
 
+## ladder collapse (stat_eps): tighter rung within eps of looser -> dropped;
+## clearly better tighter rung -> kept
+rl <- data.frame(rule = c("x1 > 0.985", "x1 > 0.983"), hh = "1",
+                 stringsAsFactors = FALSE)
+ok("eps collapses near-twin rung",
+   identical(dedup_dominated(rl, stat = c(0.208, 0.205), stat_eps = 0.01),
+             c(TRUE, FALSE)))
+ok("distinct rung survives eps",
+   identical(dedup_dominated(rl, stat = c(0.30, 0.205), stat_eps = 0.01),
+             c(FALSE, FALSE)))
+ok("stat_eps = 0 restores pure dominance",
+   identical(dedup_dominated(rl, stat = c(0.208, 0.205), stat_eps = 0),
+             c(FALSE, FALSE)))
+
+## deliverable-time collapse: one rung per family (max stat), other structures kept
+rc <- data.frame(rule = c("x1 > 0.985", "x1 > 0.983", "x2 <= 0.4 & x1 > 0.5"),
+                 hh = "1", stringsAsFactors = FALSE)
+ok("collapse_ladders keeps max-stat rung + other structures",
+   identical(collapse_ladders(rc, stat = c(0.208, 0.205, 0.15)),
+             c(TRUE, FALSE, TRUE)))
+
 ## sweep end-to-end
 k_tr <- vapply(idx, function(ix) sum(d2$is_err[ix]), numeric(1))
 n_tr <- lengths(idx)
