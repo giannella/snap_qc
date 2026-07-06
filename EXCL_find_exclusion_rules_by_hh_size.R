@@ -1,3 +1,5 @@
+# v1 (RuleFit/{pre}-based). Still supported; documented in the README legacy section.
+# Recommended successor: EXCL_find_exclusion_rules_by_hh_size_v2.R — see README "Migrating from v1 to v2".
 # ──────────────────────────────────────────────────────────────────────────────
 # RuleFit for SNAP review-precision: finding efficient EXCLUSION criteria
 #

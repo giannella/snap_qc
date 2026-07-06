@@ -1,3 +1,5 @@
+# v1 (RuleFit/{pre}-based). Still supported; documented in the README legacy section.
+# Recommended successor: tune_engine_params_v2.R — see README "Migrating from v1 to v2".
 # ──────────────────────────────────────────────────────────────────────────────
 # pre() parameter sweep for SNAP review targeting (companion to by_hh_size_6)
 #
@@ -29,7 +31,7 @@ set.seed(117)
 
 # error_status-filtered universe (NO year filter here; years are split below).
 focal_df <- reg_model_data %>%
-  filter(error_status %in% c("earned_overissuance", "unearned_overissuance", "no_error"))
+  filter(error_status %in% c("earned_overissuance", "no_error"))
 
 YEAR_COL      <- "fiscal_year"
 TRAIN_YEARS   <- c("2022", "2024")
@@ -51,10 +53,10 @@ hh_group_of <- function(n) {
 }
 
 features <- c(
-  "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions",
+  "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
   "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
-  "shelter_expenses", "utilities", "married", "homeless",
-  "rawearn", "rawunearn", "rawgross",
+  "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
+  "rawearn_by_hh_size", "rawunearn_by_hh_size", "rawgross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max",
   "months_since_cert_n", "count_divisible_by_100"
 )
@@ -66,7 +68,7 @@ LEARNRATE_VALS <- c(0.001, 0.005, 0.01, 0.02)
 NTREES_VALS    <- c(500, 1000, 2500, 5000)
 SAMPFRAC_VALS  <- c(0.1, 0.15, 0.2, 0.3, 0.5)
 
-out_dir <- "pre_param_sweep"
+out_dir <- "parameter_tuning"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 stopifnot(OBJECTIVE %in% c("counts", "dollars"))
 

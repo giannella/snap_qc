@@ -1,3 +1,5 @@
+# v1 (RuleFit/{pre}-based). Still supported; documented in the README legacy section.
+# Recommended successor: INCL_find_inclusion_rules_by_hh_size_v2.R — see README "Migrating from v1 to v2".
 # ──────────────────────────────────────────────────────────────────────────────
 # RuleFit for SNAP review targeting: INCLUSION criteria (i.e., flag cases for review)
 #
@@ -266,15 +268,16 @@ run_for_hh <- function(focal_df, hh_label) {
     return(empty)
   }
   
-  # Class rebalancing: keep all errors, sample 14 clean cases per error (capped at
-  # the clean cases available, so thin strata use all of them rather than erroring).
-  has_errors <- model_data %>% filter(over_threshold == "1" & fiscal_year > 2019)
-  no_errors  <- model_data %>% filter(over_threshold == "0" & fiscal_year > 2019)
-  n_clean    <- min(nrow(has_errors) * 14, nrow(no_errors))
-  no_errors_sampled <- no_errors %>% sample_n(size = n_clean)
-  model_data <- bind_rows(has_errors, no_errors_sampled)
-  model_data <- model_data %>% sample_n(size = nrow(model_data))
-  table(model_data$over_threshold)
+  # Optional class rebalancing (off by default; uncomment to re-enable): keep all
+  # errors, sample 14 clean cases per error (capped at the clean cases available,
+  # so thin strata use all of them rather than erroring).
+  # has_errors <- model_data %>% filter(over_threshold == "1" & fiscal_year > 2019)
+  # no_errors  <- model_data %>% filter(over_threshold == "0" & fiscal_year > 2019)
+  # n_clean    <- min(nrow(has_errors) * 14, nrow(no_errors))
+  # no_errors_sampled <- no_errors %>% sample_n(size = n_clean)
+  # model_data <- bind_rows(has_errors, no_errors_sampled)
+  # model_data <- model_data %>% sample_n(size = nrow(model_data))
+  # table(model_data$over_threshold)
   
   # md_dollars must be recomputed from the rebalanced rows
   amt <- model_data[[ERR_AMT_COL]]; amt[is.na(amt)] <- 0

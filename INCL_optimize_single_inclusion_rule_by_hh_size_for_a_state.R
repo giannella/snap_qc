@@ -1,3 +1,5 @@
+# v1 (RuleFit/{pre}-based). Still supported; documented in the README legacy section.
+# Recommended successor: state_threshold_gridsearch_v2.R — see README "Migrating from v1 to v2".
 # ──────────────────────────────────────────────────────────────────────────────
 # Optimize ONE inclusion rule's thresholds by grid search
 #

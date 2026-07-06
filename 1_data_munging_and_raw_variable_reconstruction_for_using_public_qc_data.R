@@ -1000,7 +1000,7 @@ reg_model_data <- reg_model_data %>%
       has_earned_inc_error & status == 3 & over_threshold==1~ "underissuance",
       has_unearned_inc_error & status == 2& over_threshold==1 ~ "unearned_overissuance",
       has_unearned_inc_error & status == 3 & over_threshold==1~ "underissuance",
-      (!has_unearned_inc_error & !has_unearned_inc_error) & status %in% c(2,3) & over_threshold==1 ~ "other_error",
+      (!has_earned_inc_error & !has_unearned_inc_error) & status %in% c(2,3) & over_threshold==1 ~ "other_error",
       over_threshold==0 ~ "no_error",
       TRUE ~ NA_character_), 
     error_timing = case_when(

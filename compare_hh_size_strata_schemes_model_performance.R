@@ -1,3 +1,5 @@
+# v1 (RuleFit/{pre}-based). Still supported; documented in the README legacy section.
+# Recommended successor: compare_hh_strata_v2.R — see README "Migrating from v1 to v2".
 # ──────────────────────────────────────────────────────────────────────────────
 # Comparing household-size STRATIFICATION SCHEMES: precision-recall comparison
 #
