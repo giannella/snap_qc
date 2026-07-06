@@ -62,13 +62,26 @@ FACTORS_FINE   <- c(0.75, 0.90, 1.00, 1.10, 1.25)
 FACTORS_COARSE <- c(0.90, 1.00, 1.10)
 MAX_VARIANTS   <- 700
 
-# State qualification: support floor + raw precision floor, then maximize
-# error dollars captured on state-train.
-MIN_STATE_FLAGGED   <- 20
-MIN_STATE_PRECISION <- 0.20
+# State qualification. Two modes, both followed by the same tuned-variant
+# selection (maximize error dollars captured on state-train among qualifiers):
+#   "lcb"           — variant's Wilson LCB (STATE_LCB_Z) of state-train
+#                     precision >= MIN_STATE_PRECISION, support >=
+#                     MIN_STATE_FLAGGED_LCB (support scales with precision).
+#                     DEFAULT: in the 2026-07 three-way comparison this hybrid
+#                     (LCB gate + dollar-max selection) dominated the simple
+#                     floor in Arizona and was the middle ground elsewhere.
+#   "support_floor" — variant flags >= MIN_STATE_FLAGGED state-train cases at
+#                     raw precision >= MIN_STATE_PRECISION (simpler to explain;
+#                     more reach, less precision)
+QUALIFY_MODE          <- "lcb"             # or "support_floor"
+MIN_STATE_FLAGGED     <- 20
+MIN_STATE_PRECISION   <- 0.20
+STATE_LCB_Z           <- 1.2816            # 90% one-sided (lcb mode only)
+MIN_STATE_FLAGGED_LCB <- 5                 # support backstop (lcb mode only)
 
 out_dir <- "state_rules_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+stopifnot(QUALIFY_MODE %in% c("support_floor", "lcb"))
 
 ## ── 1. National rules + data prep ─────────────────────────────────────────────
 
@@ -167,7 +180,12 @@ run_state <- function(st) {
     d <- vapply(st_v, `[[`, 0, "d")
     if (sum(n) == 0) return(NULL)             # rule never fires in this state
     prec <- ifelse(n > 0, k / n, NA_real_)
-    qual <- which(n >= MIN_STATE_FLAGGED & !is.na(prec) & prec >= MIN_STATE_PRECISION)
+    qual <- if (QUALIFY_MODE == "lcb") {
+      which(n >= MIN_STATE_FLAGGED_LCB &
+              wilson_lcb(k, n, STATE_LCB_Z) >= MIN_STATE_PRECISION)
+    } else {
+      which(n >= MIN_STATE_FLAGGED & !is.na(prec) & prec >= MIN_STATE_PRECISION)
+    }
     qualified <- length(qual) > 0
     best <- if (qualified) qual[which.max(d[qual])]
             else which.max(ifelse(is.na(prec), -Inf, prec))
@@ -186,8 +204,14 @@ run_state <- function(st) {
     cat("  no rules evaluable in this state\n"); return(NULL)
   }
   keep <- res[res$qualified, , drop = FALSE]
-  cat(sprintf("  rules qualified (>=%d flagged at >=%.2f precision on train): %d of %d evaluable\n",
-              MIN_STATE_FLAGGED, MIN_STATE_PRECISION, nrow(keep), nrow(res)))
+  crit <- if (QUALIFY_MODE == "lcb")
+    sprintf("train-precision LCB(z=%.2f) >= %.2f, >= %d flagged",
+            STATE_LCB_Z, MIN_STATE_PRECISION, MIN_STATE_FLAGGED_LCB)
+  else
+    sprintf(">= %d flagged at >= %.2f precision on train",
+            MIN_STATE_FLAGGED, MIN_STATE_PRECISION)
+  cat(sprintf("  rules qualified (%s): %d of %d evaluable\n",
+              crit, nrow(keep), nrow(res)))
   write.csv(res, file.path(out_dir, sprintf("rules_gridsearch_%s.csv", gsub(" ", "_", st))),
             row.names = FALSE)
 

@@ -1,0 +1,8 @@
+"state","n_rules_qualified","flagged_tuned","errors_tuned","precision_tuned","recall_tuned","dollar_recall_tuned","workload_tuned","flagged_natl_kept","errors_natl_kept","precision_natl_kept","recall_natl_kept","dollar_recall_natl_kept","workload_natl_kept","flagged_natl_all","errors_natl_all","precision_natl_all","recall_natl_all","dollar_recall_natl_all","workload_natl_all"
+"Washington",3,21,1,0.048,0.023,0.03,0.035,0,0,NA,0,0,0,11,4,0.364,0.091,0.118,0.018
+"Connecticut",35,177,37,0.209,0.43,0.491,0.206,62,14,0.226,0.163,0.197,0.072,92,21,0.228,0.244,0.318,0.107
+"North Carolina",11,128,17,0.133,0.262,0.237,0.145,3,2,0.667,0.031,0.034,0.003,20,5,0.25,0.077,0.073,0.023
+"Louisiana",3,6,0,0,0,0,0.009,0,0,NA,0,0,0,11,2,0.182,0.053,0.059,0.016
+"Michigan",6,50,7,0.14,0.095,0.092,0.069,4,0,0,0,0,0.005,25,7,0.28,0.095,0.087,0.034
+"Virginia",3,19,2,0.105,0.033,0.048,0.029,1,0,0,0,0,0.002,19,3,0.158,0.05,0.058,0.029
+"Arizona",32,114,24,0.211,0.202,0.245,0.136,4,0,0,0,0,0.005,30,14,0.467,0.118,0.097,0.036

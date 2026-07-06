@@ -1,0 +1,30 @@
+"hh","rule","source","n_flagged_train","errors_train","precision_train","precision_train_lcb","n_flagged_holdout","errors_caught_holdout","precision_holdout","recall_holdout","dollar_recall_holdout","workload_pct_holdout","n_flagged_any","errors_caught_any","precision_any","recall_any","dollar_recall_any","workload_pct_any"
+"1","months_since_cert_n >=    8.0 & percent_abawd >=    0.5 & shelter_expenses_by_hh_size >= 1270.0 & total_deductions_by_hh_size >= 1000.0","xgboost",13,6,0.4615,0.2611,2,1,0.5,0.0036,0.0048,0.01,3,2,0.6667,0.0015,0.0021,0.014
+"1","elderly_disabled_i <   1.000 & months_since_cert_n >=  11.000 & total_deductions_by_hh_size >= 688.000 & unc_rawben_rel_max <   0.976","xgboost",36,12,0.3333,0.2198,12,0,0,0,0,0.058,12,0,0,0,0,0.055
+"1","count_divisible_by_100 <=   0.5 & months_since_cert_n >   4.5 & percent_abawd >   0.5 & total_deductions_by_hh_size > 943.0","ranger_mtry1",39,12,0.3077,0.2019,8,2,0.25,0.0073,0.0096,0.039,9,3,0.3333,0.0023,0.0036,0.041
+"2-3","expedited_i <=   0.500 & percent_abawd >   0.167 & total_deductions_by_hh_size > 388.000 & total_deductions_by_hh_size <= 402.000","ranger_mtry1",11,5,0.4545,0.2421,13,1,0.0769,0.003,0.0029,0.152,13,1,0.0769,0.001,0.0013,0.142
+"2-3","percent_abawd <   0.333 & shelter_expenses_by_hh_size >= 975.000 & total_deductions_by_hh_size >= 407.000 & total_deductions_by_hh_size < 479.000","xgboost",24,9,0.375,0.233,15,2,0.1333,0.006,0.007,0.176,16,3,0.1875,0.003,0.0036,0.174
+"2-3","shelter_expenses_by_hh_size >= 1050 & total_deductions_by_hh_size >=  418 & total_deductions_by_hh_size <  500","xgboost",24,9,0.375,0.233,12,3,0.25,0.009,0.0079,0.141,12,3,0.25,0.003,0.0034,0.131
+"2-3","cat_elig >    1.5 & months_since_cert_n >    7.5 & shelter_expenses_by_hh_size > 1120.0","ranger_mtry1",21,8,0.381,0.2299,1,0,0,0,0,0.012,1,0,0,0,0,0.011
+"2-3","HH_size_n >   2.5 & medical_deductions <= 156.0 & total_deductions_by_hh_size > 471.0 & total_deductions_by_hh_size <= 486.0","ranger_mtry1",12,5,0.4167,0.22,6,0,0,0,0,0.07,8,2,0.25,0.002,8e-04,0.087
+"2-3","count_divisible_by_100 <   1.000 & rawben_rel_max <   0.316 & total_deductions_by_hh_size >= 595.000 & utilities < 645.000","xgboost",22,8,0.3636,0.2187,13,0,0,0,0,0.152,13,0,0,0,0,0.142
+"2-3","cat_elig <   2 & months_since_cert_n <  11 & shelter_expenses_by_hh_size < 360 & total_deductions_by_hh_size >= 466","xgboost",20,7,0.35,0.2022,27,3,0.1111,0.009,0.0117,0.316,30,6,0.2,0.0061,0.0075,0.327
+"2-3","elderly_disabled_i <=   0.500 & months_since_cert_n >   5.500 & unc_rawben_rel_max <=   0.974 & utilities > 902.000","ranger_mtry1",47,14,0.2979,0.2016,56,9,0.1607,0.0269,0.021,0.656,62,15,0.2419,0.0152,0.0141,0.675
+"4+","months_since_cert_n >=  10 & shelter_expenses_by_hh_size >= 451 & shelter_expenses_by_hh_size < 482","xgboost",17,8,0.4706,0.2896,10,2,0.2,0.0079,0.0016,0.236,10,2,0.2,0.0028,8e-04,0.212
+"4+","percent_abawd >=   0.222 & shelter_expenses_by_hh_size >= 516.000 & total_deductions_by_hh_size >= 244.000 & utilities >= 341.000","xgboost",12,6,0.5,0.2855,7,1,0.1429,0.004,0.0023,0.165,8,2,0.25,0.0028,0.0035,0.17
+"4+","HH_size_n <= 4.50 & unc_rawben_rel_max > 1.39","ranger_mtry1",10,5,0.5,0.2693,11,2,0.1818,0.0079,0.0075,0.259,12,3,0.25,0.0042,0.004,0.255
+"4+","medical_deductions <= 0.50 & unc_rawben_rel_max > 1.39","ranger_mtry1",10,5,0.5,0.2693,11,2,0.1818,0.0079,0.0075,0.259,13,4,0.3077,0.0056,0.0045,0.276
+"4+","expedited_i <   1.00 & shelter_expenses_by_hh_size >= 440.00 & unc_rawben_rel_max >=   1.27 & utilities >= 680.00","xgboost",16,7,0.4375,0.2576,5,1,0.2,0.004,0.0021,0.118,5,1,0.2,0.0014,0.001,0.106
+"4+","medical_deductions <= 138.000 & rawben_rel_max <=   0.939 & unc_rawben_rel_max >   0.874 & utilities > 974.000","ranger_mtry1",11,5,0.4545,0.2421,13,1,0.0769,0.004,0.0042,0.306,13,1,0.0769,0.0014,0.0019,0.276
+"4+","unc_rawben_rel_max > 1.39","ranger_mtry1",11,5,0.4545,0.2421,13,2,0.1538,0.0079,0.0075,0.306,15,4,0.2667,0.0056,0.0045,0.319
+"4+","percent_abawd >   0.236 & shelter_expenses_by_hh_size > 266.000 & utilities > 851.000","ranger_mtry1",14,6,0.4286,0.2406,16,3,0.1875,0.0119,0.0099,0.377,18,5,0.2778,0.007,0.0058,0.382
+"4+","rawben_rel_max >=   0.867 & rawben_rel_max <   0.977 & shelter_expenses_by_hh_size >= 303.000 & shelter_expenses_by_hh_size < 316.000","xgboost",14,6,0.4286,0.2406,12,1,0.0833,0.004,0.003,0.283,14,3,0.2143,0.0042,0.003,0.297
+"4+","homeless <=   0.5000 & percent_abawd >   0.0833 & shelter_expenses_by_hh_size > 272.0000 & utilities > 851.0000","ranger_mtry1",18,7,0.3889,0.2266,21,3,0.1429,0.0119,0.0099,0.495,24,6,0.25,0.0084,0.0065,0.51
+"4+","months_since_cert_n >=   7.000 & rawben_rel_max >=   0.704 & shelter_expenses_by_hh_size >= 414.000 & total_deductions_by_hh_size >= 211.000","xgboost",32,11,0.3438,0.2228,30,7,0.2333,0.0278,0.0256,0.707,33,10,0.303,0.014,0.0147,0.701
+"4+","count_divisible_by_100 >   0.5 & utilities > 974.0","ranger_mtry1",12,5,0.4167,0.22,10,2,0.2,0.0079,0.0082,0.236,14,6,0.4286,0.0084,0.0074,0.297
+"4+","shelter_expenses_by_hh_size >= 426 & total_deductions_by_hh_size < 256 & utilities >= 992","xgboost",22,8,0.3636,0.2187,24,4,0.1667,0.0159,0.0129,0.566,24,4,0.1667,0.0056,0.006,0.51
+"4+","HH_size_n <   5.000 & rawben_rel_max >=   0.784 & shelter_expenses_by_hh_size >= 325.000 & shelter_expenses_by_hh_size < 335.000","xgboost",34,11,0.3235,0.2089,16,1,0.0625,0.004,0.006,0.377,17,2,0.1176,0.0028,0.0039,0.361
+"4+","percent_abawd >   0.236 & shelter_expenses_by_hh_size > 518.000","ranger_mtry1",16,6,0.375,0.2081,12,2,0.1667,0.0079,0.007,0.283,13,3,0.2308,0.0042,0.0057,0.276
+"4+","rawben_rel_max <=    0.965 & unc_rawben_rel_max <=    1.390 & utilities >  974.000 & utilities <= 1000.000","ranger_mtry1",16,6,0.375,0.2081,0,0,NA,0,0,0,0,0,NA,0,0,0
+"4+","months_since_cert_n >   6.500 & rawben_rel_max >   0.696 & rawben_rel_max <=   0.975 & utilities > 851.000","ranger_mtry1",42,13,0.3095,0.2067,41,8,0.1951,0.0317,0.0391,0.966,50,17,0.34,0.0238,0.0278,1.062
+"4+","months_since_cert_n >=   4 & total_deductions_by_hh_size >= 317 & utilities >= 503 & utilities < 757","xgboost",43,13,0.3023,0.2017,30,1,0.0333,0.004,0.0038,0.707,34,5,0.1471,0.007,0.0074,0.722

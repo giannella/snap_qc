@@ -196,6 +196,47 @@ just a reflection of how this is working right now.
 | Washington | 3 | 0.048 @ 2.3% | 0.364 @ 9.1% (11.8%) |
 | Louisiana | 3 | 0.000 @ 0% | 0.182 @ 5.3% |
 
+**Criterion comparison (2026-07-06, three qualification/selection schemes,
+all with >= 5 train flags):** (a) 90% LCB qualify + LCB-max select, (b) simple
+support floor (>= 20 flags @ >= 0.20 raw) + dollar-max select, (c) hybrid: 90%
+LCB qualify + dollar-max select. 2023 test unions in the three states where
+rules qualify:
+
+| state | (a) LCB+LCBmax | (b) floor+$max | (c) hybrid |
+|---|---|---|---|
+| Connecticut | 0.217 @ 32.6% | **0.209 @ 43.0%** | 0.215 @ 33.7% |
+| Arizona | 0.290 @ 15.1% | 0.211 @ 20.2% | **0.247 @ 20.2%** |
+| North Carolina | 0.159 @ 15.4% | 0.133 @ 26.2% | 0.170 @ 23.1% |
+
+Column definitions — each scheme is a QUALIFICATION bar (which threshold
+variants of a rule are eligible at all, judged on state training data) plus a
+SELECTION objective (which single qualifying variant the state deploys). Cells
+show the deployed union's precision @ recall on the state's 2023 test year.
+
+- **(a) LCB+LCBmax** — qualify: 90% Wilson lower confidence bound of the
+  variant's train precision >= 0.20 (>= 5 cases flagged); select: the variant
+  with the HIGHEST LCB (the most statistically defensible version — tends to
+  pick tight, small-footprint variants).
+- **(b) floor+$max** — qualify: variant flags >= 20 train cases at >= 0.20 raw
+  precision (the simple, transparent criterion); select: the variant capturing
+  the most error DOLLARS on train among qualifiers (the widest-reaching
+  version that still clears the bar).
+- **(c) hybrid** — qualify as in (a) (LCB-based, careful gate); select as in
+  (b) (dollar-maximizing, aggressive pick).
+
+No scheme dominates: (b) wins the largest state on recall; (c) dominates (b)
+in Arizona (equal recall, +3.6pp precision) and is the precision-recall middle
+ground in NC. The qualification bar drives the trade (LCB admits fewer
+marginal-support rules -> higher precision, less reach); the selection
+objective drives reach. Differences are a few points on small test samples —
+within noise for a per-state ranking. DEFAULT (decided 2026-07-06): the hybrid
+(c) — QUALIFY_MODE = "lcb" — dominating in AZ, middle ground in NC, and close
+behind in CT; it also keeps the qualification logic consistent with the
+national pipeline's LCB filtering. QUALIFY_MODE = "support_floor" remains
+available for states wanting the simpler-to-explain criterion or maximum
+reach. In the four small states every scheme loses to national-as-is
+(criterion-invariant).
+
 **Rule of thumb: tune locally if ~30+ rules qualify on state train; otherwise
 deploy the national selection at national thresholds unchanged.** Small-sample
 tuning is winner's-curse territory (Louisiana's tuned rules went 0-for-6 on
@@ -220,14 +261,14 @@ nets) and the reason the pipeline uses 1 / 2-3 / 4+:
 - the coarse 3-way grouping also beat the standard 5-way 1/2/3/4/5+ (0.127)
   and 1/2/3-4/5+ (0.139): finer strata thin the training data faster than
   they add homogeneity;
-- intuition: dollar-scaled features (income/benefit relative to HH size) mean
+- intuition: even dollar-scaled features (income/benefit relative to HH size) mean
   different things at different HH sizes; stratifying lets thresholds differ,
   while over-splitting starves rule support.
 
 **v2-stack confirmation (2026-07-06).** With
-production engines (deep ensembles, HH size available as a feature) and stiff
+production engines (mtry=2 ensembles, HH size available as a feature) and strict
 LCB: pooled 0.2256 mean precision vs 1/2-3/4+ 0.2216 vs 5-way 0.2142. The
-pre-era +47% gap does NOT replicate — like the ESAP finding, deep ensembles
+pre-era +47% gap does NOT replicate — like the ESAP finding, ensembles using restricted mtry (set to 2)
 capture most of what stratification provided when the stratifier is a feature.
 The 3-way split still wins where it matters operationally: **reach** (54.8% vs
 48.4% dollar recall at the 0.20 floor) and **filtered rule inventory** (4,279 vs
