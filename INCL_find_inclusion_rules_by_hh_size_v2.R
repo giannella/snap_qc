@@ -227,19 +227,23 @@ run_frame <- function(frame_df, frame_name, universe) {
   write.csv(sweeps, file.path(out_dir, sprintf("%s_lcb_sweep.csv", frame_name)),
             row.names = FALSE)
 
-  p <- ggplot(sweeps, aes(x, precision, linetype = scoring)) +
+  recall_lab <- if (OBJECTIVE == "dollars") "hold-out share of error $ caught" else
+    "hold-out share of errors caught"
+  sweep_long <- bind_rows(
+    sweeps %>% mutate(metric = "hold-out precision", value = precision),
+    sweeps %>% mutate(metric = recall_lab, value = x))
+  p <- ggplot(sweep_long, aes(threshold, value, linetype = scoring)) +
     geom_line(linewidth = 0.8) + geom_point(size = 1.0) +
-    geom_text(aes(label = sprintf("%.2f", threshold)), size = 2.4, vjust = -0.7,
-              show.legend = FALSE, check_overlap = TRUE) +
-    labs(x = sprintf("Hold-out %s recall of the union (denominator follows scoring)",
-                     if (OBJECTIVE == "dollars") "dollar" else "case"),
-         y = "Hold-out precision of the union",
-         linetype = "Scored against",
-         title = sprintf("Union precision-recall across train-LCB floors - %s", frame_name),
-         subtitle = sprintf("xgboost + ranger, trained %s, scored on %s; point labels = LCB floor",
+    facet_wrap(~metric, nrow = 1) +
+    labs(x = "99% lower bound precision",
+         y = NULL, linetype = "Scored against",
+         title = sprintf("What the kept rules achieve together, by precision floor - %s", frame_name),
+         subtitle = sprintf("xgboost + ranger, trained %s, scored on %s; compare lines vertically at any floor",
                             paste(TRAIN_YEARS, collapse = "/"), paste(HOLDOUT_YEARS, collapse = "/"))) +
+    coord_cartesian(xlim = c(0.05, max(0.7, max(sweeps$threshold) + 0.05)),
+                    ylim = c(0, 1)) +
     theme_minimal(base_size = 12) + theme(legend.position = "top")
-  save_png(p, file.path(out_dir, sprintf("%s_lcb_sweep.png", frame_name)), 8, 5)
+  save_png(p, file.path(out_dir, sprintf("%s_lcb_sweep.png", frame_name)), 9, 4.5)
 
   invisible(list(rule_eval = rule_eval, shortlist = shortlist, sweeps = sweeps))
 }

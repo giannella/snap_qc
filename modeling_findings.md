@@ -81,10 +81,12 @@ Scored on ALL 2023 errors with identical machinery and selection:
   floor (the standard workflow) and roughly ties for a state targeting a
   precision level. The floor-level recall gain is near-guaranteed mechanically
   (adding a vocabulary can only grow the union); the measured question was the
-  precision price, which is small. Evidence grade: moderate — consistent
-  across ensemble regimes but a single hold-out year and seed; a year-swap
-  replication (train 2022+2023, test 2024) is the cheap firm-up if this
-  headlines a presentation.
+  precision price, which is small. Evidence grade: SOLID as of 2026-07-06 —
+  the year-swap replication (train 2022+2023, test 2024) reproduced both the
+  ordering and the magnitudes on a disjoint test year: at the 0.30 floor,
+  typed 26.9% -> combined 35.6% recall (+8.7pp vs +6.3pp in the original); at
+  0.20, +4.7pp (vs +4.1pp); matched-recall deltas again within the noise band.
+  Artifacts: compare_anyerror_vs_typed_v2/yearswap_train2223_test24/.
 - Robust to ensemble size (300/500 vs 1000/2500 trees: same ordering).
 
 *Artifacts: compare_anyerror_vs_typed_v2/ (dollar- and counts-basis plots,
@@ -109,11 +111,14 @@ precision at matched dollar recall):
   of the filter setting; they are the production defaults (eta .02,
   subsample .20).
 - **Round count only looks like it matters at a loose filter.** At a fixed
-  90% LCB, 100 rounds beat 1000 on the frontier (0.217 vs 0.198) — but that
-  gap is the selection-multiplicity dilution that §5 shows is correctable:
-  under the adopted stringent filter (z = 2.326), the 1000-round pool matches
-  the small pool's precision at the 0.20 floor while extending reach to ~74%
-  dollar recall. Production: 1000 rounds — "mine big, filter stringently."
+  90% LCB, 100 rounds beat 1000 on the frontier (0.217 vs 0.198) — but most of
+  that gap is the selection-multiplicity dilution that §5 shows is
+  correctable: at each pool's appropriate stringency (small @ 90%, big @ 99%)
+  the two trace essentially the SAME hold-out frontier. What mining big buys
+  is the MENU behind each operating point — ~2.6x the rules pass any floor in
+  this experiment (~5x at production scale with both engines), each with a
+  stiffer per-rule guarantee — not extra portfolio precision. Production:
+  1000 rounds — "mine big, filter stringently."
 - Depth 4~5 >> 3. Inventory (shortlist size) and frontier quality often
   DISAGREE — e.g. subsample 0.75 gives more rules but a worse frontier.
 
@@ -130,8 +135,12 @@ the dilution is mostly CORRECTABLE in order to keep the potential for greater re
   monotonically; on the 100-round pool z barely matters — the multiplicity
   signature.
 - **1000 rounds @ z=2.33 lands on the same 0.20-floor operating point as 100
-  rounds @ z=1.28 (55% recall @ 17% precision) while ALSO reaching 74% dollar
-  recall at lower floors**.
+  rounds @ z=1.28 (55% recall @ 17% precision), with 2,026 vs 789 filtered
+  rules behind it.** Honest framing: the two recipes trace the same union
+  frontier — the big pool's gain is rule inventory (substitutes for
+  expert-driven removal) and per-rule guarantee stringency, not portfolio
+  precision or reach. (Figure: presentation_figures/
+  mine_big_filter_stringently.png.)
 - Residual gap (~1/3 of the dilution) is intrinsic marginal-rule quality; no
   z fixes it.
 
@@ -247,6 +256,31 @@ of errors / 49% of error dollars at 21% review precision.
 National selection sent to states: up to 60 rules per frame by national train
 LCB (earned admitted at a relaxed 0.15 floor; 186 rules total).
 
+**THREE-WAY comparison (2026-07-06; train 2022+2024, test 2023):** adding
+"mine on the state's own data" (raw >= 0.30 @ n >= 30) as option (c) beside
+national-as-is and national-tuned. Where data is deep, own-mining dominates
+recall by a wide margin at moderate precision (AZ: 86% of error dollars at
+0.221; VA 81% at 0.138; NC 71% at 0.114; CT 70% at 0.181); in the thin states
+it collapses to a handful of rules (LA and WA: 8 rules each). IMPORTANT
+CAVEAT: the 2023 test year sits BETWEEN the training years — temporal
+interpolation flatters all options and own-mining most; the year-split
+extrapolation checks (below) are the honest forward-deployment expectation.
+Artifacts: compare_state_options_v2/.
+
+**Same-era NEIGHBOR TRANSFER — the thin-state recipe (2026-07-06, Louisiana):**
+train on the state's fire-rate-similar neighbors (cosine on sqrt rule fire
+rates; for LA: IN, OK, AL, NM, KY) using the SAME years, exclude the state
+entirely, test on all of the state's rows. Result for LA: 913 rules; of the
+386 firing in LA, median precision 0.33 (neighbor-train) -> 0.18 (LA), 48%
+holding >= 0.20, union 0.141 @ 49% of LA errors (2.3x lift) — versus LA-alone
+mining's collapse and national-as-is at 5% recall. An earlier pooled attempt
+that mixed eras failed (median -> 0.00): the era match, not just the neighbor
+choice, is load-bearing. FY25 adds temporal drift on top, so quote below-0.18
+expectations. Deliverable rule: hand the state the full neighbor-trained list
+ranked by NEIGHBOR-train precision (selecting "rules that held in the state's
+test" would be a fresh winner's curse).
+Artifacts: state_similarity_v2/ (repo) + custom_one_off/louisiana/.
+
 **Single-state MINING (2026-07-06, one state, year-split validated):** when
 national rules cover too little of a state's error mix, mining directly on
 state data works ONLY with a hard support floor. At LCB >= 0.30 with n >= 5,
@@ -263,7 +297,42 @@ state scale — the ladder-collapse post-filter matters more there.
 thresholds side by side; state_union_summary.csv; LCB-criterion run preserved
 in run1_lcb_criterion/).*
 
-## 10. Household-size stratification: split, but split coarsely
+## 10. Data visibility: how much of a state's error population the public
+## data can even show (2026-07-07)
+
+Two pipeline defects were found and fixed, then the remaining gap quantified:
+
+- **Stale single-element frame**: reg_model_data.rds descended from a build
+  with the multi-element drop active — every result before 2026-07-07 was
+  mined on ~69% of true errors (multi-element cases, 31% of errors, excluded).
+  Fixed: multi-element cases kept (second_element_i tracks them; NOT a mining
+  feature — states report second elements too inconsistently). The frame now
+  saves from the script directly, so it cannot silently drift again.
+- **Deduction-NA drops**: states like WA/MS/MN leave optional deduction fields
+  unrecorded in blocks; those rows are now zero-filled (ded_fields_imputed
+  flag) instead of dropped. Recovered ~16% of WA's caseload.
+- **BENMAX filter: exonerated** (drops zero rows in the real pipeline; an
+  earlier circumstantial attribution to it was wrong).
+
+Post-fix VISIBILITY (frame errors / [raw over-threshold errors + ineligible
+exclusions], FY22-24): national 71%; WA/VA/LA now 78-81%. The floor is
+INELIGIBLE CASES, which the public file excludes entirely and which are
+100%-of-benefit errors: NJ sees only 43% of its error population, TN 51%,
+AR/MO/UT ~53%. **Guidance: states below ~60% visibility should treat
+national/public rules as a supplement and run the mining pipeline on internal
+data, which contains their ineligible determinations.** Artifacts:
+state_error_accounting/ (per-state-year raw error counts, FYWGT-weighted
+error dollars, exclusions; visibility_by_state_2022_2024.csv).
+
+Rule-content changes from data revisions are tracked with
+compare_rule_sets_v2.R (exact / threshold-shifted / coverage-overlap /
+dropped / new classification, plus a check of where new rules' catches
+concentrate). The measured effects of the 2026-07-07 rebuild on the mined
+rules — ~3x inventory, old set 93% preserved, higher LCB-floor reach, and the
+finding that the new rules are NOT multi-element specialists — are documented
+in `effects_of_munging_options.md`.
+
+## 11. Household-size stratification: split, but split coarsely
 
 Established under the pre-era methodology (June 2026, earned income, greedy
 nets) and the reason the pipeline uses 1 / 2-3 / 4+:

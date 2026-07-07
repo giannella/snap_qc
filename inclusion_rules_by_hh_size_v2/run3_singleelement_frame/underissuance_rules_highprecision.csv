@@ -1,0 +1,7 @@
+"hh","rule","source","n_flagged_train","errors_train","precision_train","precision_train_lcb","n_flagged_holdout","errors_caught_holdout","precision_holdout","recall_holdout","dollar_recall_holdout","workload_pct_holdout","n_flagged_any","errors_caught_any","precision_any","recall_any","dollar_recall_any","workload_pct_any"
+"1","unc_rawben_rel_max > -0.00915 & unc_rawben_rel_max <= -0.00172 & utilities <=  3.00000","ranger",57,22,0.386,0.2522,29,6,0.2069,0.08,0.1495,0.141,29,6,0.2069,0.0046,0.0085,0.133
+"1","total_deductions_by_hh_size > 62.20000 & unc_rawben_rel_max > -0.00544 & unc_rawben_rel_max <= -0.00172","ranger",91,31,0.3407,0.237,60,19,0.3167,0.2533,0.3409,0.292,60,19,0.3167,0.0147,0.0194,0.276
+"1","months_since_cert_n <= 29.50000 & rawben_rel_max <=  0.80200 & unc_rawben_rel_max > -0.00744 & unc_rawben_rel_max <= -0.00172","ranger",157,47,0.2994,0.2222,100,25,0.25,0.3333,0.4465,0.487,100,25,0.25,0.0193,0.0254,0.459
+"1","percent_abawd >  0.75000 & rawben_rel_max <=  0.80200 & unc_rawben_rel_max > -0.00544 & unc_rawben_rel_max <=  0.00228","ranger",18,8,0.4444,0.2181,5,3,0.6,0.04,0.0747,0.024,5,3,0.6,0.0023,0.0043,0.023
+"1","shelter_expenses_by_hh_size <=  7.50000 & unc_rawben_rel_max > -0.00915 & unc_rawben_rel_max <= -0.00172","ranger",31,12,0.3871,0.2154,12,5,0.4167,0.0667,0.1246,0.058,12,5,0.4167,0.0039,0.0071,0.055
+"4+","rawben_rel_max > 0.540 & rawben_rel_max <= 0.568 & shelter_expenses_by_hh_size <= 1.620 & unc_rawben_rel_max <= 0.928","ranger",13,6,0.4615,0.2024,6,1,0.1667,0.0074,0.0084,0.145,6,1,0.1667,0.0014,0.0014,0.127

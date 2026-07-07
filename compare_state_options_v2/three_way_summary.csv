@@ -1,0 +1,22 @@
+"state","option","precision","recall","dollar_recall","n_rules"
+"Washington","national rules as-is",0.364,0.091,0.118,NA
+"Connecticut","national rules as-is",0.228,0.244,0.318,NA
+"North Carolina","national rules as-is",0.25,0.077,0.073,NA
+"Louisiana","national rules as-is",0.182,0.053,0.059,NA
+"Michigan","national rules as-is",0.28,0.095,0.087,NA
+"Virginia","national rules as-is",0.158,0.05,0.058,NA
+"Arizona","national rules as-is",0.467,0.118,0.097,NA
+"Washington","national rules, tuned to state",0.5,0.023,0.028,2
+"Connecticut","national rules, tuned to state",0.215,0.337,0.395,46
+"North Carolina","national rules, tuned to state",0.17,0.231,0.202,19
+"Louisiana","national rules, tuned to state",0.111,0.026,0.025,1
+"Michigan","national rules, tuned to state",0.167,0.027,0.018,6
+"Virginia","national rules, tuned to state",0.077,0.017,0.025,6
+"Arizona","national rules, tuned to state",0.247,0.202,0.237,47
+"Washington","mined on the state's own data",0.233,0.159,0.195,8
+"Connecticut","mined on the state's own data",0.181,0.651,0.7,989
+"North Carolina","mined on the state's own data",0.114,0.677,0.705,318
+"Louisiana","mined on the state's own data",0.172,0.132,0.068,8
+"Michigan","mined on the state's own data",0.124,0.419,0.493,135
+"Virginia","mined on the state's own data",0.138,0.783,0.809,309
+"Arizona","mined on the state's own data",0.221,0.857,0.861,1613

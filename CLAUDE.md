@@ -26,7 +26,9 @@ Key v2 packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the o
 
 Public SNAP QC `.sav` files are expected at `C:/Users/ericg/qc/qc_data/`. Auxiliary lookups live in `additional_data/`. The main modelling frame `reg_model_data` is built by `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` (shared by v1 and v2) and cached as `reg_model_data.rds`.
 
-`error_status` values: `earned_overissuance`, `unearned_overissuance`, `underissuance`, `other_error`, `no_error`. A case is an error when `over_threshold != 0` (aligned 1:1 with error_status). Base rates are low: ~8.4% of cases have any over-threshold error; typed frames run 0.4-6% by stratum. `other_error` is the LARGEST error category and is mined in v2 (it never was in v1).
+`error_status` values: `earned_overissuance`, `unearned_overissuance`, `underissuance`, `other_error`, `no_error`. A case is an error when `over_threshold != 0` (aligned 1:1 with error_status). Base rates are low: ~11% of cases have any over-threshold error (post-2026-07-07 rebuild; was ~8.4% on the stale single-element frame); typed frames run 0.4-6% by stratum. `other_error` is the LARGEST error category and is mined in v2 (it never was in v1).
+
+**Frame provenance (2026-07-07)**: `reg_model_data.rds` is now saved by the munging script itself (never hand-built — a stale hand-built frame silently excluded all multi-element error cases, ~31% of errors, for weeks). Multi-element cases are KEPT (`second_element_i` flags them; do NOT use as a mining feature — state reporting is inconsistent). Deduction-field NAs are zero-filled (`ded_fields_imputed`), not dropped. Results predating the rebuild live in `run*_singleelement_frame/` archive subfolders; rule-content changes across data revisions are diffed with `compare_rule_sets_v2.R`. Per-state error visibility (public data misses all ineligible cases): `state_error_accounting/`.
 
 ## v2 Architecture
 

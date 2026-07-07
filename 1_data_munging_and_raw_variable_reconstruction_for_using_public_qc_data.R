@@ -134,12 +134,26 @@ mydata$absbendiff <- abs(mydata$RAWBEN - mydata$FSBEN)
 mydata <- mydata[abs(mydata$absbendiff - mydata$AMTERR) <= 5, ]
 nrow(mydata) # 117000
 
-# Drop all rows where a FS value is "NA"
+# Deduction-field NAs come in state-level blocks (e.g., WA, MS, MN leave the
+# optional deduction fields unrecorded for a subset of cases) and almost
+# certainly mean "not claimed / not recorded", not unusable data. Dropping
+# them cost some states ~16% of their cases. Zero-fill instead, with a flag
+# (2026-07-07; previously these rows were dropped).
+ded_na_fields <- c("FSDEPDED", "FSMEDDED", "FSCSDED", "FSSTDDED", "HOMELESS_DED")
+mydata$ded_fields_imputed <- rowSums(is.na(mydata[ded_na_fields])) > 0
+for (v in ded_na_fields) mydata[[v]][is.na(mydata[[v]])] <- 0
+cat("rows with zero-filled deduction fields:", sum(mydata$ded_fields_imputed), "\n")
+
+# Drop only rows where core shelter fields are NA (rarely triggers)
 mydata <- mydata %>%
-  filter(!is.na(FSDEPDED), !is.na(FSMEDDED), !is.na(FSCSDED), 
-         !is.na(FSSTDDED), !is.na(HOMELESS_DED),
-         !is.na(RENT), !is.na(UTIL))
-nrow(mydata) #113754
+  filter(!is.na(RENT), !is.na(UTIL))
+nrow(mydata) # was 113754 when the deduction fields were dropped instead
+
+# Track whether a second error element was reported. Multi-element cases are
+# KEPT (they are ~30% of error cases); the indicator is for QA/reporting, not
+# recommended as a mining feature — states report second elements very
+# inconsistently, so it would encode reporting practice, not error risk.
+mydata$second_element_i <- !is.na(mydata$ELEMENT2)
 
 # 3. Create error threshold by year
 year_data <- read.csv(paste0(folder, "additional_data/year_data.csv"))
@@ -1015,3 +1029,7 @@ reg_model_data <- reg_model_data %>%
     )
   )
 
+
+# Cache the modeling frame for the run_*.R runners (added 2026-07-07)
+saveRDS(reg_model_data, "reg_model_data.rds")
+cat("saved reg_model_data.rds:", nrow(reg_model_data), "rows\n")
