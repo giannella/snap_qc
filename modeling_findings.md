@@ -27,6 +27,17 @@ better ranking, and trained precision became roughly calibrated to test precisio
 
 *Artifacts: compare_models_by_HHsize_vs_pooled/ (rawstat_ vs unprefixed runs).*
 
+**Calibration of floor definitions (2026-07-07, rebuilt frame, unearned rules):**
+sweeping floors on raw trained precision overpromises even AFTER the LCB gate
+removes the junk — among rules passing the 99% bound at 0.20, a raw floor of
+0.40 delivers 0.33 union precision and a raw floor of 0.50 delivers 0.34 (the
+highest raw values among survivors still belong disproportionately to
+luck-inflated estimates). Floors on the LCB itself underpromise: an LCB floor
+of 0.30 delivers 0.381, 0.40 delivers 0.509. The LCB is therefore the only
+menu axis whose number reads "at least this". Side-by-side figure:
+`presentation_figures/floor_definitions_educational.png`
+(`educational_floor_definitions_figure.R`).
+
 ## 2. Results of dropping {pre} r package in favor of rolling our own
 
 Same rule quality, ~5x cheaper, ~3x smaller memory, and it unlocked analyses
