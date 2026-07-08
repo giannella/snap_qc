@@ -55,59 +55,76 @@ t0 <- Sys.time()
 idx <- flags_for_rules(rules, adf, strata, label = "national frame, once")
 cat(sprintf("flag evaluation: %.0fs\n", as.numeric(difftime(Sys.time(), t0, units = "secs"))))
 
-## ── 2. Fire-rate matrix: states x rules ───────────────────────────────────────
+## ── 2. Per-ERA fire-rate matrices and similarities ────────────────────────────
+# Flags were evaluated once on all years; each era's matrices come from
+# slicing those flags. Eras are kept separate because state error structure
+# drifts (the LA transfer showed era match is load-bearing).
+
+ERAS <- list("2017_2019" = c("2017", "2018", "2019"),
+             "2022_2024" = c("2022", "2023", "2024"))
 
 st <- as.character(adf[[STATE_COL]])
+yr <- as.character(adf[["fiscal_year"]])
 states <- sort(unique(st))
-# per-state stratum sizes (denominators)
-denom <- sapply(states, function(s) {
-  rows <- which(st == s)
-  vapply(rules$hh, function(h) length(intersect(rows, strata[[h]])), numeric(1))
-})  # rules x states
-
-# numerators: count of each rule's flags falling in each state
-state_of_row <- st
-num <- sapply(states, function(s) {
-  vapply(idx, function(ix) sum(state_of_row[ix] == s), numeric(1))
-})  # rules x states
-
-rate <- num / pmax(denom, 1)          # rules x states fire rates
-cat(sprintf("matrix: %d rules x %d states | median caseload rows/state: %d\n",
-            nrow(rate), ncol(rate), median(table(st))))
-
-## ── 3. Cosine similarity to the focal state ───────────────────────────────────
 
 cosine <- function(M) {              # columns = states
   Mn <- sweep(M, 2, sqrt(colSums(M^2)) + 1e-12, "/")
   t(Mn) %*% Mn
 }
-sim_sqrt <- cosine(sqrt(rate))
-sim_raw  <- cosine(rate)
 
-res <- data.frame(
-  state = states,
-  cosine_sqrt = sim_sqrt[, FOCAL],
-  cosine_raw  = sim_raw[, FOCAL],
-  n_rows = as.integer(table(st)[states])
-) %>%
-  filter(state != FOCAL) %>%
-  arrange(desc(cosine_sqrt)) %>%
-  mutate(rank_sqrt = row_number(),
-         rank_raw = rank(-cosine_raw))
+for (era_name in names(ERAS)) {
+  in_era <- yr %in% ERAS[[era_name]]
+  cat(sprintf("\n──── era %s: %d rows ────\n", era_name, sum(in_era)))
 
-write.csv(res, file.path(out_dir, sprintf("similarity_to_%s.csv", FOCAL)),
-          row.names = FALSE)
-write.csv(data.frame(state = states, round(sim_sqrt, 4)),
-          file.path(out_dir, "similarity_matrix_sqrt.csv"), row.names = FALSE)
+  denom <- sapply(states, function(s) {
+    rows <- which(st == s & in_era)
+    vapply(rules$hh, function(h) length(intersect(rows, strata[[h]])), numeric(1))
+  })  # rules x states
+  num <- sapply(states, function(s) {
+    vapply(idx, function(ix) sum(st[ix] == s & in_era[ix]), numeric(1))
+  })  # rules x states
 
-cat(sprintf("\nStates most similar to %s (cosine on sqrt fire rates; raw-rate rank in parens):\n", FOCAL))
-top <- head(res, 12)
-for (i in seq_len(nrow(top)))
-  cat(sprintf("  %2d. %-22s %.4f  (raw rank %2.0f) | rows %d\n",
-              i, top$state[i], top$cosine_sqrt[i], top$rank_raw[i], top$n_rows[i]))
-cat(sprintf("\nLeast similar (bottom 5):\n"))
-bot <- tail(res, 5)
-for (i in seq_len(nrow(bot)))
-  cat(sprintf("      %-22s %.4f\n", bot$state[i], bot$cosine_sqrt[i]))
-cat(sprintf("\nWrote %s and the full matrix to %s/\n",
-            sprintf("similarity_to_%s.csv", FOCAL), out_dir))
+  rate <- num / pmax(denom, 1)
+  cat(sprintf("matrix: %d rules x %d states\n", nrow(rate), ncol(rate)))
+  saveRDS(rate, file.path(out_dir,
+          sprintf("fire_rates_rules_by_state_%s.rds", era_name)))
+
+  sim_sqrt <- cosine(sqrt(rate))
+  sim_raw  <- cosine(rate)
+
+  # Inverse-frequency weighting: sharing a RARELY-firing rule is stronger
+  # evidence of similarity than sharing a broad one. Each rule's sqrt fire
+  # rates are scaled by log(N_states / n_states_where_it_fires) before the
+  # cosine (TF-IDF, with states as documents and rules as terms).
+  df_states <- rowSums(rate > 0)
+  idf       <- log(ncol(rate) / pmax(df_states, 1))
+  sim_idf   <- cosine(sqrt(rate) * idf)
+
+  write.csv(round(sim_sqrt, 4),
+            file.path(out_dir, sprintf("similarity_matrix_sqrt_%s.csv", era_name)))
+  write.csv(round(sim_idf, 4),
+            file.path(out_dir, sprintf("similarity_idf_%s.csv", era_name)))
+
+  res <- data.frame(
+    state = states,
+    cosine_sqrt = sim_sqrt[, FOCAL],
+    cosine_idf  = sim_idf[, FOCAL],
+    cosine_raw  = sim_raw[, FOCAL],
+    n_rows = as.integer(table(st[in_era])[states])
+  ) %>%
+    filter(state != FOCAL) %>%
+    arrange(desc(cosine_sqrt)) %>%
+    mutate(rank_sqrt = row_number(),
+           rank_idf = rank(-cosine_idf),
+           rank_raw = rank(-cosine_raw))
+  write.csv(res, file.path(out_dir,
+            sprintf("similarity_to_%s_%s.csv", FOCAL, era_name)), row.names = FALSE)
+
+  cat(sprintf("states most similar to %s (%s; sqrt cosine, idf rank in parens):\n",
+              FOCAL, era_name))
+  top <- head(res, 10)
+  for (i in seq_len(nrow(top)))
+    cat(sprintf("  %2d. %-22s %.4f  (idf rank %2.0f) | rows %d\n",
+                i, top$state[i], top$cosine_sqrt[i], top$rank_idf[i], top$n_rows[i]))
+}
+cat(sprintf("\nWrote per-era matrices to %s/\n", out_dir))

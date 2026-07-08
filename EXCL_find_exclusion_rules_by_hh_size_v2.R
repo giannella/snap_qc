@@ -69,7 +69,14 @@ LCB_Z             <- 1.645  # one-sided 95% on the CLEAN RATE (INCL filters
 THRESHOLD_GRID    <- c(0.90, 0.925, 0.95, 0.96, 0.97, 0.98, 0.985, 0.99, 0.995, 0.999)
 MIN_TRAIN_FLAGGED <- 25     # exclusions warrant more support than inclusions
 PRUNE_MIN_CLEAN   <- min(THRESHOLD_GRID)
-MIN_CLEAN_RATE    <- 0.99   # shortlist floor, applied to the train clean-rate LCB
+# Shortlist standard is RELATIVE to each stratum's base error density: an
+# excluded pocket must carry at most 1/SAFETY_MULT of its stratum's base
+# error rate (floor_h = 1 - base_error_h / SAFETY_MULT, applied to the train
+# clean-rate LCB). An absolute floor (e.g. 0.99) is only reachable in the
+# low-error size-1 stratum - base error rates run 8/15/20% by household size,
+# so relative is the standard that makes exclusion meaningful everywhere:
+# "excluded cases are at least SAFETY_MULT-times safer than the pile average".
+SAFETY_MULT <- 5
 RETENTION_MARKS   <- c(0.97, 0.99)  # console: best workload cut at these dollar retentions
 
 out_dir <- "exclusion_rules_by_hh_size_v2"
@@ -168,13 +175,29 @@ names(ev) <- sub("^dollar_recall_", "err_dollars_lost_", names(ev))
 names(ev) <- sub("^errors_caught_", "clean_flagged_",    names(ev))
 
 rule_eval <- bind_cols(rules_df, ev) %>% arrange(hh, desc(clean_rate_train_lcb))
+
+# relative shortlist standard: per-stratum floor from the train base error rate
+base_err_tr <- vapply(setNames(nm = HH_LEVELS),
+                      function(h) mean(!tg_tr$is_clean[strata_tr[[h]]]), numeric(1))
+floor_by_hh <- 1 - base_err_tr / SAFETY_MULT
+rule_eval$stratum_base_error <- round(base_err_tr[rule_eval$hh], 4)
+rule_eval$stratum_clean_floor <- round(floor_by_hh[rule_eval$hh], 4)
+# how many times safer than the stratum average the rule's guarantee is
+rule_eval$safety_multiple <- round(
+  rule_eval$stratum_base_error / pmax(1 - rule_eval$clean_rate_train_lcb, 1e-6), 1)
 write.csv(rule_eval, file.path(out_dir, "exclusion_rules_all.csv"), row.names = FALSE)
 
-shortlist <- rule_eval %>% filter(clean_rate_train_lcb >= MIN_CLEAN_RATE)
+cat(sprintf("relative standard: excluded pocket <= 1/%d of stratum base error density\n",
+            SAFETY_MULT))
+for (h in HH_LEVELS)
+  cat(sprintf("  HH %-3s base error %5.2f%% -> clean-rate LCB floor %.4f\n",
+              h, 100 * base_err_tr[h], floor_by_hh[h]))
+
+shortlist <- rule_eval %>% filter(clean_rate_train_lcb >= stratum_clean_floor)
 write.csv(shortlist, file.path(out_dir, "exclusion_rules_highclean.csv"), row.names = FALSE)
-cat(sprintf("shortlist (train clean-rate LCB >= %.3f): %d rules | median holdout clean rate %.4f\n",
-            MIN_CLEAN_RATE, nrow(shortlist),
-            median(shortlist$clean_rate_holdout, na.rm = TRUE)))
+cat(sprintf("shortlist (relative standard): %d rules | median holdout clean rate %.4f\n",
+            nrow(shortlist), median(shortlist$clean_rate_holdout, na.rm = TRUE)))
+print(table(shortlist$hh))
 
 ## ── 5. Clean-rate LCB sweep: workload cut vs dollars retained ─────────────────
 
