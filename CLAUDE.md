@@ -87,6 +87,29 @@ Long-running scripts checkpoint mined vocabularies to `.rds` and support `RESUME
 
 v1 = the {pre}-based scripts documented in the README's legacy section: `INCL_find_inclusion_rules_multi_model_by_hh_size.R` (+ `_c50`, `_xrf`), `EXCL_find_exclusion_rules_by_hh_size.R`, the `INCL/EXCL_optimize_*_for_a_state.R` grid searches, `optimize_rulefit_params.R` / `single_model_optimize_params.R`, and `code_for_single_model_combined_HH_sizes/`. Their outputs (`inclusion_rules_by_hh_size/`, `exclusion_rules/`, `parameter_tuning/`, `compare_models_by_HHsize_vs_pooled/`) are consumed by external users — treat as frozen. The 14:1 rebalancing blocks in v1 INCL scripts are commented out by design (original intent); greedy "nets" exist only in v1.
 
+## Presentations and write-ups (decks, docs, README prose)
+
+The audience is SNAP program experts and state analysts — they know the DATA
+and the PROGRAM better than we do; our edge is modeling. Persuade with numbers
+and charts from our own runs, never with authority or intuition. Rules:
+
+- **Modeling conclusions only.** Report what moved held-out performance in
+  experiments we actually ran. No claims about real-world phenomena, program
+  behavior, or data semantics — even reasonable assumptions (e.g., what a
+  blank field "means") stay out; state the measured effect instead (rows
+  dropped, rules gained).
+- **Every claim carries its measurement.** A slide without a number or chart
+  from our runs is a slide to cut. Head-to-head + held-out-year framing up
+  front is the credibility signal.
+- **No clever slogans or over-generalization.** Say the concrete thing:
+  "split by coarse HH size strata (1 / 2-3 / 4+)", not "split by structure —
+  but split coarsely". Plain English, fewer acronyms, define terms inline once.
+- **Don't play up deduction/'other' errors.** Most states treat them as
+  low-value distractions (small dollars, high volume); finding them is not a
+  headline win, even though we mine that frame for completeness.
+- Keep frame-relative AND any-error numbers honest side by side; never quote
+  only the flattering one.
+
 ## Reference documents
 
 - `modeling_findings.md` — all empirical results with artifact pointers (winner's curse, engine studies, strata, ESAP, states).
