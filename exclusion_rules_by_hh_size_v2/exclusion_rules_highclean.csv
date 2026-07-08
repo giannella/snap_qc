@@ -1,82 +1,34 @@
 "hh","rule","source","n_flagged_train","clean_rate_train","clean_rate_train_lcb","n_flagged_holdout","clean_flagged_holdout","clean_rate_holdout","clean_cut_holdout","err_dollars_lost_holdout","workload_pct_holdout"
-"1","medical_deductions > 112.00000 & unc_rawben_rel_max <=  -0.00915","ranger_mtry1",868,1,0.99689,386,382,0.9896,0.0187,0.0026,1.773
-"1","children_i <  1.000 & count_divisible_by_100 <  1.000 & total_deductions_by_hh_size <  8.400 & unc_rawben_rel_max < -0.052","xgboost",1176,0.99915,0.9962,545,542,0.9945,0.0265,0.0014,2.504
-"1","children_i <  1.000 & count_divisible_by_100 <  1.000 & total_deductions_by_hh_size <  8.400 & unc_rawben_rel_max < -0.004","xgboost",1319,0.99848,0.99543,609,606,0.9951,0.0296,0.0014,2.798
-"1","medical_deductions >  0.50000 & unc_rawben_rel_max <= -0.00915","ranger_mtry1",979,0.99898,0.99543,425,421,0.9906,0.0206,0.0026,1.952
-"1","children_i <   1.000 & shelter_expenses_by_hh_size < 749.000 & total_deductions_by_hh_size <   5.000 & unc_rawben_rel_max <  -0.004","xgboost",1278,0.99844,0.99528,600,598,0.9967,0.0292,9e-04,2.756
-"1","cat_elig >=  1.000 & children_i <  1.000 & total_deductions_by_hh_size <  8.400 & unc_rawben_rel_max < -0.127","xgboost",899,0.99889,0.99503,428,428,1,0.0209,0,1.966
-"1","children_i <  1.000 & total_deductions_by_hh_size <  5.000 & unc_rawben_rel_max < -0.052","xgboost",1182,0.99831,0.9949,553,551,0.9964,0.0269,9e-04,2.541
-"1","total_deductions_by_hh_size <=   7.8000 & unc_rawben_rel_max <=  -0.0389 & utilities <= 327.0000","ranger_mtry1",850,0.99882,0.99474,358,355,0.9916,0.0173,0.0014,1.645
-"1","children_i <   1.00 & unc_rawben_rel_max >=   1.02 & unc_rawben_rel_max <   1.20 & utilities < 287.00","xgboost",1091,0.99817,0.99448,611,609,0.9967,0.0297,0.0018,2.807
-"1","children_i <  1.000 & total_deductions_by_hh_size <  8.400 & unc_rawben_rel_max < -0.004","xgboost",1343,0.99777,0.99442,628,625,0.9952,0.0305,0.0014,2.885
-"1","total_deductions_by_hh_size <=  8.80000 & unc_rawben_rel_max > -2.63000 & unc_rawben_rel_max <= -0.00544","ranger_mtry1",1341,0.99776,0.99442,626,623,0.9952,0.0304,0.0014,2.876
-"1","count_divisible_by_100 <=    1.50000 & shelter_expenses_by_hh_size <= 1140.00000 & total_deductions_by_hh_size <=    8.90000 & unc_rawben_rel_max <=   -0.00544","ranger_mtry1",1340,0.99776,0.99441,626,623,0.9952,0.0304,0.0014,2.876
-"1","medical_deductions <=  0.50000 & total_deductions_by_hh_size <=  8.80000 & unc_rawben_rel_max > -2.63000 & unc_rawben_rel_max <= -0.00544","ranger_mtry1",1336,0.99775,0.99439,626,623,0.9952,0.0304,0.0014,2.876
-"1","children_i <  1.000 & married <  1.000 & total_deductions_by_hh_size <  5.000 & unc_rawben_rel_max < -0.004","xgboost",1320,0.99773,0.99433,617,615,0.9968,0.03,9e-04,2.835
-"1","cat_elig >= 2.00 & elderly_disabled_i < 1.00 & unc_rawben_rel_max >= 1.02 & unc_rawben_rel_max < 1.20","xgboost",474,1,0.99432,61,60,0.9836,0.0029,4e-04,0.28
-"1","medical_deductions >= 113.000 & total_deductions_by_hh_size >= 261.000 & unc_rawben_rel_max <  -0.032","xgboost",460,1,0.99415,183,181,0.9891,0.0088,0.0015,0.841
-"1","total_deductions_by_hh_size <=  7.8000 & unc_rawben_rel_max <= -0.0389","ranger_mtry1",1239,0.99758,0.99396,580,577,0.9948,0.0282,0.0014,2.665
-"1","rawben_rel_max <   0.113 & shelter_expenses_by_hh_size < 639.000 & total_deductions_by_hh_size <   5.000 & unc_rawben_rel_max <  -0.004","xgboost",1235,0.99757,0.99394,573,571,0.9965,0.0279,9e-04,2.632
-"1","married <=  0.5000 & total_deductions_by_hh_size <=  0.1000 & unc_rawben_rel_max <= -0.0389","ranger_mtry1",1204,0.99751,0.99378,566,564,0.9965,0.0275,9e-04,2.6
-"1","total_deductions_by_hh_size <  8.400 & unc_rawben_rel_max < -0.052","xgboost",1201,0.9975,0.99377,564,561,0.9947,0.0274,0.0014,2.591
-"1","homeless <  1.000 & total_deductions_by_hh_size < 13.000 & unc_rawben_rel_max < -0.052","xgboost",1181,0.99746,0.99366,541,538,0.9945,0.0263,0.0014,2.485
-"1","cat_elig >=  1.000 & children_i <  1.000 & total_deductions_by_hh_size <  8.400 & unc_rawben_rel_max < -0.004","xgboost",1166,0.99743,0.99358,562,560,0.9964,0.0274,9e-04,2.582
-"1","total_deductions_by_hh_size <=  2.80000 & unc_rawben_rel_max <= -0.00544 & utilities <= 55.50000","ranger_mtry1",686,0.99854,0.99349,329,327,0.9939,0.016,9e-04,1.511
-"1","total_deductions_by_hh_size < 13.000 & unc_rawben_rel_max < -0.004","xgboost",1361,0.99706,0.99347,630,627,0.9952,0.0306,0.0014,2.894
-"1","cat_elig >=  1.000 & total_deductions_by_hh_size <  8.400 & unc_rawben_rel_max < -0.127","xgboost",900,0.99778,0.99331,428,428,1,0.0209,0,1.966
-"1","total_deductions_by_hh_size < 1010.000 & unc_rawben_rel_max >=   -0.924 & unc_rawben_rel_max <   -0.032 & utilities >=  366.000","xgboost",1727,0.99653,0.9933,850,844,0.9929,0.0412,0.0057,3.905
-"1","homeless <  1.000 & months_since_cert_n >= 15.000 & unc_rawben_rel_max < -0.072","xgboost",658,0.99848,0.99322,313,313,1,0.0153,0,1.438
-"1","elderly_disabled_i >=   1.0000 & total_deductions_by_hh_size >=   8.4000 & unc_rawben_rel_max <  -0.0137 & utilities >= 366.0000","xgboost",1474,0.99661,0.99305,751,747,0.9947,0.0365,0.0045,3.45
-"1","cat_elig >  0.5000 & total_deductions_by_hh_size <=  2.8000 & unc_rawben_rel_max <= -0.0389","ranger_mtry1",1067,0.99719,0.99299,514,513,0.9981,0.0251,4e-04,2.361
-"1","unc_rawben_rel_max >=  -1.2000 & unc_rawben_rel_max <  -0.0137 & utilities >= 426.0000 & utilities < 912.0000","xgboost",1456,0.99657,0.99296,651,646,0.9923,0.0316,0.0053,2.991
-"1","total_deductions_by_hh_size <  13.000 & unc_rawben_rel_max <  -0.004 & utilities < 386.000","xgboost",1054,0.99715,0.9929,500,497,0.994,0.0243,0.0014,2.297
-"1","cat_elig >  0.5000 & elderly_disabled_i >  0.5000 & total_deductions_by_hh_size <=  2.8000 & unc_rawben_rel_max <= -0.0389","ranger_mtry1",1030,0.99709,0.99273,498,497,0.998,0.0243,4e-04,2.288
-"1","total_deductions_by_hh_size < 846.0000 & unc_rawben_rel_max <  -0.0137 & utilities >= 392.0000","xgboost",1756,0.99601,0.99266,785,777,0.9898,0.038,0.0084,3.606
-"1","cat_elig <   1.0 & months_since_cert_n <  13.0 & rawben_rel_max <   0.6 & total_deductions_by_hh_size < 103.0","xgboost",364,1,0.99262,191,183,0.9581,0.0089,0.0068,0.877
-"1","total_deductions_by_hh_size < 206.000 & unc_rawben_rel_max <  -0.216","xgboost",1372,0.99636,0.99253,637,635,0.9969,0.031,0.0016,2.926
-"1","total_deductions_by_hh_size < 1010.000 & unc_rawben_rel_max <   -0.032 & utilities >=  366.000","xgboost",1895,0.99578,0.99252,933,925,0.9914,0.0452,0.0084,4.286
-"1","shelter_expenses_by_hh_size < 1560.000 & unc_rawben_rel_max <   -0.072 & utilities >=  366.000","xgboost",1707,0.9959,0.99245,809,802,0.9913,0.0392,0.0088,3.717
-"1","cat_elig <= 0.50 & count_divisible_by_100 <= 0.50 & rawben_rel_max <= 0.35 & total_deductions_by_hh_size <= 7.80","ranger_mtry1",355,1,0.99244,184,180,0.9783,0.0088,0.0035,0.845
-"1","elderly_disabled_i >=   1.000 & shelter_expenses_by_hh_size < 688.000 & unc_rawben_rel_max <  -0.004","xgboost",2039,0.99559,0.99243,914,909,0.9945,0.0444,0.0028,4.199
-"1","unc_rawben_rel_max >=  -1.2000 & unc_rawben_rel_max <  -0.0137 & utilities >= 426.0000","xgboost",1525,0.99607,0.99241,712,703,0.9874,0.0343,0.01,3.271
-"1","cat_elig >  0.50000 & total_deductions_by_hh_size <=  7.80000 & unc_rawben_rel_max <= -0.00544","ranger_mtry1",1164,0.99656,0.99237,559,557,0.9964,0.0272,9e-04,2.568
-"1","rawben_rel_max >=   0.992 & unc_rawben_rel_max >=   1.020 & unc_rawben_rel_max <   1.200 & utilities < 313.000","xgboost",1164,0.99656,0.99237,648,641,0.9892,0.0313,0.0046,2.977
-"1","unc_rawben_rel_max >=   1.02 & unc_rawben_rel_max <   1.20 & utilities < 287.00","xgboost",1144,0.9965,0.99223,628,625,0.9952,0.0305,0.0031,2.885
-"1","cat_elig >  0.50000 & elderly_disabled_i >  0.50000 & total_deductions_by_hh_size <=  7.80000 & unc_rawben_rel_max <= -0.00544","ranger_mtry1",1123,0.99644,0.99209,542,540,0.9963,0.0264,9e-04,2.49
-"1","months_since_cert_n >= 13.000 & unc_rawben_rel_max < -0.004","xgboost",934,0.99679,0.99199,445,444,0.9978,0.0217,0.0013,2.044
-"1","shelter_expenses_by_hh_size < 1560.0000 & unc_rawben_rel_max <   -0.0137 & utilities >=  366.0000","xgboost",1918,0.99531,0.99195,938,931,0.9925,0.0455,0.0088,4.309
-"1","children_i <   1.00 & rawben_rel_max >=   1.00 & unc_rawben_rel_max <   1.18 & utilities < 313.00","xgboost",1094,0.99634,0.99188,610,604,0.9902,0.0295,0.0033,2.802
-"1","elderly_disabled_i >=  1.000 & unc_rawben_rel_max >= -1.200 & unc_rawben_rel_max < -0.052","xgboost",3102,0.99452,0.99187,1444,1433,0.9924,0.07,0.0078,6.634
-"1","rawben_rel_max <   1.0000 & total_deductions_by_hh_size < 728.0000 & unc_rawben_rel_max <  -0.0137 & utilities >= 361.0000","xgboost",1891,0.99524,0.99184,957,948,0.9906,0.0463,0.0098,4.397
-"1","cat_elig <= 0.500 & count_divisible_by_100 <= 0.500 & homeless > 0.500 & rawben_rel_max > 0.924","ranger_mtry1",529,0.99811,0.99157,245,242,0.9878,0.0118,0.0028,1.126
-"1","cat_elig <= 0.500 & homeless > 0.500 & medical_deductions <= 0.500 & rawben_rel_max > 0.954","ranger_mtry1",529,0.99811,0.99157,249,246,0.988,0.012,0.0028,1.144
-"1","cat_elig <= 0.500 & homeless > 0.500 & rawben_rel_max > 0.991","ranger_mtry1",528,0.99811,0.99156,249,246,0.988,0.012,0.0028,1.144
-"1","cat_elig <= 0.500 & children_i <= 0.500 & homeless > 0.500 & unc_rawben_rel_max > 0.996","ranger_mtry1",522,0.99808,0.99146,249,246,0.988,0.012,0.0028,1.144
-"1","total_deductions_by_hh_size < 328.000 & unc_rawben_rel_max <  -0.216","xgboost",1649,0.99515,0.99141,757,755,0.9974,0.0369,0.0016,3.478
-"1","cat_elig <= 0.500 & homeless > 0.500 & unc_rawben_rel_max > 0.907 & utilities <= 7.500","ranger_mtry1",518,0.99807,0.99139,242,239,0.9876,0.0117,0.0028,1.112
-"1","children_i <   1.000 & shelter_expenses_by_hh_size < 912.000 & total_deductions_by_hh_size < 150.000 & unc_rawben_rel_max <  -0.004","xgboost",2079,0.99471,0.99137,975,968,0.9928,0.0473,0.0051,4.479
-"1","elderly_disabled_i >=    1.0000 & total_deductions_by_hh_size < 1230.0000 & unc_rawben_rel_max <   -0.0137 & utilities >=  302.0000","xgboost",2187,0.99451,0.99123,1096,1089,0.9936,0.0532,0.0069,5.035
-"1","children_i <   1.000 & elderly_disabled_i >=   1.000 & total_deductions_by_hh_size < 297.000 & unc_rawben_rel_max <  -0.004","xgboost",2734,0.99415,0.99121,1290,1282,0.9938,0.0626,0.0054,5.926
-"1","total_deductions_by_hh_size < 289.000 & unc_rawben_rel_max <  -0.004 & utilities >= 281.000","xgboost",1588,0.99496,0.99108,778,773,0.9936,0.0378,0.005,3.574
-"1","cat_elig <= 0.500 & expedited_i > 0.500 & homeless > 0.500 & rawben_rel_max > 0.954","ranger_mtry1",300,1,0.99106,141,140,0.9929,0.0068,0.0013,0.648
-"1","cat_elig <=  0.5 & homeless >  0.5 & months_since_cert_n <= 15.5 & total_deductions_by_hh_size <=  2.8","ranger_mtry1",495,0.99798,0.991,230,227,0.987,0.0111,0.0028,1.057
-"1","cat_elig <= 0.5 & expedited_i > 0.5 & homeless > 0.5 & unc_rawben_rel_max > 1.0","ranger_mtry1",298,1,0.991,141,140,0.9929,0.0068,0.0013,0.648
-"1","elderly_disabled_i >=   1.0000 & shelter_expenses_by_hh_size < 688.0000 & total_deductions_by_hh_size < 125.0000 & unc_rawben_rel_max <  -0.0137","xgboost",1570,0.9949,0.99098,704,700,0.9943,0.0342,0.0024,3.234
-"1","children_i <  1.000 & elderly_disabled_i >=  1.000 & rawben_rel_max <  0.856 & unc_rawben_rel_max < -0.072","xgboost",3055,0.99378,0.99096,1390,1380,0.9928,0.0674,0.0077,6.386
-"1","medical_deductions >= 113.000 & months_since_cert_n >=   4.000 & rawben_rel_max <   0.992 & unc_rawben_rel_max <  -0.004","xgboost",659,0.99697,0.99087,287,284,0.9895,0.0139,0.0023,1.319
-"1","medical_deductions >=  51.000 & rawben_rel_max <   0.378 & total_deductions_by_hh_size < 293.000 & utilities < 850.000","xgboost",657,0.99696,0.99084,319,312,0.9781,0.0152,0.0049,1.466
-"1","children_i <   1.000 & medical_deductions < 366.000 & unc_rawben_rel_max >=  -0.924 & unc_rawben_rel_max <  -0.520","xgboost",656,0.99695,0.99083,313,309,0.9872,0.0151,0.0045,1.438
-"1","shelter_expenses_by_hh_size < 1500.0000 & total_deductions_by_hh_size >=    5.0000 & unc_rawben_rel_max <   -0.0137 & utilities >=  367.0000","xgboost",1538,0.9948,0.99079,770,763,0.9909,0.0373,0.0088,3.537
-"1","months_since_cert_n >=   10.0000 & shelter_expenses_by_hh_size < 2100.0000 & unc_rawben_rel_max >=   -0.9240 & unc_rawben_rel_max <   -0.0137","xgboost",1254,0.99522,0.99077,622,617,0.992,0.0301,0.0056,2.858
-"1","children_i <   1.000 & total_deductions_by_hh_size < 297.000 & unc_rawben_rel_max <  -0.004","xgboost",2841,0.99366,0.9907,1325,1315,0.9925,0.0642,0.0083,6.087
-"1","elderly_disabled_i >=  1.000 & unc_rawben_rel_max < -0.052","xgboost",3202,0.99344,0.99064,1489,1477,0.9919,0.0721,0.0091,6.841
-"1","shelter_expenses_by_hh_size < 731.000 & unc_rawben_rel_max <  -0.052 & utilities >= 302.000","xgboost",941,0.99575,0.99056,443,436,0.9842,0.0213,0.0079,2.035
-"1","children_i <=  0.5 & count_divisible_by_100 <=  1.5 & total_deductions_by_hh_size <=  2.8 & utilities > 79.5","ranger_mtry1",930,0.9957,0.99045,472,468,0.9915,0.0229,0.0028,2.168
-"1","total_deductions_by_hh_size <  303.000 & unc_rawben_rel_max <   -0.004 & utilities < 1010.000","xgboost",2876,0.99339,0.9904,1327,1317,0.9925,0.0643,0.0083,6.096
-"1","elderly_disabled_i >  0.50000 & rawben_rel_max <=  0.21800 & unc_rawben_rel_max <= -0.00915","ranger_mtry1",3558,0.99297,0.99027,1668,1656,0.9928,0.0809,0.0091,7.663
-"1","elderly_disabled_i >=    1.000 & shelter_expenses_by_hh_size < 1190.000 & total_deductions_by_hh_size <  448.000 & unc_rawben_rel_max <   -0.004","xgboost",3069,0.99316,0.99024,1436,1428,0.9944,0.0697,0.0054,6.597
-"1","percent_abawd <   0.500 & unc_rawben_rel_max >=  -0.924 & unc_rawben_rel_max <  -0.052 & utilities >= 302.000","xgboost",1953,0.99386,0.99019,947,938,0.9905,0.0458,0.0081,4.351
-"1","elderly_disabled_i >=  1.0000 & unc_rawben_rel_max < -0.0137","xgboost",3523,0.9929,0.99017,1654,1642,0.9927,0.0802,0.0091,7.599
-"1","total_deductions_by_hh_size < 289.000 & unc_rawben_rel_max <  -0.004","xgboost",2804,0.99322,0.99016,1312,1302,0.9924,0.0636,0.0083,6.027
-"1","elderly_disabled_i >=  1.0000 & percent_abawd <  1.0000 & unc_rawben_rel_max < -0.0137","xgboost",3514,0.99289,0.99014,1644,1632,0.9927,0.0797,0.0091,7.553
-"1","elderly_disabled_i >=   1.000 & total_deductions_by_hh_size < 448.000 & unc_rawben_rel_max <  -0.004","xgboost",3131,0.99297,0.99006,1464,1456,0.9945,0.0711,0.0054,6.726
+"1","medical_deductions >  0.500 & unc_rawben_rel_max <= -0.124","ranger",796,1,0.99661,346,341,0.9855,0.0153,0.0028,1.438
+"1","cat_elig <=  2.50000 & medical_deductions >  0.50000 & rawben_rel_max <=  0.26600 & unc_rawben_rel_max <= -0.00915","ranger",982,0.99898,0.99545,431,425,0.9861,0.0191,0.0032,1.791
+"1","medical_deductions >   3.50000 & rawben_rel_max <=   0.31600 & unc_rawben_rel_max <=  -0.00915 & utilities <= 851.00000","ranger",941,0.99894,0.99525,407,402,0.9877,0.0181,0.0023,1.691
+"1","medical_deductions >  0.50000 & months_since_cert_n <= 26.50000 & rawben_rel_max <=  0.26600 & unc_rawben_rel_max <= -0.00915","ranger",939,0.99894,0.99524,409,404,0.9878,0.0182,0.0022,1.7
+"1","medical_deductions >   0.50000 & rawben_rel_max <=   0.75400 & total_deductions_by_hh_size <= 306.00000 & unc_rawben_rel_max <=  -0.00544","ranger",538,1,0.995,247,244,0.9879,0.011,0.0017,1.026
+"1","cat_elig <= 0.50 & elderly_disabled_i <= 0.50 & homeless > 0.50 & rawben_rel_max > 0.94","ranger",508,1,0.9947,238,237,0.9958,0.0107,9e-04,0.989
+"1","cat_elig <= 0.5 & elderly_disabled_i <= 0.5 & homeless > 0.5 & unc_rawben_rel_max > 1.0","ranger",506,1,0.99468,238,237,0.9958,0.0107,9e-04,0.989
+"1","cat_elig <= 0.500 & homeless > 0.500 & percent_abawd <= 0.500 & unc_rawben_rel_max > 0.991","ranger",480,1,0.99439,202,199,0.9851,0.009,0.002,0.839
+"1","medical_deductions >  0.50000 & rawben_rel_max <=  0.26600 & unc_rawben_rel_max <= -0.00915","ranger",985,0.99797,0.99388,431,425,0.9861,0.0191,0.0032,1.791
+"1","cat_elig <=  1.50 & medical_deductions >  3.50 & unc_rawben_rel_max <= -0.01","ranger",616,0.99838,0.99276,419,413,0.9857,0.0186,0.0032,1.741
+"1","cat_elig <=   0.5 & percent_abawd <=   0.5 & shelter_expenses_by_hh_size > 167.0 & total_deductions_by_hh_size <=  42.5","ranger",340,1,0.9921,180,174,0.9667,0.0078,0.0033,0.748
+"1","cat_elig <=  0.500 & total_deductions_by_hh_size <=  8.800 & unc_rawben_rel_max > -4.100 & unc_rawben_rel_max <=  0.191","ranger",325,1,0.99174,156,153,0.9808,0.0069,0.0016,0.648
+"1","cat_elig <=   0.5 & homeless >   0.5 & total_deductions_by_hh_size <= 197.0 & utilities <=  18.5","ranger",537,0.99814,0.9917,249,246,0.988,0.0111,0.002,1.035
+"1","cat_elig <= 0.500 & total_deductions_by_hh_size <= 7.800 & unc_rawben_rel_max <= 0.191","ranger",321,1,0.99164,156,153,0.9808,0.0069,0.0016,0.648
+"1","cat_elig <= 0.500 & homeless > 0.500 & rawben_rel_max > 0.991","ranger",530,0.99811,0.99159,249,246,0.988,0.0111,0.002,1.035
+"1","cat_elig <=  0.500 & homeless >  0.500 & months_since_cert_n <= 23.500 & rawben_rel_max >  0.924","ranger",529,0.99811,0.99157,248,245,0.9879,0.011,0.002,1.031
+"1","cat_elig <=  0.500 & homeless >  0.500 & months_since_cert_n <= 26.500 & rawben_rel_max >  0.991","ranger",528,0.99811,0.99156,248,245,0.9879,0.011,0.002,1.031
+"1","cat_elig <= 0.50 & homeless > 0.50 & unc_rawben_rel_max > 1.02 & unc_rawben_rel_max <= 1.93","ranger",526,0.9981,0.99152,245,242,0.9878,0.0109,0.002,1.018
+"1","cat_elig <= 0.500 & children_i <= 0.500 & homeless > 0.500 & rawben_rel_max > 0.998","ranger",524,0.99809,0.99149,249,246,0.988,0.0111,0.002,1.035
+"1","shelter_expenses_by_hh_size >  14.0000 & total_deductions_by_hh_size <= 257.0000 & unc_rawben_rel_max <=  -0.0292 & utilities > 360.0000","ranger",1035,0.99614,0.99142,547,543,0.9927,0.0244,0.0031,2.273
+"1","cat_elig <= 0.500 & homeless > 0.500 & rawben_rel_max > 0.993 & utilities <= 9.500","ranger",518,0.99807,0.99139,242,239,0.9876,0.0108,0.002,1.006
+"1","cat_elig <=  0.5 & homeless >  0.5 & months_since_cert_n <=  8.5 & utilities <= 18.5","ranger",509,0.99804,0.99124,229,226,0.9869,0.0102,0.002,0.952
+"1","cat_elig <= 0.500 & expedited_i > 0.500 & homeless > 0.500 & rawben_rel_max > 0.991","ranger",300,1,0.99106,141,140,0.9929,0.0063,9e-04,0.586
+"1","elderly_disabled_i >   0.500 & total_deductions_by_hh_size <= 184.000 & unc_rawben_rel_max <=  -0.181","ranger",1437,0.99513,0.99104,666,660,0.991,0.0297,0.0038,2.768
+"1","cat_elig <=   0.5 & shelter_expenses_by_hh_size > 167.0 & total_deductions_by_hh_size <=   8.8","ranger",297,1,0.99097,150,146,0.9733,0.0066,0.0024,0.623
+"1","cat_elig <= 0.500 & homeless > 0.500 & rawben_rel_max > 0.991 & unc_rawben_rel_max > 1.200","ranger",493,0.99797,0.99096,230,227,0.987,0.0102,0.002,0.956
+"1","cat_elig <= 0.5 & expedited_i > 0.5 & homeless > 0.5 & utilities <= 5.0","ranger",296,1,0.99094,138,136,0.9855,0.0061,0.0012,0.573
+"1","homeless <   1.000 & medical_deductions >= 116.000 & unc_rawben_rel_max <  -0.004","xgboost",824,0.99636,0.99092,388,382,0.9845,0.0172,0.0032,1.612
+"1","expedited_i <    1.000 & shelter_expenses_by_hh_size < 1530.000 & unc_rawben_rel_max <   -0.056 & utilities >=  426.000","xgboost",1394,0.99498,0.99076,621,614,0.9887,0.0276,0.0061,2.581
+"1","shelter_expenses_by_hh_size < 1030.000 & unc_rawben_rel_max <   -0.096 & utilities >=  426.000","xgboost",910,0.9956,0.99024,404,399,0.9876,0.018,0.005,1.679
+"1","married <=   0.5000 & rawben_rel_max >   0.0795 & shelter_expenses_by_hh_size > 406.0000 & total_deductions_by_hh_size <=   8.9000","ranger",272,1,0.99015,299,293,0.9799,0.0132,0.0034,1.243
+"1","children_i <=   0.50 & total_deductions_by_hh_size <=   7.80 & unc_rawben_rel_max <=   0.24 & utilities > 242.00","ranger",899,0.99555,0.99013,436,430,0.9862,0.0193,0.0047,1.812
+"1","total_deductions_by_hh_size <  63.000 & unc_rawben_rel_max <  -0.004 & utilities >= 369.000","xgboost",451,0.99778,0.99012,227,226,0.9956,0.0102,0.001,0.943

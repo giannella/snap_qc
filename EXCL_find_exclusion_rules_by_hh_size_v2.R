@@ -52,15 +52,20 @@ features <- c(
   "months_since_cert_n", "count_divisible_by_100"
 )
 
-XGB <- list(nrounds = 300, max_depth = 4, eta = 0.05, subsample = 0.5)
-RF  <- list(num_trees = 500, max_depth = 4, mtry = 1, min_node_size = 20)
+# Engines aligned with the INCL v2 tuned settings (2026-07, "mine big, filter
+# stringently"); validated on the inclusion objective, adopted here for the
+# bigger vocabulary. The clean-rate bound below keeps its own stringency.
+XGB <- list(nrounds = 1000, max_depth = 4, eta = 0.02, subsample = 0.20)
+RF  <- list(num_trees = 1000, max_depth = 4, mtry = 2, min_node_size = 20)
 
 SIGNIF_DIGITS <- 3
 
-# Clean-rate floors. Base clean rate is ~92%, so the grid lives near 1:
+# Clean-rate floors. Base clean rate is ~89-93%, so the grid lives near 1:
 # excluding at a 0.995 floor means <= ~0.5% of excluded cases carry an error.
-LCB_Z             <- 1.645  # kept at one-sided 95% (INCL uses 90%): declaring a
-                            # case as safe to SKIP warrants the stricter bound
+LCB_Z             <- 1.645  # one-sided 95% on the CLEAN RATE (INCL filters
+                            # precision at 99%): clean pools are large, so the
+                            # bound is already tight; the guarantee semantics
+                            # differ from inclusion
 THRESHOLD_GRID    <- c(0.90, 0.925, 0.95, 0.96, 0.97, 0.98, 0.985, 0.99, 0.995, 0.999)
 MIN_TRAIN_FLAGGED <- 25     # exclusions warrant more support than inclusions
 PRUNE_MIN_CLEAN   <- min(THRESHOLD_GRID)
@@ -118,9 +123,9 @@ rules_df <- bind_rows(lapply(HH_LEVELS, function(h) {
                           max_depth = RF$max_depth, mtry = RF$mtry,
                           min_node_size = RF$min_node_size, seed = 117),
     SIGNIF_DIGITS)
-  cat(sprintf("   xgboost rules: %d | ranger(mtry=1) rules: %d\n", length(rx), length(rr)))
+  cat(sprintf("   xgboost rules: %d | ranger rules: %d\n", length(rx), length(rr)))
   bind_rows(data.frame(rule = rx, hh = h, source = "xgboost", stringsAsFactors = FALSE),
-            data.frame(rule = rr, hh = h, source = "ranger_mtry1", stringsAsFactors = FALSE))
+            data.frame(rule = rr, hh = h, source = "ranger", stringsAsFactors = FALSE))
 })) %>%
   group_by(hh, rule) %>%
   summarise(source = paste(sort(unique(source)), collapse = "+"), .groups = "drop")
@@ -201,7 +206,7 @@ p <- ggplot(sw, aes(workload_cut, dollar_retention)) +
   labs(x = "Workload cut (share of hold-out pile excluded)",
        y = "Error-dollar retention (1 - dollars excluded)",
        title = "Exclusion frontier across train clean-rate LCB floors",
-       subtitle = sprintf("xgboost + ranger(mtry=1), trained %s, scored on %s; labels = LCB floor",
+       subtitle = sprintf("xgboost + ranger, trained %s, scored on %s; labels = LCB floor",
                           paste(TRAIN_YEARS, collapse = "/"), paste(HOLDOUT_YEARS, collapse = "/"))) +
   theme_minimal(base_size = 12)
 save_png(p, file.path(out_dir, "exclusion_lcb_sweep.png"), 8, 5)
