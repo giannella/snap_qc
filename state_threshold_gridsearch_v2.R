@@ -122,13 +122,36 @@ targets_of <- function(df) {
 
 ## ── 2. Rule threshold variants ────────────────────────────────────────────────
 
-rule_variants <- function(rule) {
+# uniq: per-variable sorted unique observed values (from the STATE's train
+# data). Scaled thresholds are kept only if they induce a DIFFERENT partition
+# of the observed values: two cuts with no data point between them flag the
+# same cases, so evaluating both is wasted work. Binary indicators (0/1)
+# collapse to a single variant automatically; continuous variables shed
+# duplicates wherever the state's data is sparse. Cuts the whole condition
+# can never satisfy in this state (fires on nothing) are dropped outright.
+rule_variants <- function(rule, uniq = NULL) {
   p <- .parse_rule(rule)
   if (is.null(p)) return(rule)
   fac <- if (nrow(p) <= 3) FACTORS_FINE else FACTORS_COARSE
   grids <- lapply(seq_len(nrow(p)), function(i) {
     v <- unique(signif(p$thr[i] * fac, 4))
     if (p$thr[i] == 0) v <- 0
+    uv <- if (is.null(uniq)) NULL else uniq[[p$var[i]]]
+    if (!is.null(uv) && length(uv) > 0) {
+      # within a duplicate group keep the cut closest to the national value:
+      # equivalents flag identically on state train but deploy differently
+      v <- v[order(abs(v - p$thr[i]))]
+      key <- if (p$op[i] %in% c(">", "<="))
+        findInterval(v, uv)                    # cut position: count of uv <= t
+      else
+        findInterval(v, uv, left.open = TRUE)  # count of uv < t
+      keep <- !duplicated(key)
+      v <- v[keep]; key <- key[keep]
+      ord <- order(v); v <- v[ord]; key <- key[ord]
+      never_fires <- if (p$op[i] %in% c(">", ">=")) key == length(uv) else key == 0
+      v <- v[!never_fires]
+      if (length(v) == 0) v <- p$thr[i]
+    }
     v
   })
   combos <- expand.grid(grids, KEEP.OUT.ATTRS = FALSE)
@@ -163,6 +186,18 @@ run_state <- function(st) {
               st, nrow(tr), sum(tg_tr$ie), 100 * mean(tg_tr$ie),
               nrow(te), sum(tg_te$ie)))
 
+  # observed unique values per variable used by any rule: drives the
+  # partition-aware variant dedupe (see rule_variants) and surfaces
+  # effectively-categorical fields
+  vars_used <- unique(unlist(lapply(national$rule,
+                                    function(r) .parse_rule(r)$var)))
+  uniq <- lapply(setNames(nm = vars_used), function(v)
+    sort(unique(suppressWarnings(as.numeric(tr[[v]])))))
+  lowcard <- lengths(uniq)[lengths(uniq) <= 5]
+  if (length(lowcard) > 0)
+    cat(sprintf("  low-cardinality variables (single cut each): %s\n",
+                paste(sprintf("%s(%d)", names(lowcard), lowcard), collapse = ", ")))
+
   test_of <- function(vr, hh) {
     ix <- eval_rule_on(vr, te, str_te[[hh]])
     n <- length(ix); k <- sum(tg_te$ie[ix])
@@ -171,7 +206,7 @@ run_state <- function(st) {
 
   res <- bind_rows(lapply(seq_len(nrow(national)), function(i) {
     hh <- national$hh[i]
-    variants <- unique(c(national$rule[i], rule_variants(national$rule[i])))
+    variants <- unique(c(national$rule[i], rule_variants(national$rule[i], uniq)))
     st_v <- lapply(variants, function(vr) {
       ix <- eval_rule_on(vr, tr, str_tr[[hh]])
       c(n = length(ix), k = sum(tg_tr$ie[ix]), d = sum(tg_tr$ed[ix]))
