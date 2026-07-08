@@ -1,8 +1,11 @@
 # Builds lessons_getting_more_signal_from_snap_qc_data.pptx from the how_to
-# deck (theme + text-box formatting cloned from its appendix slides). Each
-# lesson is standalone: the title is the advice, the body says what happened
-# and what to do, pipeline jargon kept out so non-users of the pipeline can
-# apply it.
+# deck (theme + text-box formatting cloned from its appendix slides).
+#
+# Framing rules (2026-07-08 review): modeling lessons only, each backed by a
+# number or chart from our own runs; no claims about real-world phenomena or
+# data semantics (the audience knows SNAP data better than we do); no
+# over-generalized slogans; deduction/'other' errors are NOT played up (most
+# states treat them as low-value).
 import copy
 import shutil
 from pptx import Presentation
@@ -11,13 +14,12 @@ from pptx.util import Inches, Pt
 SRC = "how_to_use_the_snap_qc_inclusion_rules_scripts.pptx"
 OUT = "lessons_getting_more_signal_from_snap_qc_data.pptx"
 TEMPLATE_IDX = 16          # "Appendix: lucky rules, measured" - title/body/tag boxes
-TAG = "Lessons from the SNAP QC error-mining project - July 2026"
+TAG = "SNAP QC modeling lessons - July 2026"
 
 shutil.copy(SRC, OUT)
 p = Presentation(OUT)
 tmpl = p.slides[TEMPLATE_IDX]
 
-# grab template shape XML for title / body / tag text boxes
 shapes = [sh for sh in tmpl.shapes if sh.has_text_frame]
 tmpl_title = next(sh for sh in shapes if sh.text_frame.text.startswith("Appendix:"))
 tmpl_body  = next(sh for sh in shapes if sh.text_frame.text.startswith("- "))
@@ -61,7 +63,6 @@ def add_lesson(title, bullets, figure=None, fig_aspect=None, table=None):
     set_line(title_sh.text_frame, title)
     set_body(body_sh.text_frame, bullets)
     set_line(tag_sh.text_frame, TAG)
-    # estimate wrapped lines (body box is ~9.1in wide, ~105 chars per line)
     wrapped = sum(max(1, -(-len(b) // 105)) for b in bullets)
     fig_top = 0.85 + 0.28 * wrapped + 0.2
     if figure:
@@ -93,125 +94,115 @@ def add_lesson(title, bullets, figure=None, fig_aspect=None, table=None):
 
 n_before = len(p.slides._sldIdLst)
 
-# ── title slide ──────────────────────────────────────────────────────────────
+# ── 1. title ─────────────────────────────────────────────────────────────────
 s = p.slides.add_slide(tmpl.slide_layout)
 for src_sh in (tmpl_title, tmpl_body):
     s._element.spTree.append(copy.deepcopy(src_sh._element))
 boxes = [sh for sh in s.shapes if sh.has_text_frame]
 t_sh = next(sh for sh in boxes if sh.text_frame.text.startswith("Appendix:"))
 b_sh = next(sh for sh in boxes if sh.text_frame.text.startswith("- "))
-set_line(t_sh.text_frame, "Getting more signal out of SNAP QC data")
+set_line(t_sh.text_frame, "Getting more signal out of SNAP QC data: modeling lessons")
 set_body(b_sh.text_frame, [
-    "Lessons from building and rebuilding an error-mining pipeline on the public QC files.",
-    "Written to stand alone: each lesson applies to any analysis of these data, whether or not you use our pipeline.",
-    "Code and evidence: https://github.com/giannella/snap_qc (modeling_findings.md)"])
+    "What we learned from building, tuning, and stress-testing an error-mining pipeline on the public QC files.",
+    "Every claim below is backed by a measurement from our own runs - configurations tried head-to-head on held-out years.",
+    "Code and full evidence: https://github.com/giannella/snap_qc (modeling_findings.md)"])
 
-# ── context ──────────────────────────────────────────────────────────────────
+# ── 2. scope ─────────────────────────────────────────────────────────────────
 add_lesson(
-    "Where these lessons come from",
-    ["- We mine the public SNAP QC files for interpretable rules that flag high-risk cases for review (or safely exclude low-risk ones).",
-     "- In one week we rebuilt the data pipeline, re-validated the statistics, and tested rule transfer across states.",
-     "- Several 'modeling' problems turned out to be DATA problems, and several data problems were invisible until we measured them. The lessons below are ordered data-first."])
+    "What we ran",
+    ["- Task: mine interpretable rules that flag high-error-risk cases; judge every configuration on a year of data it never saw (train 2022+2024, test 2023).",
+     "- Compared head-to-head: tree engines and their pairings, ensemble sizes, learning rates, subsampling, tree depth, split randomness, stratification schemes, selection statistics, filter stringencies, and state-level deployment strategies.",
+     "- The lessons below are the settings and practices that moved held-out performance - and the ones that didn't."])
 
-# ── data lessons ─────────────────────────────────────────────────────────────
+# ── 3-4. data-build effects (measured) ───────────────────────────────────────
 add_lesson(
-    "Know what your data cannot see",
-    ["- The public QC files EXCLUDE cases found ineligible - which are 100%-of-benefit errors. The technical documentation quantifies the exclusions; almost nobody reads those counts.",
-     "- Share of each state's error population visible in the public files (2022-24): national 71%. Some states are far worse.",
-     "- Before promising results from any public-data model, compute this number for your state. Below ~60%, treat public-data results as a supplement and run your analysis on internal data, which contains the ineligible determinations."],
-    table=[["state", "visible share of errors"],
+    "Two data-build choices changed results more than any tuning",
+    ["- Cases whose review found a second error element did not fit our single-error reconstruction and were being dropped: 31% of all above-threshold error cases. Keeping them (with a flag) raised qualifying rules from 3,741 to 11,018 at the same filter - more error data tightens every statistical bound.",
+     "- Rows with blank optional-deduction fields were being dropped: ~16% of Washington's caseload. Zero-filling with an imputed-flag kept them.",
+     "- Both defects were invisible in model metrics and found only by reconciling row and error counts against the raw files, state by state. We now diff mined-rule sets across data builds (exact / shifted / overlapping / dropped / new) to audit any data change."])
+
+add_lesson(
+    "Check how much of the error population your data can see",
+    ["- We reconciled the public files against the QC technical documentation's exclusion counts, per state and year (2022-24).",
+     "- The public files' share of each state's error cases ranges from 43% to 81% - the excluded cases are the ineligible determinations.",
+     "- This bounds what any public-data model can deliver per state; we quote it alongside every state result."],
+    table=[["state", "visible share of error cases"],
            ["New Jersey", "43%"],
            ["Tennessee", "51%"],
            ["Arkansas / Missouri / Utah", "~53%"],
            ["Washington / Virginia / Louisiana", "78-81%"],
            ["national", "71%"]])
 
+# ── 5-8. selection + tuning lessons ──────────────────────────────────────────
 add_lesson(
-    "Missing usually means 'not claimed', not 'unknown'",
-    ["- Deduction fields (dependent care, medical, child support, homeless) are blank when the household didn't claim the deduction. Dropping rows with blanks silently deletes real, clean cases.",
-     "- In Washington, dropping deduction blanks removed ~16% of the caseload before we caught it.",
-     "- Zero-fill these fields and keep an 'imputed' flag. Reserve row-dropping for fields where blank truly means unknown (for us: rent and utilities)."])
-
-add_lesson(
-    "Don't drop cases you can't fully reconcile - flag them",
-    ["- QC reviews can find MULTIPLE errors in one case. Cases with a second error element didn't fit our single-error reconstruction, so an early version dropped them: 31% of all error cases, silently.",
-     "- Keeping them (with a flag) tripled the number of reliable patterns we could find - not because multi-error cases are special, but because a third more error data tightens every statistical bound.",
-     "- The flag also let us verify the fix: new patterns were NOT concentrated on multi-error cases (34% of their catches vs 32% base) - the gain was statistical power, not a new error type."])
-
-add_lesson(
-    "Rebuild derived datasets from the script, never by hand",
-    ["- Our modelling frame was once saved by hand from an interactive session. It silently descended from a version with the multi-error drop still active - and every result for weeks was mined on 69% of the true errors.",
-     "- The fix is structural, not behavioral: the build script itself saves the frame as its last step, so the saved data can never drift from the code that claims to produce it.",
-     "- When results move after a data rebuild, diff the OUTPUTS: we classify every mined rule as exact / threshold-shifted / overlapping / dropped / new, so a data change's fingerprint is auditable."])
-
-# ── statistics lessons ───────────────────────────────────────────────────────
-add_lesson(
-    "Screening many candidates on raw performance selects lucky ones",
-    ["- Generate 100,000 candidate rules and keep those with the best measured precision, and you mostly keep rules that got lucky: our 'train precision >= 0.20' shortlist delivered only ~0.10 on a year it had never seen.",
-     "- The estimates were nearly unbiased BEFORE selection (r = 0.83 train vs holdout). Selection itself creates the bias - textbook regression to the mean, not overfitting.",
-     "- This applies to any 'fit many, keep the best' workflow: feature screens, subgroup analyses, model leaderboards."],
+    "Selecting rules on raw training precision delivered half of it",
+    ["- Our 'train precision >= 0.20' shortlist delivered ~0.10 on the held-out year. Before any selection, train precision was nearly unbiased for holdout (median gap -0.003, r = 0.83); rules selected on the HOLDOUT >= 0.20 showed median train precision 0.116.",
+     "- So the decay is selection noise (regression to the mean), not overfitting or year drift - the same rules held ~3.9x lift on 2018-19 vs ~3.5x on 2023.",
+     "- Any 'generate many candidates, keep the best-measured' step has this problem, whatever the model class."],
     figure="presentation_figures/winners_curse_raw_vs_lcb.png", fig_aspect=1.0)
 
 add_lesson(
-    "Filter on a lower confidence bound, not the point estimate",
-    ["- Keep a candidate only if the LOWER end of its precision confidence interval clears your bar. Small-sample lucky streaks fail this test automatically; well-supported patterns pass.",
-     "- Same rule pool, three floor definitions: raw-precision floors overpromise (pick 0.50, get ~0.34) even after a confidence gate; lower-bound floors deliver at or above the promise (pick 0.30, get 0.38).",
-     "- The lower bound is the only menu axis whose number means 'at least this'."],
+    "Filter on a lower confidence bound of training precision",
+    ["- Keep a rule only if the one-sided 99% Wilson lower bound of its training precision clears the floor. At matched delivered precision (~0.20), lower-bound selection caught 12.8% of errors vs 8.2% for raw-precision selection.",
+     "- Same rule pool, measured three ways: raw floors overpromise even after a lower-bound gate (floor 0.50 delivers 0.34); lower-bound floors deliver at or above their number (floor 0.30 delivers 0.38, floor 0.40 delivers 0.51).",
+     "- The lower bound is the only selection statistic we tested whose value survives contact with a new year."],
     figure="presentation_figures/floor_definitions_educational.png", fig_aspect=9.5 / 13)
 
 add_lesson(
-    "Generate aggressively; let statistics do the vetoing",
-    ["- Bigger ensembles (1000 trees instead of 100) do not trace a better precision-recall frontier - but they find several times more DISTINCT patterns at every quality bar.",
-     "- That surplus is operational freedom: reviewers can veto patterns they distrust and still have substitutes.",
-     "- The stringent lower-bound filter is what makes this safe: it removes the selection noise that large candidate pools would otherwise inject."],
+    "Bigger ensembles widen the menu, not the frontier",
+    ["- 1000-round/1000-tree ensembles traced the SAME precision-recall frontier as small ones - but produced several times more distinct rules clearing any given floor (~2.6-5x the filtered inventory).",
+     "- That inventory is what states use: reviewers veto rules they distrust and need substitutes.",
+     "- The stringent lower-bound filter is what keeps large pools safe: it removes the extra selection noise that more candidates would otherwise inject."],
     figure="presentation_figures/mine_big_filter_stringently.png", fig_aspect=5 / 8)
 
 add_lesson(
-    "Count every error you catch, not just the kind you looked for",
-    ["- A rule built to find earned-income errors also flags cases carrying other error types - and those reviews succeed too.",
-     "- Scored only against its intended error type, our earned-income rule set looked like 8% precision; scored against every error actually caught, 19%. The second number is what reviewers experience.",
-     "- Whenever you model one outcome inside a family of related outcomes, report performance against the family too - the narrow metric can understate real performance by 2x."],
+    "Tuning: what moved held-out performance and what didn't",
+    ["- Engine PAIRING mattered: xgboost + random forest (ranger) beat either engine alone and beat bagged-CART + ranger, everything else held equal.",
+     "- Within engines: mtry = 2 beat mtry = 1 across the frontier; subsampling 15-30% of data per tree was a plateau (we use 20%); slow learning (eta 0.02, 1000 rounds) beat fast; depth 4 sufficed.",
+     "- Most other knobs did not move the frontier - we verified by varying one setting at a time around the final configuration."],
+    figure="parameter_tuning_v2/v2_tuning_xgboost.png", fig_aspect=2100 / 2700)
+
+# ── 9-10. scoring + stratification ───────────────────────────────────────────
+add_lesson(
+    "Score rules against all error types, not just the mined type",
+    ["- Rules mined for one error type also flag cases carrying other types. Scored only against the mined type, our earned-income rules measured 8% precision on the held-out year; scored against any above-threshold error on the same flags, 19%.",
+     "- The gap was similar across frames (~2x). Reporting only the narrow metric understates what reviewers would actually find.",
+     "- We now compute both in every run (dashed vs solid below)."],
     figure="inclusion_rules_by_hh_size_v2/earned_income_lcb_sweep.png", fig_aspect=0.5)
 
 add_lesson(
-    "Look for the unmodeled majority",
-    ["- Errors in deductions, shelter costs, and household composition ('other' errors) are the LARGEST category - 2,007 of 4,460 above-threshold errors in 2023 - and years of prior work never modeled them because they seemed heterogeneous.",
-     "- They turned out to be learnable: this category now contributes the largest block of reliable patterns.",
-     "- Inventory your outcome categories by SIZE before deciding what is modelable. 'Messy' is not the same as 'random'."],
-    figure="inclusion_rules_by_hh_size_v2/other_error_lcb_sweep.png", fig_aspect=0.5)
+    "Split by coarse household-size strata (1 / 2-3 / 4+)",
+    ["- Household-size strata 1 / 2-3 / 4+ beat pooled modeling on recall reach and filtered inventory (~5x); a 5-way split was worse on the same test year.",
+     "- Adding an elderly/disabled STRATUM on top bought nothing: an indicator variable achieved the same held-out frontier and the same coverage of those households - we checked coverage parity explicitly.",
+     "- We test 'new stratum vs new variable' empirically before adding strata; strata cost data and the variable usually suffices."],
+    figure="compare_hh_strata_v2/strata_sweeps.png", fig_aspect=1650 / 2700)
+
+# ── 11-12. small samples + transfer ──────────────────────────────────────────
+add_lesson(
+    "At state scale, confidence bounds alone were not enough",
+    ["- Mining directly on one state's data (~2,000-3,000 cases/year), rules passing the same 99% lower-bound filter with small support had median HOLDOUT precision of zero at support >= 5.",
+     "- Requiring each rule to flag >= 30 training cases changed the failure mode from collapse to gentle deflation (~1/3 below training estimates).",
+     "- National scale hides this: with 100k+ cases the bound rarely admits tiny-support rules in the first place."])
 
 add_lesson(
-    "Split by structure - but split coarsely",
-    ["- Household size changes which variables mean what (income per member, deduction scales), so we model size groups 1 / 2-3 / 4+ separately. Coarse splits kept enough data per group; a 5-way split performed worse.",
-     "- Not every important group needs its own model: elderly/disabled households have a very different ERROR MIX, but an indicator variable let the models carve the caseload themselves - a separate stratum bought nothing.",
-     "- Test 'feature vs stratum' empirically; the answer is usually 'feature' unless the group changes the meaning of other variables."],
-    figure="presentation_figures/esap_error_mix.png", fig_aspect=5 / 8)
-
-# ── small-sample and transfer lessons ────────────────────────────────────────
-add_lesson(
-    "Small samples need hard support floors, not just confidence bounds",
-    ["- At national scale (100k+ cases), a stringent lower-bound filter alone controls selection noise. At single-state scale it did NOT: rules selected with the bound but tiny support had median holdout precision of ZERO.",
-     "- Adding a hard floor - a rule must fire on at least ~30 training cases - changed failure from collapse to gentle deflation (~1/3).",
-     "- Confidence bounds assume the model class is honest; tiny-support rules are where that assumption breaks first."])
+    "For thin states, same-era neighbor data beat more own-state data",
+    ["- Louisiana's own 2022-24 mining collapsed on holdout. Adding its 2017-19 data made it WORSE (median holdout precision fell to zero).",
+     "- Training on five similar states' 2022-24 data - never touching Louisiana - delivered 14% precision at 49% of error dollars on Louisiana 2022-24.",
+     "- Both comparisons used identical engines and filters; the only differences were WHERE and WHEN the training data came from."])
 
 add_lesson(
-    "Match eras: recent similar data beats more mixed-era data",
-    ["- For a state with weak local signal (Louisiana), pooling its own data across 2017-19 + 2022-24 made things WORSE (median holdout precision fell to zero) - error-generating processes drift with policy changes.",
-     "- Training on five SIMILAR states' 2022-24 data - never touching Louisiana - delivered usable rules there (14% precision at 49% of error dollars, in a state where local mining had collapsed).",
-     "- When data is thin, the instinct is to add years. Add NEIGHBORS from the same era instead."])
+    "Current work: choosing donor states by measured similarity",
+    ["- We compute state similarity from the QC microdata itself, two ways: which risk patterns fire in a state's caseload (weighting rarely-firing patterns more heavily), and de facto policy-option profiles (categorical eligibility, reporting system, certification periods, deduction structures - all readable off the microdata, per era).",
+     "- The two definitions, built from different information, agree on Louisiana's 2022-24 donor pool - and reproduce the pool that worked above. Neighbor lists change sharply between 2017-19 and 2022-24, so we compute them per era.",
+     "- A leave-one-state-out benchmark (12 states x 4 similarity definitions vs national rules) is running now."])
 
-add_lesson(
-    "The microdata already documents each state's policy choices",
-    ["- Key policy options - broad-based categorical eligibility, reporting systems, certification periods, standard medical deduction, standard utility allowances, SSI CAP - are all readable off the QC microdata itself, per state and era.",
-     "- That means state similarity can be MEASURED, not asserted: we combine policy vectors with 'which risk patterns fire here' profiles, weighting rare shared patterns more heavily (inverse-frequency).",
-     "- Use similarity to pick donor states for thin-data problems - and recompute it per era, because states change policies."])
-
+# ── 14. takeaways ────────────────────────────────────────────────────────────
 add_lesson(
     "Takeaways",
-    ["- Data first: measure what your data cannot see, read missingness semantics, keep hard cases with flags, and make scripts - not hands - produce datasets.",
-     "- Statistics second: any 'generate many, keep the best' workflow needs lower-bound filtering, honest holdout years, and support floors at small scale.",
-     "- Scope last: score against all the value you create, hunt the unmodeled majority, and borrow strength from measured similarity when your own data runs out.",
-     "- Everything here is reproducible from the public files: github.com/giannella/snap_qc"])
+    ["- Reconcile your build against the raw files before tuning anything: our two data-build fixes moved results more than any hyperparameter.",
+     "- Select on a lower confidence bound, judge on a held-out year, and add hard support floors when samples are small.",
+     "- Score against all error types; stratify only where a variable can't do the job; prefer same-era similar data over more mixed data.",
+     "- Numbers, charts, and code: github.com/giannella/snap_qc"])
 
 # ── drop the original how_to slides ──────────────────────────────────────────
 sldIdLst = p.slides._sldIdLst
