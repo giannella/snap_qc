@@ -43,7 +43,7 @@ def set_body(tf, lines):
     first_p = tf.paragraphs[0]._p
     for line in lines[1:]:
         new_p = copy.deepcopy(first_p)
-        first_p.getparent().addnext(new_p)
+        first_p.addnext(new_p)
         first_p = new_p
     for para, line in zip(tf.paragraphs, lines):
         if para.runs:
@@ -118,7 +118,9 @@ add_lesson(
 add_lesson(
     "Two data-build choices changed results more than any tuning",
     ["- Cases whose review found a second error element did not fit our single-error reconstruction and were being dropped: 31% of all above-threshold error cases. Keeping them (with a flag) raised qualifying rules from 3,741 to 11,018 at the same filter - more error data tightens every statistical bound.",
-     "- Rows with blank optional-deduction fields were being dropped: ~16% of Washington's caseload. Zero-filling with an imputed-flag kept them.",
+     "- The fix did not rewrite the rules' content: 93% of the previous rule set survived the rebuild - 63% as the same variables and directions with shifted cutpoints, 29% matched by a new rule flagging a highly overlapping case set (Jaccard >= 0.5 on the test year), 1% exact; only 7% dropped with no counterpart.",
+     "- Nor did the restored cases add a new pattern type: brand-new rules' catches were 34% restored-case vs a 32% base - the gain was statistical power, not different signal.",
+     "- Rows with blank optional-deduction fields were also being dropped: ~16% of Washington's caseload. Zero-filling with an imputed-flag kept them.",
      "- Both defects were invisible in model metrics and found only by reconciling row and error counts against the raw files, state by state. We now diff mined-rule sets across data builds (exact / shifted / overlapping / dropped / new) to audit any data change."])
 
 add_lesson(
