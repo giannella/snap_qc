@@ -1,0 +1,169 @@
+"n_rules_used","n_flagged","workload","precision","recall","dollar_recall","target","approach","budget"
+5641,126,0.0498,0.3175,0.1639,0.1828,"Louisiana","national_asis",0.05
+6571,253,0.0999,0.2609,0.2705,0.2962,"Louisiana","national_asis",0.1
+11927,126,0.0498,0.254,0.1311,0.151,"Louisiana","national_loo",0.05
+13480,253,0.0999,0.2372,0.2459,0.2748,"Louisiana","national_loo",0.1
+1937,126,0.0498,0.1905,0.0984,0.1373,"Louisiana","transfer_fire",0.05
+2469,253,0.0999,0.2095,0.2172,0.2512,"Louisiana","transfer_fire",0.1
+2183,126,0.0498,0.1746,0.0902,0.102,"Louisiana","transfer_idf",0.05
+2822,253,0.0999,0.1858,0.1926,0.2203,"Louisiana","transfer_idf",0.1
+1937,126,0.0498,0.1905,0.0984,0.1373,"Louisiana","transfer_nb",0.05
+2469,253,0.0999,0.2095,0.2172,0.2512,"Louisiana","transfer_nb",0.1
+2590,126,0.0498,0.2619,0.1352,0.1424,"Louisiana","transfer_policy",0.05
+3770,253,0.0999,0.2332,0.2418,0.2522,"Louisiana","transfer_policy",0.1
+2590,126,0.0498,0.2619,0.1352,0.1424,"Louisiana","transfer_blended",0.05
+3770,253,0.0999,0.2332,0.2418,0.2522,"Louisiana","transfer_blended",0.1
+5967,117,0.0497,0.3162,0.1659,0.2018,"Washington","national_asis",0.05
+7072,235,0.0997,0.2809,0.296,0.3915,"Washington","national_asis",0.1
+12847,117,0.0497,0.3077,0.1614,0.1904,"Washington","national_loo",0.05
+15003,235,0.0997,0.2298,0.2422,0.2976,"Washington","national_loo",0.1
+4347,117,0.0497,0.2222,0.1166,0.1648,"Washington","transfer_fire",0.05
+5352,235,0.0997,0.1915,0.2018,0.2794,"Washington","transfer_fire",0.1
+3692,117,0.0497,0.265,0.139,0.2142,"Washington","transfer_idf",0.05
+4878,235,0.0997,0.2255,0.2377,0.3272,"Washington","transfer_idf",0.1
+4286,117,0.0497,0.2308,0.1211,0.165,"Washington","transfer_nb",0.05
+5145,235,0.0997,0.2213,0.2332,0.2969,"Washington","transfer_nb",0.1
+5150,117,0.0497,0.2222,0.1166,0.1665,"Washington","transfer_policy",0.05
+6772,235,0.0997,0.1915,0.2018,0.2761,"Washington","transfer_policy",0.1
+5150,117,0.0497,0.2222,0.1166,0.1665,"Washington","transfer_blended",0.05
+6772,235,0.0997,0.1915,0.2018,0.2761,"Washington","transfer_blended",0.1
+5175,108,0.0498,0.3889,0.1296,0.1378,"Virginia","national_asis",0.05
+5952,216,0.0996,0.3565,0.2377,0.2751,"Virginia","national_asis",0.1
+10354,108,0.0498,0.3241,0.108,0.1093,"Virginia","national_loo",0.05
+11590,216,0.0996,0.3009,0.2006,0.2314,"Virginia","national_loo",0.1
+1395,108,0.0498,0.3333,0.1111,0.0937,"Virginia","transfer_fire",0.05
+1791,216,0.0996,0.3056,0.2037,0.1874,"Virginia","transfer_fire",0.1
+2400,108,0.0498,0.2778,0.0926,0.0808,"Virginia","transfer_idf",0.05
+3373,216,0.0996,0.2639,0.1759,0.1487,"Virginia","transfer_idf",0.1
+1375,108,0.0498,0.2778,0.0926,0.0661,"Virginia","transfer_nb",0.05
+2070,216,0.0996,0.2778,0.1852,0.1941,"Virginia","transfer_nb",0.1
+1133,108,0.0498,0.3333,0.1111,0.0864,"Virginia","transfer_policy",0.05
+1569,216,0.0996,0.3009,0.2006,0.1678,"Virginia","transfer_policy",0.1
+1133,108,0.0498,0.3333,0.1111,0.0864,"Virginia","transfer_blended",0.05
+1569,216,0.0996,0.3009,0.2006,0.1678,"Virginia","transfer_blended",0.1
+5278,126,0.0499,0.4286,0.1698,0.1701,"Arizona","national_asis",0.05
+6231,252,0.0997,0.3889,0.3082,0.3175,"Arizona","national_asis",0.1
+11221,126,0.0499,0.3095,0.1226,0.12,"Arizona","national_loo",0.05
+13222,252,0.0997,0.3571,0.283,0.2975,"Arizona","national_loo",0.1
+2282,126,0.0499,0.2619,0.1038,0.128,"Arizona","transfer_fire",0.05
+2642,252,0.0997,0.3016,0.239,0.2738,"Arizona","transfer_fire",0.1
+1462,126,0.0499,0.3175,0.1258,0.1027,"Arizona","transfer_idf",0.05
+1636,252,0.0997,0.3135,0.2484,0.247,"Arizona","transfer_idf",0.1
+2282,126,0.0499,0.2619,0.1038,0.128,"Arizona","transfer_nb",0.05
+2642,252,0.0997,0.3016,0.239,0.2738,"Arizona","transfer_nb",0.1
+1697,126,0.0499,0.2857,0.1132,0.1382,"Arizona","transfer_policy",0.05
+2573,252,0.0997,0.2817,0.2233,0.2155,"Arizona","transfer_policy",0.1
+1697,126,0.0499,0.2857,0.1132,0.1382,"Arizona","transfer_blended",0.05
+2573,252,0.0997,0.2817,0.2233,0.2155,"Arizona","transfer_blended",0.1
+4094,138,0.0498,0.3551,0.1408,0.1448,"Connecticut","national_asis",0.05
+4577,276,0.0997,0.337,0.2672,0.2976,"Connecticut","national_asis",0.1
+8421,138,0.0498,0.3261,0.1293,0.1222,"Connecticut","national_loo",0.05
+9555,276,0.0997,0.2826,0.2241,0.2202,"Connecticut","national_loo",0.1
+1823,138,0.0498,0.3116,0.1236,0.1256,"Connecticut","transfer_fire",0.05
+2245,276,0.0997,0.3043,0.2414,0.2763,"Connecticut","transfer_fire",0.1
+2316,138,0.0498,0.3406,0.1351,0.162,"Connecticut","transfer_idf",0.05
+3348,276,0.0997,0.337,0.2672,0.2892,"Connecticut","transfer_idf",0.1
+1823,138,0.0498,0.3116,0.1236,0.1256,"Connecticut","transfer_nb",0.05
+2245,276,0.0997,0.3043,0.2414,0.2763,"Connecticut","transfer_nb",0.1
+1216,138,0.0498,0.2391,0.0948,0.0954,"Connecticut","transfer_policy",0.05
+1616,276,0.0997,0.2391,0.1897,0.2087,"Connecticut","transfer_policy",0.1
+1290,138,0.0498,0.2899,0.1149,0.1251,"Connecticut","transfer_blended",0.05
+1603,276,0.0997,0.2717,0.2155,0.2579,"Connecticut","transfer_blended",0.1
+4696,129,0.0499,0.3721,0.1237,0.0923,"Michigan","national_asis",0.05
+5576,258,0.0998,0.3721,0.2474,0.2443,"Michigan","national_asis",0.1
+8613,129,0.0499,0.3488,0.116,0.0889,"Michigan","national_loo",0.05
+10369,258,0.0998,0.2946,0.1959,0.1923,"Michigan","national_loo",0.1
+990,129,0.0499,0.2791,0.0928,0.0826,"Michigan","transfer_fire",0.05
+1158,258,0.0998,0.2791,0.1856,0.1879,"Michigan","transfer_fire",0.1
+439,129,0.0499,0.3333,0.1108,0.1063,"Michigan","transfer_idf",0.05
+641,258,0.0998,0.2752,0.183,0.1658,"Michigan","transfer_idf",0.1
+990,129,0.0499,0.2791,0.0928,0.0826,"Michigan","transfer_nb",0.05
+1158,258,0.0998,0.2791,0.1856,0.1879,"Michigan","transfer_nb",0.1
+1896,129,0.0499,0.3023,0.1005,0.0932,"Michigan","transfer_policy",0.05
+2971,258,0.0998,0.2597,0.1727,0.1656,"Michigan","transfer_policy",0.1
+1896,129,0.0499,0.3023,0.1005,0.0932,"Michigan","transfer_blended",0.05
+2971,258,0.0998,0.2597,0.1727,0.1656,"Michigan","transfer_blended",0.1
+4899,141,0.0498,0.305,0.1287,0.1433,"North Carolina","national_asis",0.05
+5849,283,0.1,0.2827,0.2395,0.2536,"North Carolina","national_asis",0.1
+9239,141,0.0498,0.2695,0.1138,0.1253,"North Carolina","national_loo",0.05
+10977,283,0.1,0.2438,0.2066,0.2224,"North Carolina","national_loo",0.1
+2631,141,0.0498,0.2057,0.0868,0.0708,"North Carolina","transfer_fire",0.05
+2666,283,0.1,0.1555,0.1317,0.0981,"North Carolina","transfer_fire",0.1
+4039,141,0.0498,0.2695,0.1138,0.1061,"North Carolina","transfer_idf",0.05
+4891,283,0.1,0.2403,0.2036,0.2051,"North Carolina","transfer_idf",0.1
+1369,141,0.0498,0.2199,0.0928,0.0678,"North Carolina","transfer_nb",0.05
+1671,283,0.1,0.1873,0.1587,0.115,"North Carolina","transfer_nb",0.1
+1147,141,0.0498,0.2411,0.1018,0.1061,"North Carolina","transfer_policy",0.05
+1518,283,0.1,0.2191,0.1856,0.1902,"North Carolina","transfer_policy",0.1
+1147,141,0.0498,0.2411,0.1018,0.1061,"North Carolina","transfer_blended",0.05
+1518,283,0.1,0.2191,0.1856,0.1902,"North Carolina","transfer_blended",0.1
+3664,116,0.0498,0.4483,0.1694,0.1921,"California","national_asis",0.05
+4982,233,0.1,0.3391,0.2573,0.3054,"California","national_asis",0.1
+7291,116,0.0498,0.319,0.1205,0.1288,"California","national_loo",0.05
+8917,233,0.1,0.2918,0.2215,0.2544,"California","national_loo",0.1
+825,116,0.0498,0.2328,0.0879,0.1032,"California","transfer_fire",0.05
+1007,233,0.1,0.2618,0.1987,0.2256,"California","transfer_fire",0.1
+1259,116,0.0498,0.2759,0.1042,0.1096,"California","transfer_idf",0.05
+1630,233,0.1,0.2403,0.1824,0.1814,"California","transfer_idf",0.1
+1540,116,0.0498,0.3017,0.114,0.1227,"California","transfer_nb",0.05
+1746,233,0.1,0.2833,0.215,0.2039,"California","transfer_nb",0.1
+1287,116,0.0498,0.25,0.0945,0.0836,"California","transfer_policy",0.05
+1418,233,0.1,0.2232,0.1694,0.1823,"California","transfer_policy",0.1
+1287,116,0.0498,0.25,0.0945,0.0836,"California","transfer_blended",0.05
+1418,233,0.1,0.2232,0.1694,0.1823,"California","transfer_blended",0.1
+5417,120,0.0498,0.2917,0.108,0.1315,"Texas","national_asis",0.05
+6392,241,0.0999,0.278,0.2068,0.2201,"Texas","national_asis",0.1
+11887,120,0.0498,0.175,0.0648,0.0677,"Texas","national_loo",0.05
+12731,241,0.0999,0.2075,0.1543,0.1669,"Texas","national_loo",0.1
+1437,120,0.0498,0.2667,0.0988,0.1072,"Texas","transfer_fire",0.05
+1638,241,0.0999,0.2199,0.1636,0.1675,"Texas","transfer_fire",0.1
+1221,120,0.0498,0.25,0.0926,0.0968,"Texas","transfer_idf",0.05
+2187,241,0.0999,0.2241,0.1667,0.1822,"Texas","transfer_idf",0.1
+1120,120,0.0498,0.2333,0.0864,0.0758,"Texas","transfer_nb",0.05
+2139,241,0.0999,0.2448,0.1821,0.1839,"Texas","transfer_nb",0.1
+3705,120,0.0498,0.1833,0.0679,0.0753,"Texas","transfer_policy",0.05
+4296,241,0.0999,0.2158,0.1605,0.1609,"Texas","transfer_policy",0.1
+3705,120,0.0498,0.1833,0.0679,0.0753,"Texas","transfer_blended",0.05
+4296,241,0.0999,0.2158,0.1605,0.1609,"Texas","transfer_blended",0.1
+7698,159,0.0497,0.2893,0.1318,0.1248,"Mississippi","national_asis",0.05
+8005,319,0.0997,0.279,0.255,0.2701,"Mississippi","national_asis",0.1
+18985,159,0.0497,0.2264,0.1032,0.0979,"Mississippi","national_loo",0.05
+20748,319,0.0997,0.232,0.212,0.2142,"Mississippi","national_loo",0.1
+2898,159,0.0497,0.3459,0.1576,0.1604,"Mississippi","transfer_fire",0.05
+3344,319,0.0997,0.2978,0.2722,0.2528,"Mississippi","transfer_fire",0.1
+2898,159,0.0497,0.3459,0.1576,0.1604,"Mississippi","transfer_idf",0.05
+3344,319,0.0997,0.2978,0.2722,0.2528,"Mississippi","transfer_idf",0.1
+3673,159,0.0497,0.3396,0.1547,0.1592,"Mississippi","transfer_nb",0.05
+4279,319,0.0997,0.2884,0.2636,0.2791,"Mississippi","transfer_nb",0.1
+7125,159,0.0497,0.2642,0.1203,0.1293,"Mississippi","transfer_policy",0.05
+7691,319,0.0997,0.2476,0.2264,0.2381,"Mississippi","transfer_policy",0.1
+5778,159,0.0497,0.2956,0.1347,0.1444,"Mississippi","transfer_blended",0.05
+7971,319,0.0997,0.2571,0.235,0.2586,"Mississippi","transfer_blended",0.1
+4156,89,0.0499,0.2697,0.1548,0.176,"New Jersey","national_asis",0.05
+4759,178,0.0998,0.2191,0.2516,0.3093,"New Jersey","national_asis",0.1
+8337,89,0.0499,0.1236,0.071,0.0739,"New Jersey","national_loo",0.05
+9510,178,0.0998,0.1629,0.1871,0.2019,"New Jersey","national_loo",0.1
+2323,89,0.0499,0.2022,0.1161,0.1225,"New Jersey","transfer_fire",0.05
+3275,178,0.0998,0.1798,0.2065,0.2294,"New Jersey","transfer_fire",0.1
+1845,89,0.0499,0.1573,0.0903,0.1072,"New Jersey","transfer_idf",0.05
+2788,178,0.0998,0.1798,0.2065,0.2504,"New Jersey","transfer_idf",0.1
+2323,89,0.0499,0.2022,0.1161,0.1225,"New Jersey","transfer_nb",0.05
+3275,178,0.0998,0.1798,0.2065,0.2294,"New Jersey","transfer_nb",0.1
+949,89,0.0499,0.2022,0.1161,0.1017,"New Jersey","transfer_policy",0.05
+1240,178,0.0998,0.1742,0.2,0.25,"New Jersey","transfer_policy",0.1
+949,89,0.0499,0.2022,0.1161,0.1017,"New Jersey","transfer_blended",0.05
+1240,178,0.0998,0.1742,0.2,0.25,"New Jersey","transfer_blended",0.1
+5234,130,0.0499,0.3846,0.1786,0.1733,"Colorado","national_asis",0.05
+6091,260,0.0998,0.3308,0.3071,0.2976,"Colorado","national_asis",0.1
+9264,130,0.0499,0.3538,0.1643,0.1721,"Colorado","national_loo",0.05
+11602,260,0.0998,0.2462,0.2286,0.2234,"Colorado","national_loo",0.1
+714,130,0.0499,0.3231,0.15,0.141,"Colorado","transfer_fire",0.05
+1565,260,0.0998,0.2808,0.2607,0.2438,"Colorado","transfer_fire",0.1
+1651,130,0.0499,0.1692,0.0786,0.0691,"Colorado","transfer_idf",0.05
+2248,260,0.0998,0.2038,0.1893,0.2188,"Colorado","transfer_idf",0.1
+714,130,0.0499,0.3231,0.15,0.141,"Colorado","transfer_nb",0.05
+1565,260,0.0998,0.2808,0.2607,0.2438,"Colorado","transfer_nb",0.1
+1573,130,0.0499,0.2308,0.1071,0.0999,"Colorado","transfer_policy",0.05
+1873,260,0.0998,0.2577,0.2393,0.2304,"Colorado","transfer_policy",0.1
+1573,130,0.0499,0.2308,0.1071,0.0999,"Colorado","transfer_blended",0.05
+1873,260,0.0998,0.2577,0.2393,0.2304,"Colorado","transfer_blended",0.1

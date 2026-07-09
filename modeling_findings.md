@@ -369,3 +369,65 @@ clear the stiff bound). The 5-way split loses either way.
 
 *Artifacts: compare_models_by_HHsize_vs_pooled/strata_earn_inc_scheme_summary.csv
 (pre-era); compare_hh_strata_v2/ (v2 confirmation).*
+
+## 12. Cross-state transfer vs honest national baselines (2026-07-09)
+
+Leave-one-state-out benchmark: for 12 target states, any-error rules were
+mined on donor pools that NEVER saw the target (2022-24 both sides), then
+scored on the target under review-capacity budgets (rules added in
+descending train-LCB order until the budget fills). Donor pools: top-5
+neighbors under four similarity definitions — fire-rate cosine (sqrt),
+inverse-frequency-weighted cosine (IDF), naive-Bayes/KL over rule-firing
+profiles (NB), QC-derived policy vectors — plus a leave-one-state-out
+NATIONAL pool (all 48 other states, same any-error recipe: the honest
+version of the national baseline).
+
+Median delivered precision / share of error dollars across the 12 states:
+
+| budget | natl as-is* | natl LOO | fire | IDF | NB | policy |
+|---|---|---|---|---|---|---|
+| 5% of caseload | 0.336 / 16% | 0.309 / 12% | 0.264 / 12% | 0.273 / 11% | 0.270 / 12% | 0.246 / 10% |
+| 10% of caseload | 0.307 / 30% | 0.245 / 22% | 0.270 / 24% | 0.240 / 22% | 0.278 / 24% | 0.236 / 21% |
+
+*natl as-is = the production 5-frame shortlist, trained on 2022+2024
+INCLUDING each target's own cases. Its edge over natl LOO conflates two
+things — the in-sample advantage AND the richer 5-frame recipe (LOO pools
+are any-error-only) — so the as-is-vs-LOO gap (0.03 at 5%, 0.06 at 10%) is
+an UPPER bound on in-sample flattering at these budgets.
+
+Findings (same-recipe comparisons, i.e. LOO vs similarity pools):
+
+- **At a 5% budget, more data wins**: the 48-state LOO pool beats 5-neighbor
+  pools in 9 of 12 states (median 0.309 vs 0.273 best-transfer).
+- **At a 10% budget, similarity wins as often as size**: 5-neighbor pools
+  match or beat the 48-state pool in 6 of 12 states (NB median 0.278 vs LOO
+  0.245), with the transfer wins larger than the losses (Mississippi +0.066,
+  Connecticut +0.054, Texas +0.038, Colorado +0.035). Five well-chosen
+  states can out-teach forty-eight at moderate budgets.
+- **NB ~ fire, both > policy-only**: NB's donor pools often coincide with
+  fire's (its LA pool is identical); where they differ NB is equal or better
+  (California 5%: 0.302 vs 0.233). IDF is the most conservative and wins
+  where precision is the binding concern (CT 10%: 0.337). Policy-only pools
+  are erratic; policy information helps only blended with fire rates.
+- **Budget-filling fixes the workload problem**: at fixed LCB floors the
+  same rule sets flagged 12-73% of caseloads; under budgets every approach
+  delivers 0.16-0.45 precision. Mississippi, a total failure at fixed
+  floors (rules stopped firing), is transfer's best budget result
+  (0.346/16% at 5%) — the fixed-floor failure was a floor artifact.
+- **Era-matched similarity is load-bearing and definitions converge**:
+  LA's 2022-24 neighbor lists under fire/NB/policy agree closely with each
+  other and with the donor pool that worked in the July transfer, and all
+  differ sharply from the 2017-19 lists.
+
+Deployment guidance (supersedes nothing; complements the two-regime rule in
+section 9): the production national shortlist remains the best single list at
+small budgets, but numbers quoted to a state from in-sample national training
+overstate honest performance by up to the as-is-vs-LOO gap; at moderate
+budgets (~10%), similarity-picked donor pools (fire or NB) are competitive
+with any national option and are the honest choice where a state's own data
+must stay out of training.
+
+*Artifacts: state_similarity_v2/transfer_benchmark/ (benchmark +
+budgeted_menu_results.csv); state_similarity_v2/similarity_*_2022_2024.csv
+and _2017_2019.csv; state_nb_similarity_v2.R; neighbor_transfer_benchmark_v2.R;
+budgeted_transfer_menu_v2.R; overnight_nb_loo_run.log.*
