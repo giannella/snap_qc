@@ -1,61 +1,192 @@
-"rule","hh","n_flagged_train","precision_train","precision_train_lcb","rank"
-"total_deductions_by_hh_size > 336.000 & unc_rawben_rel_max >   0.891 & unc_rawben_rel_max <=   0.991 & utilities <=  29.500","1",74,0.6622,0.5272,1
-"medical_deductions > 506.000 & rawben_rel_max <=   0.998 & total_deductions_by_hh_size > 282.000 & unc_rawben_rel_max >   0.761","1",30,0.6667,0.4552,2
-"cat_elig >   0.5 & medical_deductions > 104.0 & total_deductions_by_hh_size > 546.0 & utilities <= 560.0","2-3",40,0.625,0.4423,3
-"months_since_cert_n >=   8.00 & unc_rawben_rel_max >=   1.93 & utilities < 366.00","1",31,0.6452,0.4379,4
-"cat_elig >   0.50 & shelter_expenses_by_hh_size > 246.00 & unc_rawben_rel_max >   1.63 & utilities <= 748.00","2-3",83,0.5422,0.4163,5
-"cat_elig > 0.50 & children_i > 0.50 & unc_rawben_rel_max > 1.57","2-3",59,0.5593,0.4104,6
-"shelter_expenses_by_hh_size > 878.000 & unc_rawben_rel_max >   0.379 & unc_rawben_rel_max <=   0.991 & utilities <=  29.500","1",118,0.5085,0.4034,7
-"medical_deductions > 366.000 & months_since_cert_n <=  13.500 & rawben_rel_max >   0.301","2-3",46,0.5652,0.3974,8
-"elderly_disabled_i >=   1.00 & rawben_rel_max >=   1.00 & unc_rawben_rel_max >=   1.52 & utilities < 313.00","1",142,0.4859,0.3907,9
-"rawben_rel_max >=   0.988 & rawben_rel_max <   0.992 & total_deductions_by_hh_size >= 198.000 & utilities < 452.000","1",171,0.4737,0.387,10
-"elderly_disabled_i >   0.500 & rawben_rel_max >   0.881 & shelter_expenses_by_hh_size > 474.000 & utilities <=  28.500","1",139,0.482,0.386,11
-"rawben_rel_max <=   0.994 & total_deductions_by_hh_size > 534.000 & unc_rawben_rel_max >   0.987 & utilities <= 466.000","1",164,0.4695,0.3813,12
-"medical_deductions > 200.000 & rawben_rel_max >   0.473 & rawben_rel_max <=   0.991 & utilities <= 392.000","1",77,0.5065,0.378,13
-"months_since_cert_n >   5.50 & shelter_expenses_by_hh_size <= 652.00 & unc_rawben_rel_max >   1.87 & utilities <= 508.00","1",46,0.5435,0.3773,14
-"elderly_disabled_i >=   1.00 & total_deductions_by_hh_size >= 249.00 & unc_rawben_rel_max >=   1.52 & utilities < 361.00","1",193,0.456,0.3749,15
-"count_divisible_by_100 <   1.00 & months_since_cert_n >=   7.00 & unc_rawben_rel_max >=   1.63 & utilities < 353.00","1",144,0.4653,0.3716,16
-"elderly_disabled_i >   0.50 & shelter_expenses_by_hh_size <= 852.00 & unc_rawben_rel_max >   1.46 & utilities <=  29.50","1",79,0.4937,0.3675,17
-"rawben_rel_max >=   0.366 & shelter_expenses_by_hh_size >= 472.000 & total_deductions_by_hh_size >= 236.000 & total_deductions_by_hh_size < 255.000","4+",34,0.5588,0.3666,18
-"rawben_rel_max >=   0.236 & rawben_rel_max <   1.000 & total_deductions_by_hh_size >= 511.000 & utilities < 249.000","1",303,0.429,0.3647,19
-"HH_size_n >   4.500 & months_since_cert_n >   5.500 & total_deductions_by_hh_size > 231.000 & unc_rawben_rel_max <=   0.998","4+",95,0.4737,0.3592,20
-"elderly_disabled_i >=   1.00 & unc_rawben_rel_max >=   1.52 & utilities < 379.00","1",259,0.4247,0.3555,21
-"months_since_cert_n >   5.5 & total_deductions_by_hh_size > 215.0 & utilities <= 442.0","4+",149,0.443,0.3519,22
-"months_since_cert_n >   5.5 & shelter_expenses_by_hh_size > 408.0 & total_deductions_by_hh_size > 647.0 & utilities <=  28.5","1",80,0.475,0.3509,23
-"rawben_rel_max >   0.998 & shelter_expenses_by_hh_size <= 942.000 & unc_rawben_rel_max >   1.930 & utilities <= 680.000","1",191,0.4293,0.3491,24
-"HH_size_n >=   3 & shelter_expenses_by_hh_size < 635 & total_deductions_by_hh_size >= 602","2-3",38,0.5263,0.3467,25
-"rawben_rel_max <=   0.991 & total_deductions_by_hh_size > 272.000 & unc_rawben_rel_max >   0.913 & utilities <= 346.000","1",234,0.4188,0.3464,26
-"rawben_rel_max >   0.379 & shelter_expenses_by_hh_size >   5.500 & unc_rawben_rel_max >   1.930 & utilities <= 346.000","1",74,0.473,0.3445,27
-"HH_size_n >=   5.000 & rawben_rel_max <   0.873 & shelter_expenses_by_hh_size < 486.000 & total_deductions_by_hh_size >= 286.000","4+",58,0.4828,0.3383,28
-"rawben_rel_max >=   0.594 & rawben_rel_max <   1.000 & total_deductions_by_hh_size >= 925.000 & utilities < 379.000","1",63,0.4762,0.3376,29
-"months_since_cert_n >=   5.00 & percent_abawd <   0.50 & unc_rawben_rel_max >=   1.82 & utilities < 366.00","1",116,0.4397,0.3375,30
-"months_since_cert_n >=   9.000 & rawben_rel_max <   0.822 & total_deductions_by_hh_size >= 109.000 & unc_rawben_rel_max >=   0.725","4+",111,0.4414,0.3371,31
-"rawben_rel_max <   0.678 & total_deductions_by_hh_size >= 584.000 & utilities < 417.000","2-3",39,0.5128,0.3368,32
-"months_since_cert_n >=   5 & shelter_expenses_by_hh_size >= 452 & utilities >=  56 & utilities < 281","2-3",30,0.5333,0.3332,33
-"rawben_rel_max <=   0.991 & total_deductions_by_hh_size > 800.000 & unc_rawben_rel_max >   0.985","1",123,0.4309,0.3321,34
-"rawben_rel_max <=   0.998 & total_deductions_by_hh_size > 602.000 & utilities <= 272.000","1",247,0.4008,0.3312,35
-"months_since_cert_n >   5.500 & rawben_rel_max <=   0.997 & shelter_expenses_by_hh_size <= 494.000 & total_deductions_by_hh_size > 227.000","4+",311,0.3923,0.3303,36
-"months_since_cert_n >=   8.000 & rawben_rel_max <   0.965 & total_deductions_by_hh_size >= 178.000 & unc_rawben_rel_max >=   0.793","4+",122,0.4262,0.3274,37
-"shelter_expenses_by_hh_size < 650 & total_deductions_by_hh_size >= 625","2-3",96,0.4375,0.3262,38
-"count_divisible_by_100 >   1.500 & shelter_expenses_by_hh_size >  27.100 & unc_rawben_rel_max <=   0.783 & utilities <= 446.000","4+",33,0.5152,0.3254,39
-"expedited_i >   0.500 & months_since_cert_n >   5.500 & unc_rawben_rel_max <=   0.912 & utilities <= 356.000","4+",33,0.5152,0.3254,40
-"months_since_cert_n >   4.500 & rawben_rel_max <=   0.977 & total_deductions_by_hh_size > 221.000 & utilities <= 454.000","4+",188,0.4043,0.3248,41
-"rawben_rel_max >   0.727 & rawben_rel_max <=   0.991 & shelter_expenses_by_hh_size > 413.000 & utilities <=  28.500","1",218,0.3945,0.321,42
-"months_since_cert_n >=   7.00 & shelter_expenses_by_hh_size >= 462.00 & unc_rawben_rel_max >=   1.67 & utilities < 462.00","1",287,0.3833,0.3193,43
-"medical_deductions >= 179.00 & rawben_rel_max >=   0.57 & shelter_expenses_by_hh_size >= 261.00 & utilities < 921.00","2-3",69,0.4493,0.3188,44
-"HH_size_n >   4.500 & rawben_rel_max >   0.478 & total_deductions_by_hh_size > 233.000 & unc_rawben_rel_max <=   0.997","4+",156,0.4038,0.3172,45
-"married <=   0.500 & total_deductions_by_hh_size > 505.000 & unc_rawben_rel_max <=   0.992 & utilities <=  29.500","1",255,0.3843,0.3166,46
-"months_since_cert_n >= 10.000 & rawben_rel_max >=  0.683 & rawben_rel_max <  0.820 & total_deductions_by_hh_size >= 27.000","4+",173,0.3988,0.3166,47
-"total_deductions_by_hh_size >= 428 & utilities >= 303 & utilities < 342","2-3",54,0.463,0.3158,48
-"elderly_disabled_i >= 1.000 & rawben_rel_max >= 0.993 & rawben_rel_max < 0.996","2-3",54,0.463,0.3158,49
-"count_divisible_by_100 >   0.5 & months_since_cert_n >   4.5 & total_deductions_by_hh_size > 215.0 & utilities > 442.0","4+",44,0.4773,0.3145,50
-"HH_size_n >  4.500 & months_since_cert_n >  5.500 & percent_abawd >  0.268 & utilities > 30.500","4+",39,0.4872,0.3143,51
-"married >=   1 & shelter_expenses_by_hh_size < 454 & total_deductions_by_hh_size >= 232 & total_deductions_by_hh_size < 247","4+",86,0.4302,0.3138,52
-"shelter_expenses_by_hh_size >= 214 & utilities >= 377 & utilities < 385","4+",52,0.4615,0.3121,53
-"months_since_cert_n >   5.500 & months_since_cert_n <=  10.500 & percent_abawd >   0.292 & utilities > 394.000","4+",52,0.4615,0.3121,54
-"rawben_rel_max <=   0.998 & total_deductions_by_hh_size > 588.000 & unc_rawben_rel_max >   0.322 & utilities <= 344.000","1",466,0.3605,0.3107,55
-"elderly_disabled_i >   0.500 & total_deductions_by_hh_size > 438.000 & unc_rawben_rel_max >   0.316 & utilities <= 276.000","1",487,0.3573,0.3086,56
-"cat_elig >=   1.000 & medical_deductions >= 179.000 & rawben_rel_max >=   0.137 & total_deductions_by_hh_size >= 242.000","2-3",146,0.3973,0.3084,57
-"HH_size_n <   3 & months_since_cert_n >=   3 & shelter_expenses_by_hh_size >= 706 & utilities < 347","2-3",69,0.4348,0.3058,58
-"months_since_cert_n <=  0.500 & total_deductions_by_hh_size > 83.500 & unc_rawben_rel_max <=  0.999 & utilities <= 22.000","2-3",80,0.425,0.3052,59
-"months_since_cert_n >=   5.00 & unc_rawben_rel_max >=   1.82 & utilities < 366.00","1",161,0.3851,0.301,60
+"rule","hh","n_flagged_train","precision_train","precision_train_lcb","rank","role"
+"total_deductions_by_hh_size > 336.000 & unc_rawben_rel_max >   0.891 & unc_rawben_rel_max <=   0.991 & utilities <=  29.500","1",74,0.6622,0.5272,1,"core"
+"medical_deductions > 506.000 & rawben_rel_max <=   0.998 & total_deductions_by_hh_size > 282.000 & unc_rawben_rel_max >   0.761","1",30,0.6667,0.4552,2,"core"
+"cat_elig >   0.5 & medical_deductions > 104.0 & total_deductions_by_hh_size > 546.0 & utilities <= 560.0","2-3",40,0.625,0.4423,3,"core"
+"months_since_cert_n >=   8.00 & unc_rawben_rel_max >=   1.93 & utilities < 366.00","1",31,0.6452,0.4379,4,"core"
+"cat_elig >   0.50 & shelter_expenses_by_hh_size > 246.00 & unc_rawben_rel_max >   1.63 & utilities <= 748.00","2-3",83,0.5422,0.4163,5,"core"
+"cat_elig > 0.50 & children_i > 0.50 & unc_rawben_rel_max > 1.57","2-3",59,0.5593,0.4104,6,"core"
+"shelter_expenses_by_hh_size > 878.000 & unc_rawben_rel_max >   0.379 & unc_rawben_rel_max <=   0.991 & utilities <=  29.500","1",118,0.5085,0.4034,7,"core"
+"medical_deductions > 366.000 & months_since_cert_n <=  13.500 & rawben_rel_max >   0.301","2-3",46,0.5652,0.3974,8,"core"
+"elderly_disabled_i >=   1.00 & rawben_rel_max >=   1.00 & unc_rawben_rel_max >=   1.52 & utilities < 313.00","1",142,0.4859,0.3907,9,"core"
+"rawben_rel_max >=   0.988 & rawben_rel_max <   0.992 & total_deductions_by_hh_size >= 198.000 & utilities < 452.000","1",171,0.4737,0.387,10,"core"
+"elderly_disabled_i >   0.500 & rawben_rel_max >   0.881 & shelter_expenses_by_hh_size > 474.000 & utilities <=  28.500","1",139,0.482,0.386,11,"core"
+"rawben_rel_max <=   0.994 & total_deductions_by_hh_size > 534.000 & unc_rawben_rel_max >   0.987 & utilities <= 466.000","1",164,0.4695,0.3813,12,"core"
+"medical_deductions > 200.000 & rawben_rel_max >   0.473 & rawben_rel_max <=   0.991 & utilities <= 392.000","1",77,0.5065,0.378,13,"core"
+"months_since_cert_n >   5.50 & shelter_expenses_by_hh_size <= 652.00 & unc_rawben_rel_max >   1.87 & utilities <= 508.00","1",46,0.5435,0.3773,14,"core"
+"elderly_disabled_i >=   1.00 & total_deductions_by_hh_size >= 249.00 & unc_rawben_rel_max >=   1.52 & utilities < 361.00","1",193,0.456,0.3749,15,"core"
+"count_divisible_by_100 <   1.00 & months_since_cert_n >=   7.00 & unc_rawben_rel_max >=   1.63 & utilities < 353.00","1",144,0.4653,0.3716,16,"core"
+"elderly_disabled_i >   0.50 & shelter_expenses_by_hh_size <= 852.00 & unc_rawben_rel_max >   1.46 & utilities <=  29.50","1",79,0.4937,0.3675,17,"core"
+"rawben_rel_max >=   0.366 & shelter_expenses_by_hh_size >= 472.000 & total_deductions_by_hh_size >= 236.000 & total_deductions_by_hh_size < 255.000","4+",34,0.5588,0.3666,18,"core"
+"rawben_rel_max >=   0.236 & rawben_rel_max <   1.000 & total_deductions_by_hh_size >= 511.000 & utilities < 249.000","1",303,0.429,0.3647,19,"core"
+"HH_size_n >   4.500 & months_since_cert_n >   5.500 & total_deductions_by_hh_size > 231.000 & unc_rawben_rel_max <=   0.998","4+",95,0.4737,0.3592,20,"core"
+"elderly_disabled_i >=   1.00 & unc_rawben_rel_max >=   1.52 & utilities < 379.00","1",259,0.4247,0.3555,21,"core"
+"months_since_cert_n >   5.5 & total_deductions_by_hh_size > 215.0 & utilities <= 442.0","4+",149,0.443,0.3519,22,"core"
+"months_since_cert_n >   5.5 & shelter_expenses_by_hh_size > 408.0 & total_deductions_by_hh_size > 647.0 & utilities <=  28.5","1",80,0.475,0.3509,23,"core"
+"rawben_rel_max >   0.998 & shelter_expenses_by_hh_size <= 942.000 & unc_rawben_rel_max >   1.930 & utilities <= 680.000","1",191,0.4293,0.3491,24,"core"
+"HH_size_n >=   3 & shelter_expenses_by_hh_size < 635 & total_deductions_by_hh_size >= 602","2-3",38,0.5263,0.3467,25,"core"
+"rawben_rel_max <=   0.991 & total_deductions_by_hh_size > 272.000 & unc_rawben_rel_max >   0.913 & utilities <= 346.000","1",234,0.4188,0.3464,26,"core"
+"rawben_rel_max >   0.379 & shelter_expenses_by_hh_size >   5.500 & unc_rawben_rel_max >   1.930 & utilities <= 346.000","1",74,0.473,0.3445,27,"core"
+"HH_size_n >=   5.000 & rawben_rel_max <   0.873 & shelter_expenses_by_hh_size < 486.000 & total_deductions_by_hh_size >= 286.000","4+",58,0.4828,0.3383,28,"core"
+"rawben_rel_max >=   0.594 & rawben_rel_max <   1.000 & total_deductions_by_hh_size >= 925.000 & utilities < 379.000","1",63,0.4762,0.3376,29,"core"
+"months_since_cert_n >=   5.00 & percent_abawd <   0.50 & unc_rawben_rel_max >=   1.82 & utilities < 366.00","1",116,0.4397,0.3375,30,"core"
+"months_since_cert_n >=   9.000 & rawben_rel_max <   0.822 & total_deductions_by_hh_size >= 109.000 & unc_rawben_rel_max >=   0.725","4+",111,0.4414,0.3371,31,"core"
+"rawben_rel_max <   0.678 & total_deductions_by_hh_size >= 584.000 & utilities < 417.000","2-3",39,0.5128,0.3368,32,"core"
+"months_since_cert_n >=   5 & shelter_expenses_by_hh_size >= 452 & utilities >=  56 & utilities < 281","2-3",30,0.5333,0.3332,33,"core"
+"rawben_rel_max <=   0.991 & total_deductions_by_hh_size > 800.000 & unc_rawben_rel_max >   0.985","1",123,0.4309,0.3321,34,"core"
+"rawben_rel_max <=   0.998 & total_deductions_by_hh_size > 602.000 & utilities <= 272.000","1",247,0.4008,0.3312,35,"core"
+"months_since_cert_n >   5.500 & rawben_rel_max <=   0.997 & shelter_expenses_by_hh_size <= 494.000 & total_deductions_by_hh_size > 227.000","4+",311,0.3923,0.3303,36,"core"
+"months_since_cert_n >=   8.000 & rawben_rel_max <   0.965 & total_deductions_by_hh_size >= 178.000 & unc_rawben_rel_max >=   0.793","4+",122,0.4262,0.3274,37,"core"
+"shelter_expenses_by_hh_size < 650 & total_deductions_by_hh_size >= 625","2-3",96,0.4375,0.3262,38,"core"
+"count_divisible_by_100 >   1.500 & shelter_expenses_by_hh_size >  27.100 & unc_rawben_rel_max <=   0.783 & utilities <= 446.000","4+",33,0.5152,0.3254,39,"core"
+"expedited_i >   0.500 & months_since_cert_n >   5.500 & unc_rawben_rel_max <=   0.912 & utilities <= 356.000","4+",33,0.5152,0.3254,40,"core"
+"months_since_cert_n >   4.500 & rawben_rel_max <=   0.977 & total_deductions_by_hh_size > 221.000 & utilities <= 454.000","4+",188,0.4043,0.3248,41,"core"
+"rawben_rel_max >   0.727 & rawben_rel_max <=   0.991 & shelter_expenses_by_hh_size > 413.000 & utilities <=  28.500","1",218,0.3945,0.321,42,"core"
+"months_since_cert_n >=   7.00 & shelter_expenses_by_hh_size >= 462.00 & unc_rawben_rel_max >=   1.67 & utilities < 462.00","1",287,0.3833,0.3193,43,"core"
+"medical_deductions >= 179.00 & rawben_rel_max >=   0.57 & shelter_expenses_by_hh_size >= 261.00 & utilities < 921.00","2-3",69,0.4493,0.3188,44,"core"
+"HH_size_n >   4.500 & rawben_rel_max >   0.478 & total_deductions_by_hh_size > 233.000 & unc_rawben_rel_max <=   0.997","4+",156,0.4038,0.3172,45,"core"
+"married <=   0.500 & total_deductions_by_hh_size > 505.000 & unc_rawben_rel_max <=   0.992 & utilities <=  29.500","1",255,0.3843,0.3166,46,"core"
+"months_since_cert_n >= 10.000 & rawben_rel_max >=  0.683 & rawben_rel_max <  0.820 & total_deductions_by_hh_size >= 27.000","4+",173,0.3988,0.3166,47,"core"
+"total_deductions_by_hh_size >= 428 & utilities >= 303 & utilities < 342","2-3",54,0.463,0.3158,48,"core"
+"elderly_disabled_i >= 1.000 & rawben_rel_max >= 0.993 & rawben_rel_max < 0.996","2-3",54,0.463,0.3158,49,"core"
+"count_divisible_by_100 >   0.5 & months_since_cert_n >   4.5 & total_deductions_by_hh_size > 215.0 & utilities > 442.0","4+",44,0.4773,0.3145,50,"core"
+"HH_size_n >  4.500 & months_since_cert_n >  5.500 & percent_abawd >  0.268 & utilities > 30.500","4+",39,0.4872,0.3143,51,"core"
+"married >=   1 & shelter_expenses_by_hh_size < 454 & total_deductions_by_hh_size >= 232 & total_deductions_by_hh_size < 247","4+",86,0.4302,0.3138,52,"core"
+"shelter_expenses_by_hh_size >= 214 & utilities >= 377 & utilities < 385","4+",52,0.4615,0.3121,53,"core"
+"months_since_cert_n >   5.500 & months_since_cert_n <=  10.500 & percent_abawd >   0.292 & utilities > 394.000","4+",52,0.4615,0.3121,54,"core"
+"rawben_rel_max <=   0.998 & total_deductions_by_hh_size > 588.000 & unc_rawben_rel_max >   0.322 & utilities <= 344.000","1",466,0.3605,0.3107,55,"core"
+"elderly_disabled_i >   0.500 & total_deductions_by_hh_size > 438.000 & unc_rawben_rel_max >   0.316 & utilities <= 276.000","1",487,0.3573,0.3086,56,"core"
+"cat_elig >=   1.000 & medical_deductions >= 179.000 & rawben_rel_max >=   0.137 & total_deductions_by_hh_size >= 242.000","2-3",146,0.3973,0.3084,57,"core"
+"cat_elig > 0.500 & percent_abawd > 0.125 & unc_rawben_rel_max > 0.673 & unc_rawben_rel_max <= 0.710","2-3",45,0.4667,0.3068,58,"buffer"
+"HH_size_n <   3 & months_since_cert_n >=   3 & shelter_expenses_by_hh_size >= 706 & utilities < 347","2-3",69,0.4348,0.3058,59,"buffer"
+"months_since_cert_n >=   6.000 & rawben_rel_max <   0.876 & total_deductions_by_hh_size >= 353.000 & utilities < 462.000","2-3",214,0.3785,0.3053,60,"buffer"
+"months_since_cert_n <=  0.500 & total_deductions_by_hh_size > 83.500 & unc_rawben_rel_max <=  0.999 & utilities <= 22.000","2-3",80,0.425,0.3052,61,"buffer"
+"HH_size_n >   5.5000 & percent_abawd >   0.0885 & total_deductions_by_hh_size > 107.0000","4+",67,0.4328,0.3023,62,"buffer"
+"months_since_cert_n >=   5.00 & unc_rawben_rel_max >=   1.82 & utilities < 366.00","1",161,0.3851,0.301,63,"buffer"
+"months_since_cert_n >=   6 & total_deductions_by_hh_size >= 501 & utilities < 249","1",319,0.3605,0.3008,64,"buffer"
+"months_since_cert_n >=   7.000 & rawben_rel_max >=   0.992 & unc_rawben_rel_max >=   1.550 & utilities < 392.000","1",319,0.3605,0.3008,65,"buffer"
+"rawben_rel_max <   0.635 & shelter_expenses_by_hh_size >= 407.000 & shelter_expenses_by_hh_size < 424.000 & total_deductions_by_hh_size < 275.000","4+",38,0.4737,0.3007,66,"buffer"
+"rawben_rel_max <   0.904 & total_deductions_by_hh_size >= 353.000 & utilities < 347.000","2-3",244,0.3689,0.3006,67,"buffer"
+"percent_abawd >   0.0885 & percent_abawd <=   0.1830 & shelter_expenses_by_hh_size > 239.0000","4+",33,0.4848,0.2994,68,"buffer"
+"shelter_expenses_by_hh_size > 703.0 & shelter_expenses_by_hh_size <= 778.0 & total_deductions_by_hh_size >  34.2 & utilities <= 328.0","2-3",41,0.4634,0.2974,69,"buffer"
+"HH_size_n >=   5.000 & rawben_rel_max >=   0.302 & rawben_rel_max <   0.942 & total_deductions_by_hh_size >= 236.000","4+",199,0.3719,0.2965,70,"buffer"
+"rawben_rel_max <   0.703 & total_deductions_by_hh_size < 201.000 & unc_rawben_rel_max >=   0.698 & utilities < 586.000","2-3",36,0.4722,0.2954,71,"buffer"
+"HH_size_n > 4.500 & months_since_cert_n > 5.500 & percent_abawd > 0.267 & rawben_rel_max <= 0.985","4+",36,0.4722,0.2954,72,"buffer"
+"months_since_cert_n >= 5.000 & rawben_rel_max >= 0.607 & rawben_rel_max < 0.625","4+",77,0.4156,0.2947,73,"buffer"
+"cat_elig >   0.500 & medical_deductions > 226.000 & unc_rawben_rel_max >   0.316 & unc_rawben_rel_max <=   0.991","1",234,0.3632,0.294,74,"buffer"
+"shelter_expenses_by_hh_size <= 341.000 & total_deductions_by_hh_size > 233.000 & unc_rawben_rel_max <=   0.976","4+",286,0.3566,0.294,75,"buffer"
+"cat_elig >  0.50 & count_divisible_by_100 >  0.50 & months_since_cert_n <= 26.50 & unc_rawben_rel_max >  1.46","2-3",31,0.4839,0.2936,76,"buffer"
+"expedited_i > 0.500 & unc_rawben_rel_max > 0.899 & unc_rawben_rel_max <= 0.936","4+",31,0.4839,0.2936,77,"buffer"
+"expedited_i <=   0.500 & percent_abawd >   0.583 & rawben_rel_max <=   0.711 & shelter_expenses_by_hh_size <= 278.000","2-3",55,0.4364,0.2935,78,"buffer"
+"months_since_cert_n >=   5.00 & total_deductions_by_hh_size < 946.00 & unc_rawben_rel_max >=   1.77 & utilities < 471.00","1",356,0.3483,0.2922,79,"buffer"
+"rawben_rel_max <=   0.996 & total_deductions_by_hh_size > 441.000 & utilities <= 451.000","2-3",394,0.3452,0.2919,80,"buffer"
+"medical_deductions >= 151.000 & rawben_rel_max >=   0.145 & shelter_expenses_by_hh_size >= 455.000 & unc_rawben_rel_max >=  -0.205","2-3",169,0.3728,0.2915,81,"buffer"
+"months_since_cert_n <=   8.500 & percent_abawd >   0.583 & rawben_rel_max <=   0.854 & shelter_expenses_by_hh_size <= 219.000","2-3",50,0.44,0.2906,82,"buffer"
+"cat_elig >=   1.000 & medical_deductions >= 190.000 & rawben_rel_max >=   0.321 & total_deductions_by_hh_size >=  34.000","2-3",110,0.3909,0.2903,83,"buffer"
+"months_since_cert_n >   5.500 & rawben_rel_max >   0.724 & rawben_rel_max <=   0.974 & shelter_expenses_by_hh_size > 162.000","4+",530,0.3358,0.29,84,"buffer"
+"elderly_disabled_i >   0.5000 & percent_abawd >   0.0625 & rawben_rel_max <=   0.9750 & shelter_expenses_by_hh_size > 227.0000","4+",34,0.4706,0.2896,85,"buffer"
+"HH_size_n >   4.500 & married <=   0.500 & total_deductions_by_hh_size > 223.000 & unc_rawben_rel_max <=   0.983","4+",149,0.3758,0.2894,86,"buffer"
+"cat_elig >=   1 & rawben_rel_max <   1 & total_deductions_by_hh_size >= 450 & utilities < 277","1",525,0.3352,0.2892,87,"buffer"
+"HH_size_n > 5.500 & percent_abawd > 0.155 & percent_abawd <= 0.310 & unc_rawben_rel_max <= 0.973","4+",53,0.434,0.2891,88,"buffer"
+"rawben_rel_max <   1.000 & total_deductions_by_hh_size >= 968.000 & unc_rawben_rel_max >=   0.304 & utilities < 511.000","1",168,0.369,0.2878,89,"buffer"
+"months_since_cert_n >=  6.000 & rawben_rel_max <  0.997 & total_deductions_by_hh_size >= 88.400 & unc_rawben_rel_max >=  0.709","4+",670,0.3284,0.2877,90,"buffer"
+"medical_deductions >= 171.000 & rawben_rel_max >=   0.904 & rawben_rel_max <   0.957 & unc_rawben_rel_max >=   0.808","1",62,0.4194,0.2859,91,"buffer"
+"expedited_i <=   0.500 & months_since_cert_n >   4.500 & total_deductions_by_hh_size > 219.000 & unc_rawben_rel_max <=   0.988","4+",554,0.3303,0.2857,92,"buffer"
+"HH_size_n > 5.500 & percent_abawd > 0.118 & rawben_rel_max <= 0.979","4+",109,0.3853,0.2848,93,"buffer"
+"percent_abawd >= 1.000 & rawben_rel_max >= 0.360 & rawben_rel_max < 0.784","2-3",71,0.4085,0.284,94,"buffer"
+"HH_size_n >   5.500 & months_since_cert_n >   4.500 & rawben_rel_max <=   0.825 & utilities <= 424.000","4+",220,0.3545,0.2838,95,"buffer"
+"cat_elig >=   1.000 & medical_deductions >= 179.000 & rawben_rel_max >=   0.137","2-3",183,0.3607,0.2832,96,"buffer"
+"count_divisible_by_100 >=   1.000 & married >=   1.000 & rawben_rel_max >=   0.511 & utilities >= 367.000","4+",125,0.376,0.2824,97,"buffer"
+"shelter_expenses_by_hh_size >= 559 & total_deductions_by_hh_size >= 414 & utilities < 391","2-3",311,0.3408,0.2815,98,"buffer"
+"rawben_rel_max >=   0.683 & rawben_rel_max <   1.000 & shelter_expenses_by_hh_size >= 688.000 & utilities <  27.000","1",166,0.3614,0.2804,99,"buffer"
+"months_since_cert_n >=   2.000 & rawben_rel_max <   0.997 & shelter_expenses_by_hh_size < 428.000 & total_deductions_by_hh_size >= 243.000","4+",410,0.3317,0.2801,100,"buffer"
+"count_divisible_by_100 >   0.500 & HH_size_n >   4.500 & rawben_rel_max <=   0.948 & shelter_expenses_by_hh_size > 178.000","4+",185,0.3568,0.28,101,"buffer"
+"HH_size_n <   3 & shelter_expenses_by_hh_size >= 706 & utilities < 347","2-3",117,0.3761,0.2796,102,"buffer"
+"rawben_rel_max <   0.992 & total_deductions_by_hh_size >= 535.000 & unc_rawben_rel_max >=   0.964 & utilities < 645.000","1",454,0.3282,0.2792,103,"buffer"
+"count_divisible_by_100 > 0.500 & months_since_cert_n > 5.500 & rawben_rel_max <= 0.947","4+",211,0.3507,0.2789,104,"buffer"
+"cat_elig <   2.000 & rawben_rel_max <   0.264 & total_deductions_by_hh_size >= 312.000 & utilities < 325.000","2-3",52,0.4231,0.2785,105,"buffer"
+"months_since_cert_n >=  3.000 & rawben_rel_max >=  0.794 & total_deductions_by_hh_size >= 27.000 & unc_rawben_rel_max <  0.821","4+",183,0.3552,0.2781,106,"buffer"
+"HH_size_n >   4.500 & married <=   0.500 & shelter_expenses_by_hh_size > 251.000 & unc_rawben_rel_max <=   0.976","4+",532,0.3233,0.2781,107,"buffer"
+"HH_size_n >   2.500 & rawben_rel_max >   0.581 & total_deductions_by_hh_size > 338.000 & utilities >  29.500","2-3",341,0.3343,0.2779,108,"buffer"
+"months_since_cert_n >=   5.000 & rawben_rel_max >=   0.381 & total_deductions_by_hh_size >= 395.000 & utilities <  27.000","1",315,0.3365,0.2778,109,"buffer"
+"months_since_cert_n >=   7.00000 & shelter_expenses_by_hh_size >= 405.00000 & unc_rawben_rel_max >=  -0.00400 & unc_rawben_rel_max <   0.00356","1",64,0.4062,0.2762,110,"buffer"
+"rawben_rel_max <   0.816 & shelter_expenses_by_hh_size >= 553.000 & total_deductions_by_hh_size >= 242.000 & utilities < 361.000","2-3",178,0.3539,0.276,111,"buffer"
+"HH_size_n >   4.500 & percent_abawd >   0.155 & shelter_expenses_by_hh_size > 246.000 & unc_rawben_rel_max <=   0.990","4+",94,0.383,0.2758,112,"buffer"
+"months_since_cert_n >=   8.000 & rawben_rel_max <   0.988 & total_deductions_by_hh_size >=  87.300 & utilities < 283.000","4+",85,0.3882,0.2755,113,"buffer"
+"HH_size_n >= 6.000 & months_since_cert_n >= 6.000 & rawben_rel_max >= 0.391 & rawben_rel_max < 0.920","4+",417,0.3261,0.2753,114,"buffer"
+"count_divisible_by_100 <=   0.5 & homeless <=   0.5 & total_deductions_by_hh_size > 436.0 & utilities <= 436.0","2-3",428,0.3248,0.2746,115,"buffer"
+"months_since_cert_n <=  10.500 & percent_abawd >   0.268 & rawben_rel_max <=   0.977 & utilities > 396.000","4+",116,0.3707,0.2743,116,"buffer"
+"HH_size_n >=   6.00 & rawben_rel_max >=   0.26 & utilities >= 402.00 & utilities < 410.00","4+",33,0.4545,0.274,117,"buffer"
+"rawben_rel_max <=   0.804 & shelter_expenses_by_hh_size > 521.000 & total_deductions_by_hh_size >  97.100 & utilities <= 357.000","2-3",264,0.3371,0.2733,118,"buffer"
+"medical_deductions <= 266.000 & rawben_rel_max <=   0.991 & shelter_expenses_by_hh_size > 874.000 & utilities <=  16.000","1",183,0.3497,0.2731,119,"buffer"
+"months_since_cert_n >   5.500 & shelter_expenses_by_hh_size > 197.000 & unc_rawben_rel_max >   0.405 & unc_rawben_rel_max <=   0.998","4+",1057,0.3046,0.2728,120,"buffer"
+"percent_abawd >=  0.500 & rawben_rel_max <  0.739 & total_deductions_by_hh_size >=  8.500 & utilities < 44.000","2-3",56,0.4107,0.2723,121,"buffer"
+"HH_size_n >=  3.00 & months_since_cert_n >=  1.00 & total_deductions_by_hh_size >= 39.70 & unc_rawben_rel_max >=  1.37","2-3",59,0.4068,0.272,122,"buffer"
+"months_since_cert_n >   5.500 & months_since_cert_n <=  10.500 & percent_abawd >   0.279 & shelter_expenses_by_hh_size <= 619.000","4+",62,0.4032,0.2718,123,"buffer"
+"percent_abawd >   0.155 & total_deductions_by_hh_size > 126.000 & total_deductions_by_hh_size <= 170.000 & unc_rawben_rel_max <=   0.998","4+",77,0.3896,0.2717,124,"buffer"
+"rawben_rel_max >=   0.342 & total_deductions_by_hh_size >= 800.000 & utilities < 347.000","1",236,0.339,0.2716,125,"buffer"
+"medical_deductions >= 181.0000 & rawben_rel_max >=   0.0878","2-3",207,0.343,0.2711,126,"buffer"
+"expedited_i >=   1.000 & rawben_rel_max <   0.909 & total_deductions_by_hh_size >=  23.500 & utilities < 285.000","2-3",108,0.3704,0.2709,127,"buffer"
+"HH_size_n > 4.500 & months_since_cert_n > 5.500 & rawben_rel_max <= 0.998 & unc_rawben_rel_max > 0.502","4+",884,0.3043,0.2696,128,"buffer"
+"married >   0.500 & rawben_rel_max >   0.591 & total_deductions_by_hh_size > 220.000 & unc_rawben_rel_max <=   0.882","4+",205,0.3415,0.2694,129,"buffer"
+"months_since_cert_n >= 6.000 & rawben_rel_max >= 0.798 & rawben_rel_max < 0.938 & total_deductions_by_hh_size >= 9.200","4+",464,0.3168,0.2689,130,"buffer"
+"months_since_cert_n >   5.500 & rawben_rel_max >   0.476 & shelter_expenses_by_hh_size > 160.000 & unc_rawben_rel_max <=   0.997","4+",1150,0.2991,0.2687,131,"buffer"
+"cat_elig >   0.500 & HH_size_n >   4.500 & rawben_rel_max <=   0.976 & shelter_expenses_by_hh_size > 251.000","4+",1048,0.3006,0.2687,132,"buffer"
+"cat_elig >=   2.000 & rawben_rel_max <   0.882 & utilities >= 462.000","4+",45,0.4222,0.2685,133,"buffer"
+"cat_elig >=   1 & medical_deductions >= 227 & shelter_expenses_by_hh_size >= 387 & utilities < 456","1",109,0.367,0.2683,134,"buffer"
+"HH_size_n >=   3.000 & rawben_rel_max >=   0.574 & total_deductions_by_hh_size >= 338.000","2-3",363,0.3223,0.2682,135,"buffer"
+"shelter_expenses_by_hh_size >= 574.00 & unc_rawben_rel_max >=   1.47 & utilities < 361.00","2-3",48,0.4167,0.268,136,"buffer"
+"months_since_cert_n >=  11.000 & rawben_rel_max >=   0.372 & total_deductions_by_hh_size >= 172.000","4+",177,0.3446,0.2673,137,"buffer"
+"medical_deductions <= 885.0 & months_since_cert_n >  10.5 & unc_rawben_rel_max >   1.5","2-3",57,0.4035,0.2672,138,"buffer"
+"months_since_cert_n >=   5.000 & rawben_rel_max <   0.613 & utilities < 303.000","4+",207,0.3382,0.2667,139,"buffer"
+"months_since_cert_n >   4.500 & rawben_rel_max >   0.599 & shelter_expenses_by_hh_size > 255.000 & unc_rawben_rel_max <=   0.986","4+",610,0.3082,0.2666,140,"buffer"
+"medical_deductions >= 171.000 & rawben_rel_max <   0.957 & unc_rawben_rel_max >=   0.808","1",155,0.3484,0.2658,141,"buffer"
+"HH_size_n >   4.500 & months_since_cert_n >   4.500 & percent_abawd <=   0.183 & total_deductions_by_hh_size > 179.000","4+",326,0.3221,0.2652,142,"buffer"
+"total_deductions_by_hh_size >= 414 & utilities < 391","2-3",465,0.3118,0.2643,143,"buffer"
+"months_since_cert_n > 5.500 & rawben_rel_max <= 0.997 & total_deductions_by_hh_size > 9.060 & unc_rawben_rel_max > 0.422","4+",1806,0.2874,0.2633,144,"buffer"
+"married > 0.500 & months_since_cert_n > 4.500 & rawben_rel_max > 0.493 & rawben_rel_max <= 0.923","4+",689,0.3019,0.2629,145,"buffer"
+"rawben_rel_max <   1 & shelter_expenses_by_hh_size >= 399 & total_deductions_by_hh_size >= 532 & utilities < 320","1",545,0.3064,0.2626,146,"buffer"
+"count_divisible_by_100 <=   0.5 & medical_deductions > 572.0","2-3",46,0.413,0.2622,147,"buffer"
+"HH_size_n >= 3.000 & percent_abawd >= 0.250 & rawben_rel_max >= 0.288 & rawben_rel_max < 0.711","2-3",187,0.3369,0.2621,148,"buffer"
+"months_since_cert_n >   2.5 & total_deductions_by_hh_size > 447.0 & utilities <= 576.0","2-3",504,0.3075,0.262,149,"buffer"
+"rawben_rel_max < 0.879 & unc_rawben_rel_max >= 0.875","4+",49,0.4082,0.262,150,"buffer"
+"shelter_expenses_by_hh_size >=  71.8 & total_deductions_by_hh_size >=  65.3 & total_deductions_by_hh_size <  68.6 & utilities >= 377.0","4+",49,0.4082,0.262,151,"buffer"
+"HH_size_n >   5.5 & HH_size_n <=  12.5 & months_since_cert_n >  10.5 & utilities <= 812.0","4+",131,0.3511,0.2618,152,"buffer"
+"children_i >   0.5 & months_since_cert_n >   5.5 & shelter_expenses_by_hh_size > 453.0 & utilities <= 337.0","2-3",102,0.3627,0.2615,153,"buffer"
+"months_since_cert_n >=  9.000 & months_since_cert_n < 19.000 & rawben_rel_max >=  0.412 & rawben_rel_max <  0.988","4+",972,0.2942,0.2615,154,"buffer"
+"HH_size_n >   4.500 & rawben_rel_max >   0.349 & shelter_expenses_by_hh_size > 120.000 & utilities <=  12.500","4+",83,0.3735,0.2613,155,"buffer"
+"months_since_cert_n >  5.500 & unc_rawben_rel_max >  0.711 & unc_rawben_rel_max <=  0.998 & utilities > 30.500","4+",941,0.2944,0.2611,156,"buffer"
+"cat_elig > 0.50 & HH_size_n > 4.50 & months_since_cert_n > 5.50 & unc_rawben_rel_max <= 1.01","4+",1144,0.2911,0.2609,157,"buffer"
+"expedited_i >=   1.000 & rawben_rel_max <   0.904 & shelter_expenses_by_hh_size < 290.000 & total_deductions_by_hh_size >=  11.000","2-3",152,0.3421,0.2594,158,"buffer"
+"rawben_rel_max <   0.703 & shelter_expenses_by_hh_size < 135.000 & unc_rawben_rel_max >=   0.679","4+",71,0.3803,0.2593,159,"buffer"
+"rawben_rel_max <   0.574 & shelter_expenses_by_hh_size >= 434.000 & total_deductions_by_hh_size >= 272.000 & utilities < 285.000","2-3",90,0.3667,0.2592,160,"buffer"
+"months_since_cert_n >=  3.000 & total_deductions_by_hh_size >= 28.800 & unc_rawben_rel_max >=  0.734 & unc_rawben_rel_max <  0.878","4+",903,0.2924,0.2585,161,"buffer"
+"rawben_rel_max >=   0.280 & rawben_rel_max <   0.992 & total_deductions_by_hh_size >= 471.000 & utilities < 347.000","1",991,0.2906,0.2583,162,"buffer"
+"cat_elig > 0.500 & HH_size_n > 5.500 & unc_rawben_rel_max > 0.361 & unc_rawben_rel_max <= 0.977","4+",1212,0.2871,0.2579,163,"buffer"
+"rawben_rel_max >   0.199 & shelter_expenses_by_hh_size > 604.000 & unc_rawben_rel_max <=   1.000 & utilities <= 390.000","2-3",328,0.314,0.2578,164,"buffer"
+"HH_size_n >   4.5000 & percent_abawd >   0.0885 & total_deductions_by_hh_size > 107.0000","4+",170,0.3353,0.2573,165,"buffer"
+"HH_size_n >   2.5 & months_since_cert_n >   5.5 & total_deductions_by_hh_size > 281.0 & utilities >  29.5","2-3",435,0.3057,0.257,166,"buffer"
+"months_since_cert_n <  24.000 & percent_abawd >=   0.667 & total_deductions_by_hh_size < 142.000 & unc_rawben_rel_max <   0.917","2-3",35,0.4286,0.2568,167,"buffer"
+"elderly_disabled_i >   0.500 & rawben_rel_max <=   0.809 & total_deductions_by_hh_size > 118.000 & total_deductions_by_hh_size <= 128.000","4+",47,0.4043,0.2562,168,"buffer"
+"HH_size_n >   4.500 & medical_deductions <= 156.000 & percent_abawd >   0.118 & rawben_rel_max <=   0.997","4+",229,0.3231,0.2561,169,"buffer"
+"HH_size_n >=   5.0 & months_since_cert_n >=   5.0 & percent_abawd >=   0.2 & utilities >= 464.0","4+",44,0.4091,0.256,170,"buffer"
+"rawben_rel_max >=   1.00 & unc_rawben_rel_max >=   1.47 & utilities >=  86.00 & utilities < 388.00","2-3",154,0.3377,0.2559,171,"buffer"
+"cat_elig < 2.000 & expedited_i >= 1.000 & rawben_rel_max >= 0.396 & rawben_rel_max < 0.617","2-3",101,0.3564,0.2555,172,"buffer"
+"medical_deductions >= 105.000 & rawben_rel_max >=   0.342 & total_deductions_by_hh_size >= 257.000 & utilities < 347.000","1",254,0.3189,0.2553,173,"buffer"
+"HH_size_n >  2.500 & percent_abawd >  0.125 & rawben_rel_max <=  0.710 & utilities > 39.000","2-3",216,0.3241,0.2551,174,"buffer"
+"rawben_rel_max <   0.876 & total_deductions_by_hh_size >= 353.000 & utilities < 462.000","2-3",699,0.2933,0.2549,175,"buffer"
+"cat_elig >   0.500 & medical_deductions > 116.000 & rawben_rel_max <=   0.991 & unc_rawben_rel_max >   0.265","1",1130,0.285,0.2548,176,"buffer"
+"cat_elig >   0.5 & shelter_expenses_by_hh_size > 519.0 & utilities <= 358.0","2-3",435,0.3034,0.2548,177,"buffer"
+"months_since_cert_n >=   7.0 & shelter_expenses_by_hh_size >= 631.0 & total_deductions_by_hh_size >=  13.3 & utilities < 452.0","2-3",148,0.3378,0.2546,178,"buffer"
+"months_since_cert_n >=   6.000 & rawben_rel_max <   0.996 & total_deductions_by_hh_size >= 330.000 & utilities < 827.000","2-3",814,0.2899,0.2544,179,"buffer"
+"count_divisible_by_100 >   0.500 & rawben_rel_max <=   0.961 & shelter_expenses_by_hh_size > 280.000 & shelter_expenses_by_hh_size <= 628.000","4+",241,0.3195,0.2543,180,"buffer"
+"HH_size_n >   2.500 & percent_abawd >   0.125 & total_deductions_by_hh_size > 169.000 & unc_rawben_rel_max <=   0.874","2-3",196,0.3265,0.2542,181,"buffer"
+"rawben_rel_max <=   0.99700 & shelter_expenses_by_hh_size > 454.00000 & unc_rawben_rel_max >  -0.00412 & utilities <= 346.00000","2-3",447,0.302,0.2541,182,"buffer"
+"cat_elig >=   1 & months_since_cert_n <   1 & total_deductions_by_hh_size >= 104 & utilities < 161","2-3",142,0.338,0.2532,183,"buffer"
+"elderly_disabled_i >=   1 & total_deductions_by_hh_size >= 527 & utilities < 347","1",934,0.2859,0.2528,184,"buffer"
+"months_since_cert_n > 5.500 & rawben_rel_max > 0.452 & unc_rawben_rel_max <= 0.988","4+",1913,0.2755,0.2524,185,"buffer"
+"percent_abawd >   0.0625 & rawben_rel_max <=   0.9750 & shelter_expenses_by_hh_size > 227.0000","4+",247,0.3158,0.2516,186,"buffer"
+"cat_elig >=  1.000 & rawben_rel_max >=  0.695 & rawben_rel_max <  0.912 & total_deductions_by_hh_size >= 28.800","4+",1608,0.2761,0.251,187,"buffer"
+"months_since_cert_n >=   6 & total_deductions_by_hh_size >=  93 & total_deductions_by_hh_size < 113 & utilities < 464","4+",216,0.3194,0.2508,188,"buffer"
+"cat_elig > 0.500 & HH_size_n > 4.500 & rawben_rel_max > 0.507 & rawben_rel_max <= 0.997","4+",2155,0.2715,0.2498,189,"buffer"
+"elderly_disabled_i <= 0.500 & rawben_rel_max <= 0.137 & unc_rawben_rel_max > 0.128","2-3",33,0.4242,0.2491,190,"buffer"
+"percent_abawd >=   0.273 & percent_abawd <   0.375 & total_deductions_by_hh_size < 404.000","4+",33,0.4242,0.2491,191,"buffer"

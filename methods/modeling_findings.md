@@ -575,27 +575,29 @@ deploy_own_vs_national_budget05/10.png.*
 
 The deployment benchmark's budget fill (section 14) chooses rules against
 the test year's realized caseload. A state, however, needs a list it can
-hold in advance. Experiment: rank the national pool (mined on all states'
-2022+2023), budget-fill against each state's own 2022-23 CASELOAD
-COVARIATES only (no outcomes, no 2024 data), freeze the contributing rules
--- an explicit 35-101-rule list per state -- then deploy the frozen list
-unchanged on the state's 2024. 18 states, capacity sized to 5% / 10% of
-caseload.
+hold in advance. Deliverable design (settled after one iteration): ONE
+ranked list per state -- the national pool (mined on all states'
+2022+2023) budget-filled against the state's own 2022-23 CASELOAD
+COVARIATES only, to the target sizing (the core) and then onward to 3x the
+target (the buffer). The state walks the list in rank order, activating
+each rule while its flagged total fits capacity -- outcome-free, and it
+lands on budget whichever way firing rates drift. The buffer is part of
+the deliverable, not an option: a state never idles reviewers because a
+list ran dry, so core-only numbers understate deployment (and a core that
+over-fires must be trimmable the same way). Raw core drift on 2024 ran
+2.3%-12.0% of caseload against 5/10% sizings; the walked list lands at
+4.9-5.0% and 9.3-10.0% in all 18 states.
 
-Median across 18 states (10% sizing): realized 2024 workload 9.1% (median
-miss -0.9pp, worst undershoot -4.4pp, Washington), precision 0.288 vs
-0.275 for the same-year fill, share of error dollars 22.1% vs 25.2%.
-At 5% sizing: workload miss -1.2pp median, precision 0.303 vs 0.301,
-dollars 9.8% vs 15.6%. All 18 states clear their base rate at both sizings.
+Median across 18 states, at identical review volume (frozen walked list
+vs the full national pool batch-filled against the realized 2024
+caseload): precision 0.294 vs 0.301 at 5% sizing, 0.270 vs 0.275 at 10%;
+share of error dollars 12.3% vs 15.6% at 5%, 24.6% vs 25.2% at 10%.
+Median deployed list: 23 rules (5%), 42 rules (10%). All 18 states clear
+their base rate at both sizings.
 
-- **Freezing costs almost no precision** (median cost -0.005 to -0.012;
-  per-state spread -0.046 to +0.064 -- undershooting states look MORE
-  precise because only their highest-confidence rules keep firing).
-- **The real cost is under-filled capacity**: frozen lists fire slightly
-  below their sizing on the next year's caseload, so fewer cases are
-  reviewed and error-dollar recall gives up ~3-6pp median. A state can
-  recover this operationally by extending deeper into the ranked list
-  when under capacity -- an outcome-free adjustment.
+- **Advance commitment costs almost nothing at matched workload**: the
+  precision gap is under a point at both sizings; the dollar gap is ~3pp
+  at 5% and under 1pp at 10%.
 - **Cross-state content**: the 18 deployed lists resolve 898 rule-slots to
   297 distinct rules; ~1/3 of each state's list is unique to it, median
   pairwise Jaccard 0.13, and only 8 rules serve 10+ states (the

@@ -1,9 +1,10 @@
 # Frozen-list results across the 18 workshop states (frozen_list_experiment_
-# v2.R): each state's list is frozen against its own 2022-23 caseload
-# covariates and deployed unchanged on 2024. Three aligned panels per budget:
-# realized workload vs the target sizing, precision, and share of error
-# dollars -- frozen list (filled) vs the same-year fill (open), the
-# oracle-workload version from the deployment benchmark.
+# v2.R): each state's core list + ranked buffer is frozen against its own
+# 2022-23 caseload covariates and deployed on 2024, walked until capacity
+# fills (so workload always lands on the sizing -- no workload panel).
+# Two aligned panels per budget: precision and share of error dollars --
+# the frozen deliverable (filled) vs the batch fill of the full national
+# pool against the year's realized caseload (open).
 #
 # Output: frozen_lists_panels_budget05/10.png (same folder as inputs)
 
@@ -20,36 +21,32 @@ sy <- bind_rows(
 
 make_panels <- function(budget_val, fname, title_pct) {
   f <- fz %>% filter(budget == budget_val) %>%
-    transmute(target, list = "frozen in advance (2022-23)",
-              `share of caseload reviewed` = workload_2024,
-              precision, `share of error $ caught` = dollar_recall)
+    transmute(target, list = "state-specific frozen list from national pool",
+              precision = precision_deployed,
+              `share of error $ caught` = dollar_recall_deployed)
   s <- sy %>% filter(budget == budget_val) %>%
-    transmute(target, list = "sized all at once on 2024",
-              `share of caseload reviewed` = workload,
+    transmute(target, list = "full national pool applied at once",
               precision, `share of error $ caught` = dollar_recall)
   ord <- f %>% arrange(precision) %>% pull(target)
   dd <- bind_rows(f, s) %>%
     pivot_longer(-c(target, list), names_to = "metric") %>%
-    mutate(metric = factor(metric, levels = c("share of caseload reviewed",
-                                              "precision",
+    mutate(metric = factor(metric, levels = c("precision",
                                               "share of error $ caught")),
            target = factor(target, levels = ord))
-  ref <- data.frame(metric = factor("share of caseload reviewed",
-                                    levels = levels(dd$metric)),
-                    x = budget_val)
 
   p <- ggplot(dd, aes(x = value, y = target)) +
-    geom_vline(data = ref, aes(xintercept = x), linetype = "dashed",
-               colour = "grey55", linewidth = 0.4) +
     geom_point(aes(shape = list), size = 2.1, stroke = 0.9) +
-    scale_shape_manual(values = c("frozen in advance (2022-23)" = 16,
-                                  "sized all at once on 2024" = 1),
+    scale_shape_manual(values = c("state-specific frozen list from national pool" = 16,
+                                  "full national pool applied at once" = 1),
+                       breaks = c("state-specific frozen list from national pool",
+                                  "full national pool applied at once"),
                        name = NULL) +
     facet_wrap(~metric, nrow = 1, scales = "free_x") +
     labs(x = sprintf("lists sized to a %s review budget; scored on the state's 2024 cases", title_pct),
          y = NULL,
          title = sprintf("Frozen state lists a year ahead, %s sizing", title_pct),
-         subtitle = "both lists packed from the ranked national pool until capacity fills;\ndashed line = the target sizing") +
+         subtitle = "both evaluated at the same review volume") +
+    guides(shape = guide_legend(nrow = 2)) +
     theme_minimal(base_size = 12.5) +
     theme(panel.grid.minor = element_blank(),
           panel.grid.major.y = element_blank(),

@@ -25,6 +25,14 @@ TARGETS <- c("Louisiana", "Washington", "Virginia", "Arizona", "Connecticut",
              "Maine", "Maryland", "Missouri", "Massachusetts",
              "District of Columbia", "Tennessee")
 BUDGETS <- c(0.05, 0.10)
+# The buffer is part of the deliverable, not an option: a state never stops
+# reviewing because the list ran dry, so the shipped list must be deep enough
+# to reach the full 5% / 10% capacity even if firing rates change. BUFFER_MULT
+# = 3 sizes core+buffer to 3x the target workload on the calibration caseload
+# (covers a two-thirds drop in fire rate; unused buffer costs nothing). The
+# headline frozen metrics are the BUFFERED ones -- core-only numbers understate
+# deployment because they leave capacity idle.
+BUFFER_MULT <- 3
 out_dir <- "methods/state_similarity_v2/transfer_benchmark_train2223_test24"
 list_dir <- file.path(out_dir, "frozen_lists")
 dir.create(list_dir, showWarnings = FALSE)
@@ -74,38 +82,72 @@ for (target in TARGETS) {
   idx_te <- flags_for_rules(pool, te, strata_te, label = "")
 
   for (b in BUDGETS) {
-    # freeze: fill against the 2022-23 caseload covariates only
+    # freeze: fill against the 2022-23 caseload covariates only. The CORE
+    # list is sized to the budget; BUFFER rules continue the same fill up to
+    # BUFFER_MULT x the budget on the calibration caseload -- the state
+    # activates them in order (using only its own flag counts, no outcomes)
+    # whenever the core under-fires its capacity on the deployment year.
     cap <- floor(b * nrow(tr))
-    un <- rep(FALSE, nrow(tr)); n_in <- 0L; frozen <- integer(0)
+    cap_buf <- floor(BUFFER_MULT * b * nrow(tr))
+    un <- rep(FALSE, nrow(tr)); n_in <- 0L
+    frozen <- integer(0); buffer <- integer(0)
     for (i in ord) {
       ix <- idx_tr[[i]]
       add <- sum(!un[ix])
-      if (add > 0 && n_in + add <= cap) {
+      if (add == 0) next
+      if (n_in + add <= cap) {
         un[ix] <- TRUE; n_in <- n_in + add; frozen <- c(frozen, i)
+      } else if (n_in + add <= cap_buf) {
+        un[ix] <- TRUE; n_in <- n_in + add; buffer <- c(buffer, i)
       }
     }
-    # deploy frozen list on 2024
-    un24 <- rep(FALSE, nrow(te))
-    for (i in frozen) un24[idx_te[[i]]] <- TRUE
-    n24 <- sum(un24); k24 <- sum(tg_te$ie[un24]); d24 <- sum(tg_te$ed[un24])
+    core_workload_cal <- NA_real_  # workload of the CORE alone on train
+    { un_c <- rep(FALSE, nrow(tr))
+      for (i in frozen) un_c[idx_tr[[i]]] <- TRUE
+      core_workload_cal <- sum(un_c) / nrow(tr) }
+
+    # deploy on 2024: ONE ranked list (core then buffer), walked in order,
+    # activating each rule while the union fits the state's capacity. This
+    # is the shipped procedure -- it tops up when the core under-fires AND
+    # trims when it over-fires, using only the state's own flag counts.
+    cap24 <- floor(b * nrow(te))
+    ranked <- c(frozen, buffer)
+    # diagnostic: the raw core deployed unconditionally (over/undershoot)
+    un_c24 <- rep(FALSE, nrow(te))
+    for (i in frozen) un_c24[idx_te[[i]]] <- TRUE
+    n24 <- sum(un_c24); k24 <- sum(tg_te$ie[un_c24]); d24 <- sum(tg_te$ed[un_c24])
+    un24 <- rep(FALSE, nrow(te)); n_used <- 0L
+    for (i in ranked) {
+      add <- sum(!un24[idx_te[[i]]])
+      if (add > 0 && sum(un24) + add <= cap24) {
+        un24[idx_te[[i]]] <- TRUE; n_used <- n_used + 1L
+      }
+    }
+    nb <- sum(un24); kb <- sum(tg_te$ie[un24]); db <- sum(tg_te$ed[un24])
     res[[length(res) + 1]] <- data.frame(
       target = target, budget = b,
       n_rules_frozen = length(frozen),
-      workload_calibrated = round(n_in / nrow(tr), 4),
-      workload_2024 = round(n24 / nrow(te), 4),
-      n_flagged_2024 = n24,
-      precision = round(ifelse(n24 > 0, k24 / n24, NA), 4),
-      recall = round(k24 / sum(tg_te$ie), 4),
-      dollar_recall = round(d24 / sum(tg_te$ed), 4),
+      n_rules_buffer = length(buffer),
+      workload_calibrated = round(core_workload_cal, 4),
+      core_workload_2024 = round(n24 / nrow(te), 4),
+      core_precision = round(ifelse(n24 > 0, k24 / n24, NA), 4),
+      core_dollar_recall = round(d24 / sum(tg_te$ed), 4),
+      n_rules_deployed = n_used,
+      workload_deployed = round(nb / nrow(te), 4),
+      precision_deployed = round(ifelse(nb > 0, kb / nb, NA), 4),
+      recall_deployed = round(kb / sum(tg_te$ie), 4),
+      dollar_recall_deployed = round(db / sum(tg_te$ed), 4),
       target_base_rate = round(mean(tg_te$ie), 4))
-    cat(sprintf("%-22s %2.0f%%: %3d rules | workload %4.1f%% -> %4.1f%% | prec %.3f | $%3.0f%%\n",
-                target, 100 * b, length(frozen), 100 * n_in / nrow(tr),
-                100 * n24 / nrow(te),
-                ifelse(n24 > 0, k24 / n24, NA), 100 * d24 / sum(tg_te$ed)))
+    cat(sprintf("%-22s %2.0f%%: %3d+%3d rules, %3d deployed | wkld core %4.1f%% -> %4.1f%% | prec %.3f | $%3.0f%%\n",
+                target, 100 * b, length(frozen), length(buffer), n_used,
+                100 * n24 / nrow(te), 100 * nb / nrow(te),
+                ifelse(nb > 0, kb / nb, NA), 100 * db / sum(tg_te$ed)))
     if (b == 0.10) {
-      hand <- pool[frozen, c("rule", "hh", "n_flagged_train",
-                             "precision_train", "precision_train_lcb")]
-      hand$rank <- seq_len(nrow(hand))
+      sel <- c(frozen, buffer)
+      hand <- pool[sel, c("rule", "hh", "n_flagged_train",
+                          "precision_train", "precision_train_lcb")]
+      hand$rank <- seq_along(sel)
+      hand$role <- rep(c("core", "buffer"), c(length(frozen), length(buffer)))
       write.csv(hand, file.path(list_dir, sprintf("frozen_list_%s.csv",
                                                   gsub(" ", "_", target))),
                 row.names = FALSE)

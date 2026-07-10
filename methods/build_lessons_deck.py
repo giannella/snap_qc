@@ -322,10 +322,16 @@ add_lesson(
     table=_contrib_table(), table_font=11, table_row_h=0.28, table_w=8.5)
 
 add_lesson(
+    "The deliverable: one ranked rule list per state, walked to capacity",
+    ["- Built in advance from public data alone: fill the national pool (mined on all states' 2022-23) against the state's own 2022-23 caseload, in confidence order, until the review budget is reached - then keep filling to 3x that depth. The extra rules are ranked BUFFER rules, shipped in the same list.",
+     "- To use it, the state activates rules in order, checking only its own flag counts: keep adding while reviews fit capacity. No error outcomes are needed at any step.",
+     "- The buffer is what makes the workload land on budget as patterns change: a state never stops reviewing because a list ran dry, and an over-firing list trims the same way. Raw core lists drifted to 2.3-12% of caseload on 2024; the walked lists land at 4.9-5.0% and 9.3-10.0% in all 18 states.",
+     "- Median rules actually activated: 23 at a 5% budget, 42 at 10%. Validation recipe: we freeze on public data through the latest year; the state validates on its own newer internal data before relying on it."])
+
+add_lesson(
     "Freeze each state's list in advance: it costs almost nothing",
-    ["- The handable deliverable: budget-fill the ranked national list against the state's own 2022-23 caseload (no outcomes needed), freeze the 35-101 contributing rules, deploy unchanged on 2024.",
-     "- Freezing costs ~no precision (median 0.288 vs 0.275 for a list sized all at once against the full 2024 caseload); realized workload lands slightly under target (median -0.9pp, worst -4.4pp), so the cost is under-used capacity: ~3pp of error dollars, recoverable by extending deeper into the ranking when under budget.",
-     "- All 18 states clear their base rate. Validation recipe for a state: we freeze on public data through the latest year; the state validates on its own newer internal data before relying on it."],
+    ["- The frozen list (built on 2022-23, walked to capacity on 2024) against the full national pool applied at once to the realized 2024 caseload - both at identical review volume.",
+     "- Median precision 0.294 vs 0.301 (5% budget) and 0.270 vs 0.275 (10%); error dollars 12% vs 16% and 25% vs 25%. All 18 states clear their base rate."],
     figure="methods/state_similarity_v2/transfer_benchmark_train2223_test24/frozen_lists_panels_budget10.png",
     fig_aspect=5.8 / 6.6)
 
