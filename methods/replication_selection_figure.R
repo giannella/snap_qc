@@ -46,7 +46,9 @@ p <- ggplot(dd, aes(x, value, group = judge, linetype = judge)) +
   facet_wrap(~panel, nrow = 1, scales = "free") +
   labs(x = NULL, y = NULL, linetype = NULL,
        title = "Re-testing the modeling choices on a year that never judged them",
-       subtitle = "solid = the replication (train 2022+2023, test 2024); orderings that persist are real - the subsample ordering did not") +
+       subtitle = paste0("solid = the replication (train 2022+2023, test 2024); orderings that persist are real - the subsample ordering did not
+",
+            "level gap between the lines is the data rebuild (originals ran pre-rebuild, ~8% error rate; replication ~12%), not the year swap")) +
   scale_linetype_manual(values = setNames(c("dashed", "solid"), c(lab23, lab24))) +
   theme_minimal(base_size = 12) +
   theme(legend.position = "top", aspect.ratio = 1)
