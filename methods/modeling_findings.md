@@ -1,7 +1,7 @@
 # SNAP QC rule mining — key findings & syntheses (2026-07-04/05 runs)
 
 Working notes for the presentation. Each section lists the supporting artifact
-files. Methods details live in `design_drop_pre_architecture.md`; all numbers
+files. Methods details live in `methods/design_drop_pre_architecture.md`; all numbers
 below are hold-out (train 2022+2024, test 2023) unless noted.
 
 ---
@@ -67,7 +67,7 @@ pre() could not run:
   *Artifacts: methods/compare_engines_v2/ (engine_ and combo_ sweeps + summaries).*
 
 *Artifacts: rule_mining_helpers.R, test_rule_mining_helpers.R,
-design_drop_pre_architecture.md.*
+methods/design_drop_pre_architecture.md.*
 
 ## 3. Typed frames vs one any-error model (head-to-head)
 
@@ -341,7 +341,7 @@ dropped / new classification, plus a check of where new rules' catches
 concentrate). The measured effects of the 2026-07-07 rebuild on the mined
 rules — ~3x inventory, old set 93% preserved, higher LCB-floor reach, and the
 finding that the new rules are NOT multi-element specialists — are documented
-in `effects_of_munging_options.md`.
+in `methods/effects_of_munging_options.md`.
 
 ## 11. Household-size stratification: split, but split coarsely
 
@@ -437,11 +437,11 @@ methods/budgeted_transfer_menu_v2.R; overnight_nb_loo_run.log.*
 Every model-selection decision (engines, subsample, filter stringency,
 ensemble size) had been judged on the same held-out year, 2023 — a year that
 sits BETWEEN the training years, so the selection procedure itself risked
-being tuned to one interpolated year (pipeline_critique_2026-07-09.md, V2).
+being tuned to one interpolated year (methods/pipeline_critique_2026-07-09.md, V2).
 Guard: the four decisive selection claims were re-run with the year roles
 swapped — train 2022+2023, test 2024, a year that never influenced any
 design decision — with expectations and falsification criteria WRITTEN DOWN
-BEFORE the run (`yearswap_preregistration_2026-07-09.md`). Levels were
+BEFORE the run (`methods/yearswap_preregistration_2026-07-09.md`). Levels were
 expected to shift (rebuilt frame, different year); orderings and margins
 were what the original decisions rested on, so orderings and margins were
 what was pre-registered.
@@ -493,7 +493,7 @@ retraction (Claim 2) — evidence the selection methodology was not
 2023-luck, and that the pre-registration has teeth. No production setting
 changes.
 
-*Artifacts: yearswap_preregistration_2026-07-09.md (predictions + results);
+*Artifacts: methods/yearswap_preregistration_2026-07-09.md (predictions + results);
 methods/compare_engines_v2/yearswap_train2223_test24/;
 methods/parameter_tuning_v2/yearswap_train2223_test24/;
 methods/run_selection_yearswap.R.*

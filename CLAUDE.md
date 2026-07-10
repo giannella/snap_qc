@@ -44,7 +44,7 @@ generate -> canonicalize -> dedup -> evaluate -> sweep / shortlist
 - **evaluate**: sparse flag index vectors built from a unique-conditions table (memory stays flat at 100k+ rules); every rule scored on train, holdout, and the any-error universe.
 - **filter/sweep**: Wilson LCB of train precision (`wilson_lcb()`), then `precision_sweep()` reports the union's holdout precision/recall/dollar-recall per filter floor. An error caught by several rules counts once. There are NO greedy nets in v2.
 
-### Validated settings and principles (2026-07 studies; see modeling_findings.md)
+### Validated settings and principles (2026-07 studies; see methods/modeling_findings.md)
 
 - Engines: xgboost (nrounds 1000, eta 0.02, subsample 0.20) + ranger (1000 trees, mtry 2), depth 4. The PAIR beats either alone and beats rpart+ranger.
 - **"Mine big, filter stringently"**: big ensembles extend recall reach; `LCB_Z = 2.326` (99%) removes their selection-multiplicity noise. 90% (1.2816) for exploration only.
@@ -112,6 +112,6 @@ and charts from our own runs, never with authority or intuition. Rules:
 
 ## Reference documents
 
-- `modeling_findings.md` — all empirical results with artifact pointers (winner's curse, engine studies, strata, ESAP, states).
-- `design_drop_pre_architecture.md` — the v2 design rationale and decisions.
+- `methods/modeling_findings.md` — all empirical results with artifact pointers (winner's curse, engine studies, strata, ESAP, states).
+- `methods/design_drop_pre_architecture.md` — the v2 design rationale and decisions.
 - `Definitions for variables used.txt` — feature dictionary.

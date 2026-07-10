@@ -2,7 +2,7 @@
 
 Measured effects of the 2026-07-07 rebuild of `reg_model_data` on the v2
 inclusion-rule pipeline. Companion to the frame-provenance notes in CLAUDE.md
-and the findings in `modeling_findings.md`.
+and the findings in `methods/modeling_findings.md`.
 
 ## What changed in the munging script
 

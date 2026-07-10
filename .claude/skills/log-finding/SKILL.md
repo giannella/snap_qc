@@ -1,6 +1,6 @@
 ---
 name: log-finding
-description: Record an empirical finding from a run or study into modeling_findings.md using the repo's evidence conventions (verified numbers, artifact pointers, honest caveats)
+description: Record an empirical finding from a run or study into methods/modeling_findings.md using the repo's evidence conventions (verified numbers, artifact pointers, honest caveats)
 ---
 
 You are recording an empirical finding for the SNAP QC rule-mining project.
@@ -13,7 +13,7 @@ most recent completed run/study discussed in the conversation).
    from its artifact (CSV, log, RDS) — never from memory of the conversation.
    If a number cannot be traced to a file in the repo, do not record it.
 
-2. **Write into `modeling_findings.md`:**
+2. **Write into `methods/modeling_findings.md`:**
    - If the finding extends an existing numbered section, add to it (as the
      calibration note in §1 does). Otherwise append a new numbered section.
    - Structure: WHAT was compared (configurations, data, years), the numbers

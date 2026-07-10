@@ -105,7 +105,7 @@ set_line(t_sh.text_frame, "Getting more signal out of SNAP QC data: modeling les
 set_body(b_sh.text_frame, [
     "What we learned from building, tuning, and stress-testing an error-mining pipeline on the public QC files.",
     "Every claim below is backed by a measurement from our own runs - configurations tried head-to-head on held-out years.",
-    "Code and full evidence: https://github.com/giannella/snap_qc (modeling_findings.md)"])
+    "Code and full evidence: https://github.com/giannella/snap_qc (methods/modeling_findings.md)"])
 
 # ── 2. scope ─────────────────────────────────────────────────────────────────
 add_lesson(
@@ -160,9 +160,16 @@ add_lesson(
 add_lesson(
     "Tuning: what moved held-out performance and what didn't",
     ["- Engine PAIRING mattered: xgboost + random forest (ranger) beat either engine alone and beat bagged-CART + ranger, everything else held equal.",
-     "- Within engines: mtry = 2 beat mtry = 1 across the frontier; subsampling 15-30% of data per tree was a plateau (we use 20%); slow learning (eta 0.02, 1000 rounds) beat fast; depth 4 sufficed.",
+     "- Within engines: mtry = 2 beat mtry = 1 across the frontier; slow learning (eta 0.02, 1000 rounds) beat fast; depth 4 sufficed; subsample barely matters (see the replication on the next slide).",
      "- Most other knobs did not move the frontier - we verified by varying one setting at a time around the final configuration."],
-    figure="parameter_tuning_v2/v2_tuning_xgboost.png", fig_aspect=2100 / 2700)
+    figure="methods/parameter_tuning_v2/v2_tuning_xgboost.png", fig_aspect=2100 / 2700)
+
+add_lesson(
+    "Re-test your selection choices on a year that never judged them",
+    ["- Every configuration choice above was judged on the same held-out year (2023), so the selection PROCEDURE itself could be overfit to one year. We re-ran the decisive comparisons with the year roles swapped (train 2022+2023, test 2024), with expected outcomes and failure criteria written down BEFORE the run.",
+     "- Three of four claims replicated: the engine pairing still leads recall (margin thinner, 2.1pp vs 3pp+), stringency still buys precision monotonically, big ensembles still widen the menu ~7x at ~0.02 precision cost.",
+     "- One claim failed and is retired: 'low subsampling beats high' - on 2024 all nine settings from 0.15 to 0.80 land within 0.005 (right panel). The retraction is what makes the survivors credible: the procedure demonstrably can say no."],
+    figure="presentation_figures/replication_selection_studies.png", fig_aspect=4.8 / 12)
 
 # ── 9-10. scoring + stratification ───────────────────────────────────────────
 add_lesson(
@@ -177,7 +184,7 @@ add_lesson(
     ["- Household-size strata 1 / 2-3 / 4+ beat pooled modeling on recall reach and filtered inventory (~5x); a 5-way split was worse on the same test year.",
      "- Adding an elderly/disabled STRATUM on top bought nothing: an indicator variable achieved the same held-out frontier and the same coverage of those households - we checked coverage parity explicitly.",
      "- We test 'new stratum vs new variable' empirically before adding strata; strata cost data and the variable usually suffices."],
-    figure="compare_hh_strata_v2/strata_sweeps.png", fig_aspect=1650 / 2700)
+    figure="methods/compare_hh_strata_v2/strata_sweeps.png", fig_aspect=1650 / 2700)
 
 # ── 11-12. small samples + transfer ──────────────────────────────────────────
 add_lesson(

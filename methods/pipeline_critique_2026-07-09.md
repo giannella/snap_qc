@@ -4,8 +4,8 @@
 **Scope:** conceptual/statistical design only, judged against the project's own goals
 (interpretable, individually defensible rules; per-rule guarantees that survive a year
 of drift; deliberate redundancy; graceful degradation for small states). Grounded in:
-CLAUDE.md, modeling_findings.md, design_drop_pre_architecture.md,
-effects_of_munging_options.md, rule_mining_helpers.R, the INCL/EXCL v2 drivers,
+CLAUDE.md, methods/modeling_findings.md, methods/design_drop_pre_architecture.md,
+methods/effects_of_munging_options.md, rule_mining_helpers.R, the INCL/EXCL v2 drivers,
 state_threshold_gridsearch_v2.R, neighbor_transfer_benchmark_v2.R,
 budgeted_transfer_menu_v2.R, and the three similarity scripts.
 
