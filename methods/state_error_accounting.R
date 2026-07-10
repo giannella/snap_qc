@@ -12,7 +12,7 @@
 #                        (from the technical manuals' exclusion counts,
 #                        additional_data/snap_qc_exclusion_all_years.csv)
 #
-# Output: state_error_accounting/errors_by_state_year_raw.csv
+# Output: methods/state_error_accounting/errors_by_state_year_raw.csv
 # ──────────────────────────────────────────────────────────────────────────────
 
 suppressMessages({library(haven); library(dplyr)})
@@ -50,9 +50,9 @@ acct <- acct %>%
   left_join(ex, by = c("state", "fy")) %>%
   arrange(state, fy)
 
-dir.create("state_error_accounting", showWarnings = FALSE)
-write.csv(acct, "state_error_accounting/errors_by_state_year_raw.csv", row.names = FALSE)
-cat(sprintf("wrote %d state-year rows -> state_error_accounting/errors_by_state_year_raw.csv\n",
+dir.create("methods/state_error_accounting", showWarnings = FALSE)
+write.csv(acct, "methods/state_error_accounting/errors_by_state_year_raw.csv", row.names = FALSE)
+cat(sprintf("wrote %d state-year rows -> methods/state_error_accounting/errors_by_state_year_raw.csv\n",
             nrow(acct)))
 
 cat("\nfocal states:\n")

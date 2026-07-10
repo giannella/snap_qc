@@ -33,8 +33,15 @@ YEARS       <- c("2022", "2023", "2024")   # train (neighbors) AND test (target)
 # neighbors are chosen on the 2022-24 matrices.
 SIM_FILES <- c(fire    = "state_similarity_v2/similarity_matrix_sqrt_2022_2024.csv",
                idf     = "state_similarity_v2/similarity_idf_2022_2024.csv",
+               nb      = "state_similarity_v2/similarity_nb_2022_2024.csv",
                policy  = "state_similarity_v2/similarity_policy_2022_2024.csv",
                blended = "state_similarity_v2/similarity_blended_2022_2024.csv")
+
+# Leave-one-state-out NATIONAL control: mine the SAME any-error recipe on all
+# states except the target - the honest version of the national baseline
+# (national_asis trained on the target's own 2022/24 cases). Expensive
+# (~full-scale mine per target); cached like any pool.
+RUN_LOO_NATIONAL <- TRUE
 
 NATIONAL_CSV <- "inclusion_rules_by_hh_size_v2/final_rules_highprecision_all_frames.csv"
 
@@ -85,9 +92,14 @@ sims <- lapply(SIM_FILES, function(f) {
 
 ## ── mine a pool (cached) ─────────────────────────────────────────────────────
 mine_pool <- function(pool_states) {
-  sig <- digest_states <- paste(sort(pool_states), collapse = "_")
+  sig <- paste(sort(pool_states), collapse = "_")
   sig <- gsub("[^A-Za-z]", "", sig)
-  cache <- file.path(CACHE_DIR, sprintf("pool_%s.rds", substr(sig, 1, 80)))
+  # long signatures (e.g. leave-one-out pools) would truncate identically;
+  # append a positional checksum so distinct state sets get distinct keys
+  key <- if (nchar(sig) <= 80) sig else
+    sprintf("%s_%08x", substr(sig, 1, 60),
+            sum(utf8ToInt(sig) * seq_along(utf8ToInt(sig))) %% .Machine$integer.max)
+  cache <- file.path(CACHE_DIR, sprintf("pool_%s.rds", key))
   if (file.exists(cache)) return(readRDS(cache))
 
   train <- adf[adf[[STATE_COL]] %in% pool_states, , drop = FALSE]
@@ -169,6 +181,20 @@ for (target in TARGETS) {
       mutate(approach = paste0("transfer_", sim_name), target = target,
              pool = paste(pool, collapse = "|"))
     res[[length(res) + 1]] <- sc
+  }
+
+  if (RUN_LOO_NATIONAL) {
+    loo_pool <- setdiff(sort(unique(as.character(adf[[STATE_COL]]))), target)
+    cat(sprintf("  [national_loo] mining all %d states except %s\n",
+                length(loo_pool), target))
+    rules <- mine_pool(loo_pool)
+    if (!is.null(rules) && nrow(rules) > 0) {
+      cat(sprintf("  [national_loo] %d rules survive screen+dedup\n", nrow(rules)))
+      sc <- score_on_target(rules, target, rules$precision_train_lcb) %>%
+        mutate(approach = "national_loo", target = target,
+               pool = "all_minus_target")
+      res[[length(res) + 1]] <- sc
+    }
   }
   saveRDS(bind_rows(res), file.path(out_dir, "benchmark_partial.rds"))
 }

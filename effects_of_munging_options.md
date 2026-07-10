@@ -31,11 +31,11 @@ and the findings in `modeling_findings.md`.
   7.7% (HH 1), 14.8% (HH 2-3), 20.4% (HH 4+).
 - Visible errors for 2022-24 roughly doubled in the states we had been
   studying (WA, LA, VA) — the drop had been absorbing most of their
-  multi-element errors. Full per-state accounting: `state_error_accounting/`.
+  multi-element errors. Full per-state accounting: `methods/state_error_accounting/`.
 
 ## Effects on the mined rules (old frame vs rebuilt frame, LCB_Z = 2.326, floor 0.20)
 
-Diff produced by `compare_rule_sets_v2.R` →
+Diff produced by `methods/compare_rule_sets_v2.R` →
 `inclusion_rules_by_hh_size_v2/rule_diff_old_vs_new.csv`.
 
 ### Inventory: ~3x

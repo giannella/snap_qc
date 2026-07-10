@@ -28,7 +28,7 @@ Public SNAP QC `.sav` files are expected at `C:/Users/ericg/qc/qc_data/`. Auxili
 
 `error_status` values: `earned_overissuance`, `unearned_overissuance`, `underissuance`, `other_error`, `no_error`. A case is an error when `over_threshold != 0` (aligned 1:1 with error_status). Base rates are low: ~11% of cases have any over-threshold error (post-2026-07-07 rebuild; was ~8.4% on the stale single-element frame); typed frames run 0.4-6% by stratum. `other_error` is the LARGEST error category and is mined in v2 (it never was in v1).
 
-**Frame provenance (2026-07-07)**: `reg_model_data.rds` is now saved by the munging script itself (never hand-built — a stale hand-built frame silently excluded all multi-element error cases, ~31% of errors, for weeks). Multi-element cases are KEPT (`second_element_i` flags them; do NOT use as a mining feature — state reporting is inconsistent). Deduction-field NAs are zero-filled (`ded_fields_imputed`), not dropped. Results predating the rebuild live in `run*_singleelement_frame/` archive subfolders; rule-content changes across data revisions are diffed with `compare_rule_sets_v2.R`. Per-state error visibility (public data misses all ineligible cases): `state_error_accounting/`.
+**Frame provenance (2026-07-07)**: `reg_model_data.rds` is now saved by the munging script itself (never hand-built — a stale hand-built frame silently excluded all multi-element error cases, ~31% of errors, for weeks). Multi-element cases are KEPT (`second_element_i` flags them; do NOT use as a mining feature — state reporting is inconsistent). Deduction-field NAs are zero-filled (`ded_fields_imputed`), not dropped. Results predating the rebuild live in `run*_singleelement_frame/` archive subfolders; rule-content changes across data revisions are diffed with `methods/compare_rule_sets_v2.R`. Per-state error visibility (public data misses all ineligible cases): `methods/state_error_accounting/`.
 
 ## v2 Architecture
 
@@ -62,11 +62,11 @@ generate -> canonicalize -> dedup -> evaluate -> sweep / shortlist
 | `INCL_find_inclusion_rules_by_hh_size_v2.R` | inclusion rules per mining frame (4 typed + pooled any_error) x stratum -> `inclusion_rules_by_hh_size_v2/` |
 | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | exclusion rules (clean-rate LCB; workload cut vs dollar retention) -> `exclusion_rules_by_hh_size_v2/` |
 | `state_threshold_gridsearch_v2.R` | per-state threshold tuning + holdout test + national-as-is benchmark -> `state_rules_v2/` |
-| `tune_engine_params_v2.R`, `tune_followup_subsample_lcbz_v2.R` | hyperparameter + LCB_Z sweeps -> `parameter_tuning_v2/` |
-| `compare_engines_v2.R`, `compare_engine_combos_v2.R` | engine studies -> `compare_engines_v2/` |
-| `compare_anyerror_vs_typed_frames_v2.R` | typed vs pooled-target mining -> `compare_anyerror_vs_typed_v2/` |
-| `compare_hh_strata_v2.R` | stratification schemes -> `compare_hh_strata_v2/` |
-| `check_esap_coverage_v2.R` | elderly/disabled coverage parity check |
+| `methods/tune_engine_params_v2.R`, `methods/tune_followup_subsample_lcbz_v2.R` | hyperparameter + LCB_Z sweeps -> `methods/parameter_tuning_v2/` |
+| `methods/compare_engines_v2.R`, `methods/compare_engine_combos_v2.R` | engine studies -> `methods/compare_engines_v2/` |
+| `methods/compare_anyerror_vs_typed_frames_v2.R` | typed vs pooled-target mining -> `methods/compare_anyerror_vs_typed_v2/` |
+| `methods/compare_hh_strata_v2.R` | stratification schemes -> `methods/compare_hh_strata_v2/` |
+| `methods/check_esap_coverage_v2.R` | elderly/disabled coverage parity check |
 
 Long-running scripts checkpoint mined vocabularies to `.rds` and support `RESUME_FROM_CHECKPOINT` (pre-set it in a runner before `source()`). Comparison outputs from superseded configurations are kept in suffixed/archived copies (e.g., `run1_*` subfolders) — don't delete them.
 

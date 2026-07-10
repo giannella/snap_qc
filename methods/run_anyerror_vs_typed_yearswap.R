@@ -4,11 +4,11 @@
 reg_model_data <- readRDS("reg_model_data.rds")
 cat(sprintf("reg_model_data loaded: %d rows, %d cols\n",
             nrow(reg_model_data), ncol(reg_model_data)))
-src <- readLines("compare_anyerror_vs_typed_frames_v2.R")
+src <- readLines("methods/compare_anyerror_vs_typed_frames_v2.R")
 src <- sub('^TRAIN_YEARS   <- c\\("2022", "2024"\\)$', 'TRAIN_YEARS   <- c("2022", "2023")', src)
 src <- sub('^HOLDOUT_YEARS <- c\\("2023"\\)$',          'HOLDOUT_YEARS <- c("2024")', src)
-src <- sub('^out_dir <- "compare_anyerror_vs_typed_v2"$',
-           'out_dir <- "compare_anyerror_vs_typed_v2/yearswap_train2223_test24"', src)
+src <- sub('^out_dir <- "methods/compare_anyerror_vs_typed_v2"$',
+           'out_dir <- "methods/compare_anyerror_vs_typed_v2/yearswap_train2223_test24"', src)
 stopifnot(sum(grepl("2022\", \"2023", src)) == 1,
           sum(grepl("yearswap_train2223_test24", src)) == 1)
 eval(parse(text = src))

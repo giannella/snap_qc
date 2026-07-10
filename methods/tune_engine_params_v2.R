@@ -10,7 +10,7 @@
 # head-to-head showed 5x trees buys recall extension, not matched-recall
 # precision; this script quantifies that per parameter).
 #
-# Expects `reg_model_data`. Outputs land in parameter_tuning_v2/.
+# Expects `reg_model_data`. Outputs land in methods/parameter_tuning_v2/.
 # ──────────────────────────────────────────────────────────────────────────────
 
 library(dplyr)
@@ -73,7 +73,7 @@ MIN_TRAIN_FLAGGED <- 10
 PRUNE_MIN_PRECISION <- min(THRESHOLD_GRID)
 MIN_PRECISION <- 0.20         # shortlist floor (reported per setting)
 
-out_dir <- "parameter_tuning_v2"
+out_dir <- "methods/parameter_tuning_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 stopifnot(OBJECTIVE %in% c("dollars", "counts"))
 

@@ -15,7 +15,7 @@
 #   isolating the exact trade observed) and sweep z in {0.8416 (80%),
 #   1.2816 (90%), 1.645 (95%), 2.326 (99%)} over both.
 #
-# Frame: any_error. Expects `reg_model_data`. Outputs -> parameter_tuning_v2/.
+# Frame: any_error. Expects `reg_model_data`. Outputs -> methods/parameter_tuning_v2/.
 # ──────────────────────────────────────────────────────────────────────────────
 
 library(dplyr)
@@ -65,7 +65,7 @@ THRESHOLD_GRID    <- seq(0.05, 0.95, by = 0.05)
 MIN_TRAIN_FLAGGED <- 10
 PRUNE_MIN_PRECISION <- min(THRESHOLD_GRID)
 
-out_dir <- "parameter_tuning_v2"
+out_dir <- "methods/parameter_tuning_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 ## ── 1. Data (any_error frame) ─────────────────────────────────────────────────

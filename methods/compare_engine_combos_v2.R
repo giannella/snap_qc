@@ -11,7 +11,7 @@
 # dedup, exactly as the production drivers pool their two engines.
 #
 # Frame: any_error; strata 1 / 2-3 / 4+; OBJECTIVE dollars.
-# Expects `reg_model_data`. Outputs -> compare_engines_v2/ (combo-prefixed).
+# Expects `reg_model_data`. Outputs -> methods/compare_engines_v2/ (combo-prefixed).
 # ──────────────────────────────────────────────────────────────────────────────
 
 library(dplyr)
@@ -53,7 +53,7 @@ PRUNE_MIN_PRECISION <- min(THRESHOLD_GRID)
 MIN_PRECISION <- 0.20
 if (!exists("RESUME_FROM_CHECKPOINT")) RESUME_FROM_CHECKPOINT <- FALSE
 
-out_dir <- "compare_engines_v2"
+out_dir <- "methods/compare_engines_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 ## ── 1. Data ───────────────────────────────────────────────────────────────────

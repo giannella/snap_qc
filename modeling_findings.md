@@ -36,7 +36,7 @@ luck-inflated estimates). Floors on the LCB itself underpromise: an LCB floor
 of 0.30 delivers 0.381, 0.40 delivers 0.509. The LCB is therefore the only
 menu axis whose number reads "at least this". Side-by-side figure:
 `presentation_figures/floor_definitions_educational.png`
-(`educational_floor_definitions_figure.R`).
+(`methods/educational_floor_definitions_figure.R`).
 
 ## 2. Results of dropping {pre} r package in favor of rolling our own
 
@@ -64,7 +64,7 @@ pre() could not run:
   vocabulary complementarity again. So pre's CART engine was competitive but
   not its pipeline's problem; the engines add ~+1pp precision / +7pp dollar
   recall, while stringent filtering and any-error scoring supply the larger gains.
-  *Artifacts: compare_engines_v2/ (engine_ and combo_ sweeps + summaries).*
+  *Artifacts: methods/compare_engines_v2/ (engine_ and combo_ sweeps + summaries).*
 
 *Artifacts: rule_mining_helpers.R, test_rule_mining_helpers.R,
 design_drop_pre_architecture.md.*
@@ -97,10 +97,10 @@ Scored on ALL 2023 errors with identical machinery and selection:
   ordering and the magnitudes on a disjoint test year: at the 0.30 floor,
   typed 26.9% -> combined 35.6% recall (+8.7pp vs +6.3pp in the original); at
   0.20, +4.7pp (vs +4.1pp); matched-recall deltas again within the noise band.
-  Artifacts: compare_anyerror_vs_typed_v2/yearswap_train2223_test24/.
+  Artifacts: methods/compare_anyerror_vs_typed_v2/yearswap_train2223_test24/.
 - Robust to ensemble size (300/500 vs 1000/2500 trees: same ordering).
 
-*Artifacts: compare_anyerror_vs_typed_v2/ (dollar- and counts-basis plots,
+*Artifacts: methods/compare_anyerror_vs_typed_v2/ (dollar- and counts-basis plots,
 sweep + summary CSVs; small-ensemble run preserved as xgb300rf500_).*
 
 ## 4. Engine tuning: what matters and what doesn't
@@ -133,7 +133,7 @@ precision at matched dollar recall):
 - Depth 4~5 >> 3. Inventory (shortlist size) and frontier quality often
   DISAGREE — e.g. subsample 0.75 gives more rules but a worse frontier.
 
-*Artifacts: parameter_tuning_v2/v2_tuning_{ranger,xgboost}.png, summary CSVs,
+*Artifacts: methods/parameter_tuning_v2/v2_tuning_{ranger,xgboost}.png, summary CSVs,
 v2_subsample_fine.*
 
 ## 5. "Mine big, filter stringently" — the flexible LCB
@@ -160,7 +160,7 @@ Production recipe adopted: xgb 1000 rounds / eta .02 / subsample .20, ranger
 under small ensembles at 90%), with better median hold-out quality per frame
 (e.g. other_error 0.212 vs 0.197; unearned 432 rules at 0.284).
 
-*Artifacts: parameter_tuning_v2/v2_lcbz_sweep.png + v2_lcbz_summary.csv;
+*Artifacts: methods/parameter_tuning_v2/v2_lcbz_sweep.png + v2_lcbz_summary.csv;
 inclusion_rules_by_hh_size_v2/ (run1_small_ensembles_z90/ preserved).*
 
 ## 6. Frame-relative vs deployed (any-error) performance
@@ -197,7 +197,7 @@ themselves:
 - The real gap is non-elderly working households (earned-income volatility) —
   this could lack of signal issue, but also is an area I'm continuing to explore. 
 
-*Artifacts: check_esap_coverage_v2.R (rerun anytime).*
+*Artifacts: methods/check_esap_coverage_v2.R (rerun anytime).*
 
 ## 9. States: a clean two-regime deployment rule
 
@@ -276,7 +276,7 @@ it collapses to a handful of rules (LA and WA: 8 rules each). IMPORTANT
 CAVEAT: the 2023 test year sits BETWEEN the training years — temporal
 interpolation flatters all options and own-mining most; the year-split
 extrapolation checks (below) are the honest forward-deployment expectation.
-Artifacts: compare_state_options_v2/.
+Artifacts: methods/compare_state_options_v2/.
 
 **Same-era NEIGHBOR TRANSFER — the thin-state recipe (2026-07-06, Louisiana):**
 train on the state's fire-rate-similar neighbors (cosine on sqrt rule fire
@@ -332,11 +332,11 @@ INELIGIBLE CASES, which the public file excludes entirely and which are
 AR/MO/UT ~53%. **Guidance: states below ~60% visibility should treat
 national/public rules as a supplement and run the mining pipeline on internal
 data, which contains their ineligible determinations.** Artifacts:
-state_error_accounting/ (per-state-year raw error counts, FYWGT-weighted
+methods/state_error_accounting/ (per-state-year raw error counts, FYWGT-weighted
 error dollars, exclusions; visibility_by_state_2022_2024.csv).
 
 Rule-content changes from data revisions are tracked with
-compare_rule_sets_v2.R (exact / threshold-shifted / coverage-overlap /
+methods/compare_rule_sets_v2.R (exact / threshold-shifted / coverage-overlap /
 dropped / new classification, plus a check of where new rules' catches
 concentrate). The measured effects of the 2026-07-07 rebuild on the mined
 rules — ~3x inventory, old set 93% preserved, higher LCB-floor reach, and the
@@ -368,7 +368,7 @@ The 3-way split still wins where it matters operationally: **reach** (54.8% vs
 clear the stiff bound). The 5-way split loses either way. 
 
 *Artifacts: compare_models_by_HHsize_vs_pooled/strata_earn_inc_scheme_summary.csv
-(pre-era); compare_hh_strata_v2/ (v2 confirmation).*
+(pre-era); methods/compare_hh_strata_v2/ (v2 confirmation).*
 
 ## 12. Cross-state transfer vs honest national baselines (2026-07-09)
 
@@ -429,5 +429,5 @@ must stay out of training.
 
 *Artifacts: state_similarity_v2/transfer_benchmark/ (benchmark +
 budgeted_menu_results.csv); state_similarity_v2/similarity_*_2022_2024.csv
-and _2017_2019.csv; state_nb_similarity_v2.R; neighbor_transfer_benchmark_v2.R;
-budgeted_transfer_menu_v2.R; overnight_nb_loo_run.log.*
+and _2017_2019.csv; methods/state_nb_similarity_v2.R; methods/neighbor_transfer_benchmark_v2.R;
+methods/budgeted_transfer_menu_v2.R; overnight_nb_loo_run.log.*

@@ -25,7 +25,7 @@
 # <- TRUE before source()ing, e.g. in a runner).
 #
 # Expects `reg_model_data`. Outputs (CSVs + presentation plot) land in
-# compare_anyerror_vs_typed_v2/.
+# methods/compare_anyerror_vs_typed_v2/.
 # ──────────────────────────────────────────────────────────────────────────────
 
 library(dplyr)
@@ -83,7 +83,7 @@ MIN_PRECISION     <- 0.20     # shortlist floor on the any-error train LCB
 if (!exists("RESUME_FROM_CHECKPOINT")) RESUME_FROM_CHECKPOINT <- FALSE
 stopifnot(OBJECTIVE %in% c("dollars", "counts"))
 
-out_dir <- "compare_anyerror_vs_typed_v2"
+out_dir <- "methods/compare_anyerror_vs_typed_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 cap <- sprintf("xgboost (%s rounds) + ranger (%s trees, mtry=1), depth 4, per HH stratum 1 / 2-3 / 4+",

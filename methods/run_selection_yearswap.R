@@ -22,11 +22,11 @@ yearswap <- function(script, out_dir_line, out_dir_new) {
 }
 
 yearswap("compare_engine_combos_v2.R",
-         '^out_dir <- "compare_engines_v2"$',
-         'out_dir <- "compare_engines_v2/yearswap_train2223_test24"')
+         '^out_dir <- "methods/compare_engines_v2"$',
+         'out_dir <- "methods/compare_engines_v2/yearswap_train2223_test24"')
 
 yearswap("tune_followup_subsample_lcbz_v2.R",
-         '^out_dir <- "parameter_tuning_v2"$',
-         'out_dir <- "parameter_tuning_v2/yearswap_train2223_test24"')
+         '^out_dir <- "methods/parameter_tuning_v2"$',
+         'out_dir <- "methods/parameter_tuning_v2/yearswap_train2223_test24"')
 
 cat("\n=== selection year-swap replications complete ===\n")

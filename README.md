@@ -55,7 +55,7 @@ The philosophy on ensemble size: **mine big, filter stringently**. Large ensembl
 | `INCL_find_inclusion_rules_by_hh_size_v2.R` | inclusion rules per mining frame (earned, unearned, underissuance, other, + pooled all-errors) x household size |
 | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | exclusion rules: filter safe-to-skip cases by clean-rate LCB; reports workload cut vs error-dollar retention |
 | `state_threshold_gridsearch_v2.R` | tunes national rule thresholds per state and tests on a hold-out year, incl. a "deploy national as-is" benchmark |
-| `tune_engine_params_v2.R` | one-at-a-time engine hyperparameter sweeps, judged by hold-out frontier |
+| `methods/tune_engine_params_v2.R` | one-at-a-time engine hyperparameter sweeps, judged by hold-out frontier |
 | `compare_*_v2.R` | the studies behind the design choices (engines, engine pairs, typed-vs-pooled mining, HH strata) |
 | `run_*.R` | non-interactive runners (load `reg_model_data.rds`, source the script) |
 
@@ -70,7 +70,7 @@ Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-o
 | `MIN_TRAIN_FLAGGED` | 10 | support backstop (the LCB does the real work) |
 | `MIN_PRECISION` | 0.20 | shortlist floor, applied to the LCB |
 | `OBJECTIVE` | "dollars" | recall basis for plots (counts always also written) |
-| engine settings | see above | defaults chosen by hyperparameter sweeps on hold-out data (July 2026); evidence in `parameter_tuning_v2/` |
+| engine settings | see above | defaults chosen by hyperparameter sweeps on hold-out data (July 2026); evidence in `methods/parameter_tuning_v2/` |
 
 Packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional bagged-CART engine). No `{pre}` required.
 
@@ -80,8 +80,8 @@ Packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional
 - **Stratify by household size coarsely (1 / 2-3 / 4+)** — on v2 engines the precision gap vs pooling is small, but the coarse split buys meaningfully more recall reach and ~5x the filtered rule inventory. Finer splits (e.g., 5 HH size strata) perform less well.
 - **States with large QC samples should tune thresholds locally; states with smaller samples should deploy national rules or rules based on a pool of states.** In seven-state testing, local tuning helped when ~30+ rules qualified on state training data (Connecticut: 43% of errors / 49% of error dollars caught at 21% review precision) and hurt below that (small-sample tuning is winner's-curse territory).
 - **Include finding any-error (even outside the mined error type) as a win** — a flagged case with a different error type than the rule was mined for will sometimes help with finding an error that can be remedied. 
-- **The engine change itself is a measured win**: with everything downstream identical, xgboost + ranger catches 55% of error dollars at the 0.20 filter floor vs 47% for the CART-based generation that {pre} used, at slightly better precision at matched recall (+1.2pp). Engine studies are in `compare_engines_v2/`.
-- **Check your state's data visibility before relying on public-data rules.** The public QC file excludes ineligible cases entirely (each one a 100%-of-benefit error), so some states' error populations are only half visible in it (e.g., New Jersey ~43%, Tennessee ~51%; national ~71%). See `state_error_accounting/visibility_by_state_2022_2024.csv`. **States below roughly 60% visibility should treat national rules as a supplement and run the mining script on their internal data**, which includes their ineligible determinations — the scripts support this directly (swap `features` and `TARGET_IS_ERROR`).
+- **The engine change itself is a measured win**: with everything downstream identical, xgboost + ranger catches 55% of error dollars at the 0.20 filter floor vs 47% for the CART-based generation that {pre} used, at slightly better precision at matched recall (+1.2pp). Engine studies are in `methods/compare_engines_v2/`.
+- **Check your state's data visibility before relying on public-data rules.** The public QC file excludes ineligible cases entirely (each one a 100%-of-benefit error), so some states' error populations are only half visible in it (e.g., New Jersey ~43%, Tennessee ~51%; national ~71%). See `methods/state_error_accounting/visibility_by_state_2022_2024.csv`. **States below roughly 60% visibility should treat national rules as a supplement and run the mining script on their internal data**, which includes their ineligible determinations — the scripts support this directly (swap `features` and `TARGET_IS_ERROR`).
 
 ---
 
@@ -92,7 +92,7 @@ Packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional
 | `INCL_find_inclusion_rules_multi_model_by_hh_size.R` (+ `_c50`, `_xrf`) | `INCL_find_inclusion_rules_by_hh_size_v2.R` |
 | `EXCL_find_exclusion_rules_by_hh_size.R` | `EXCL_find_exclusion_rules_by_hh_size_v2.R` |
 | `INCL/EXCL_optimize_*_for_a_state.R` | `state_threshold_gridsearch_v2.R` |
-| `optimize_rulefit_params.R` | `tune_engine_params_v2.R` |
+| `optimize_rulefit_params.R` | `methods/tune_engine_params_v2.R` |
 | greedy "net" outputs (`*_net_*`) | the LCB threshold sweep (`*_lcb_sweep.csv`) |
 | `MIN_PRECISION` on raw train precision | `MIN_PRECISION` on the train-precision LCB |
 
@@ -103,7 +103,7 @@ Conceptual changes:
 - **Class rebalancing is gone** (v2 mines on the natural base rate). Note for v1 users: the 14:1 rebalancing block in the v1 INCL scripts is now commented out, restoring the originally intended default — uncomment to reproduce old runs exactly.
 - **Two small v1 housekeeping changes**: the `pre_param_sweep/` folder is renamed `parameter_tuning/`, and a dead-logic typo in the data munging script's `other_error` definition was fixed (no behavioral change).
 
-What you can keep unchanged: the data munging script and `reg_model_data`, the data dictionary, `parse_tree.R` (SQL conversion), the visualization scripts, and all v1 outputs already produced.
+What you can keep unchanged: the data munging script and `reg_model_data`, the data dictionary, `methods/parse_tree.R` (SQL conversion), the visualization scripts, and all v1 outputs already produced.
 
 ---
 
@@ -123,7 +123,7 @@ In both cases, the scripts expect a data frame in your R environment with one ro
 
 If you want to use national public QC data rather than internal data, see [What data is required?](#what-data-is-required) below. The national data can be useful for finding more specific patterns since the number of errors in any one state is limited.
 
-Note that I recommend running all the models stratified by household size (e.g., one model for each household size: 1, 2-3, 4+), which is what I have in the main directory. The precision-recall curves are better across the board (see results in `compare_models_by_HHsize_vs_pooled/` folder and explore yourself using the `compare_combined_vs_by_hh_size_model_performance.R` script). If this is not an option for you or you have found better results in your state with pooling, see the `code_for_single_model_combined_HH_sizes` folder.
+Note that I recommend running all the models stratified by household size (e.g., one model for each household size: 1, 2-3, 4+), which is what I have in the main directory. The precision-recall curves are better across the board (see results in `compare_models_by_HHsize_vs_pooled/` folder and explore yourself using the `methods/compare_combined_vs_by_hh_size_model_performance.R` script). If this is not an option for you or you have found better results in your state with pooling, see the `code_for_single_model_combined_HH_sizes` folder.
 
 ## Exclusion rules (EXCL_ scripts)
 
@@ -162,7 +162,7 @@ If you want to mine patterns from the national data, it is included in this repo
 
 If you want to use the national data, you'll see the `reg_model_data` data frame in the scripts. Recreate it using `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R`.
 
-**If you want to explore patterns visually before rule mining**, `visualize_national_regression_trees_by_type_of_error.R` and `visualize_state_regression_trees_predicting_dollar_amounts.R` plot regression trees by error type and state. See the `state_income_error_trees_any_timeper` folder for examples. This is optional.
+**If you want to explore patterns visually before rule mining**, `methods/visualize_national_regression_trees_by_type_of_error.R` and `methods/visualize_state_regression_trees_predicting_dollar_amounts.R` plot regression trees by error type and state. See the `state_income_error_trees_any_timeper` folder for examples. This is optional.
 
 ## Data dictionary
 
@@ -170,7 +170,7 @@ Variable definitions and sourcing notes are in [`Definitions for variables used.
 
 ## Converting rules to SQL
 
-Once you have rules you want to implement, **`parse_tree.R`** provides a `parse_tree_to_sql()` function that converts an rpart tree into a SQL `CASE` statement, useful for deploying rules in a production case management system.
+Once you have rules you want to implement, **`methods/parse_tree.R`** provides a `parse_tree_to_sql()` function that converts an rpart tree into a SQL `CASE` statement, useful for deploying rules in a production case management system.
 
 ---
 

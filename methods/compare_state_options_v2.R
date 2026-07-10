@@ -10,7 +10,7 @@
 # 0.30 at >= 30 flagged cases), and score the shortlist union on the state's
 # 2023 against any error. Outputs a combined summary + figure.
 #
-# Expects `reg_model_data`. Outputs -> compare_state_options_v2/.
+# Expects `reg_model_data`. Outputs -> methods/compare_state_options_v2/.
 # ──────────────────────────────────────────────────────────────────────────────
 
 suppressMessages({library(dplyr); library(ggplot2)})
@@ -50,7 +50,7 @@ FRAMES <- list(
   any_error = c("earned_overissuance", "unearned_overissuance",
                 "underissuance", "other_error"))
 
-out_dir <- "compare_state_options_v2"
+out_dir <- "methods/compare_state_options_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 adf <- prep_features(reg_model_data %>%
