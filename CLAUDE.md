@@ -15,7 +15,7 @@ The repo contains two generations. **v2 (current, recommended)** mines rules wit
 Scripts are run interactively in R (RStudio) or non-interactively via the `run_*.R` runner pattern:
 
 ```
-"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" run_incl_v2.R > incl_v2_run.log 2>&1
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" runners/run_incl_v2.R > incl_v2_run.log 2>&1
 ```
 
 Runners load `reg_model_data.rds` (a saved copy of the main modelling frame, expected in the repo root) then source the driver. There is no package or build system. **After changing `rule_mining_helpers.R`, always run the regression test**: `Rscript test_rule_mining_helpers.R` (18 checks, all must PASS).
