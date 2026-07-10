@@ -52,7 +52,8 @@ def set_body(tf, lines):
                 r.text = ""
 
 
-def add_lesson(title, bullets, figure=None, fig_aspect=None, table=None):
+def add_lesson(title, bullets, figure=None, fig_aspect=None, table=None,
+               table_font=12, table_row_h=0.32, table_w=6.5):
     s = p.slides.add_slide(tmpl.slide_layout)
     for src_sh in (tmpl_title, tmpl_body, tmpl_tag):
         s._element.spTree.append(copy.deepcopy(src_sh._element))
@@ -77,17 +78,19 @@ def add_lesson(title, bullets, figure=None, fig_aspect=None, table=None):
                              width=Inches(w), height=Inches(h))
     if table:
         rows, cols = len(table), len(table[0])
-        tw = Inches(6.5)
-        th = Inches(0.32 * rows)
-        gt = s.shapes.add_table(rows, cols, Inches((10 - 6.5) / 2),
+        tw = Inches(table_w)
+        th = Inches(table_row_h * rows)
+        gt = s.shapes.add_table(rows, cols, Inches((10 - table_w) / 2),
                                 Inches(fig_top), tw, th).table
         for i, row in enumerate(table):
+            gt.rows[i].height = Inches(table_row_h)
             for j, val in enumerate(row):
                 c = gt.cell(i, j)
                 c.text = val
+                c.margin_top = c.margin_bottom = Inches(0.01)
                 for para in c.text_frame.paragraphs:
                     for r in para.runs:
-                        r.font.size = Pt(12)
+                        r.font.size = Pt(table_font)
                         r.font.bold = (i == 0)
     return s
 
@@ -221,7 +224,104 @@ add_lesson(
      "- Scored within the same era, 5-donor pools matched or beat the held-out national pool in 6 of 12 states at a 10% budget (median 0.278 vs 0.245). Re-tested as a deployment (train 2022-23, score 2024), the advantage did not survive: national median 0.27-0.30 vs transfer 0.25-0.26 across budgets.",
      "- Mining a state's own data alone is the high-variance option: the best single results anywhere (Connecticut 0.416, Virginia 0.371 at 10%) but also the worst - Washington's own rules delivered 0.05-0.08 precision on 2024, BELOW its 8.5% base rate. Neighbor pools are the fallback where own-state mining fails, not the default."])
 
-# ── 14. takeaways ────────────────────────────────────────────────────────────
+# ── 15-18. adapting national rules to a state (deployment test) ──────────────
+add_lesson(
+    "Adapting the national rules to a state: three schemes we tested",
+    ["- filtered - keep the national rules exactly as they are, but re-qualify each on the state's own 2022-23 data: deploy only rules whose 90% lower-bound precision clears 0.20 with >= 30 flagged cases, applied in state-confidence order.",
+     "- tuned - grid-search each rule's thresholds (+/-10-25%) on the state's data; qualify variants at the same bar (90% lower bound >= 0.20, >= 30 flagged); deploy each rule's highest-lower-bound variant - the most statistically defensible version.",
+     "- hybrid - the scheme our July grid-search study settled on: qualify variants at 90% lower bound >= 0.20 with >= 5 flagged, then deploy the qualifying variant catching the most error DOLLARS on state training data - a careful gate with an aggressive pick.",
+     "- All arms are budget-filled on the state's 2024 cases: rules added in descending confidence order until 5% or 10% of the caseload is flagged. The state's 2024 data is never used to pick rules, only to count flags.",
+     "- Note: tuning arms search the top 500 national rules by confidence; the national and filtered arms draw from the full ~45k-rule pool."])
+
+import csv as _csv
+
+
+def _adapt_rows():
+    path = ("methods/state_similarity_v2/transfer_benchmark_train2223_test24/"
+            "deployment_state_adaptation.csv")
+    with open(path, newline="") as f:
+        return list(_csv.DictReader(f))
+
+
+_ADAPT = _adapt_rows()
+_ARMS = ["national_asis", "filtered", "tuned", "hybrid"]
+_ARM_LABELS = ["national as-is", "filtered", "tuned", "hybrid"]
+
+
+def _cell(r):
+    if not r or r["precision"] in ("", "NA"):
+        return "-"
+    return "%.3f @ %.0f%% ($%.0f%%)" % (float(r["precision"]),
+                                        100 * float(r["recall"]),
+                                        100 * float(r["dollar_recall"]))
+
+
+def _adapt_table(budget):
+    rows = {a: {r["target"]: r for r in _ADAPT
+                if r["approach"] == a and float(r["budget"]) == budget}
+            for a in _ARMS}
+    order = sorted(rows["national_asis"],
+                   key=lambda t: -float(rows["national_asis"][t]["precision"]))
+    tbl = [["state", "rules qualified (f/t/h)"] + _ARM_LABELS]
+    for t in order:
+        nq = "/".join(rows[a][t]["n_deployable_rules"]
+                      for a in ("filtered", "tuned", "hybrid"))
+        tbl.append([t, nq] + [_cell(rows[a].get(t)) for a in _ARMS])
+    return tbl
+
+
+def _med(vals):
+    v = sorted(vals)
+    n = len(v)
+    return (v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2)
+
+
+def _med_cell(arm, budget):
+    rs = [r for r in _ADAPT if r["approach"] == arm and float(r["budget"]) == budget]
+    return "%.3f / %.0f%%" % (_med([float(r["precision"]) for r in rs]),
+                              100 * _med([float(r["dollar_recall"]) for r in rs]))
+
+
+add_lesson(
+    "Median across 18 states: adaptation does not beat the national order",
+    ["- No adaptation scheme beats deploying the national list in national-confidence order on the median state; national as-is takes the most per-state precision wins at both budgets (9 of 18 at 5%, 7 of 18 at 10%).",
+     "- Adaptation pays where the national list underperforms (New Jersey 0.10 -> 0.27, Mississippi 0.25 -> 0.42 at 5%) and hurts where it is already strong (Michigan 0.40 -> 0.19, Washington 0.30 -> 0.08 at 5%): small-sample qualification re-introduces the selection noise the national bound removed.",
+     "- The tuned arm is too conservative to deploy: 1-125 rules survive per state and 11 of its 36 runs cannot fill even half their budget. Cells: median precision / median share of error dollars, on 2024."],
+    table=[["scheme", "5% budget", "10% budget"]] +
+          [[lab, _med_cell(a, 0.05), _med_cell(a, 0.10)]
+           for a, lab in zip(_ARMS, _ARM_LABELS)])
+
+add_lesson(
+    "State by state, 5% review budget: national as-is vs adapted",
+    ["- precision @ recall (share of error dollars) on the state's 2024 cases, trained on 2022-23 only. 'Rules qualified' counts RULES from the national pool clearing the state's bar (rules overlap heavily, so counts can exceed the state's caseload; a high base rate makes the 0.20 bar easy to clear). Tuning arms search the top 500 national rules by confidence; the national and filtered arms draw from the full ~45k-rule pool."],
+    table=_adapt_table(0.05), table_font=9, table_row_h=0.23, table_w=9.2)
+
+add_lesson(
+    "State by state, 10% review budget: national as-is vs adapted",
+    ["- precision @ recall (share of error dollars) on the state's 2024 cases, trained on 2022-23 only. 'Rules qualified' counts RULES from the national pool clearing the state's bar (rules overlap heavily, so counts can exceed the state's caseload; a high base rate makes the 0.20 bar easy to clear). Tuning arms search the top 500 national rules by confidence; the national and filtered arms draw from the full ~45k-rule pool."],
+    table=_adapt_table(0.10), table_font=9, table_row_h=0.23, table_w=9.2)
+
+def _contrib_table():
+    path = ("methods/state_similarity_v2/transfer_benchmark_train2223_test24/"
+            "contributing_rules_summary.csv")
+    with open(path, newline="") as f:
+        rows = list(_csv.DictReader(f))
+    tbl = [["state", "budget", "review cap (cases)", "rules admitted by the scan",
+            "rules that build the union"]]
+    for r in rows:
+        tbl.append([r["target"], "%.0f%%" % (100 * float(r["budget"])),
+                    r["cap_cases"], r["rules_counted_used"], r["rules_contributing"]])
+    return tbl
+
+
+add_lesson(
+    "The deployed list is a few dozen rules, not thousands",
+    ["- The budget fill scans the whole ~45k national pool in confidence order and admits any rule whose newly flagged cases still fit under the review cap - it does not stop at a rule count.",
+     "- A rule whose cases are all already flagged adds zero and always 'fits', so admitted-rule counts run 10-20k. The union is actually built by the rules adding at least one new case: 26-54 rules at these budgets. Deploying exactly those reproduces the identical flagged set.",
+     "- Which rules those are depends only on the ranked list (trained on 2022-23) and the state's incoming caseload - no error outcomes - so a state reproduces the short list the moment it applies the ranking to its own cases."],
+    table=_contrib_table(), table_font=11, table_row_h=0.28, table_w=8.5)
+
+# ── 20. takeaways ────────────────────────────────────────────────────────────
 add_lesson(
     "Takeaways",
     ["- Reconcile your build against the raw files before tuning anything: our two data-build fixes moved results more than any hyperparameter.",

@@ -171,6 +171,9 @@ mine_pool <- function(pool_states) {
 }
 
 ## ── 3. budget-fill on the target's 2024 ──────────────────────────────────────
+# n_rules_used counts only rules that ADD at least one new case: redundant
+# rules (all cases already flagged) are skipped, not counted -- deploying
+# exactly the counted rules reproduces the identical union.
 budgeted_union <- function(rules_df, stat, idx, n_rows, tg, budget) {
   cap <- floor(budget * n_rows)
   un <- rep(FALSE, n_rows); n_used <- 0L; n_in <- 0L
@@ -178,7 +181,9 @@ budgeted_union <- function(rules_df, stat, idx, n_rows, tg, budget) {
     if (is.na(stat[i])) next
     ix <- idx[[i]]
     add <- sum(!un[ix])
-    if (n_in + add <= cap) { un[ix] <- TRUE; n_in <- n_in + add; n_used <- n_used + 1L }
+    if (add > 0 && n_in + add <= cap) {
+      un[ix] <- TRUE; n_in <- n_in + add; n_used <- n_used + 1L
+    }
   }
   k <- sum(tg$ie[un]); d <- sum(tg$ed[un])
   data.frame(n_rules_used = n_used, n_flagged = n_in,

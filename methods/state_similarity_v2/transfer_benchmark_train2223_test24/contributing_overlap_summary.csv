@@ -1,0 +1,3 @@
+"budget","total_rule_slots","distinct_rules","rules_in_1_state","rules_in_2plus","rules_in_5plus","rules_in_10plus","max_states_served","median_pairwise_jaccard","max_pairwise_jaccard"
+0.05,470,162,59,103,33,4,12,0.128,0.359
+0.1,898,297,107,190,70,8,12,0.131,0.295
