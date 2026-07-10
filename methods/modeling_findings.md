@@ -617,3 +617,47 @@ methods/state_similarity_v2/transfer_benchmark_train2223_test24/frozen_list_resu
 methods/contributing_rule_overlap_v2.R -> contributing_rules_by_state.csv,
 contributing_overlap_jaccard_budget10.csv, contributing_overlap_summary.csv;
 methods/count_contributing_rules_v2.R -> contributing_rules_summary.csv.*
+
+## 16. Blending state and national rules on one confidence scale (2026-07-10)
+
+Never previously run: merge each state's OWN mined pool into the national
+pool and rank every rule by its own-training 99% Wilson LCB (national
+rules bounded on national 2022-23 train; state rules on the state's own
+2022-23). Both bounds read "at least this precision with 99% confidence",
+so the merged ranking is coherent and the bound applies the certainty
+discount to small-support state rules automatically. Same freeze/buffer/
+walk protocol as section 15; a 98% variant was also run (immaterial,
+within a point everywhere).
+
+Median across 18 states, single recipe, no regime decision (precision /
+error dollars): blended 0.324 / 15% at a 5% budget vs national-only
+0.294 / 12%; at 10%, blended 0.262 / 24% vs national-only 0.270 / 25%
+(tie). The two-regime best-of-two pick reads higher (0.337 / 0.285) but
+selects its winner ON the test year; the blend needs no pick.
+
+- **Where state rules clear the unified bar, interleaving beats either
+  pool alone**: Arizona deploys 20 state rules and delivers 0.326 (vs
+  0.291 for its best single regime), DC 0.495 (vs 0.464), Mississippi
+  0.374 (vs 0.355), Missouri deploys 17 state rules. Half the states
+  deploy at least one state rule at 10%.
+- **The blind spot is transfer asymmetry**: a national rule's LCB is a
+  tight bound on its precision in the NATIONAL mix and says nothing
+  about transfer to this state; the state rule's LCB honestly prices its
+  noise. The scale therefore over-trusts national rules exactly where
+  the national mix fits worst: New Jersey's own rules never enter (their
+  small-sample bounds cannot beat 45k tight national bounds) and the
+  blend under-delivers there (0.161 at 10% vs 0.230 for NJ's own list).
+  Relaxing to 98% does not rescue this.
+
+Deployment guidance: the BLEND is the default shipped recipe (better at
+5%, no worse at 10%, no regime decision to defend); the own-pool list is
+kept as a FALLBACK, activated only where the state's own internal
+validation shows the blend under-performing. In low-visibility states
+this is the only honest arbiter -- New Jersey's public files show 43% of
+its error cases (section 10), so the public data cannot establish which
+option truly performs better there; the state's internal check decides.
+
+*Artifacts: methods/blended_frozen_lists_v2.R ->
+methods/state_similarity_v2/transfer_benchmark_train2223_test24/blended_frozen_results.csv;
+blended_frozen_run.log (same folder); comparison inputs:
+frozen_list_results.csv, frozen_own_list_results.csv.*

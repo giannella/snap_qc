@@ -354,8 +354,20 @@ def _handoff_table():
 
 add_lesson(
     "What a state is handed under the two-regime rule",
-    ["- One ranked list per state (core sized to the budget + buffer to 3x depth), from the national pool by default or the state's own mined pool where its own rules win on 2024. 'Typically run' = rules actually activated before 2024 capacity filled."],
+    ["- One ranked list per state (core sized to the budget + buffer to 3x depth), from the national pool by default or the state's own mined pool where its own rules win on 2024. 'Typically run' = rules actually activated before 2024 capacity filled.",
+     "- Own rules are the FALLBACK regime, not a co-equal choice: the public files show only 43-81% of a state's error cases, so where they disagree with the national list, only the state's own internal validation can settle which is really better."],
     table=_handoff_table(), table_font=9, table_row_h=0.23, table_w=9.2)
+
+add_lesson(
+    "Blending state and national rules onto one confidence scale",
+    ["- Merge the state's own mined pool into the national pool and rank EVERY rule by its own 99% lower-bound precision - national rules bounded on national training data, state rules on the state's own. Both read 'at least this, with 99% confidence', and the bound applies the certainty discount automatically: a small-support state rule outranks national rules only when its precision overcomes the penalty.",
+     "- As a single recipe with no regime decision, the blend beats the national-only frozen list at a 5% budget (median 0.324 vs 0.294 precision, 15% vs 12% of error dollars) and ties it at 10%. Where state rules clear the bar, interleaving beats either pool alone: Arizona 0.326 (vs 0.291 best single), DC 0.495 (vs 0.464), Mississippi 0.374 (vs 0.355).",
+     "- The known blind spot: a national rule's bound describes its precision on the national mix and is silent about transfer, so in states where the national mix fits worst the scale over-trusts national rules - New Jersey's own rules never enter and the blend under-delivers there (0.161 vs 0.230 for its own list at 10%).",
+     "- Deployment: blend as the default; the own-pool list stays available as the fallback where a state's internal validation shows the blend under-performing. In low-visibility states (New Jersey: 43% of error cases visible) the public data cannot settle the question - the state's internal check decides."],
+    table=[["option (single recipe)", "5% budget", "10% budget"],
+           ["national-only frozen list", "0.294 / 12%", "0.270 / 25%"],
+           ["blended frozen list (99% bound)", "0.324 / 15%", "0.262 / 24%"],
+           ["state's own pool only", "0.256 / 13%", "0.236 / 25%"]])
 
 # ── 21. takeaways ────────────────────────────────────────────────────────────
 add_lesson(
