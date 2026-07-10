@@ -1,0 +1,6 @@
+"pool","mean_precision","recall_at_020","precision_at_020","n_pass_filter","max_recall"
+"rpart",0.299,0.724,0.202,4285,0.95
+"xgboost",0.3064,0.773,0.189,4783,1
+"ranger",0.3025,0.757,0.198,6669,1
+"xgboost + ranger",0.3018,0.794,0.185,10823,1
+"rpart + ranger",0.3007,0.78,0.193,10310,1
