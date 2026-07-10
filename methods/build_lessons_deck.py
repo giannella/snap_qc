@@ -53,7 +53,7 @@ def set_body(tf, lines):
 
 
 def add_lesson(title, bullets, figure=None, fig_aspect=None, table=None,
-               table_font=12, table_row_h=0.32, table_w=6.5):
+               table_font=12, table_row_h=0.32, table_w=6.5, col_widths=None):
     s = p.slides.add_slide(tmpl.slide_layout)
     for src_sh in (tmpl_title, tmpl_body, tmpl_tag):
         s._element.spTree.append(copy.deepcopy(src_sh._element))
@@ -82,6 +82,9 @@ def add_lesson(title, bullets, figure=None, fig_aspect=None, table=None,
         th = Inches(table_row_h * rows)
         gt = s.shapes.add_table(rows, cols, Inches((10 - table_w) / 2),
                                 Inches(fig_top), tw, th).table
+        if col_widths:
+            for j, w in enumerate(col_widths):
+                gt.columns[j].width = Inches(w)
         for i, row in enumerate(table):
             gt.rows[i].height = Inches(table_row_h)
             for j, val in enumerate(row):
@@ -320,6 +323,30 @@ add_lesson(
      "- A rule whose cases are all already flagged adds zero and always 'fits', so admitted-rule counts run 10-20k. The union is actually built by the rules adding at least one new case: 26-54 rules at these budgets. Deploying exactly those reproduces the identical flagged set.",
      "- Which rules those are depends only on the ranked list (trained on 2022-23) and the state's incoming caseload - no error outcomes - so a state reproduces the short list the moment it applies the ranking to its own cases."],
     table=_contrib_table(), table_font=11, table_row_h=0.28, table_w=8.5)
+
+def _top_fired_table():
+    path = ("methods/state_similarity_v2/transfer_benchmark_train2223_test24/"
+            "contributing_rules_by_state.csv")
+    from collections import Counter
+    counts = Counter()
+    with open(path, newline="") as f:
+        for r in _csv.DictReader(f):
+            if r["budget"] == "0.1":
+                counts[(r["hh"], r["rule"])] += 1
+    tbl = [["HH size", "rule", "states (of 18)"]]
+    for hh in ("1", "2-3", "4+"):
+        top = sorted(((n, rule) for (h, rule), n in counts.items() if h == hh),
+                     reverse=True)[:3]
+        for n, rule in top:
+            tbl.append([hh, " ".join(rule.split()), str(n)])
+    return tbl
+
+
+add_lesson(
+    "The most widely deployed rules, by household size",
+    ["- The three rules deployed by the most states (of 18) in each household-size stratum, from the 10%-budget national deployment. Each is a plain checkable condition. Benefit amounts relative to the household maximum appear in 8 of the 9 rules and deduction levels relative to household size in 7; certification timing, utilities, and shelter levels fill out the rest."],
+    table=_top_fired_table(), table_font=9, table_row_h=0.5, table_w=9.4,
+    col_widths=[0.8, 7.4, 1.2])
 
 add_lesson(
     "The deliverable: one ranked rule list per state, walked to capacity",
