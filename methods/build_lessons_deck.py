@@ -335,6 +335,28 @@ add_lesson(
     figure="methods/state_similarity_v2/transfer_benchmark_train2223_test24/frozen_lists_panels_budget10.png",
     fig_aspect=5.8 / 6.6)
 
+
+def _handoff_table():
+    path = ("methods/state_similarity_v2/transfer_benchmark_train2223_test24/"
+            "two_regime_handoff.csv")
+    with open(path, newline="") as f:
+        rows = list(_csv.DictReader(f))
+    by = {(r["target"], r["budget"]): r for r in rows}
+    states = sorted({r["target"] for r in rows})
+    tbl = [["state", "regime (5%)", "rules handed (5%)", "typically run (5%)",
+            "regime (10%)", "rules handed (10%)", "typically run (10%)"]]
+    for t in states:
+        r5, r10 = by[(t, "0.05")], by[(t, "0.1")]
+        tbl.append([t, r5["regime"], r5["n_shipped"], r5["n_activated"],
+                    r10["regime"], r10["n_shipped"], r10["n_activated"]])
+    return tbl
+
+
+add_lesson(
+    "What a state is handed under the two-regime rule",
+    ["- One ranked list per state (core sized to the budget + buffer to 3x depth), from the national pool by default or the state's own mined pool where its own rules win on 2024. 'Typically run' = rules actually activated before 2024 capacity filled."],
+    table=_handoff_table(), table_font=9, table_row_h=0.23, table_w=9.2)
+
 # ── 21. takeaways ────────────────────────────────────────────────────────────
 add_lesson(
     "Takeaways",

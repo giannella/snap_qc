@@ -142,16 +142,14 @@ for (target in TARGETS) {
                 target, 100 * b, length(frozen), length(buffer), n_used,
                 100 * n24 / nrow(te), 100 * nb / nrow(te),
                 ifelse(nb > 0, kb / nb, NA), 100 * db / sum(tg_te$ed)))
-    if (b == 0.10) {
-      sel <- c(frozen, buffer)
-      hand <- pool[sel, c("rule", "hh", "n_flagged_train",
-                          "precision_train", "precision_train_lcb")]
-      hand$rank <- seq_along(sel)
-      hand$role <- rep(c("core", "buffer"), c(length(frozen), length(buffer)))
-      write.csv(hand, file.path(list_dir, sprintf("frozen_list_%s.csv",
-                                                  gsub(" ", "_", target))),
-                row.names = FALSE)
-    }
+    sel <- c(frozen, buffer)
+    hand <- pool[sel, c("rule", "hh", "n_flagged_train",
+                        "precision_train", "precision_train_lcb")]
+    hand$rank <- seq_along(sel)
+    hand$role <- rep(c("core", "buffer"), c(length(frozen), length(buffer)))
+    write.csv(hand, file.path(list_dir, sprintf("frozen_list_%s_budget%02.0f.csv",
+                                                gsub(" ", "_", target), 100 * b)),
+              row.names = FALSE)
   }
 }
 out <- bind_rows(res)

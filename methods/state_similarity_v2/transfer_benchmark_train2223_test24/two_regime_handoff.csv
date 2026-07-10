@@ -1,0 +1,37 @@
+"target","budget","regime","n_shipped","n_activated"
+"Arizona",0.05,"national",99,18
+"Arizona",0.1,"own rules",147,29
+"California",0.05,"national",93,20
+"California",0.1,"own rules",81,14
+"Colorado",0.05,"national",136,26
+"Colorado",0.1,"national",264,44
+"Connecticut",0.05,"own rules",45,8
+"Connecticut",0.1,"own rules",107,17
+"District of Columbia",0.05,"own rules",31,5
+"District of Columbia",0.1,"own rules",66,19
+"Louisiana",0.05,"national",112,23
+"Louisiana",0.1,"national",223,42
+"Maine",0.05,"own rules",58,7
+"Maine",0.1,"national",276,42
+"Maryland",0.05,"own rules",13,4
+"Maryland",0.1,"own rules",72,8
+"Massachusetts",0.05,"national",137,20
+"Massachusetts",0.1,"national",262,38
+"Michigan",0.05,"national",125,25
+"Michigan",0.1,"national",238,42
+"Mississippi",0.05,"own rules",43,6
+"Mississippi",0.1,"own rules",107,20
+"Missouri",0.05,"national",107,23
+"Missouri",0.1,"national",203,44
+"New Jersey",0.05,"own rules",20,2
+"New Jersey",0.1,"own rules",72,4
+"North Carolina",0.05,"national",148,27
+"North Carolina",0.1,"own rules",70,12
+"Tennessee",0.05,"national",143,26
+"Tennessee",0.1,"national",281,49
+"Texas",0.05,"own rules",50,2
+"Texas",0.1,"own rules",102,10
+"Virginia",0.05,"national",90,23
+"Virginia",0.1,"own rules",50,8
+"Washington",0.05,"national",127,22
+"Washington",0.1,"national",249,49
