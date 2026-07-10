@@ -290,7 +290,7 @@ choice, is load-bearing. FY25 adds temporal drift on top, so quote below-0.18
 expectations. Deliverable rule: hand the state the full neighbor-trained list
 ranked by NEIGHBOR-train precision (selecting "rules that held in the state's
 test" would be a fresh winner's curse).
-Artifacts: state_similarity_v2/ (repo) + custom_one_off/louisiana/.
+Artifacts: methods/state_similarity_v2/ (repo) + custom_one_off/louisiana/.
 
 **Single-state MINING (2026-07-06, one state, year-split validated):** when
 national rules cover too little of a state's error mix, mining directly on
@@ -427,8 +427,8 @@ budgets (~10%), similarity-picked donor pools (fire or NB) are competitive
 with any national option and are the honest choice where a state's own data
 must stay out of training.
 
-*Artifacts: state_similarity_v2/transfer_benchmark/ (benchmark +
-budgeted_menu_results.csv); state_similarity_v2/similarity_*_2022_2024.csv
+*Artifacts: methods/state_similarity_v2/transfer_benchmark/ (benchmark +
+budgeted_menu_results.csv); methods/state_similarity_v2/similarity_*_2022_2024.csv
 and _2017_2019.csv; methods/state_nb_similarity_v2.R; methods/neighbor_transfer_benchmark_v2.R;
 methods/budgeted_transfer_menu_v2.R; overnight_nb_loo_run.log.*
 
@@ -497,3 +497,60 @@ changes.
 methods/compare_engines_v2/yearswap_train2223_test24/;
 methods/parameter_tuning_v2/yearswap_train2223_test24/;
 methods/run_selection_yearswap.R.*
+
+## 14. Time-shifted deployment benchmark: own-state vs NB transfer vs LOO national on 2024 (2026-07-10)
+
+Section 12's transfer benchmark scored every pool on the same era it was
+mined from, so its verdicts could lean on same-era correlation
+(methods/pipeline_critique_2026-07-09.md, V6). Guard: the three deployable
+options were re-run as a state would actually face them — rules mined on
+2022+2023 only, scored on the target state's 2024 cases only, budgets
+filled in descending train-LCB order. Approaches: the target's OWN 2022-23
+data (own_state), a 5-neighbor donor pool picked by 2022-23 NB/KL
+similarity (transfer_nb), and the 48-other-state national pool
+(national_loo). Any-error recipe throughout; 12 target states.
+
+Median delivered precision / share of the state's 2024 error dollars:
+
+| budget | own_state | transfer_nb | national_loo |
+|---|---|---|---|
+| 5% of caseload | 0.253 / 14% | 0.256 / 11% | 0.296 / 13% |
+| 10% of caseload | 0.240 / 25% | 0.245 / 20% | 0.276 / 25% |
+
+- **The LOO national pool is the best time-shifted default.** It leads
+  median precision at both budgets and ties own_state on dollars. It takes
+  the most precision wins at 5% (7 of 12, ties shared) and is never the
+  disaster case.
+- **Section 12's 10%-budget transfer advantage did NOT survive the time
+  shift.** Same-era, NB led LOO 0.278 vs 0.245 at 10%; on 2024 the order
+  flips, LOO 0.276 vs NB 0.245, and NB trails on dollars at both budgets
+  (20% vs 25% at 10%). Caveat: only NB was re-run (fire/IDF/blended were
+  not), and the neighbor lists came from 2022-23 similarity, so this
+  retires "similarity pools beat the national pool at moderate budgets" as
+  a deployment claim while leaving open whether another definition
+  transfers better across years.
+- **Own-state mining is high-variance, exactly as the two-regime rule
+  (section 9) predicts.** Its wins are the largest anywhere (Connecticut
+  0.416, Virginia 0.371, Mississippi 0.355 at 10%) but its failures are
+  total: Washington's own-state rules deliver 0.049-0.075 precision on
+  2024 — BELOW the state's 8.5% base rate, i.e. worse than random review —
+  and Louisiana's 0.161 trails both pooled options. The 10% LOO-minus-own
+  precision gap spans -0.103 (Mississippi) to +0.173 (Washington).
+- **NB transfer is insurance where own-state fails, not a first choice.**
+  Where own_state collapses it holds up (Washington 0.247, Louisiana
+  0.207 at 10%) and it wins outright only in Connecticut (0.500 at 5%);
+  everywhere else it is second or third.
+
+Deployment guidance: quote states the LOO-style national numbers as the
+honest default; offer own-state mining only where the state's own held-out
+year confirms it (it cannot be assumed — a mid-size state like Washington
+can fail below base rate); keep NB transfer as the fallback for states
+whose own mining fails and who want a smaller, more tailored pool than the
+national list. The own_state rows double as the per-state own-data
+appendix table.
+
+*Artifacts:
+methods/state_similarity_v2/transfer_benchmark_train2223_test24/deployment_menu_train2223_test24.csv;
+methods/deployment_benchmark_train2223_test24.R;
+methods/state_similarity_v2/transfer_benchmark_train2223_test24/deployment_benchmark_run.log;
+methods/state_similarity_v2/similarity_nb_2022_2023.csv.*

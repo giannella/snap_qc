@@ -17,7 +17,7 @@
 # Deriving from QC keeps the vector era-matched and current; the FNS State
 # Options Report serves as an external validation, not an input.
 #
-# Similarity: cosine on z-scored columns. Outputs -> state_similarity_v2/
+# Similarity: cosine on z-scored columns. Outputs -> methods/state_similarity_v2/
 # (era-suffixed): policy_vector_by_state_<era>.csv, similarity_policy_<era>.csv,
 # similarity_blended_<era>.csv (mean of policy cosine and the era's fire-rate
 # sqrt cosine from similarity_matrix_sqrt_<era>.csv).
@@ -28,7 +28,7 @@ suppressMessages(library(dplyr))
 
 ERAS <- list("2017_2019" = c("2017", "2018", "2019"),
              "2022_2024" = c("2022", "2023", "2024"))
-out_dir <- "state_similarity_v2"
+out_dir <- "methods/state_similarity_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 num <- function(x) suppressWarnings(as.numeric(as.character(x)))

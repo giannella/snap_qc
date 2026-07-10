@@ -204,7 +204,7 @@ add_lesson(
     ["- Confidence floors produce whatever workload they produce: on the rebuilt data, the 0.20 floor's rule union flags ~half the caseload (which is how 'catch 79% of error dollars' happens). States plan around review capacity, not floors.",
      "- So we also report budget-filled performance: add rules in descending lower-bound order until 5% or 10% of the caseload is flagged. Median across 12 states, out-of-state rules deliver 0.31-0.34 precision catching 12-16% of error dollars at a 5% budget, and 0.25-0.31 catching 22-30% at 10% - against 9-15% base rates.",
      "- The budget lens also corrects floor artifacts: Mississippi's transferred rules stopped firing entirely at a 0.30 floor, yet delivered the best 5%-budget precision of any state (0.346) - the rules were fine, the floor wasn't."],
-    figure="state_similarity_v2/transfer_benchmark/best_pool_pr_by_budget.png",
+    figure="methods/state_similarity_v2/transfer_benchmark/best_pool_pr_by_budget.png",
     fig_aspect=5.8 / 10)
 
 add_lesson(

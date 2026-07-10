@@ -14,9 +14,9 @@
 # The naive independence assumption double-counts overlapping rules; using
 # the ladder-collapsed shortlist keeps that in check.
 #
-# Expects `reg_model_data` and state_similarity_v2/fire_rates_rules_by_state_
+# Expects `reg_model_data` and methods/state_similarity_v2/fire_rates_rules_by_state_
 # <era>.rds (from state_similarity_fire_rates_v2.R, same RULES_CSV).
-# Output -> state_similarity_v2/similarity_nb_<era>.csv
+# Output -> methods/state_similarity_v2/similarity_nb_<era>.csv
 # ──────────────────────────────────────────────────────────────────────────────
 
 suppressMessages(library(dplyr))
@@ -24,7 +24,7 @@ suppressMessages(library(dplyr))
 RULES_CSV <- "inclusion_rules_by_hh_size_v2/final_rules_highprecision_all_frames.csv"
 ERAS <- list("2017_2019" = c("2017", "2018", "2019"),
              "2022_2024" = c("2022", "2023", "2024"))
-out_dir <- "state_similarity_v2"
+out_dir <- "methods/state_similarity_v2"
 
 HH_SIZE_COL <- "cert_HH_size_FS_n"
 hh_group_of <- function(n) {

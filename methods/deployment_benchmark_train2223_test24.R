@@ -18,9 +18,9 @@
 # Only rule SHAPES leak; all similarity and training data here are 2022-23.
 #
 # All outputs carry the train2223_test24 tag to distinguish them from the
-# same-era benchmark (state_similarity_v2/transfer_benchmark/):
-#   state_similarity_v2/similarity_nb_2022_2023.csv
-#   state_similarity_v2/transfer_benchmark_train2223_test24/
+# same-era benchmark (methods/state_similarity_v2/transfer_benchmark/):
+#   methods/state_similarity_v2/similarity_nb_2022_2023.csv
+#   methods/state_similarity_v2/transfer_benchmark_train2223_test24/
 #     pool_cache/ , deployment_menu_train2223_test24.csv
 # Expects `reg_model_data`.
 # ──────────────────────────────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ TEST_YEAR   <- "2024"
 BUDGETS     <- c(0.05, 0.10)
 
 NATIONAL_CSV <- "inclusion_rules_by_hh_size_v2/final_rules_highprecision_all_frames.csv"
-out_dir   <- "state_similarity_v2/transfer_benchmark_train2223_test24"
+out_dir   <- "methods/state_similarity_v2/transfer_benchmark_train2223_test24"
 CACHE_DIR <- file.path(out_dir, "pool_cache")
 dir.create(CACHE_DIR, showWarnings = FALSE, recursive = TRUE)
 
@@ -79,7 +79,7 @@ cat(sprintf("frame: %d rows (train years %s, test %s)\n",
             nrow(adf), paste(TRAIN_YEARS, collapse = "+"), TEST_YEAR))
 
 ## ── 1. NB similarity from 2022-23 fire rates ─────────────────────────────────
-nb_path <- "state_similarity_v2/similarity_nb_2022_2023.csv"
+nb_path <- "methods/state_similarity_v2/similarity_nb_2022_2023.csv"
 if (!file.exists(nb_path)) {
   rules <- read.csv(NATIONAL_CSV, stringsAsFactors = FALSE) %>% distinct(rule, hh)
   strata_all <- lapply(setNames(nm = unique(rules$hh)), function(h)

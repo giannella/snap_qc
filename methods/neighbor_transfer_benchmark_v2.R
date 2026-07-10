@@ -16,7 +16,7 @@
 # Pools are cached by their state-set signature (many target x similarity
 # combinations share pools), checkpointed to CACHE_DIR so the run resumes.
 #
-# Expects `reg_model_data`. Outputs -> state_similarity_v2/transfer_benchmark/.
+# Expects `reg_model_data`. Outputs -> methods/state_similarity_v2/transfer_benchmark/.
 # ──────────────────────────────────────────────────────────────────────────────
 
 suppressMessages(library(dplyr))
@@ -31,11 +31,11 @@ YEARS       <- c("2022", "2023", "2024")   # train (neighbors) AND test (target)
 
 # Era-matched similarity: the benchmark trains and tests on 2022-24, so
 # neighbors are chosen on the 2022-24 matrices.
-SIM_FILES <- c(fire    = "state_similarity_v2/similarity_matrix_sqrt_2022_2024.csv",
-               idf     = "state_similarity_v2/similarity_idf_2022_2024.csv",
-               nb      = "state_similarity_v2/similarity_nb_2022_2024.csv",
-               policy  = "state_similarity_v2/similarity_policy_2022_2024.csv",
-               blended = "state_similarity_v2/similarity_blended_2022_2024.csv")
+SIM_FILES <- c(fire    = "methods/state_similarity_v2/similarity_matrix_sqrt_2022_2024.csv",
+               idf     = "methods/state_similarity_v2/similarity_idf_2022_2024.csv",
+               nb      = "methods/state_similarity_v2/similarity_nb_2022_2024.csv",
+               policy  = "methods/state_similarity_v2/similarity_policy_2022_2024.csv",
+               blended = "methods/state_similarity_v2/similarity_blended_2022_2024.csv")
 
 # Leave-one-state-out NATIONAL control: mine the SAME any-error recipe on all
 # states except the target - the honest version of the national baseline
@@ -53,7 +53,7 @@ MIN_TRAIN_FLAGGED <- 30    # state-scale lesson: hard support floor
 MIN_PRECISION     <- 0.20
 FLOORS            <- c(0.20, 0.25, 0.30)
 
-out_dir   <- "state_similarity_v2/transfer_benchmark"
+out_dir   <- "methods/state_similarity_v2/transfer_benchmark"
 CACHE_DIR <- file.path(out_dir, "pool_cache")
 dir.create(CACHE_DIR, showWarnings = FALSE, recursive = TRUE)
 

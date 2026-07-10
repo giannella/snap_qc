@@ -13,7 +13,7 @@
 # Primary metric: cosine on sqrt(fire rates) — damps the dominance of a few
 # broad rules. Cosine on raw rates is reported as a stability check.
 #
-# Expects `reg_model_data`. Outputs -> state_similarity_v2/.
+# Expects `reg_model_data`. Outputs -> methods/state_similarity_v2/.
 # ──────────────────────────────────────────────────────────────────────────────
 
 suppressMessages(library(dplyr))
@@ -37,7 +37,7 @@ features <- c(
   "months_since_cert_n", "count_divisible_by_100"
 )
 
-out_dir <- "state_similarity_v2"
+out_dir <- "methods/state_similarity_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 ## ── 1. Data + rules ───────────────────────────────────────────────────────────

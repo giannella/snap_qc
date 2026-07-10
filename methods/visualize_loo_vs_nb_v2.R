@@ -2,12 +2,12 @@
 # state-out pool) vs NB-similarity 5-neighbor pool, 12 states, 5% and 10%
 # review budgets. Two variants: diagonal scatter (45-degree line = no
 # difference) and dumbbell (per-state gaps, sorted).
-# Reads state_similarity_v2/transfer_benchmark/budgeted_menu_results.csv.
+# Reads methods/state_similarity_v2/transfer_benchmark/budgeted_menu_results.csv.
 
 suppressMessages({library(dplyr); library(ggplot2); library(tidyr)})
 source("rule_mining_helpers.R")
 
-dat <- read.csv("state_similarity_v2/transfer_benchmark/budgeted_menu_results.csv",
+dat <- read.csv("methods/state_similarity_v2/transfer_benchmark/budgeted_menu_results.csv",
                 stringsAsFactors = FALSE) %>%
   filter(approach %in% c("national_loo", "transfer_nb")) %>%
   mutate(budget_lab = factor(sprintf("review budget: %.0f%% of caseload", 100 * budget),
@@ -37,7 +37,7 @@ p1 <- ggplot(wide, aes(loo, nb)) +
        title = "Five similar states vs forty-eight others - neither pool ever saw the target state",
        subtitle = "each point is one target state, scored on its own 2022-24 cases; above the grey line = similarity pool wins") +
   theme_minimal(base_size = 12) + theme(aspect.ratio = 1)
-save_png(p1, "state_similarity_v2/transfer_benchmark/loo_vs_nb_scatter.png", 9, 8.5)
+save_png(p1, "methods/state_similarity_v2/transfer_benchmark/loo_vs_nb_scatter.png", 9, 8.5)
 
 ## ── variant 2: dumbbell, sorted by precision gap at each budget ───────────────
 prec <- dat %>%
@@ -66,7 +66,7 @@ p2 <- ggplot(pd, aes(y = target_o)) +
        title = "Where five similar states beat forty-eight - delivered precision under a review budget",
        subtitle = "neither pool ever saw the target state; states sorted by the gap") +
   theme_minimal(base_size = 12) + theme(legend.position = "top")
-save_png(p2, "state_similarity_v2/transfer_benchmark/loo_vs_nb_dumbbell.png", 10, 5.5)
+save_png(p2, "methods/state_similarity_v2/transfer_benchmark/loo_vs_nb_dumbbell.png", 10, 5.5)
 
 ## ── variant 3: metric space (precision vs $ recall), pair per state ───────────
 ms <- dat %>% select(target, budget_lab, approach_lab, precision, dollar_recall)
@@ -94,7 +94,7 @@ p3 <- ggplot() +
        subtitle = "neither pool ever saw the target state; state base error rates run 9-15%, so precision 0.25-0.35 is a 2-3x lift") +
   coord_cartesian(ylim = c(0, NA), xlim = c(0, NA)) +
   theme_minimal(base_size = 12) + theme(legend.position = "top", aspect.ratio = 1)
-save_png(p3, "state_similarity_v2/transfer_benchmark/loo_vs_nb_metricspace.png", 10, 5.8)
+save_png(p3, "methods/state_similarity_v2/transfer_benchmark/loo_vs_nb_metricspace.png", 10, 5.8)
 
 ## ── variant 4: best approach per state, one PR panel per budget ───────────────
 best <- dat %>%
@@ -117,6 +117,6 @@ p4 <- ggplot(best, aes(dollar_recall, precision, shape = approach_lab)) +
   coord_cartesian(ylim = c(0, max(best$precision) * 1.12),
                   xlim = c(0, max(best$dollar_recall) * 1.12)) +
   theme_minimal(base_size = 12) + theme(legend.position = "top", aspect.ratio = 1)
-save_png(p4, "state_similarity_v2/transfer_benchmark/best_pool_pr_by_budget.png", 10, 5.8)
+save_png(p4, "methods/state_similarity_v2/transfer_benchmark/best_pool_pr_by_budget.png", 10, 5.8)
 
 cat("wrote loo_vs_nb_scatter.png, loo_vs_nb_dumbbell.png, loo_vs_nb_metricspace.png, best_pool_pr_by_budget.png\n")

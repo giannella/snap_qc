@@ -6,10 +6,10 @@
 # only if the union stays within budget (oversized rules are skipped, later
 # smaller ones may still fit). Reported precision/recall are on the target
 # state, which the transfer pools never saw. Reuses the benchmark's cached
-# pools (state_similarity_v2/transfer_benchmark/pool_cache/).
+# pools (methods/state_similarity_v2/transfer_benchmark/pool_cache/).
 #
 # Expects `reg_model_data`. Output ->
-#   state_similarity_v2/transfer_benchmark/budgeted_menu_results.csv
+#   methods/state_similarity_v2/transfer_benchmark/budgeted_menu_results.csv
 # ──────────────────────────────────────────────────────────────────────────────
 
 suppressMessages(library(dplyr))
@@ -22,15 +22,15 @@ K_NEIGHBORS <- 5
 YEARS   <- c("2022", "2023", "2024")
 BUDGETS <- c(0.05, 0.10)
 
-SIM_FILES <- c(fire    = "state_similarity_v2/similarity_matrix_sqrt_2022_2024.csv",
-               idf     = "state_similarity_v2/similarity_idf_2022_2024.csv",
-               nb      = "state_similarity_v2/similarity_nb_2022_2024.csv",
-               policy  = "state_similarity_v2/similarity_policy_2022_2024.csv",
-               blended = "state_similarity_v2/similarity_blended_2022_2024.csv")
+SIM_FILES <- c(fire    = "methods/state_similarity_v2/similarity_matrix_sqrt_2022_2024.csv",
+               idf     = "methods/state_similarity_v2/similarity_idf_2022_2024.csv",
+               nb      = "methods/state_similarity_v2/similarity_nb_2022_2024.csv",
+               policy  = "methods/state_similarity_v2/similarity_policy_2022_2024.csv",
+               blended = "methods/state_similarity_v2/similarity_blended_2022_2024.csv")
 INCLUDE_LOO_NATIONAL <- TRUE   # honest national control (cached pools)
 NATIONAL_CSV <- "inclusion_rules_by_hh_size_v2/final_rules_highprecision_all_frames.csv"
-CACHE_DIR <- "state_similarity_v2/transfer_benchmark/pool_cache"
-OUT_CSV   <- "state_similarity_v2/transfer_benchmark/budgeted_menu_results.csv"
+CACHE_DIR <- "methods/state_similarity_v2/transfer_benchmark/pool_cache"
+OUT_CSV   <- "methods/state_similarity_v2/transfer_benchmark/budgeted_menu_results.csv"
 
 STATE_COL <- "state"
 HH_SIZE_COL <- "cert_HH_size_FS_n"
