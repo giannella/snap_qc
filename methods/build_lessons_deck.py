@@ -345,7 +345,7 @@ def _top_fired_table():
 add_lesson(
     "The most widely deployed rules, by household size",
     ["- The three rules deployed by the most states (of 18) in each household-size stratum, from the 10%-budget national deployment. Each is a plain checkable condition. Benefit amounts relative to the household maximum appear in 8 of the 9 rules and deduction levels relative to household size in 7; certification timing, utilities, and shelter levels fill out the rest."],
-    table=_top_fired_table(), table_font=9, table_row_h=0.5, table_w=9.4,
+    table=_top_fired_table(), table_font=9, table_row_h=0.42, table_w=9.4,
     col_widths=[0.8, 7.4, 1.2])
 
 add_lesson(
