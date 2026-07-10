@@ -431,3 +431,69 @@ must stay out of training.
 budgeted_menu_results.csv); state_similarity_v2/similarity_*_2022_2024.csv
 and _2017_2019.csv; methods/state_nb_similarity_v2.R; methods/neighbor_transfer_benchmark_v2.R;
 methods/budgeted_transfer_menu_v2.R; overnight_nb_loo_run.log.*
+
+## 13. Pre-registered year-swap replication of the model-selection studies (2026-07-09)
+
+Every model-selection decision (engines, subsample, filter stringency,
+ensemble size) had been judged on the same held-out year, 2023 — a year that
+sits BETWEEN the training years, so the selection procedure itself risked
+being tuned to one interpolated year (pipeline_critique_2026-07-09.md, V2).
+Guard: the four decisive selection claims were re-run with the year roles
+swapped — train 2022+2023, test 2024, a year that never influenced any
+design decision — with expectations and falsification criteria WRITTEN DOWN
+BEFORE the run (`yearswap_preregistration_2026-07-09.md`). Levels were
+expected to shift (rebuilt frame, different year); orderings and margins
+were what the original decisions rested on, so orderings and margins were
+what was pre-registered.
+
+**Claim 1 — engine pairing.** The claim: mining rules with xgboost and a
+constrained random forest (ranger, mtry 2) TOGETHER yields more recall at
+the 0.20 filter floor than either engine alone or a bagged-CART + ranger
+pair, at a small precision cost, because the two engines contribute
+complementary rule vocabularies. REPLICATED in ordering: the pair again
+leads recall at the floor (0.794 vs 0.773 for xgboost alone, 0.757 ranger,
+0.724 bagged CART) at a small precision cost (0.185 vs 0.189-0.202). The
+pre-registered margin (>= 3pp over the best single engine) came in at
+2.1pp — the pairing advantage is real but thinner than the 2023-judged
+number, a direct measurement of how much adaptive selection flattered the
+original margin.
+
+**Claim 2 — low subsampling beats high.** The claim: showing each boosted
+tree only 15-30% of the training data produces better rules than showing it
+60-80%, so subsample belongs at 0.20. PREDICTION FAILED; finding RETIRED.
+On 2024 the band structure vanishes: precision at the 0.20 floor spans
+0.181-0.186 across ALL nine settings from 0.15 to 0.80 — one flat plateau,
+with the predicted ordering (worst low-band member >= best high-band
+member) failing, 0.182 < 0.186. Per the pre-registered decision rule, "low
+subsample beats high" is no longer quotable; the surviving claim is only
+that subsample barely matters in this range. Production stays at 0.20 (it
+leads mean precision, 0.303, and nothing beats it meaningfully).
+
+**Claim 3 — stringent filtering delivers more precision.** The claim: among
+rules mined by big ensembles, raising the one-sided Wilson lower-bound
+stringency from 80% to 99% (z = 0.84 -> 2.33) monotonically raises the
+delivered (held-out) precision of the surviving union while costing recall
+— the mechanism that makes "mine big" safe. REPLICATED: precision at the
+0.20 floor again rises monotonically in z (0.169 / 0.175 / 0.179 / 0.188)
+while recall falls (0.873 -> 0.776); the 99%-vs-80% advantage is 0.019
+against a pre-registered >= 0.020 prediction and a 0.010 falsification
+line.
+
+**Claim 4 — big ensembles widen the menu, not the frontier.** The claim:
+1000-round/1000-tree mining does not trace a better precision-recall
+frontier than 100-round mining, but produces several times more distinct
+filtered rules (the menu states need for vetoes and substitutes).
+REPLICATED: inventory ratio 7.3-7.9x (26.6-29.1k vs 3.6-3.7k rules), with
+the big pool's precision deficit at matched stringency only 0.020-0.022 and
++7pp recall at the floor.
+
+Net: three of the four selection findings replicate on a year that never
+judged any design decision, and the procedure produced one honest
+retraction (Claim 2) — evidence the selection methodology was not
+2023-luck, and that the pre-registration has teeth. No production setting
+changes.
+
+*Artifacts: yearswap_preregistration_2026-07-09.md (predictions + results);
+methods/compare_engines_v2/yearswap_train2223_test24/;
+methods/parameter_tuning_v2/yearswap_train2223_test24/;
+methods/run_selection_yearswap.R.*
