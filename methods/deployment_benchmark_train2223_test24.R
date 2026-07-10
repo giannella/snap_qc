@@ -7,7 +7,12 @@
 # are additionally scored on a state no rule ever saw. Approaches per target:
 #   own_state     rules mined on the target's OWN 2022-23 (temporal holdout
 #                 only; hard support floor n >= 30 per the state-scale lesson)
-#   national_loo  rules mined on all other states' 2022-23
+#   national_all  rules mined on ALL states' 2022-23 INCLUDING the target --
+#                 honest here because the test year is unseen; this is what a
+#                 state deploying the national list actually gets (one shared
+#                 pool for every target)
+#   national_loo  rules mined on all other states' 2022-23 (kept for the
+#                 state-axis comparison with the same-era benchmark)
 #   transfer_nb   rules mined on the 5 most-similar states' 2022-23, with
 #                 similarity computed from 2022-23 fire rates only
 # Review-budget evaluation (5% / 10%): rules added in descending train-LCB
@@ -29,9 +34,17 @@ suppressMessages(library(dplyr))
 source("rule_mining_helpers.R")
 set.seed(117)
 
-TARGETS <- c("Louisiana", "Washington", "Virginia", "Arizona", "Connecticut",
-             "Michigan", "North Carolina", "California", "Texas",
-             "Mississippi", "New Jersey", "Colorado")
+# TARGETS / APPROACHES / OUT_CSV_NAME can be pre-set in a runner before
+# source() (e.g. methods/run_deployment_benchmark_workshop.R adds states and
+# skips the pool types its charts don't need; cached pools are reused).
+if (!exists("TARGETS"))
+  TARGETS <- c("Louisiana", "Washington", "Virginia", "Arizona", "Connecticut",
+               "Michigan", "North Carolina", "California", "Texas",
+               "Mississippi", "New Jersey", "Colorado")
+if (!exists("APPROACHES"))
+  APPROACHES <- c("own_state", "transfer_nb", "national_loo", "national_all")
+if (!exists("OUT_CSV_NAME"))
+  OUT_CSV_NAME <- "deployment_menu_train2223_test24.csv"
 K_NEIGHBORS <- 5
 TRAIN_YEARS <- c("2022", "2023")
 TEST_YEAR   <- "2024"
@@ -188,9 +201,11 @@ for (target in TARGETS) {
   pools <- list(
     own_state    = target,
     transfer_nb  = names(nbv)[seq_len(K_NEIGHBORS)],
-    national_loo = setdiff(sort(unique(st)), target)
-  )
-  cat(sprintf("  nb pool: %s\n", paste(pools$transfer_nb, collapse = ", ")))
+    national_loo = setdiff(sort(unique(st)), target),
+    national_all = sort(unique(st))
+  )[APPROACHES]
+  if ("transfer_nb" %in% APPROACHES)
+    cat(sprintf("  nb pool: %s\n", paste(pools$transfer_nb, collapse = ", ")))
   for (nm in names(pools)) {
     rl <- mine_pool(pools[[nm]])
     if (is.null(rl) || nrow(rl) == 0) {
@@ -208,10 +223,10 @@ for (target in TARGETS) {
                   100 * out$dollar_recall))
     }
   }
-  saveRDS(bind_rows(res), file.path(out_dir, "deployment_partial.rds"))
+  saveRDS(bind_rows(res),
+          file.path(out_dir, sub("\\.csv$", "_partial.rds", OUT_CSV_NAME)))
 }
 out <- bind_rows(res)
-write.csv(out, file.path(out_dir, "deployment_menu_train2223_test24.csv"),
-          row.names = FALSE)
+write.csv(out, file.path(out_dir, OUT_CSV_NAME), row.names = FALSE)
 cat(sprintf("\nwrote %s (%d rows)\n",
-            file.path(out_dir, "deployment_menu_train2223_test24.csv"), nrow(out)))
+            file.path(out_dir, OUT_CSV_NAME), nrow(out)))

@@ -202,16 +202,24 @@ add_lesson(
 add_lesson(
     "Evaluate at review budgets, not just statistical floors",
     ["- Confidence floors produce whatever workload they produce: on the rebuilt data, the 0.20 floor's rule union flags ~half the caseload (which is how 'catch 79% of error dollars' happens). States plan around review capacity, not floors.",
-     "- So we also report budget-filled performance: add rules in descending lower-bound order until 5% or 10% of the caseload is flagged. Median across 12 states, out-of-state rules deliver 0.31-0.34 precision catching 12-16% of error dollars at a 5% budget, and 0.25-0.31 catching 22-30% at 10% - against 9-15% base rates.",
-     "- The budget lens also corrects floor artifacts: Mississippi's transferred rules stopped firing entirely at a 0.30 floor, yet delivered the best 5%-budget precision of any state (0.346) - the rules were fine, the floor wasn't."],
+     "- So we also report budget-filled performance: add rules in descending lower-bound order until 5% or 10% of the caseload is flagged. In the deployment test (trained on 2022-23 only, scored on each state's 2024), the national rules deliver median 0.30 precision catching 16% of error dollars at a 5% budget, and 0.27 catching 25% at 10% - against 8-17% base rates.",
+     "- The budget lens also corrects floor artifacts: Mississippi's transferred rules stopped firing entirely at a 0.30 floor, yet delivered among the best 5%-budget precision of any state - the rules were fine, the floor wasn't."],
     figure="methods/state_similarity_v2/transfer_benchmark/best_pool_pr_by_budget.png",
     fig_aspect=5.8 / 10)
 
 add_lesson(
-    "Current work: choosing donor states by measured similarity",
-    ["- We compute state similarity from the QC microdata itself, two ways: which risk patterns fire in a state's caseload (weighting rarely-firing patterns more heavily), and de facto policy-option profiles (categorical eligibility, reporting system, certification periods, deduction structures - all readable off the microdata, per era).",
-     "- The two definitions, built from different information, agree on Louisiana's 2022-24 donor pool - and reproduce the pool that worked above. Neighbor lists change sharply between 2017-19 and 2022-24, so we compute them per era.",
-     "- A leave-one-state-out benchmark (12 states x 4 similarity definitions vs national rules) is running now."])
+    "The national rules, deployed a year ahead, state by state",
+    ["- The deployment test: rules mined on all states' 2022-23 data, applied in national-confidence order until 10% of the state's caseload is flagged, scored on the state's 2024 cases - a year no rule ever saw.",
+     "- Every state clears its base rate: precision 0.18-0.37 against 8-17% base rates, a 1.5-3.4x lift over random review.",
+     "- Including the state's own 2022-23 rows in the mining changes little vs holding the state out entirely (median difference ~0.00; per state -0.08 to +0.06): with a truly unseen test year, the national numbers a state is quoted are already honest."],
+    figure="methods/state_similarity_v2/transfer_benchmark_train2223_test24/deploy_national_dotplot_budget10.png",
+    fig_aspect=4.4 / 6.6)
+
+add_lesson(
+    "Donor-state similarity: tested, and the national pool held up",
+    ["- We compute state similarity from the QC microdata itself (which risk patterns fire in a state's caseload; rarely-firing patterns weighted more heavily) and pick each state's 5 nearest donors. Neighbor lists change sharply between 2017-19 and 2022-24, so we compute them per era.",
+     "- Scored within the same era, 5-donor pools matched or beat the held-out national pool in 6 of 12 states at a 10% budget (median 0.278 vs 0.245). Re-tested as a deployment (train 2022-23, score 2024), the advantage did not survive: national median 0.27-0.30 vs transfer 0.25-0.26 across budgets.",
+     "- Mining a state's own data alone is the high-variance option: the best single results anywhere (Connecticut 0.416, Virginia 0.371 at 10%) but also the worst - Washington's own rules delivered 0.05-0.08 precision on 2024, BELOW its 8.5% base rate. Neighbor pools are the fallback where own-state mining fails, not the default."])
 
 # ── 14. takeaways ────────────────────────────────────────────────────────────
 add_lesson(
