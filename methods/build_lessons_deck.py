@@ -356,7 +356,7 @@ add_lesson(
     "What a state is handed under the two-regime rule",
     ["- One ranked list per state (core sized to the budget + buffer to 3x depth), from the national pool by default or the state's own mined pool where its own rules win on 2024. 'Typically run' = rules actually activated before 2024 capacity filled.",
      "- Own rules are the FALLBACK regime, not a co-equal choice: the public files show only 43-81% of a state's error cases, so where they disagree with the national list, only the state's own internal validation can settle which is really better."],
-    table=_handoff_table(), table_font=9, table_row_h=0.23, table_w=9.2)
+    table=_handoff_table(), table_font=9, table_row_h=0.21, table_w=9.2)
 
 add_lesson(
     "Blending state and national rules onto one confidence scale",
