@@ -45,7 +45,7 @@ make_dotplot_national <- function(budget_val, fname, title_pct) {
     labs(x = sprintf("precision at a %s review budget (95%% interval)\nopen circle = state 2024 base error rate", title_pct),
          y = NULL,
          title = sprintf("National rules at a %s review budget, tested on 2024", title_pct),
-         subtitle = "rules mined on all states' 2022-23 data, scored on the state's 2024 cases;\neverything right of the open circle is lift over random review") +
+         subtitle = "rules mined on all states' 2022-23 data, scored on the state's 2024\ncases; everything right of the open circle is lift over random review") +
     expand_limits(x = 0) +
     theme_minimal(base_size = 12.5) +
     theme(panel.grid.minor = element_blank(),
