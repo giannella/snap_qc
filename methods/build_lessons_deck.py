@@ -324,7 +324,7 @@ add_lesson(
 add_lesson(
     "Freeze each state's list in advance: it costs almost nothing",
     ["- The handable deliverable: budget-fill the ranked national list against the state's own 2022-23 caseload (no outcomes needed), freeze the 35-101 contributing rules, deploy unchanged on 2024.",
-     "- Freezing costs ~no precision (median 0.288 vs 0.275 for the fill that saw the 2024 caseload); realized workload lands slightly under target (median -0.9pp, worst -4.4pp), so the cost is under-used capacity: ~3pp of error dollars, recoverable by extending deeper into the ranking when under budget.",
+     "- Freezing costs ~no precision (median 0.288 vs 0.275 for a list sized all at once against the full 2024 caseload); realized workload lands slightly under target (median -0.9pp, worst -4.4pp), so the cost is under-used capacity: ~3pp of error dollars, recoverable by extending deeper into the ranking when under budget.",
      "- All 18 states clear their base rate. Validation recipe for a state: we freeze on public data through the latest year; the state validates on its own newer internal data before relying on it."],
     figure="methods/state_similarity_v2/transfer_benchmark_train2223_test24/frozen_lists_panels_budget10.png",
     fig_aspect=5.8 / 6.6)

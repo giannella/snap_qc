@@ -20,11 +20,11 @@ sy <- bind_rows(
 
 make_panels <- function(budget_val, fname, title_pct) {
   f <- fz %>% filter(budget == budget_val) %>%
-    transmute(target, list = "frozen list",
+    transmute(target, list = "frozen in advance (2022-23)",
               `share of caseload reviewed` = workload_2024,
               precision, `share of error $ caught` = dollar_recall)
   s <- sy %>% filter(budget == budget_val) %>%
-    transmute(target, list = "same-year fill",
+    transmute(target, list = "sized all at once on 2024",
               `share of caseload reviewed` = workload,
               precision, `share of error $ caught` = dollar_recall)
   ord <- f %>% arrange(precision) %>% pull(target)
@@ -42,13 +42,14 @@ make_panels <- function(budget_val, fname, title_pct) {
     geom_vline(data = ref, aes(xintercept = x), linetype = "dashed",
                colour = "grey55", linewidth = 0.4) +
     geom_point(aes(shape = list), size = 2.1, stroke = 0.9) +
-    scale_shape_manual(values = c("frozen list" = 16, "same-year fill" = 1),
+    scale_shape_manual(values = c("frozen in advance (2022-23)" = 16,
+                                  "sized all at once on 2024" = 1),
                        name = NULL) +
     facet_wrap(~metric, nrow = 1, scales = "free_x") +
     labs(x = sprintf("lists sized to a %s review budget; scored on the state's 2024 cases", title_pct),
          y = NULL,
          title = sprintf("Frozen state lists a year ahead, %s sizing", title_pct),
-         subtitle = "filled = list frozen on the state's 2022-23 caseload, deployed\non 2024; open = the fill that saw 2024; dashed = target sizing") +
+         subtitle = "both lists packed from the ranked national pool until capacity fills;\ndashed line = the target sizing") +
     theme_minimal(base_size = 12.5) +
     theme(panel.grid.minor = element_blank(),
           panel.grid.major.y = element_blank(),
