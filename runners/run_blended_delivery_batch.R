@@ -5,6 +5,6 @@ reg_model_data <- readRDS("reg_model_data.rds")
 for (DELIVERY_STATE in c("Washington", "Virginia", "Michigan", "Maryland",
                          "Minnesota", "Arizona", "Colorado", "North Carolina")) {
   cat(sprintf("\n########## %s ##########\n", DELIVERY_STATE))
-  source("methods/build_blended_delivery_list_v2.R")
+  source("INCL_build_blended_delivery_list_v2.R")
 }
 cat("\n=== delivery batch complete ===\n")

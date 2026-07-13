@@ -1,7 +1,7 @@
 # Blended delivery lists by state (2022-24 public QC data)
 
 One ranked rule list per state and review budget, built by
-`methods/build_blended_delivery_list_v2.R` (batch: `runners/` pattern; see
+`INCL_build_blended_delivery_list_v2.R` (batch: `runners/` pattern; see
 `custom_one_off/delivery_batch_run.log` provenance in the private workspace).
 This is the default deployment deliverable described in the README and
 `methods/modeling_findings.md` (sections 14-16).
