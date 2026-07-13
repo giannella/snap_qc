@@ -53,7 +53,7 @@ The philosophy on ensemble size: **mine big, filter stringently**. Large ensembl
 | script | purpose |
 |---|---|
 | `rule_mining_helpers.R` | all shared logic (the five stages) |
-| `test_rule_mining_helpers.R` | 18-check regression test on synthetic data — run after touching the helpers |
+| `test_rule_mining_helpers.R` | 26-check regression test on synthetic data — run after touching the helpers |
 | `INCL_find_inclusion_rules_by_hh_size_v2.R` | inclusion rules per mining frame (earned, unearned, underissuance, other, + pooled all-errors) x household size |
 | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | exclusion rules: filter safe-to-skip cases by clean-rate LCB; reports workload cut vs error-dollar retention |
 | `state_threshold_gridsearch_v2.R` | tunes national rule thresholds per state and tests on a hold-out year, incl. a "deploy national as-is" benchmark |

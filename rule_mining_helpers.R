@@ -162,6 +162,74 @@ generate_rules_rpart <- function(df, is_error, features,
   unique(unlist(out))
 }
 
+# Mine a provenance-tagged rule vocabulary: one xgboost + ranger pass per
+# (mining frame x stratum), each candidate canonicalized, then identical
+# canonical rule text found by several engines or frames collapses to ONE row
+# whose `engines` / `mined_frames` columns record every origin ("+"-joined,
+# sorted). Frames define only WHAT a rule was mined from (its training subset
+# and target); scoring, filtering, and ranking stay with the caller — a typed
+# frame's provenance must never become its scoring basis.
+#
+#   train       data frame (already through prep_features)
+#   frames      named list; each element list(rows = integer indices into
+#               `train`, ie = logical error target aligned to `rows`)
+#   strata_idx  named list of integer row indices into `train`, one per stratum
+#   features    feature names (the prep_features output)
+#   xgb, rf     engine parameter lists (nrounds/max_depth/eta/subsample and
+#               num_trees/max_depth/mtry/min_node_size)
+#   min_rows, min_errors  a (frame x stratum) cell thinner than this is skipped
+#
+# Returns data.frame(hh, rule, engines, mined_frames), one row per unique
+# (hh, rule), C-locale sorted by (hh, rule); NULL if nothing was mined.
+mine_rule_vocabulary <- function(train, frames, strata_idx, features,
+                                 xgb, rf, signif_digits = 3,
+                                 min_rows = 100, min_errors = 10,
+                                 seed = 117, verbose = TRUE) {
+  parts <- list()
+  for (fn in names(frames)) {
+    fr <- frames[[fn]]
+    for (h in names(strata_idx)) {
+      ix <- intersect(strata_idx[[h]], fr$rows)
+      if (length(ix) < min_rows) next
+      ie_s <- fr$ie[match(ix, fr$rows)]
+      if (sum(ie_s) < min_errors) next
+      sub <- train[ix, , drop = FALSE]
+      rx <- canonicalize_rules(
+        generate_rules_xgboost(sub, ie_s, features, nrounds = xgb$nrounds,
+                               max_depth = xgb$max_depth, eta = xgb$eta,
+                               subsample = xgb$subsample, seed = seed),
+        signif_digits)
+      rr <- canonicalize_rules(
+        generate_rules_ranger(sub, ie_s, features, num_trees = rf$num_trees,
+                              max_depth = rf$max_depth, mtry = rf$mtry,
+                              min_node_size = rf$min_node_size, seed = seed),
+        signif_digits)
+      if (verbose)
+        cat(sprintf("  [mine %s | HH %s] %d rows, %d errors -> xgboost %d, ranger %d rules\n",
+                    fn, h, length(ix), sum(ie_s), length(rx), length(rr)))
+      parts[[length(parts) + 1L]] <- data.frame(
+        hh = h, rule = c(rx, rr),
+        engine = rep(c("xgboost", "ranger"), c(length(rx), length(rr))),
+        mined_frame = fn, stringsAsFactors = FALSE)
+    }
+  }
+  if (!length(parts)) return(NULL)
+  all_rules <- do.call(rbind, parts)
+  key <- paste(all_rules$hh, all_rules$rule, sep = "\r")
+  eng <- vapply(split(all_rules$engine, key),
+                function(e) paste(sort(unique(e)), collapse = "+"), character(1))
+  frs <- vapply(split(all_rules$mined_frame, key),
+                function(f) paste(sort(unique(f)), collapse = "+"), character(1))
+  first <- !duplicated(key)
+  out <- data.frame(hh = all_rules$hh[first], rule = all_rules$rule[first],
+                    engines = unname(eng[key[first]]),
+                    mined_frames = unname(frs[key[first]]),
+                    stringsAsFactors = FALSE)
+  out <- out[order(out$hh, out$rule, method = "radix"), , drop = FALSE]
+  rownames(out) <- NULL
+  out
+}
+
 ## ── 2. Canonicalize ───────────────────────────────────────────────────────────
 # Parse "var op number" conditions, round thresholds to `signif_digits`
 # significant digits (state-presentable; collapses near-identical cutpoints),

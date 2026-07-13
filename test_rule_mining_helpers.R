@@ -33,6 +33,24 @@ ok("rpart produced rules", length(rp) > 20)
 ok("all rpart rules evaluate", parse_ok(rp))
 ok("rpart rules canonicalize", length(canonicalize_rules(rp)) > 10)
 
+## provenance-tagged vocabulary mining
+voc_strata <- lapply(setNames(nm = c("1","2-3","4+")), function(g) which(d2$grp == g))
+voc <- mine_rule_vocabulary(
+  d2, list(fA = list(rows = seq_len(n), ie = d2$is_err),
+           fB = list(rows = seq_len(n), ie = d2$is_err)),
+  voc_strata, feats,
+  xgb = list(nrounds = 30, max_depth = 3, eta = 0.1, subsample = 0.7),
+  rf  = list(num_trees = 30, max_depth = 3, mtry = 1, min_node_size = 20),
+  seed = 7, verbose = FALSE)
+ok("vocabulary has provenance columns",
+   all(c("hh", "rule", "engines", "mined_frames") %in% names(voc)))
+ok("identical frames merge to fA+fB on every rule",
+   nrow(voc) > 20 && all(voc$mined_frames == "fA+fB"))
+ok("engine tags well-formed",
+   all(voc$engines %in% c("ranger", "xgboost", "ranger+xgboost")))
+ok("vocabulary rows unique per (hh, rule)",
+   !anyDuplicated(paste(voc$hh, voc$rule)))
+
 ## canonicalization
 ok("collapse duplicate bounds",
    canonicalize_rule("x1 <= 5 & x2 > 1 & x1 <= 3") == "x1 <= 3 & x2 > 1")

@@ -135,31 +135,18 @@ run_frame <- function(frame_df, frame_name, universe) {
   strata_u  <- lapply(setNames(nm = HH_LEVELS), function(h)
     which(hh_group_of(univ[[HH_SIZE_COL]]) %in% h))
 
-  ## generate per stratum x engine
-  rules_df <- bind_rows(lapply(HH_LEVELS, function(h) {
-    ix  <- strata_tr[[h]]
-    sub <- train[ix, , drop = FALSE]; ie_s <- tg_tr$ie[ix]
-    cat(sprintf("\n-- HH %s: %d train rows, %d errors (%.2f%%)\n",
-                h, nrow(sub), sum(ie_s), 100 * mean(ie_s)))
-    if (nrow(sub) < 100 || sum(ie_s) < 10) { cat("   too thin; skipped\n"); return(NULL) }
-    rx <- canonicalize_rules(
-      generate_rules_xgboost(sub, ie_s, pv, nrounds = XGB$nrounds,
-                             max_depth = XGB$max_depth, eta = XGB$eta,
-                             subsample = XGB$subsample, seed = 117),
-      SIGNIF_DIGITS)
-    rr <- canonicalize_rules(
-      generate_rules_ranger(sub, ie_s, pv, num_trees = RF$num_trees,
-                            max_depth = RF$max_depth, mtry = RF$mtry,
-                            min_node_size = RF$min_node_size, seed = 117),
-      SIGNIF_DIGITS)
-    cat(sprintf("   xgboost rules: %d | ranger rules: %d\n", length(rx), length(rr)))
-    bind_rows(data.frame(rule = rx, hh = h, source = "xgboost", stringsAsFactors = FALSE),
-              data.frame(rule = rr, hh = h, source = "ranger", stringsAsFactors = FALSE))
-  }))
+  ## generate per stratum x engine (shared with the delivery builder; the
+  ## single-frame call keeps this script's outputs unchanged — `source` is the
+  ## engine tag, the frame is already in the output filename)
+  rules_df <- mine_rule_vocabulary(
+    train, setNames(list(list(rows = seq_len(nrow(train)), ie = tg_tr$ie)),
+                    frame_name),
+    strata_tr, pv, xgb = XGB, rf = RF,
+    signif_digits = SIGNIF_DIGITS, seed = 117)
   if (is.null(rules_df) || nrow(rules_df) == 0) return(invisible(NULL))
-  rules_df <- rules_df %>%
-    group_by(hh, rule) %>%
-    summarise(source = paste(sort(unique(source)), collapse = "+"), .groups = "drop")
+  rules_df$source <- rules_df$engines
+  rules_df$engines <- NULL
+  rules_df$mined_frames <- NULL
 
   ## train flags -> screen
   idx_tr <- flags_for_rules(rules_df, train, strata_tr, label = "train")
