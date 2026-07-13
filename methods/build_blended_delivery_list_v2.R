@@ -11,10 +11,11 @@
 # (core) and to 3x depth (buffer); export the ranked lists.
 #
 # DELIVERY_STATE can be pre-set in a runner before source().
-# Expects `reg_model_data`. Outputs -> custom_one_off/<state>/ (gitignored;
-# state-specific deliverables stay out of the public repo). The national
-# all-years pool is cached in methods/delivery_pools_2022_2024/ for reuse
-# across states.
+# Expects `reg_model_data`. Outputs -> state_delivery_lists/ (tracked and
+# public: these lists are batch-built from public data for any state, unlike
+# the single-state engagement work that stays in gitignored custom_one_off/).
+# The national all-years pool is cached in methods/delivery_pools_2022_2024/
+# for reuse across states.
 
 suppressMessages(library(dplyr))
 source("rule_mining_helpers.R")
@@ -31,7 +32,7 @@ SIGNIF_DIGITS <- 3
 MIN_TRAIN_FLAGGED <- 30
 
 POOL_CACHE <- "methods/delivery_pools_2022_2024"
-out_dir <- file.path("custom_one_off", tolower(gsub(" ", "_", DELIVERY_STATE)))
+out_dir <- "state_delivery_lists"
 dir.create(POOL_CACHE, showWarnings = FALSE, recursive = TRUE)
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
