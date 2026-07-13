@@ -1,8 +1,13 @@
-# SNAP QC rule mining — key findings & syntheses (2026-07-04/05 runs)
+# SNAP QC rule mining — key findings & syntheses (July 2026 runs)
 
 Working notes for the presentation. Each section lists the supporting artifact
-files. Methods details live in `methods/design_drop_pre_architecture.md`; all numbers
-below are hold-out (train 2022+2024, test 2023) unless noted.
+files. Methods details live in `methods/design_drop_pre_architecture.md`. Sections
+1-13 are hold-out numbers (train 2022+2024, test 2023) unless noted; the
+deployment sections (14-16) train on 2022+2023 and test on 2024, a year that
+never influenced any design decision. Current deployment guidance lives in
+sections 14-16 (and the README): the blended frozen list is the default
+deliverable; earlier per-state guidance in sections 9 and 12 is partially
+superseded and carries notes where so.
 
 ---
 
@@ -264,6 +269,16 @@ test; Washington's collapsed to 5% precision while national-as-is delivered
 36% at 9% recall). Where tuning works it works well: Connecticut catches 43%
 of errors / 49% of error dollars at 21% review precision.
 
+*(2026-07-10 update — partially superseded: re-run in the deployment setting
+(train 2022-23, test 2024, review budgets; sections 14-16), per-state
+re-filtering and re-tuning of the national pool did NOT beat deploying the
+national ranking as-is for the median of 18 states; adaptation paid only
+where the national list underperformed. The current deployment default is
+the blended frozen list of section 16, with the state's own-pool list as
+the fallback, judged by the state's internal validation. The support-floor
+lesson here (n >= 30 at state scale) still stands and is baked into the
+delivery builder.)*
+
 National selection sent to states: up to 60 rules per frame by national train
 LCB (earned admitted at a relaxed 0.15 floor; 186 rules total).
 
@@ -419,13 +434,16 @@ Findings (same-recipe comparisons, i.e. LOO vs similarity pools):
   other and with the donor pool that worked in the July transfer, and all
   differ sharply from the 2017-19 lists.
 
-Deployment guidance (supersedes nothing; complements the two-regime rule in
-section 9): the production national shortlist remains the best single list at
-small budgets, but numbers quoted to a state from in-sample national training
-overstate honest performance by up to the as-is-vs-LOO gap; at moderate
-budgets (~10%), similarity-picked donor pools (fire or NB) are competitive
-with any national option and are the honest choice where a state's own data
-must stay out of training.
+Deployment guidance *(SUPERSEDED by section 14 on 2026-07-10: re-tested with
+a true temporal split, the 10%-budget similarity-pool advantage did not
+survive — the national pool leads at both budgets on 2024, and with an
+unseen test year the in-sample-flattering concern also dissolves. Kept as
+originally written for the record)*: the production national shortlist
+remains the best single list at small budgets, but numbers quoted to a
+state from in-sample national training overstate honest performance by up
+to the as-is-vs-LOO gap; at moderate budgets (~10%), similarity-picked
+donor pools (fire or NB) are competitive with any national option and are
+the honest choice where a state's own data must stay out of training.
 
 *Artifacts: methods/state_similarity_v2/transfer_benchmark/ (benchmark +
 budgeted_menu_results.csv); methods/state_similarity_v2/similarity_*_2022_2024.csv

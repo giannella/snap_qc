@@ -52,7 +52,7 @@ generate -> canonicalize -> dedup -> evaluate -> sweep / shortlist
 - Strata: household size 1 / 2-3 / 4+ (`cert_HH_size_FS_n` collapsed). On v2 engines pooling is nearly as precise, but the coarse split buys recall reach and ~5x filtered inventory; 5-way splits are worse.
 - elderly/disabled: a FEATURE, not a stratum (settled empirically — the ensembles carve the caseload themselves).
 - Frame-relative precision understates deployed precision ~2x; always compute and quote any-error metrics.
-- States: tune thresholds locally only when ~30+ rules qualify on state train data; small states deploy national rules unchanged (small-sample tuning is winner's-curse territory).
+- States (deployment recipe as of 2026-07-10, findings 14-16): the default deliverable is the BLENDED FROZEN LIST — the state's own mined pool merged into the national pool on the 99%-LCB scale, filled against the state's own caseload to the review budget (core) plus buffer rules to 3x depth, walked in rank order until capacity fits (outcome-free). Built by `methods/build_blended_delivery_list_v2.R`; state outputs go in gitignored `custom_one_off/<state>/`. Per-state re-filtering/tuning did NOT beat the national ordering for the median state on a true future-year test; the state's own-pool list is a FALLBACK judged by the state's internal validation (public files show only 43-81% of each state's error cases). Small-sample tuning remains winner's-curse territory — the n >= 30 support floor stands. Evaluate at review budgets (5%/10% of caseload), not just filter floors.
 
 ### v2 scripts
 
