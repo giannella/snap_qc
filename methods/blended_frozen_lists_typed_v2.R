@@ -18,10 +18,13 @@ suppressMessages(library(dplyr))
 source("rule_mining_helpers.R")
 set.seed(117)
 
-TARGETS <- c("Louisiana", "Washington", "Virginia", "Arizona", "Connecticut",
-             "Michigan", "North Carolina", "California", "Texas",
+TARGETS <- c(# priority states first (2026-07-14)
+             "Massachusetts", "Michigan", "North Carolina", "Connecticut",
+             "Arizona", "Washington",
+             # remainder
+             "Louisiana", "Virginia", "California", "Texas",
              "Mississippi", "New Jersey", "Colorado",
-             "Maine", "Maryland", "Missouri", "Massachusetts",
+             "Maine", "Maryland", "Missouri",
              "District of Columbia", "Tennessee")
 BUDGETS <- c(0.05, 0.10)
 BUFFER_MULT <- 3
