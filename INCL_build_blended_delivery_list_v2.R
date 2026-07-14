@@ -89,27 +89,65 @@ mine_pool <- function(pool_states, cache_name) {
   strata_tr <- lapply(setNames(nm = HH_LEVELS), function(h)
     which(hh_group_of(train$cert_HH_size_FS_n) %in% h))
   es <- as.character(train$error_status)
-  frames <- lapply(setNames(nm = MINING_FRAMES), function(fn) {
+  empty <- data.frame(hh = character(), rule = character(), engines = character(),
+                      mined_frames = character(), n_flagged_train = integer(),
+                      precision_train = numeric(), precision_train_lcb = numeric(),
+                      stringsAsFactors = FALSE)
+  # One frame at a time, checkpointed: mine, score on the any-error target
+  # over the pool's full caseload, apply the per-rule filters, keep only the
+  # survivors. Peak memory stays at ONE frame's flag set (the five frames at
+  # once held ~650k rules' indices on the national caseload and exhausted
+  # RAM); per-rule stats don't depend on other frames, so the result is
+  # identical to filtering the combined vocabulary.
+  filt <- list()
+  for (fn in MINING_FRAMES) {
+    ck <- file.path(POOL_CACHE, sprintf("filtered_%s_%s.rds", cache_name, fn))
+    if (file.exists(ck)) { filt[[fn]] <- readRDS(ck); next }
     rows <- if (fn == "any_error") seq_len(nrow(train))
             else which(es %in% c(fn, "no_error"))
-    list(rows = rows, ie = tg_tr$ie[rows])
-  })
-  rules_df <- mine_rule_vocabulary(train, frames, strata_tr, pv,
-                                   xgb = XGB, rf = RF,
-                                   signif_digits = SIGNIF_DIGITS, seed = 117)
-  if (is.null(rules_df) || nrow(rules_df) == 0) return(NULL)
-  # score and filter EVERY candidate on the any-error target over the pool's
-  # full caseload, whatever frame it was mined from
-  idx_tr <- flags_for_rules(rules_df, train, strata_tr, label = "pool-train")
-  n_tr <- lengths(idx_tr)
-  k_tr <- vapply(idx_tr, function(ix) sum(tg_tr$ie[ix]), numeric(1))
-  raw  <- ifelse(n_tr > 0, k_tr / n_tr, NA_real_)
-  base <- vapply(rules_df$hh, function(h) mean(tg_tr$ie[strata_tr[[h]]]), numeric(1))
-  keep <- !is.na(raw) & n_tr >= MIN_TRAIN_FLAGGED & raw >= 0.05 & raw > base
-  rules_df <- rules_df[keep, , drop = FALSE]; idx_tr <- idx_tr[keep]
-  rules_df$n_flagged_train <- n_tr[keep]
-  rules_df$precision_train <- round(raw[keep], 4)
-  rules_df$precision_train_lcb <- round(wilson_lcb(k_tr[keep], n_tr[keep], LCB_Z), 4)
+    rdf <- mine_rule_vocabulary(
+      train, setNames(list(list(rows = rows, ie = tg_tr$ie[rows])), fn),
+      strata_tr, pv, xgb = XGB, rf = RF,
+      signif_digits = SIGNIF_DIGITS, seed = 117)
+    if (is.null(rdf) || nrow(rdf) == 0) {
+      saveRDS(empty, ck); filt[[fn]] <- empty; next
+    }
+    idx <- flags_for_rules(rdf, train, strata_tr,
+                           label = sprintf("pool-train %s", fn))
+    n_tr <- lengths(idx)
+    k_tr <- vapply(idx, function(ix) sum(tg_tr$ie[ix]), numeric(1))
+    raw  <- ifelse(n_tr > 0, k_tr / n_tr, NA_real_)
+    base <- vapply(rdf$hh, function(h) mean(tg_tr$ie[strata_tr[[h]]]), numeric(1))
+    keep <- !is.na(raw) & n_tr >= MIN_TRAIN_FLAGGED & raw >= 0.05 & raw > base
+    rdf <- rdf[keep, , drop = FALSE]
+    rdf$n_flagged_train <- n_tr[keep]
+    rdf$precision_train <- round(raw[keep], 4)
+    rdf$precision_train_lcb <- round(wilson_lcb(k_tr[keep], n_tr[keep], LCB_Z), 4)
+    saveRDS(rdf, ck)
+    filt[[fn]] <- rdf
+    rm(idx); invisible(gc())
+  }
+  all_f <- do.call(rbind, filt)
+  if (is.null(all_f) || nrow(all_f) == 0) return(NULL)
+  # merge provenance across frames: identical (hh, rule) text has identical
+  # stats (same training caseload, same target), so keep the first row and
+  # union the tags
+  key <- paste(all_f$hh, all_f$rule, sep = "\r")
+  eng <- vapply(split(all_f$engines, key), function(e)
+    paste(sort(unique(unlist(strsplit(e, "+", fixed = TRUE)))), collapse = "+"),
+    character(1))
+  frs <- vapply(split(all_f$mined_frames, key), function(f)
+    paste(sort(unique(unlist(strsplit(f, "+", fixed = TRUE)))), collapse = "+"),
+    character(1))
+  first <- !duplicated(key)
+  rules_df <- all_f[first, , drop = FALSE]
+  rules_df$engines <- unname(eng[key[first]])
+  rules_df$mined_frames <- unname(frs[key[first]])
+  rules_df <- rules_df[order(rules_df$hh, rules_df$rule, method = "radix"), ,
+                       drop = FALSE]
+  rownames(rules_df) <- NULL
+  # coverage + dominance dedup on the merged survivor set
+  idx_tr <- flags_for_rules(rules_df, train, strata_tr, label = "pool-dedup")
   drop_cov <- dedup_exact_coverage(rules_df, idx_tr)
   rules_df <- rules_df[!drop_cov, , drop = FALSE]; idx_tr <- idx_tr[!drop_cov]
   drop_dom <- dedup_dominated(rules_df, rules_df$precision_train_lcb)
