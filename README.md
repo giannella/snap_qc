@@ -63,7 +63,7 @@ The philosophy on ensemble size: **mine big, filter stringently**. Large ensembl
 | `compare_*_v2.R` | the studies behind the design choices (engines, engine pairs, typed-vs-pooled mining, HH strata) |
 | `run_*.R` | non-interactive runners (load `reg_model_data.rds`, source the script) |
 
-Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-out/any-error stats, filtered shortlists, sweep curves), `exclusion_rules_by_hh_size_v2/`, `state_rules_v2/` (per-state rules with national and tuned thresholds side by side).
+Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-out/any-error stats, filtered shortlists, sweep curves), `exclusion_rules_by_hh_size_v2/`, and `state_delivery_lists/` (the deployment deliverable). The superseded per-state threshold-tuning outputs live in `archive/state_rules_v2/`.
 
 ## Key config knobs (v2)
 

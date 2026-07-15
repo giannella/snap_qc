@@ -21,7 +21,7 @@ STATES <- c("Washington", "Connecticut", "North Carolina", "Louisiana",
             "Michigan", "Virginia", "Arizona")
 TRAIN_YEARS <- c("2022", "2024")
 TEST_YEARS  <- c("2023")
-GRIDSEARCH_SUMMARY <- "state_rules_v2/state_union_summary.csv"
+GRIDSEARCH_SUMMARY <- "archive/state_rules_v2/state_union_summary.csv"
 
 TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold != 0)
 ERR_AMT_COL <- "total_error_amount"

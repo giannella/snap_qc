@@ -11,6 +11,61 @@ superseded and carries notes where so.
 
 ---
 
+## 0. How the work unfolded (chronology + breadcrumbs)
+
+One line per step, in the order it actually happened, so the story of what
+we learned is recoverable. Each points to its numbered section.
+
+- **07-04/05** — Diagnosed the winner's curse in raw-precision shortlists and
+  adopted the Wilson LCB as the selection statistic (#1). Dropped {pre} for
+  the v2 xgboost+ranger pipeline (#2). Typed-vs-pooled mining (#3), engine
+  tuning grid (#4), and "mine big, filter stringently" (#5) followed on the
+  same holdout (train 2022+2024, test 2023).
+- **07-06** — Engine-pair studies settled xgboost+ranger (#2). Seven-state
+  threshold grid search produced the original two-regime rule and the
+  state-scale support-floor lesson (#9). Louisiana neighbor-transfer and
+  single-state mining studies (#9). HH-strata v2 confirmation (#11).
+- **07-07** — Rebuilt the modelling frame: multi-element error cases restored
+  (~31% of errors), deduction NAs zero-filled; rule content survived
+  (93%), inventory ~3x (effects_of_munging_options.md). Per-state data
+  VISIBILITY accounting (#10). Floor-definition calibration figure (#1).
+- **07-08** — State packages re-run on the rebuilt frame; exclusion pipeline
+  moved to a relative safety standard; partition-aware threshold variants
+  cut grid-search waste; lessons deck started.
+- **07-09** — State-similarity program (fire-rate / IDF / policy / blended /
+  NB definitions, per era) and the same-era transfer benchmark with the
+  honest LOO baseline (#12). Review-budget evaluation replaced floor-only
+  reporting (#12). Senior-statistician critique (pipeline_critique_
+  2026-07-09.md) prompted the pre-registered year-swap replication: 3 of 4
+  selection claims replicated, subsample claim retired (#13).
+- **07-10** — Deployment-grade benchmark (train 2022-23, test 2024):
+  national_all is the honest default; same-era transfer advantage did not
+  survive; own-state mining is high-variance (#14). Four state-adaptation
+  schemes tested — none beat the national ordering on the median (#9 note,
+  #14). Contributing-rules analysis: unions are built by dozens of rules,
+  not thousands (#15). Frozen per-state lists + ranked buffer, walked to
+  capacity (#15). Blend of state+national pools on the LCB scale becomes
+  the default deliverable, own-pool list the fallback (#16). Delivery lists
+  built for CT + 8 more states (custom_one_off/, gitignored).
+- **07-12** — Guidance refreshed (README, CLAUDE.md, this header); chart
+  conventions settled (states alphabetical; every results CSV gets a figure
+  via methods/make_all_charts_v2.R); year-swap re-runs of the HH-strata
+  study and the floor-definitions figure (this doc, #11 note when done).
+  Deck-comment review round: floor-definitions replicated on 2024 (raw
+  floors overpromise, LCB floors deliver 0.30 -> 0.336, 0.40 -> 0.475;
+  methods/floor_definitions_2024_figure.R); era change in donor lists
+  quantified (top-5 lists keep ~2 of 5 members across eras); LCB entry
+  bars tabulated (0.30 floor needs 7/10 at n=10, 41/100 at n=100);
+  hardcoded-year axis labels fixed in the anyerror-vs-typed and strata
+  figure scripts; mtry frontier chart added
+  (methods/visualize_mtry_frontier_v2.R).
+
+Charting/documentation conventions (2026-07-12): state-by-state charts list
+states alphabetically; every benchmark CSV has a visualize_*_v2.R script
+registered in methods/make_all_charts_v2.R so figures regenerate in one
+command; findings sections carry explicit supersession notes rather than
+silent rewrites.
+
 ## 1. The winner's curse, diagnosed and addressed
 
 Thresholding thousands of mined rules on raw train precision selects for lucky
@@ -319,7 +374,7 @@ numbers, are what to hand the state. Also: two-sided ladder rules
 state scale — the ladder-collapse post-filter matters more there.
 (State-specific artifacts live outside the repo in custom_one_off/.)
 
-*Artifacts: state_rules_v2/ (per-state rule CSVs with national + tuned
+*Artifacts: archive/state_rules_v2/ (per-state rule CSVs with national + tuned
 thresholds side by side; state_union_summary.csv; LCB-criterion run preserved
 in run1_lcb_criterion/).*
 
@@ -384,6 +439,17 @@ clear the stiff bound). The 5-way split loses either way.
 
 *Artifacts: compare_models_by_HHsize_vs_pooled/strata_earn_inc_scheme_summary.csv
 (pre-era); methods/compare_hh_strata_v2/ (v2 confirmation).*
+
+**Year-swap re-test (2026-07-13, train 2022+2023, test 2024 -- PARTIAL
+replication):** the 2023 verdict "pooling matches the split's precision"
+did not hold on 2024 -- there the 1/2-3/4+ split wins mean precision at
+matched recall (0.302 vs 0.262 pooled) while pooling wins reach at the
+0.20 floor (0.844 vs 0.794 dollar recall). Consistent across both years:
+the coarse split never loses, so it stays the default. NOT replicated:
+"5-way is worse" -- on 2024 the 5-way ties the 3-way (0.304 vs 0.302) at
+~1.6x the compute; the claim softens to "no better, costlier."
+*Artifacts: methods/compare_hh_strata_v2/yearswap_train2223_test24/
+(strata_summary.csv, strata_sweeps.png; methods/run_strata_yearswap.R).*
 
 ## 12. Cross-state transfer vs honest national baselines (2026-07-09)
 
