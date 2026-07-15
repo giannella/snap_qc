@@ -24,14 +24,24 @@ This is the default deployment deliverable described in the README and
 
 ## Columns
 
+Lists built since 2026-07-14 mine five frames (the four error types plus
+all-errors) and carry rule provenance; earlier lists mined the all-errors
+frame only and use `source` in place of `pool`, without the provenance and
+state-flag columns. A rule's mining frame is provenance only — every rule is
+scored, filtered, and ranked on the any-error target.
+
 | column | meaning |
 |---|---|
 | `rule` | the flag condition, in public QC variable vocabulary (see `Definitions for variables used.txt`) |
 | `hh` | household-size stratum the rule applies to (`1`, `2-3`, `4+`, from `cert_HH_size_FS_n`) |
-| `source` | which pool the rule came from: `national` or `state` |
-| `n_flagged_train` | cases the rule flagged in its training data |
+| `pool` | which pool the rule came from: `national` or `state` |
+| `engines` | which tree engine(s) produced the rule: `xgboost`, `ranger`, or `ranger+xgboost` |
+| `mined_frames` | every mining frame that independently produced the rule (e.g. `other_error+any_error`) |
+| `n_flagged_train` | cases the rule flagged in its training data (its own pool) |
 | `precision_train` | share of flagged training cases with any over-threshold payment error |
 | `precision_train_lcb` | one-sided 99% Wilson lower confidence bound of that precision — the ranking statistic |
+| `n_flagged_state` | cases the rule flags on the state's own 2022-24 caseload |
+| `n_new_at_rank` | of those, cases not already flagged by higher-ranked rules (walked in rank order) |
 | `rank` | position in the walk order (1 = activate first) |
 | `role` | `core` (fills the budget on the 2022-24 caseload) or `buffer` (substitutes, to 3x depth) |
 
