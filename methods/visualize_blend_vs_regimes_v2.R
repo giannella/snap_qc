@@ -26,7 +26,7 @@ LEVELS <- c("blended (99% bound)", "national pool only", "state's own pool only"
 
 make_chart <- function(budget_val, fname, title_pct) {
   dd <- d %>% filter(budget == budget_val)
-  ord <- dd %>% filter(list == LEVELS[1]) %>% arrange(precision) %>% pull(target)
+  ord <- rev(sort(unique(dd$target)))
   ddl <- dd %>%
     pivot_longer(c(precision, `share of error $ caught`), names_to = "metric") %>%
     mutate(metric = factor(metric, levels = c("precision", "share of error $ caught")),

@@ -111,7 +111,7 @@ SCHEMES <- list(
 )
 
 MIN_STRATUM <- 30      # skip a hold-out stratum smaller than this
-out_dir <- "compare_models_by_HHsize_vs_pooled"
+out_dir <- "methods/compare_models_by_HHsize_vs_pooled"
 FILE_PREFIX <- "optimal_HH_split_test_separate_ESAP_model"
 out_path <- function(stem) file.path(out_dir, paste0(FILE_PREFIX, "_", stem))
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)

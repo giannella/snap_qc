@@ -89,7 +89,7 @@ RF <- list(ntrees = 10000,
            verbose=T)
 
 MIN_STRATUM <- 10      # skip a hold-out stratum smaller than this in the small multiples
-out_dir <- "compare_models_by_HHsize_vs_pooled"
+out_dir <- "methods/compare_models_by_HHsize_vs_pooled"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 stopifnot(OBJECTIVE %in% c("dollars", "counts"))
 

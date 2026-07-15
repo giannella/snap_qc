@@ -85,7 +85,7 @@ instead of the point estimate. At matched deployed precision (~0.20), LCB
 selection catches 12.8% of all errors vs 8.2% for absolute thresholds — strictly
 better ranking, and trained precision became roughly calibrated to test precision.
 
-*Artifacts: compare_models_by_HHsize_vs_pooled/ (rawstat_ vs unprefixed runs).*
+*Artifacts: methods/compare_models_by_HHsize_vs_pooled/ (rawstat_ vs unprefixed runs).*
 
 **Calibration of floor definitions (2026-07-07, rebuilt frame, unearned rules):**
 sweeping floors on raw trained precision overpromises even AFTER the LCB gate
@@ -437,7 +437,7 @@ The 3-way split still wins where it matters operationally: **reach** (54.8% vs
 809 rules — per-stratum filtering gives rules the within-size support to
 clear the stiff bound). The 5-way split loses either way. 
 
-*Artifacts: compare_models_by_HHsize_vs_pooled/strata_earn_inc_scheme_summary.csv
+*Artifacts: methods/compare_models_by_HHsize_vs_pooled/strata_earn_inc_scheme_summary.csv
 (pre-era); methods/compare_hh_strata_v2/ (v2 confirmation).*
 
 **Year-swap re-test (2026-07-13, train 2022+2023, test 2024 -- PARTIAL

@@ -37,7 +37,7 @@ make_chart <- function(budget_val, fname, title_pct) {
     ungroup()
   ci <- wilson_ci(round(best$precision * best$n_flagged), best$n_flagged)
   best$lo <- ci$lo; best$hi <- ci$hi
-  ord <- best %>% arrange(precision) %>% pull(target)
+  ord <- rev(sort(unique(best$target)))
 
   dd <- best %>%
     select(target, regime, precision, `share of error $ caught` = dollar_recall,

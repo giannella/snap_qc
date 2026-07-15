@@ -109,7 +109,7 @@ Conceptual changes:
 - **Nets are gone.** v1 greedily OR-ed rules into a net; v2 reports the union of all filtered-in rules at each floor. Same no-double-counting guarantee, simpler to explain, and rules stay independent so experts can drop any rule without re-optimizing.
 - **Stringent filtering replaces raw thresholds.** A v2 "0.20 shortlist" is rules whose precision is *statistically at least* 0.20 — expect shorter, more trustworthy lists than v1 at the same nominal number.
 - **Class rebalancing is gone** (v2 mines on the natural base rate). Note for v1 users: the 14:1 rebalancing block in the v1 INCL scripts is now commented out, restoring the originally intended default — uncomment to reproduce old runs exactly.
-- **Two small v1 housekeeping changes**: the `pre_param_sweep/` folder is renamed `parameter_tuning/`, and a dead-logic typo in the data munging script's `other_error` definition was fixed (no behavioral change).
+- **Two small v1 housekeeping changes**: the `pre_param_sweep/` folder is renamed `parameter_tuning/` (its committed contents now live at `methods/parameter_tuning/`), and a dead-logic typo in the data munging script's `other_error` definition was fixed (no behavioral change).
 
 What you can keep unchanged: the data munging script and `reg_model_data`, the data dictionary, `methods/parse_tree.R` (SQL conversion), the visualization scripts, and all v1 outputs already produced.
 
@@ -131,7 +131,7 @@ In both cases, the scripts expect a data frame in your R environment with one ro
 
 If you want to use national public QC data rather than internal data, see [What data is required?](#what-data-is-required) below. The national data can be useful for finding more specific patterns since the number of errors in any one state is limited.
 
-Note that I recommend running all the models stratified by household size (e.g., one model for each household size: 1, 2-3, 4+), which is what I have in the main directory. The precision-recall curves are better across the board (see results in `compare_models_by_HHsize_vs_pooled/` folder and explore yourself using the `methods/compare_combined_vs_by_hh_size_model_performance.R` script). If this is not an option for you or you have found better results in your state with pooling, see the `code_for_single_model_combined_HH_sizes` folder.
+Note that I recommend running all the models stratified by household size (e.g., one model for each household size: 1, 2-3, 4+), which is what I have in the main directory. The precision-recall curves are better across the board (see results in `methods/compare_models_by_HHsize_vs_pooled/` folder and explore yourself using the `methods/compare_combined_vs_by_hh_size_model_performance.R` script). If this is not an option for you or you have found better results in your state with pooling, see the `archive/code_for_single_model_combined_HH_sizes` folder.
 
 ## Exclusion rules (EXCL_ scripts)
 
@@ -143,7 +143,7 @@ You have a list of cases flagged for review. These scripts help you find simple 
 
 3. **`EXCL_optimize_set_of_exclusion_rules_by_hh_size_for_a_state.R`** — same as step 2 but optimizes the full exclusion shortlist at once. This is useful if you're taking rules from national data and adjusting them to your state.
 
-Examples of exclusion rule outputs are in the `exclusion_rules/` folder.
+Examples of exclusion rule outputs are in the `archive/exclusion_rules/` folder.
 
 ## Inclusion rules (INCL_ scripts)
 
@@ -156,9 +156,9 @@ These scripts find candidate prioritization rules (i.e., rules that flag cases m
 3. **`INCL_optimize_set_of_inclusion_rules_by_hh_size_for_a_state.R`** — same as step 2 but tunes all high-precision rules for a state at once. The results will change quite a bit as you modify the OBJECTIVE (dollars vs. counts), OPTIMIZE_FOR (precision vs recall), MIN_FLAGGED (cases flagged by each rule), PRECISION_TARGET (floor for precision).
 
 An example of a general rule list mined from national data can be found in this file:
-`inclusion_rules_by_hh_size/final_by_HHsize_inclusion_rules_highprecision.csv`
+`archive/inclusion_rules_by_hh_size/final_by_HHsize_inclusion_rules_highprecision.csv`
 
-And examples of state rule outputs are in the `inclusion_rules_by_hh_size/` folder.
+And examples of state rule outputs are in the `archive/inclusion_rules_by_hh_size/` folder.
 
 For a walkthrough of the inclusion rules workflow, see these [slides](https://docs.google.com/presentation/d/1bagahNH8kP_PbISx5s7fsNk1gHvY84w5/edit?slide=id.p1#slide=id.p1), which are the same as the `how_to_use_the_snap_qc_inclusion_rules_scripts.pptx` in this repo.
 

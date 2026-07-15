@@ -161,7 +161,7 @@ MIN_PRECISION   <- 0.20      # shortlist: min TRAIN precision (hold-out precisio
 APPROACH_A <- "Optimal (boosted only)"
 APPROACH_B <- "Optimal + RF (mtry = 1)"
 
-out_dir <- "compare_models_by_HHsize_vs_pooled"
+out_dir <- "methods/compare_models_by_HHsize_vs_pooled"
 FILE_PREFIX <- "optimal_vs_plus_RF_mtry1"
 out_path <- function(stem) file.path(out_dir, paste0(FILE_PREFIX, "_", stem))
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)

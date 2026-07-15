@@ -27,7 +27,7 @@ make_panels <- function(budget_val, fname, title_pct) {
   s <- sy %>% filter(budget == budget_val) %>%
     transmute(target, list = "full national pool applied at once",
               precision, `share of error $ caught` = dollar_recall)
-  ord <- f %>% arrange(precision) %>% pull(target)
+  ord <- rev(sort(unique(f$target)))
   dd <- bind_rows(f, s) %>%
     pivot_longer(-c(target, list), names_to = "metric") %>%
     mutate(metric = factor(metric, levels = c("precision",

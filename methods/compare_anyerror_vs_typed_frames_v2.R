@@ -257,8 +257,9 @@ p <- ggplot(overall, aes(x, precision, color = approach)) +
   scale_color_manual(values = cols) +
   scale_x_continuous(labels = scales::percent) +
   scale_y_continuous(labels = scales::percent) +
-  labs(x = if (OBJECTIVE == "dollars") "Hold-out recall of ALL payment error DOLLARS (2023)"
-           else "Hold-out recall of ALL payment error CASES (2023)",
+  labs(x = sprintf("Hold-out recall of ALL payment error %s (%s)",
+                   if (OBJECTIVE == "dollars") "DOLLARS" else "CASES",
+                   paste(HOLDOUT_YEARS, collapse = "/")),
        y = "Hold-out precision of the union of kept rules",
        color = NULL,
        title = "Does mining by error type beat one all-errors model?",

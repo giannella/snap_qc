@@ -86,7 +86,7 @@ Long-running scripts checkpoint mined vocabularies to `.rds` and support `RESUME
 
 ## v1 (legacy) — handle with care
 
-v1 = the {pre}-based scripts documented in the README's legacy section: `INCL_find_inclusion_rules_multi_model_by_hh_size.R` (+ `_c50`, `_xrf`), `EXCL_find_exclusion_rules_by_hh_size.R`, the `INCL/EXCL_optimize_*_for_a_state.R` grid searches, `optimize_rulefit_params.R` / `single_model_optimize_params.R`, and `code_for_single_model_combined_HH_sizes/`. Their outputs (`inclusion_rules_by_hh_size/`, `exclusion_rules/`, `parameter_tuning/`, `compare_models_by_HHsize_vs_pooled/`) are consumed by external users — treat as frozen. The 14:1 rebalancing blocks in v1 INCL scripts are commented out by design (original intent); greedy "nets" exist only in v1.
+v1 = the {pre}-based scripts documented in the README's legacy section: `INCL_find_inclusion_rules_multi_model_by_hh_size.R` (+ `_c50`, `_xrf`), `EXCL_find_exclusion_rules_by_hh_size.R`, the `INCL/EXCL_optimize_*_for_a_state.R` grid searches, `optimize_rulefit_params.R` / `single_model_optimize_params.R`, and `code_for_single_model_combined_HH_sizes/`. Their outputs are consumed by external users — treat the CONTENT as frozen; the folders were relocated 2026-07-14: `archive/inclusion_rules_by_hh_size/`, `archive/exclusion_rules/`, `archive/inclusion_rules_combined_hh_sizes/`, `archive/code_for_single_model_combined_HH_sizes/`, `methods/parameter_tuning/`, `methods/compare_models_by_HHsize_vs_pooled/`. The 14:1 rebalancing blocks in v1 INCL scripts are commented out by design (original intent); greedy "nets" exist only in v1.
 
 ## Presentations and write-ups (decks, docs, README prose)
 

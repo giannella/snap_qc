@@ -113,7 +113,7 @@ workload cut and error dollars lost at each train clean-rate floor
 |---|---|
 | `INCL_find_inclusion_rules_multi_model_by_hh_size.R` | rewrite as thin driver (per error type x stratum: generate ranger + xgboost, dedup, evaluate, sweep, shortlist). c50/xrf variants likely retire — xgboost engine subsumes xrf; C50 can become an engine later if wanted. |
 | `EXCL_find_exclusion_rules_by_hh_size.R` | same driver with inverted target |
-| `optimize_rulefit_params.R` (parameter_tuning/) | sweeps engine params (ranger: num.trees, max.depth, mtry, min.node.size; xgboost: eta, nrounds, depth) and compares sweep curves instead of net PR curves |
+| `optimize_rulefit_params.R` (methods/parameter_tuning/) | sweeps engine params (ranger: num.trees, max.depth, mtry, min.node.size; xgboost: eta, nrounds, depth) and compares sweep curves instead of net PR curves |
 | `compare_hh_size_strata_schemes_model_performance.R`, `compare_HHsplit_vs_separate_ESAP_model.R` | swap `mine_rules()` internals for `generate_rules()`; the sweep evaluation is already in place |
 | `compare_optimal_vs_plus_RF_mtry1_rules.R` | becomes an engine comparison (xgboost-only vs xgboost+ranger-mtry1) on the new stack |
 | `INCL/EXCL_optimize_*` grid-search scripts | mostly untouched — they consume rule CSVs; minor column-name updates |

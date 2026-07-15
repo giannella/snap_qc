@@ -33,7 +33,7 @@ make_dotplot_national <- function(budget_val, fname, title_pct) {
   ci <- wilson_ci(dn$k, dn$n_flagged)
   dn$lo <- ci$lo; dn$hi <- ci$hi
 
-  p <- ggplot(dn, aes(x = precision, y = reorder(target, precision))) +
+  p <- ggplot(dn, aes(x = precision, y = factor(target, levels = rev(sort(unique(target)))))) +
     geom_point(aes(x = target_base_rate), shape = 1, size = 2.4, colour = "grey45") +
     geom_pointrange(aes(xmin = lo, xmax = hi), size = 0.35) +
     labs(x = sprintf("precision at a %s review budget (95%% interval)\nopen circle = state 2024 base error rate", title_pct),
@@ -54,8 +54,7 @@ make_own_vs_national <- function(budget_val, fname, title_pct) {
   dd <- d %>%
     filter(budget == budget_val, approach %in% c("own_state", "national_all")) %>%
     select(target, approach, precision, dollar_recall, target_base_rate)
-  ord <- dd %>% filter(approach == "national_all") %>%
-    arrange(precision) %>% pull(target)
+  ord <- rev(sort(unique(dd$target)))
   ddl <- dd %>%
     pivot_longer(c(precision, dollar_recall), names_to = "metric") %>%
     mutate(metric = factor(metric, levels = c("precision", "dollar_recall"),

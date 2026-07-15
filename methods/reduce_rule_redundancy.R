@@ -11,7 +11,7 @@
 # only when CASE_DATA is set.
 
 # ---- config ----------------------------------------------------------------
-RULE_CSV       <- "inclusion_rules_by_hh_size/final_by_HHsize_inclusion_rules_highprecision.csv"
+RULE_CSV       <- "archive/inclusion_rules_by_hh_size/final_by_HHsize_inclusion_rules_highprecision.csv"
 CASE_DATA      <- reg_model_data                  # path to reg_model_data (.rds or .csv); NULL skips pass 3
 HH_COL         <- "HH_size_n"           # household-size column in the case data
 ERROR_STATUS   <- "error_status"        # error-label column in the case data

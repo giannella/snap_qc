@@ -20,9 +20,11 @@ set.seed(117)
 
 ## ── 0. Config ─────────────────────────────────────────────────────────────────
 
+# TRAIN_YEARS / HOLDOUT_YEARS / OUT_DIR_OVERRIDE can be pre-set in a runner
+# before source() (year-swap replication pattern).
 YEAR_COL      <- "fiscal_year"
-TRAIN_YEARS   <- c("2022", "2024")
-HOLDOUT_YEARS <- c("2023")
+if (!exists("TRAIN_YEARS"))   TRAIN_YEARS   <- c("2022", "2024")
+if (!exists("HOLDOUT_YEARS")) HOLDOUT_YEARS <- c("2023")
 TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold != 0)
 ERR_AMT_COL     <- "total_error_amount"
 HH_SIZE_COL <- "cert_HH_size_FS_n"
@@ -60,7 +62,7 @@ MIN_TRAIN_FLAGGED <- 10
 PRUNE_MIN_PRECISION <- min(THRESHOLD_GRID)
 MIN_PRECISION <- 0.20
 
-out_dir <- "methods/compare_hh_strata_v2"
+out_dir <- if (exists("OUT_DIR_OVERRIDE")) OUT_DIR_OVERRIDE else "methods/compare_hh_strata_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 ## ── 1. Data ───────────────────────────────────────────────────────────────────
@@ -166,10 +168,13 @@ p <- ggplot(sweeps, aes(x, precision, color = scheme)) +
   scale_color_manual(values = cols) +
   scale_x_continuous(labels = scales::percent) +
   scale_y_continuous(labels = scales::percent) +
-  labs(x = "Hold-out dollar recall of the union (all 2023 errors)",
+  labs(x = sprintf("Hold-out dollar recall of the union (all %s errors)",
+                   paste(HOLDOUT_YEARS, collapse = "+")),
        y = "Hold-out precision of the union", color = NULL,
        title = "Household-size stratification on the v2 stack",
-       subtitle = "Same engines and filtering; only the partition differs. Pooled keeps HH size as a feature.\nany-error frame, trained 2022/2024, scored on 2023; point labels = LCB floor") +
+       subtitle = sprintf("Same engines and filtering; only the partition differs. Pooled keeps HH size as a feature.\nany-error frame, trained %s, scored on %s; point labels = LCB floor",
+                          paste(TRAIN_YEARS, collapse = "/"),
+                          paste(HOLDOUT_YEARS, collapse = "/"))) +
   theme_minimal(base_size = 12) + theme(legend.position = "top")
 save_png(p, file.path(out_dir, "strata_sweeps.png"), 9, 5.5)
 cat(sprintf("\nWrote strata comparison to %s/\n", out_dir))

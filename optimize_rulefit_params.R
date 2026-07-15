@@ -68,7 +68,7 @@ LEARNRATE_VALS <- c(0.001, 0.005, 0.01, 0.02)
 NTREES_VALS    <- c(500, 1000, 2500, 5000)
 SAMPFRAC_VALS  <- c(0.1, 0.15, 0.2, 0.3, 0.5)
 
-out_dir <- "parameter_tuning"
+out_dir <- "methods/parameter_tuning"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 stopifnot(OBJECTIVE %in% c("counts", "dollars"))
 

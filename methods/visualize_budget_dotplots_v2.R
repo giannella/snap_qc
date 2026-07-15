@@ -40,7 +40,7 @@ make_dotplot <- function(budget_val, fname, title_pct) {
   ci <- wilson_ci(d$k, d$n_flagged)
   d$lo <- ci$lo; d$hi <- ci$hi
 
-  p <- ggplot(d, aes(x = precision, y = reorder(target, precision))) +
+  p <- ggplot(d, aes(x = precision, y = factor(target, levels = rev(sort(unique(target)))))) +
     geom_point(aes(x = target_base_rate), shape = 1, size = 2.4, colour = "grey45") +
     geom_pointrange(aes(xmin = lo, xmax = hi), size = 0.35) +
     geom_text(aes(x = hi, label = sub("national_", "", sub("transfer_", "", approach))),
@@ -66,7 +66,7 @@ make_dotplot_loo <- function(budget_val, fname, title_pct) {
   ci <- wilson_ci(d$k, d$n_flagged)
   d$lo <- ci$lo; d$hi <- ci$hi
 
-  p <- ggplot(d, aes(x = precision, y = reorder(target, precision))) +
+  p <- ggplot(d, aes(x = precision, y = factor(target, levels = rev(sort(unique(target)))))) +
     geom_point(aes(x = target_base_rate), shape = 1, size = 2.4, colour = "grey45") +
     geom_pointrange(aes(xmin = lo, xmax = hi), size = 0.35) +
     labs(x = sprintf("precision at a %s review budget (95%% interval)\nopen circle = state base error rate", title_pct),
@@ -108,7 +108,7 @@ d3l <- d3 %>%
   mutate(metric = factor(metric, levels = c("precision", "dollar_recall"),
                          labels = c("precision", "share of error $ caught"))) %>%
   pivot_wider(names_from = budget, values_from = value, names_prefix = "b")
-ord <- d3 %>% filter(budget == 0.1) %>% arrange(precision) %>% pull(target)
+ord <- rev(sort(unique(d3$target)))
 d3l$target <- factor(d3l$target, levels = ord)
 
 p3 <- ggplot(d3l, aes(y = target)) +

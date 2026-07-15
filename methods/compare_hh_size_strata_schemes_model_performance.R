@@ -111,7 +111,7 @@ INCLUDE_POOLED <- F       # add the pooled (all-HH) model as a reference line
 POOLED_NAME    <- "Pooled (all HH)"
 
 MIN_STRATUM <- 30      # skip a hold-out stratum smaller than this
-out_dir <- "compare_models_by_HHsize_vs_pooled"
+out_dir <- "methods/compare_models_by_HHsize_vs_pooled"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 stopifnot(OBJECTIVE %in% c("dollars", "counts"))
 stopifnot(BASELINE_SCHEME %in% names(SCHEMES))
