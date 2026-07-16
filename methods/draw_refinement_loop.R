@@ -1,7 +1,7 @@
-# Companion figure to the pipeline diagram (draw_pipeline_options.R, option B):
-# how a proposed change qualifies for the recommended workflow, and what
-# release means under VERSIONING.md. Same visual language. Examples on the
-# exits are real, completed cases from modeling_findings.md.
+# Companion figure to the pipeline diagram: how a proposed change qualifies
+# for the recommended workflow, closed as a loop (the outcome, adopted or
+# retired, is recorded under the versioning policy and informs the next
+# proposal). Grid-aligned boxes, orthogonal connectors.
 # Output: presentation_figures/refinement_loop.png
 
 suppressMessages(library(ggplot2))
@@ -13,7 +13,7 @@ BOX    <- "#e5e7eb"
 EDGE   <- "#9ca3af"
 BLUE   <- "#0072B2"
 
-arrowspec <- arrow(length = unit(7, "pt"), type = "closed")
+arrowspec <- arrow(length = unit(5.5, "pt"), type = "closed")
 box <- function(x, y, w, h, fill, colour = NA)
   annotate("rect", xmin = x - w/2, xmax = x + w/2, ymin = y - h/2, ymax = y + h/2,
            fill = fill, colour = colour, linewidth = 0.4)
@@ -32,52 +32,57 @@ seg <- function(x1, y1, x2, y2, col = EDGE, lt = "solid", ah = TRUE, lw = 0.6) {
 }
 
 p <- ggplot() +
-  # 1 proposal
-  box(1.15, 2.0, 1.9, 1.4, fill = scales::alpha(BLUE, 0.14), colour = BLUE) +
-  lbl(1.15, 2.35, "proposed improvement", 3.3, INK, "bold") +
-  lbl(1.15, 1.90, "a new engine, rule\nvocabulary, or selection\nstatistic", 2.7, MUTED) +
-  seg(2.15, 2.0, 2.42, 2.0) +
-  # 2 exploratory comparison
-  box(3.6, 2.0, 2.1, 1.4, fill = BOX, colour = EDGE) +
-  lbl(3.6, 2.35, "exploratory comparison", 3.3, INK, "bold") +
-  lbl(3.6, 1.86, "head-to-head against the\ncurrent recipe: same states,\nbudgets, and protocol\n(train 2022-23, test 2024)", 2.6, MUTED) +
-  seg(4.7, 2.0, 5.15, 2.0) +
-  lbl(4.92, 2.14, "promising", 2.2, MUTED) +
-  # 3 pre-registered validation
-  box(6.35, 2.0, 2.3, 1.4, fill = BOX, colour = EDGE) +
-  lbl(6.35, 2.35, "pre-registered validation", 3.3, INK, "bold") +
-  lbl(6.35, 1.86, "expected outcome written down\nfirst; tested on data that never\njudged the idea (held-out year,\nseparate era)", 2.6, MUTED) +
-  # exits from validation
-  seg(7.55, 2.35, 7.86, 2.80) +
-  lbl(7.45, 2.95, "meets\nexpectation", 2.2, MUTED) +
-  seg(7.55, 1.65, 7.86, 1.35) +
-  lbl(7.45, 1.18, "falls\nshort", 2.2, MUTED) +
-  # exploration kill-path (most ideas stop here)
-  seg(4.15, 1.28, 7.86, 1.05, lt = "solid") +
-  lbl(5.5, 0.98, "falls short in exploration (most ideas stop here)", 2.2, MUTED) +
-  # adopted lane
-  box(8.9, 3.0, 2.0, 1.15, fill = BOX, colour = EDGE) +
-  lbl(8.9, 3.28, "adopted", 3.3, INK, "bold") +
-  lbl(8.9, 2.90, "becomes part of the\nrecommended workflow", 2.6, MUTED) +
-  lbl(8.9, 2.27, "e.g., confidence-bound selection (v2);\nthe blended state + national list", 2.4, MUTED) +
-  seg(9.92, 3.0, 10.38, 2.62) +
-  box(11.7, 2.05, 2.55, 1.5, fill = scales::alpha(BLUE, 0.14), colour = BLUE) +
-  lbl(11.7, 2.48, "recorded under the\nversioning policy, either way", 3.1, INK, "bold") +
-  lbl(11.7, 1.88, "CHANGELOG.md entry; release tag\nwhen the workflow changes;\nsuperseded or retired pieces are\ndeprecated with pointers or archived\n- never deleted (VERSIONING.md)", 2.5, MUTED) +
-  # retired lane
-  box(8.9, 1.1, 2.0, 1.15, fill = BOX, colour = EDGE) +
-  lbl(8.9, 1.38, "retired, in writing", 3.3, INK, "bold") +
-  lbl(8.9, 0.98, "the claim and its numbers recorded\nin methods/modeling_findings.md", 2.5, MUTED) +
-  lbl(8.9, 0.38, "e.g., \"low subsampling beats high\" (2026-07);\nper-state threshold tuning as the default (2026-07)", 2.4, MUTED) +
-  seg(9.92, 1.1, 10.38, 1.5) +
-  # return loop: failures inform the next proposal
-  seg(7.86, 0.75, 7.5, 0.5, col = MUTED, lt = "22", ah = FALSE, lw = 0.9) +
-  seg(7.5, 0.5, 1.15, 0.5, col = MUTED, lt = "22", ah = FALSE, lw = 0.9) +
-  seg(1.15, 0.5, 1.15, 1.26, col = MUTED, lt = "22", lw = 0.9) +
-  lbl(4.3, 0.36, "what failed, and why, informs the next proposal", 2.2, MUTED) +
-  lbl(6.5, 3.85, "How a change earns its way into the recommended workflow", 5, INK, "bold") +
-  coord_cartesian(xlim = c(0.1, 13.0), ylim = c(-0.02, 4.1)) +
+  ## spine row (centers y = 2.6; heights 1.1)
+  box(1.3, 2.6, 1.9, 1.1, fill = scales::alpha(BLUE, 0.14), colour = BLUE) +
+  lbl(1.3, 2.82, "proposed improvement", 3.2, INK, "bold") +
+  lbl(1.3, 2.46, "a new engine, vocabulary,\nor selection statistic", 2.5, MUTED) +
+  seg(2.25, 2.6, 2.53, 2.6) +
+  box(3.55, 2.6, 2.0, 1.1, fill = BOX, colour = EDGE) +
+  lbl(3.55, 2.82, "exploratory comparison", 3.2, INK, "bold") +
+  lbl(3.55, 2.46, "head-to-head vs the current\nrecipe on the 2024 benchmark", 2.5, MUTED) +
+  seg(4.55, 2.6, 4.88, 2.6) +
+  lbl(4.72, 2.42, "promising", 2.1, MUTED) +
+  box(5.9, 2.6, 2.0, 1.1, fill = BOX, colour = EDGE) +
+  lbl(5.9, 2.82, "pre-registered validation", 3.2, INK, "bold") +
+  lbl(5.9, 2.46, "expectation written first;\ntested on unjudged data", 2.5, MUTED) +
+  ## split to the two outcomes (orthogonal)
+  seg(6.9, 2.6, 7.15, 2.6, ah = FALSE) +
+  seg(7.15, 1.4, 7.15, 3.4, ah = FALSE) +
+  seg(7.15, 3.4, 7.33, 3.4) +
+  seg(7.15, 1.4, 7.33, 1.4) +
+  lbl(7.02, 3.62, "meets expectation", 2.1, MUTED) +
+  lbl(6.95, 1.18, "falls short", 2.1, MUTED) +
+  ## exploration kill-path joins the falls-short rail
+  seg(3.55, 2.05, 3.55, 1.4, ah = FALSE) +
+  seg(3.55, 1.4, 7.14, 1.4, ah = FALSE) +
+  lbl(5.2, 1.53, "most ideas stop in exploration", 2.1, MUTED) +
+  ## outcomes column (centers x = 8.3)
+  box(8.3, 3.4, 1.9, 1.1, fill = BOX, colour = EDGE) +
+  lbl(8.3, 3.68, "adopted", 3.2, INK, "bold") +
+  lbl(8.3, 3.40, "joins the recommended workflow", 2.4, MUTED) +
+  lbl(8.3, 3.12, "e.g., confidence-bound selection;\nthe blended state + national list", 2.2, MUTED) +
+  box(8.3, 1.4, 1.9, 1.1, fill = BOX, colour = EDGE) +
+  lbl(8.3, 1.68, "retired, in writing", 3.2, INK, "bold") +
+  lbl(8.3, 1.40, "claim + numbers recorded in\nmethods/modeling_findings.md", 2.4, MUTED) +
+  lbl(8.3, 1.08, "e.g., \"low subsampling beats high\";\nper-state tuning as the default", 2.2, MUTED) +
+  ## both outcomes converge on the versioning terminal (orthogonal)
+  seg(9.25, 3.4, 9.55, 3.4, ah = FALSE) +
+  seg(9.55, 3.4, 9.55, 2.95, ah = FALSE) +
+  seg(9.55, 2.95, 9.83, 2.95) +
+  seg(9.25, 1.4, 9.55, 1.4, ah = FALSE) +
+  seg(9.55, 1.4, 9.55, 2.25, ah = FALSE) +
+  seg(9.55, 2.25, 9.83, 2.25) +
+  box(10.95, 2.6, 2.2, 1.3, fill = scales::alpha(BLUE, 0.14), colour = BLUE) +
+  lbl(10.95, 2.98, "recorded under the\nversioning policy", 3.1, INK, "bold") +
+  lbl(10.95, 2.40, "CHANGELOG.md entry; release tag;\nsuperseded pieces deprecated or\narchived, never deleted\n(VERSIONING.md)", 2.3, MUTED) +
+  ## the loop closes: terminal -> next proposal
+  seg(10.95, 1.95, 10.95, 0.45, col = MUTED, lt = "22", ah = FALSE, lw = 0.7) +
+  seg(10.95, 0.45, 1.3, 0.45, col = MUTED, lt = "22", ah = FALSE, lw = 0.7) +
+  seg(1.3, 0.45, 1.3, 2.03, col = MUTED, lt = "22", lw = 0.7) +
+  lbl(6.1, 0.60, "what was learned - adopted or retired - informs the next proposal", 2.2, MUTED) +
+  lbl(6.1, 4.25, "How a change earns its way into the recommended workflow", 4.6, INK, "bold") +
+  coord_cartesian(xlim = c(0.25, 12.15), ylim = c(0.28, 4.45)) +
   theme_void()
 ggsave("presentation_figures/refinement_loop.png", p,
-       width = 13, height = 4.6, dpi = 300, bg = "white")
+       width = 12.2, height = 4.3, dpi = 300, bg = "white")
 cat("wrote presentation_figures/refinement_loop.png\n")
