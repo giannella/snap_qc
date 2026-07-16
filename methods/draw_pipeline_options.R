@@ -138,11 +138,8 @@ substitutes to 3x depth", 2.6, MUTED) +
   # ── deployment ──
   box(11.5, 2.0, 1.5, 1.3, fill = "white", colour = INK) +
   lbl(11.5, 2.32, "reviewers", 3.3, INK, "bold") +
-  lbl(11.5, 1.86, "work rules in order
-until capacity fits;
-uses case facts only -
-no error findings
-required to run it", 2.5, MUTED) +
+  lbl(11.5, 1.95, "work rules in order
+until capacity fits", 2.8, MUTED) +
   seg(10.27, 2.0, 10.72, 2.0) +
   annotate("text", x = 10.45, y = 1.14, hjust = 0.5, label = "blended_delivery_<State>_budget05/10.csv",
            size = 2.2, colour = BLUE, family = "mono") +
