@@ -101,9 +101,8 @@ every tree branch becomes a candidate rule", 2.4, MUTED) +
 reused for every state", 2.4, MUTED) +
   # ── state lane ──
   box(1.0, 1.0, 1.6, 1.0, fill = scales::alpha(ORANGE, 0.22), colour = ORANGE) +
-  lbl(1.0, 1.17, "your state's cases
+  lbl(1.0, 1.0, "your state's cases
 (or internal files)", 3.1, INK) +
-  lbl(1.0, 0.72, "~2,000-3,000 / year", 2.8, "#9a6b00", "bold") +
   chip(3.0, 1.30, 1.55, 0.48, scales::alpha(ORANGE, 0.12), ORANGE,
        "xgboost (boosted trees)") +
   chip(3.0, 0.70, 1.55, 0.48, scales::alpha(ORANGE, 0.12), ORANGE,
@@ -113,9 +112,8 @@ run on your data", 2.4, MUTED) +
   seg(1.82, 1.12, 2.18, 1.28, ORANGE) + seg(1.82, 0.88, 2.18, 0.72, ORANGE) +
   seg(3.82, 1.28, 4.18, 1.10, ORANGE) + seg(3.82, 0.72, 4.18, 0.90, ORANGE) +
   box(5.0, 1.0, 1.6, 1.0, fill = scales::alpha(ORANGE, 0.22), colour = ORANGE) +
-  lbl(5.0, 1.17, "your state's rule pool
+  lbl(5.0, 1.0, "your state's rule pool
 (same filter)", 3.1, INK) +
-  lbl(5.0, 0.72, "~15,000 rules", 2.8, "#9a6b00", "bold") +
   # ── shared evidence bar note between lanes ──
   lbl(4.4, 2.00, "filter, both pools: keep a rule only if precision
 is statistically above the base error rate
