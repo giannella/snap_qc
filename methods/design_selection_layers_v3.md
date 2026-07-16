@@ -31,10 +31,18 @@ hands.
    analyst. The Wilson LCB remains a REPORTED column.
 2. **Evidence structure — near-duplicate families.** Rules whose train
    coverage is nearly identical are one pattern rendered many ways; treating
-   renderings as independent evidence is wrong in every use mode. Collapse to
-   families keeping the highest-support member; cross-engine / cross-frame
-   provenance (`engines`, `mined_frames`) serves as a zero-compute stability
-   signal (Meinshausen-Buhlmann by construction).
+   renderings as independent evidence is wrong in every use mode. One
+   COMPETITOR per family in the ranking — the highest-support member, an
+   outcome-free selection that adds no curse — but members are NOT deleted
+   from the deliverable: they ship as labeled substitutes (`family_id`
+   column) attached to their representative, preserving the
+   experts-drop-rules-and-need-alternates design principle (decided
+   2026-07-15). Cross-engine / cross-frame provenance (`engines`,
+   `mined_frames`) and family size serve as zero-compute stability signals
+   (Meinshausen-Buhlmann by construction); family size feeds layer 3's prior.
+   Refinements on the roadmap, not blocking: union-coverage estimation for
+   representatives; hierarchical partial pooling for looser families
+   (J ~ 0.6-0.8), where collapse would be wrong.
 3. **Estimation — empirical-Bayes shrinkage.** Beta-binomial prior fit to the
    pool per stratum; rank and report posterior means/quantiles. Adaptive to
    any state's data; degrades conservatively (over-shrinks) rather than
