@@ -40,22 +40,23 @@ p <- ggplot() +
   box(3.55, 2.6, 2.0, 1.1, fill = BOX, colour = EDGE) +
   lbl(3.55, 2.82, "exploratory comparison", 3.2, INK, "bold") +
   lbl(3.55, 2.46, "head-to-head vs the current\nrecipe on the 2024 benchmark", 2.5, MUTED) +
-  seg(4.55, 2.6, 4.88, 2.6) +
+  seg(4.55, 2.6, 4.88, 2.6, lw = 0.45) +
   lbl(4.72, 2.42, "promising", 2.1, MUTED) +
   box(5.9, 2.6, 2.0, 1.1, fill = BOX, colour = EDGE) +
   lbl(5.9, 2.82, "pre-registered validation", 3.2, INK, "bold") +
   lbl(5.9, 2.46, "expectation written first;\ntested on unjudged data", 2.5, MUTED) +
   ## split to the two outcomes (orthogonal)
-  seg(6.9, 2.6, 7.15, 2.6, ah = FALSE) +
-  seg(7.15, 1.4, 7.15, 3.4, ah = FALSE) +
-  seg(7.15, 3.4, 7.33, 3.4) +
-  seg(7.15, 1.4, 7.33, 1.4) +
+  seg(6.9, 2.6, 7.15, 2.6, ah = FALSE, lw = 0.45) +
+  seg(7.15, 2.6, 7.15, 3.4, ah = FALSE, lw = 0.45) +
+  seg(7.15, 3.4, 7.33, 3.4, lw = 0.45) +
+  seg(7.15, 2.6, 7.15, 1.4, ah = FALSE, lw = 0.45) +
+  seg(7.15, 1.4, 7.33, 1.4, lw = 1.8) +
   lbl(7.02, 3.62, "meets expectation", 2.1, MUTED) +
   lbl(6.95, 1.18, "falls short", 2.1, MUTED) +
   ## exploration kill-path joins the falls-short rail
-  seg(3.55, 2.05, 3.55, 1.4, ah = FALSE) +
-  seg(3.55, 1.4, 7.14, 1.4, ah = FALSE) +
-  lbl(5.2, 1.53, "most ideas stop in exploration", 2.1, MUTED) +
+  seg(3.55, 2.05, 3.55, 1.4, ah = FALSE, lw = 1.8) +
+  seg(3.55, 1.4, 7.14, 1.4, ah = FALSE, lw = 1.8) +
+  lbl(5.2, 1.56, "most ideas stop in exploration", 2.3, MUTED, "bold") +
   ## outcomes column (centers x = 8.3)
   box(8.3, 3.4, 1.9, 1.1, fill = BOX, colour = EDGE) +
   lbl(8.3, 3.68, "adopted", 3.2, INK, "bold") +
