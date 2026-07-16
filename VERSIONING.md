@@ -1,8 +1,9 @@
 # Versioning and compatibility policy
 
-This repository is used by state agencies that build real review processes
-on it. The promises below are what you can rely on when you update, and what
-we hold ourselves to when we change things.
+This repository is used by agencies and they require some continuity in what
+they're using and clarity in terms of what changes and why. Below is how we
+determine how improvements get rolled out, previous versions are maintained,
+and changes are communicated.
 
 ## What counts as the public interface
 
