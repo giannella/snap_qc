@@ -10,6 +10,38 @@ moved or behaves differently.
 
 ## [Unreleased]
 
+Dollar-prioritizing ranking (a `*_dollaryield_*` pairing) is in audition;
+the FDR admission test and the 2017-19 era validation of pool-size-scaled
+stringency are on the research roadmap.
+
+## [2.2.0] - 2026-07-16
+
+No action needed: filenames, columns, and script interfaces are unchanged.
+
+### Changed
+- **All 19 states' delivery lists refreshed onto one recipe and one
+  schema**: the any-error vocabulary with the 12-column provenance schema,
+  under the existing filenames. This replaces the 10 lists briefly
+  published from five-frame mining — a vocabulary change that a
+  train-2022-23/test-2024 benchmark showed was worse at the 5% review
+  budget (median precision 0.306 vs 0.324) and that three rescue attempts
+  (higher stringency, near-duplicate collapse, shrinkage estimates) did
+  not repair. Details in `methods/design_selection_layers_v3.md`.
+
+### Added
+- The machinery/goal separation made explicit: a "Statistics and goal
+  metrics" section in the README and breadcrumbs in the driver scripts.
+  The mining and evidence machinery is general purpose; the ranking
+  statistic + goal metric are a module the user chooses. The default,
+  validated pairing keeps the plain filenames; any future non-default
+  pairing will carry its label in the filename, so an unlabeled file
+  always means "the recommended list."
+- Pipeline and process figures in the README
+  (`presentation_figures/pipeline_option_B.png`, `refinement_loop.png`).
+- Measured: per-rule error-dollar size persists from training to a future
+  year more strongly than precision does (`dollar_persistence_check_v2.R`) —
+  groundwork for a dollar-prioritizing pairing.
+
 Work in progress on a revised rule-selection method (see
 `methods/design_selection_layers_v3.md`): admission by false-discovery-rate
 control instead of a fixed confidence cutoff, grouping of near-duplicate

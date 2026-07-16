@@ -5,6 +5,12 @@ they're using and clarity in terms of what changes and why. Below is how we
 determine how improvements get rolled out, previous versions are maintained,
 and changes are communicated.
 
+Methodology changes follow the same discipline — explored head-to-head,
+validated on data that never judged them, and either adopted or retired in
+writing:
+
+![How we determine what is adopted or retired](presentation_figures/refinement_loop.png)
+
 ## What counts as the public interface
 
 Three things are "interface" here — changing any of them incompatibly is a
@@ -39,6 +45,18 @@ Releases are tagged `vMAJOR.MINOR.PATCH`
 If you need stability, pin a tag: `git clone --branch v2.1.0 ...` (or
 download that release from GitHub). The `main` branch carries work in
 progress between releases.
+
+## Release cadence and restraint
+
+Version numbers track the user contract, not our research activity. The
+`methods/` folder exists so that exploration never disturbs anyone's
+workflow; by the same principle, exploration never drives a release —
+auditions, sweeps, and retired claims accumulate quietly on `main` and in
+the findings file. A release is cut only when the recommended workflow or
+its published artifacts change in a way a user would notice, and a MAJOR
+release is rare: reserved for breaks that cannot be avoided, deferred to
+natural transition points, and bundled with enough new value that moving is
+worth it. Renaming things for tidiness alone is not such a reason.
 
 ## How changes are communicated
 

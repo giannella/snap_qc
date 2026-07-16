@@ -78,7 +78,7 @@ p <- ggplot() +
   seg(10.95, 0.45, 1.3, 0.45, col = MUTED, lt = "22", ah = FALSE, lw = 0.7) +
   seg(1.3, 0.45, 1.3, 2.03, col = MUTED, lt = "22", lw = 0.7) +
   lbl(6.1, 0.60, "what was learned - adopted or retired - informs the next proposal", 2.2, MUTED) +
-  lbl(6.1, 4.25, "How a change earns its way into the recommended workflow", 4.6, INK, "bold") +
+  lbl(6.1, 4.25, "How we determine what is adopted or retired", 4.6, INK, "bold") +
   coord_cartesian(xlim = c(0.25, 12.15), ylim = c(0.28, 4.45)) +
   theme_void()
 ggsave("presentation_figures/refinement_loop.png", p,

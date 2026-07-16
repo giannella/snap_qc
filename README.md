@@ -4,13 +4,11 @@ Code and data for modeling SNAP payment errors with interpretable and easy-to-im
 
 Putting this out on my github with an Apache 2.0 license as an assurance that anyone can freely use and build upon the code, ideas, or results.
 
+**[Updates & compatibility](VERSIONING.md)** · **[Guidance from validation studies](GUIDANCE.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Changelog](CHANGELOG.md)**
+
 ## Updates and compatibility
 
-This repository follows a written [versioning and compatibility policy](VERSIONING.md): tagged releases, plain-language change summaries in [CHANGELOG.md](CHANGELOG.md), deprecation before removal, and superseded outputs archived rather than deleted. If you build a process on this code, pin a release tag and read the changelog before updating.
-
-Methodology changes follow the same discipline — explored head-to-head, validated on data that never judged them, and either adopted or retired in writing:
-
-![How a change earns its way into the recommended workflow](presentation_figures/refinement_loop.png)
+See [VERSIONING.md](VERSIONING.md): tagged releases, plain-language change summaries in [CHANGELOG.md](CHANGELOG.md), deprecation before removal, and superseded outputs archived rather than deleted. If you build a process on this code, pin a release tag and read the changelog before updating.
 
 ---
 
@@ -32,13 +30,13 @@ Why v2 exists, in one paragraph: testing showed that shortlisting mined rules by
 
 ![How a state's ranked review list is built](presentation_figures/pipeline_option_B.png) A state can also run the same script as a hybrid: mine its own pool from internal case files (which include the ineligible determinations the public files exclude) and blend that with the pool mined from other states' public QC data — the confidence-bound scale is what makes rules from the two sources directly comparable, so nothing else changes.
 
-The same two use cases as always:
+Two routes, depending on your use case:
 
 **I have a pile of cases already flagged for review and want to cut it down** → `EXCL_find_exclusion_rules_by_hh_size_v2.R`
 
 **I don't have a flagging system and want to identify which cases are most likely to have an error** → `INCL_build_blended_delivery_list_v2.R` builds the blended delivery list described above and is self-contained: it mines the national and state rule pools itself (any-error target) — it does not consume the outputs of `INCL_find_inclusion_rules_by_hh_size_v2.R`. Run `INCL_find_inclusion_rules_by_hh_size_v2.R` when you want the full exploration outputs instead: rules mined per error type as well as pooled, filtered shortlists, and the filter-floor sweep curves (see `state_delivery_lists/README.md` for the delivery lists' column definitions and caveats). If you want to keep it very simple, start from the national rule lists in `inclusion_rules_by_hh_size_v2/`. Per-state threshold tuning (`state_threshold_gridsearch_v2.R`) remains available, but in an 18-state future-year test it did not beat deploying the national ranking as-is for the median state — treat tuning as a fallback and validate it on your own hold-out year first.
 
-As in v1, the scripts expect a data frame with one row per case, a column indicating whether the case is a true error, and your features. Update the config block at the top of the script: the `features` vector and `TARGET_IS_ERROR` expression are the main things to change. Features must be numeric, logical, or two-level factors (multi-level factors are rejected with a clear message — recode upstream). See [`Definitions for variables used.txt`](Definitions%20for%20variables%20used.txt) for the default feature set.
+As in v1, the scripts expect a data frame with one row per case, a column indicating whether the case is a true error, and your features. Update the config block at the top of the script: the `features` vector and `TARGET_IS_ERROR` expression are the main things to change. Features must be numeric, logical, or two-level factors (multi-level factors are rejected with a clear message — recode upstream). See [the data dictionary](DATA_DICTIONARY.md) for the default feature set.
 
 To use the national public QC data, build `reg_model_data` with `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` (unchanged from v1).
 
@@ -57,6 +55,16 @@ generate  ->  canonicalize  ->  dedup  ->  evaluate  ->  sweep / shortlist
 5. **Filter + sweep** — rules are filtered at the one-sided 99% Wilson lower bound of train precision (`LCB_Z = 2.326`). The sweep reports, for each filter floor, the union's hold-out precision, recall, and dollar recall — an error caught by several rules counts once, so redundancy never overstates recall. There are no greedy "nets" in v2; the filtered rule list plus the sweep replaces them.
 
 The approach to ensemble size: mine a large candidate pool, then filter it strictly. Large ensembles reach more of the errors; the strict confidence bounds remove the extra selection noise that more candidates would otherwise inject.
+
+## Statistics and goal metrics
+
+The five-stage machinery is general purpose: for every rule it produces honest evidence — support, precision, confidence bounds, provenance. What to *optimize* is a separate, user-chosen module: a **ranking statistic** paired with the **goal metric** it is judged by. Different goals need different statistics (a statistic that wins at one goal can lose at another — we measured exactly that), so delivered files carry their pairing in the filename, and a new pairing is adopted only after it passes the same held-out-year validation as everything else.
+
+| your goal | statistic | where | status |
+|---|---|---|---|
+| find errors at a fixed review workload | 99% Wilson lower bound of any-error precision (`lcb99_workloadfill`) | `INCL_build_blended_delivery_list_v2.R` → `state_delivery_lists/` | validated on 2024, 18 states |
+| cut an existing review pile safely | 99% lower bound of the clean rate among dropped cases | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | reported against a held-out year |
+| prioritize error dollars | dollar-yield statistic | in audition — per-rule dollars-per-flag persists train→test *more* strongly than precision (Spearman 0.56–0.79 by support band vs 0.50–0.71) | roadmap |
 
 ## v2 scripts
 
@@ -88,18 +96,11 @@ Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-o
 
 Packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional bagged-CART engine). No `{pre}` required.
 
-## Guidance from the validation studies
+## Guidance from validation studies
 
-- **Mine per error type AND pooled, then combine** (the inclusion driver does both) — typed frames edge a single all-errors model slightly; their union catches 3-6 points more recall at any given filter floor for a modest precision cost (roughly a tie at matched recall; table in [`methods/modeling_findings.md`](methods/modeling_findings.md)). If you want one simple model, the all-errors model gets ~95% of the way.
-- **Stratify by household size coarsely (1 / 2-3 / 4+)** — on v2 engines the precision gap vs pooling is small, but the coarse split buys meaningfully more recall reach and ~5x the filtered rule inventory. Finer splits (e.g., 5 HH size strata) perform less well.
-- **Evaluate at review budgets, not just filter floors.** A confidence floor produces whatever workload it produces (on the current data, the 0.20 floor's rule union flags roughly half the caseload). States plan around review capacity, so we also report budget-filled performance: rules added in descending lower-bound order until 5% or 10% of the caseload is flagged. Tested a year ahead (rules trained on 2022-23, scored on each state's 2024), the national rules deliver median 0.30 precision catching 16% of error dollars at a 5% budget and 0.27 catching 25% at 10% — above every one of 18 states' base error rates (1.5-3.4x lift over random review). A budget-filled union is built by a few dozen rules (26-67 across the 18 states), not thousands.
-- **Deploy the blended ranking (state + national rules on one confidence scale) as the default; re-tune to a state only as a validated fallback.** The blend already adapts to each state — its own rules earn slots wherever their evidence justifies it. Explicit re-filtering or re-tuning of the national rules on each state's own data did not beat the confidence-scale ordering for the median state in the future-year test; that kind of adaptation paid only where the default list underperformed (New Jersey, Mississippi, DC). Where a state's sample is thin, small-sample tuning remains prone to the same lucky-selection problem — require a hard support floor (at least ~30 flagged training cases per rule) and a hold-out year.
-- **A frozen ranked list with buffer rules seems like the next best thing to implementing a real-time machine learning pipeline in existing systems.** Freeze the list against the state's own recent caseload (core sized to the review budget, buffer to 3x that depth) and activate rules in rank order while capacity fits — outcome-free, absorbs both under- and over-firing as patterns drift, and committing a year in advance cost almost nothing in testing (median precision 0.294 vs 0.301 for a list packed against the realized year, at identical review volume). `INCL_build_blended_delivery_list_v2.R` builds the deliverable.
-- **Blend the state's own mined rules into the national pool on the confidence-bound scale.** Ranking every rule by its own 99% lower bound lets high-precision state rules earn slots over national rules while the bound automatically discounts their smaller support; the blend beat the national-only list at a 5% budget (median 0.324 vs 0.294) and tied at 10%. Known blind spot: a national rule's bound says nothing about how it transfers to your state, so in states the national mix fits worst the scale over-trusts national rules — keep the state's own-pool list as the fallback, and let the state's internal validation on newer data decide.
-- **Include finding any-error (even outside the mined error type) as a win** — a flagged case with a different error type than the rule was mined for will sometimes help with finding an error that can be remedied. 
-- **The engine change itself is a measured win**: with everything downstream identical, xgboost + ranger catches 55% of error dollars at the 0.20 filter floor vs 47% for the CART-based generation that {pre} used, at slightly better precision at matched recall (+1.2pp). Engine studies are in `methods/compare_engines_v2/`.
-- **Re-test your selection choices on a year that never judged them.** Every configuration choice here was originally judged on the same hold-out year, so we re-ran the decisive comparisons with the year roles swapped, with expected outcomes written down before the run. Three of four claims replicated; one ("low subsampling beats high") failed and was retired — see `methods/yearswap_preregistration_2026-07-09.md`.
-- **Check your state's data visibility before relying on public-data rules.** The public QC file excludes ineligible cases entirely (each one a 100%-of-benefit error), so some states' error populations are only half visible in it (e.g., New Jersey ~43%, Tennessee ~51%; national ~71%). See `methods/state_error_accounting/visibility_by_state_2022_2024.csv`. **States below roughly 60% visibility should treat national rules as a supplement and run the mining script on their internal data**, which includes their ineligible determinations — the scripts support this directly (swap `features` and `TARGET_IS_ERROR`).
+Moved to its own page: [GUIDANCE.md](GUIDANCE.md) — what moved held-out
+performance in the experiments we ran, from selection statistics to
+stratification to data visibility.
 
 ---
 
@@ -137,7 +138,7 @@ There are two main use cases. If you have your own internal data, you can go dir
 
 **I don't have a flagging system and want to identify which cases are most likely to have an error** → go to the [INCL_ scripts](#inclusion-rules-incl_-scripts).
 
-In both cases, the scripts expect a data frame in your R environment with one row per case, a column indicating whether the case is a true error, and whatever features you want to use as predictors. You can swap in your own internal data and your own feature list — just update the config section at the top of the script. The `features` vector and the `TARGET_IS_ERROR` expression are the main things to change. See [`Definitions for variables used.txt`](Definitions%20for%20variables%20used.txt) for documentation of the features used in the default setup.
+In both cases, the scripts expect a data frame in your R environment with one row per case, a column indicating whether the case is a true error, and whatever features you want to use as predictors. You can swap in your own internal data and your own feature list — just update the config section at the top of the script. The `features` vector and the `TARGET_IS_ERROR` expression are the main things to change. See [the data dictionary](DATA_DICTIONARY.md) for documentation of the features used in the default setup.
 
 If you want to use national public QC data rather than internal data, see [What data is required?](#what-data-is-required) below. The national data can be useful for finding more specific patterns since the number of errors in any one state is limited.
 
@@ -184,7 +185,7 @@ If you want to use the national data, you'll see the `reg_model_data` data frame
 
 ## Data dictionary
 
-Variable definitions and sourcing notes are in [`Definitions for variables used.txt`](Definitions%20for%20variables%20used.txt). Covers all model features — income variables, deductions, household composition indicators, benefit ratios — and maps them back to the raw QC data elements. Many thanks to Jesse Shaw for putting this together.
+Variable definitions and sourcing notes are in [the data dictionary](DATA_DICTIONARY.md). Covers all model features — income variables, deductions, household composition indicators, benefit ratios — and maps them back to the raw QC data elements. Many thanks to Jesse Shaw for putting this together.
 
 ## Converting rules to SQL
 

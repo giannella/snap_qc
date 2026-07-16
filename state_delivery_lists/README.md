@@ -22,17 +22,35 @@ This is the default deployment deliverable described in the README and
   rules while review capacity fits. No outcome data or modeling is needed
   to run it.
 
+## File names: the statistic-goal pairing
+
+The machinery that mines rules and computes their evidence is general
+purpose; the RANKING STATISTIC and the GOAL METRIC it is judged by are a
+module the user chooses (see the README's "Statistics and goal metrics"
+section). The naming rule: the DEFAULT, validated pairing keeps the plain
+filename; any other pairing carries its label:
+
+```
+blended_delivery_<State>_2022_2024_budget05.csv                      <- the default
+blended_delivery_<State>_2022_2024_<statistic>_<goalmetric>_budget05.csv   <- anything else
+```
+
+An unlabeled file always means "the recommended list." The default pairing
+is `lcb99_workloadfill`: rules ranked by the one-sided 99% Wilson lower
+confidence bound of any-error precision, filled to a review workload of 5%
+or 10% of the caseload — the pairing validated on the train-2022-23 /
+test-2024 benchmark. A different goal (for example, prioritizing error
+dollars) is a different pairing and ships with its own label only after it
+passes the same validation.
+
 ## Columns
 
-Lists built since 2026-07-14 mine five frames (the four error types plus
-all-errors) and carry rule provenance; earlier lists mined the all-errors
-frame only and use `source` in place of `pool`, without the provenance and
-state-flag columns. A rule's mining frame is provenance only — every rule is
-scored, filtered, and ranked on the any-error target.
+A rule's mining frame is provenance only — every rule is scored, filtered,
+and ranked on the any-error target.
 
 | column | meaning |
 |---|---|
-| `rule` | the flag condition, in public QC variable vocabulary (see `Definitions for variables used.txt`) |
+| `rule` | the flag condition, in public QC variable vocabulary (see [the data dictionary](../DATA_DICTIONARY.md)) |
 | `hh` | household-size stratum the rule applies to (`1`, `2-3`, `4+`, from `cert_HH_size_FS_n`) |
 | `pool` | which pool the rule came from: `national` or `state` |
 | `engines` | which tree engine(s) produced the rule: `xgboost`, `ranger`, or `ranger+xgboost` |

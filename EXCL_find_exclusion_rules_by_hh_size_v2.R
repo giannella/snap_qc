@@ -1,3 +1,5 @@
+# Pairing: clean-rate 99% LCB x workload-cut. One statistic-goal module on
+# the shared evidence core; other pairings: README "Statistics and goal metrics".
 # ──────────────────────────────────────────────────────────────────────────────
 # EXCLUSION rules v2 — no {pre}, no lasso, no nets.
 #
