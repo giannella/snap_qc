@@ -126,8 +126,8 @@ precision on its own training data", 2.6, MUTED) +
   lbl(9.4, 3.04, "selected goal metric(s)", 2.6, MUTED, "bold") +
   box(9.4, 2.0, 1.7, 1.3, fill = BOX, colour = EDGE) +
   lbl(9.4, 2.32, "your ranked list", 3.3, INK, "bold") +
-  lbl(9.4, 1.86, "filter to a customizable
-percentage of cases to be
+  lbl(9.4, 1.86, "filter by a selected goal metric,
+such as percentage of cases to be
 reviewed (e.g., 5%), plus substitute
 rules to allow staff to determine
 which get implemented", 2.5, MUTED) +
@@ -140,7 +140,7 @@ until capacity fits", 2.8, MUTED) +
   seg(10.27, 2.0, 10.72, 2.0) +
   annotate("text", x = 10.45, y = 1.14, hjust = 0.5, label = "blended_delivery_<State>_2022_2024_lcb99_workloadfill_budget05/10.csv",
            size = 2.2, colour = BLUE, family = "mono") +
-  lbl(6.3, 3.95, "How a state's ranked review list is built", 5, INK, "bold") +
+  lbl(6.3, 3.95, "How lists are built", 5, INK, "bold") +
   coord_cartesian(xlim = c(0.1, 12.4), ylim = c(0.05, 4.2)) +
   theme_void()
 ggsave("presentation_figures/pipeline_option_B.png", pB,
