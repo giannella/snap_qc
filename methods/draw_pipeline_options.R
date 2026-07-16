@@ -130,8 +130,9 @@ precision on its own training data", 2.6, MUTED) +
   box(9.4, 2.0, 1.7, 1.3, fill = BOX, colour = EDGE) +
   lbl(9.4, 2.32, "your ranked list", 3.3, INK, "bold") +
   lbl(9.4, 1.86, "filled to your 5% or 10%
-review budget, plus
-substitutes to 3x depth", 2.6, MUTED) +
+review budget, plus substitute
+rules to allow staff to determine
+which get implemented", 2.5, MUTED) +
   seg(8.12, 2.0, 8.52, 2.0) +
   # ── deployment ──
   box(11.5, 2.0, 1.5, 1.3, fill = "white", colour = INK) +
