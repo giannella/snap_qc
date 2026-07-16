@@ -48,7 +48,7 @@ p <- ggplot() +
   box(9.7, 1.0, 2.4, 1.15, fill = "white", colour = INK) +
   lbl(9.7, 1.28, "retired, in writing", 3.4, INK, "bold") +
   lbl(9.7, 0.88, "the claim and its numbers recorded\nin methods/modeling_findings.md", 2.7, MUTED) +
-  lbl(9.7, 0.28, "e.g., typed-frame delivery vocabulary (2026-07);\n\"low subsampling beats high\" (2026-07)", 2.5, MUTED) +
+  lbl(9.7, 0.28, "e.g., \"low subsampling beats high\" (2026-07);\nper-state threshold tuning as the default (2026-07)", 2.5, MUTED) +
   lbl(6.0, 3.85, "How a change earns its way into the recommended workflow", 5, INK, "bold") +
   coord_cartesian(xlim = c(0.1, 11.1), ylim = c(-0.1, 4.1)) +
   theme_void()
