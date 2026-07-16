@@ -75,45 +75,83 @@ seg <- function(x1, y1, x2, y2, col = EDGE)
   annotate("segment", x = x1, y = y1, xend = x2, yend = y2,
            colour = col, linewidth = 0.6, arrow = arrowspec)
 
+chip <- function(x, y, w, h, fill, colour, text, tsize = 2.6) {
+  list(box(x, y, w, h, fill = fill, colour = colour),
+       lbl(x, y, text, tsize, INK, lh = 0.9))
+}
 pB <- ggplot() +
-  # national lane
-  box(1.1, 3.0, 1.7, 1.0, fill = scales::alpha(BLUE, 0.18), colour = BLUE) +
-  lbl(1.1, 3.17, "all states' public\nQC data 2022-24", 3.2, INK) +
-  lbl(1.1, 2.72, "118,263 cases", 2.9, BLUE, "bold") +
-  box(3.3, 3.0, 1.8, 1.0, fill = scales::alpha(BLUE, 0.18), colour = BLUE) +
-  lbl(3.3, 3.17, "national rule pool\n(mined + filtered)", 3.2, INK) +
-  lbl(3.3, 2.72, "48,429 rules", 2.9, BLUE, "bold") +
-  seg(1.95, 3.0, 2.4, 3.0, BLUE) +
-  # state lane
-  box(1.1, 1.0, 1.7, 1.0, fill = scales::alpha(ORANGE, 0.22), colour = ORANGE) +
-  lbl(1.1, 1.17, "your state's cases\n(or internal files)", 3.2, INK) +
-  lbl(1.1, 0.72, "~2,000-3,000 / year", 2.9, "#9a6b00", "bold") +
-  box(3.3, 1.0, 1.8, 1.0, fill = scales::alpha(ORANGE, 0.22), colour = ORANGE) +
-  lbl(3.3, 1.17, "your state's rule pool\n(same mining, your data)", 3.2, INK) +
-  lbl(3.3, 0.72, "~15,000 rules", 2.9, "#9a6b00", "bold") +
-  seg(1.95, 1.0, 2.4, 1.0, ORANGE) +
-  # merge
-  box(5.6, 2.0, 2.0, 1.3, fill = BOX, colour = EDGE) +
-  lbl(5.6, 2.28, "one confidence scale", 3.5, INK, "bold") +
-  lbl(5.6, 1.86, "every rule ranked by the 99%\nlower confidence bound of\nits own precision", 2.9, MUTED) +
-  seg(4.2, 3.0, 4.75, 2.35, BLUE) +
-  seg(4.2, 1.0, 4.75, 1.65, ORANGE) +
-  # frozen list
-  box(7.9, 2.0, 1.9, 1.3, fill = BOX, colour = EDGE) +
-  lbl(7.9, 2.32, "your ranked list", 3.5, INK, "bold") +
-  lbl(7.9, 1.88, "filled to your 5% or 10%\nreview budget, plus\nsubstitutes to 3x depth", 2.9, MUTED) +
-  seg(6.6, 2.0, 6.95, 2.0) +
-  # deployment
-  box(9.9, 2.0, 1.6, 1.3, fill = "white", colour = INK) +
-  lbl(9.9, 2.32, "reviewers", 3.5, INK, "bold") +
-  lbl(9.9, 1.88, "work rules in order\nuntil capacity fits;\nno outcome data\nneeded", 2.9, MUTED) +
-  seg(8.85, 2.0, 9.1, 2.0) +
-  lbl(5.5, 3.85, "A state's rules compete with national rules on equal, evidence-priced terms", 5, INK, "bold") +
-  lbl(5.5, 0.15, "Small-sample state rules are automatically discounted by the confidence bound; they earn slots only where their evidence overcomes the penalty (e.g., DC: 16 of its 18 deployed rules are its own).", 3.0, MUTED) +
-  coord_cartesian(xlim = c(0.1, 10.8), ylim = c(-0.1, 4.1)) +
+  # ── national lane ──
+  box(1.0, 3.0, 1.6, 1.0, fill = scales::alpha(BLUE, 0.18), colour = BLUE) +
+  lbl(1.0, 3.17, "all states' public
+QC data 2022-24", 3.1, INK) +
+  lbl(1.0, 2.72, "118,263 cases", 2.8, BLUE, "bold") +
+  chip(3.0, 3.30, 1.55, 0.48, scales::alpha(BLUE, 0.10), BLUE,
+       "xgboost (boosted trees)") +
+  chip(3.0, 2.70, 1.55, 0.48, scales::alpha(BLUE, 0.10), BLUE,
+       "ranger (random forest)") +
+  lbl(3.0, 2.30, "mined separately for 3 household sizes;
+every tree branch becomes a candidate rule", 2.4, MUTED) +
+  seg(1.82, 3.12, 2.18, 3.28, BLUE) + seg(1.82, 2.88, 2.18, 2.72, BLUE) +
+  seg(3.82, 3.28, 4.18, 3.10, BLUE) + seg(3.82, 2.72, 4.18, 2.90, BLUE) +
+  box(5.0, 3.0, 1.6, 1.0, fill = scales::alpha(BLUE, 0.18), colour = BLUE) +
+  lbl(5.0, 3.17, "national rule pool
+(passed the filter)", 3.1, INK) +
+  lbl(5.0, 2.72, "146,787 -> 48,429", 2.8, BLUE, "bold") +
+  lbl(5.0, 2.30, "mined once, cached,
+reused for every state", 2.4, MUTED) +
+  # ── state lane ──
+  box(1.0, 1.0, 1.6, 1.0, fill = scales::alpha(ORANGE, 0.22), colour = ORANGE) +
+  lbl(1.0, 1.17, "your state's cases
+(or internal files)", 3.1, INK) +
+  lbl(1.0, 0.72, "~2,000-3,000 / year", 2.8, "#9a6b00", "bold") +
+  chip(3.0, 1.30, 1.55, 0.48, scales::alpha(ORANGE, 0.12), ORANGE,
+       "xgboost (boosted trees)") +
+  chip(3.0, 0.70, 1.55, 0.48, scales::alpha(ORANGE, 0.12), ORANGE,
+       "ranger (random forest)") +
+  lbl(3.0, 0.30, "the same mining machinery,
+run on your data", 2.4, MUTED) +
+  seg(1.82, 1.12, 2.18, 1.28, ORANGE) + seg(1.82, 0.88, 2.18, 0.72, ORANGE) +
+  seg(3.82, 1.28, 4.18, 1.10, ORANGE) + seg(3.82, 0.72, 4.18, 0.90, ORANGE) +
+  box(5.0, 1.0, 1.6, 1.0, fill = scales::alpha(ORANGE, 0.22), colour = ORANGE) +
+  lbl(5.0, 1.17, "your state's rule pool
+(same filter)", 3.1, INK) +
+  lbl(5.0, 0.72, "~15,000 rules", 2.8, "#9a6b00", "bold") +
+  # ── shared evidence bar note between lanes ──
+  lbl(4.4, 2.00, "filter, both pools: keep a rule only if precision
+is statistically above the base error rate
+(99% lower bound, support >= 30)", 2.4, MUTED) +
+  # ── merge on one scale ──
+  box(7.2, 2.0, 1.8, 1.3, fill = BOX, colour = EDGE) +
+  lbl(7.2, 2.30, "one confidence scale", 3.3, INK, "bold") +
+  lbl(7.2, 1.86, "every rule ranked by the 99%
+lower confidence bound of its
+precision on its own training data", 2.6, MUTED) +
+  seg(5.82, 2.85, 6.28, 2.30, BLUE) +
+  seg(5.82, 1.15, 6.28, 1.70, ORANGE) +
+  # ── frozen list ──
+  box(9.4, 2.0, 1.7, 1.3, fill = BOX, colour = EDGE) +
+  lbl(9.4, 2.32, "your ranked list", 3.3, INK, "bold") +
+  lbl(9.4, 1.86, "filled to your 5% or 10%
+review budget, plus
+substitutes to 3x depth", 2.6, MUTED) +
+  seg(8.12, 2.0, 8.52, 2.0) +
+  # ── deployment ──
+  box(11.5, 2.0, 1.5, 1.3, fill = "white", colour = INK) +
+  lbl(11.5, 2.32, "reviewers", 3.3, INK, "bold") +
+  lbl(11.5, 1.86, "work rules in order
+until capacity fits;
+no outcome data
+needed", 2.6, MUTED) +
+  seg(10.27, 2.0, 10.72, 2.0) +
+  annotate("text", x = 10.45, y = 1.14, hjust = 0.5, label = "blended_delivery_<State>_budget05/10.csv",
+           size = 2.2, colour = BLUE, family = "mono") +
+  lbl(6.3, 3.95, "Two engines, two data sources, one evidence-ranked list", 5, INK, "bold") +
+  lbl(6.3, 0.02, "Small-sample state rules are automatically discounted by the confidence bound; they earn slots only where their evidence overcomes the penalty (e.g., DC: 16 of its 18 deployed rules are its own).", 2.7, MUTED) +
+  lbl(6.3, -0.22, "Refresh cadence: re-run mining when a new QC year is released; during the year, reviewers work the frozen list and never need outcome data.", 2.7, MUTED) +
+  coord_cartesian(xlim = c(0.1, 12.4), ylim = c(-0.35, 4.2)) +
   theme_void()
 ggsave("presentation_figures/pipeline_option_B.png", pB,
-       width = 11.5, height = 4.6, dpi = 300, bg = "white")
+       width = 13.2, height = 4.9, dpi = 300, bg = "white")
 
 ## ── Option C: the recipe card ─────────────────────────────────────────────────
 steps <- data.frame(
