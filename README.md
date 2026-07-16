@@ -68,7 +68,7 @@ The five-stage machinery is general purpose: for every rule it produces honest e
 |---|---|---|---|
 | find errors at a fixed review workload | 99% Wilson lower bound of any-error precision (`lcb99_workloadfill`) | `INCL_build_blended_delivery_list_v2.R` → `state_delivery_lists/` | validated on 2024, 18 states |
 | cut an existing review pile safely | 99% lower bound of the clean rate among dropped cases | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | reported against a held-out year |
-| prioritize error dollars | dollar-yield statistic | in audition — per-rule dollars-per-flag persists train→test *more* strongly than precision (Spearman 0.56–0.79 by support band vs 0.50–0.71) | roadmap |
+| prioritize error dollars | dollars per flagged case (plus a heavy-tail-robust variant) | `methods/dollaryield_audition_v2.R` | explored on 2024: +3.5pp of error dollars at the 10% budget for under 1pp of precision; the robust variant beat the default on both metrics at 10%. Held-out validation pending before a labeled list ships |
 
 ## v2 scripts
 
