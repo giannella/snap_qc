@@ -41,7 +41,6 @@ p <- ggplot() +
   lbl(3.55, 2.82, "exploratory comparison", 3.2, INK, "bold") +
   lbl(3.55, 2.46, "head-to-head vs the current\nrecipe on the 2024 benchmark", 2.5, MUTED) +
   seg(4.55, 2.6, 4.88, 2.6, lw = 0.45) +
-  lbl(4.72, 2.42, "promising", 2.1, MUTED) +
   box(5.9, 2.6, 2.0, 1.1, fill = BOX, colour = EDGE) +
   lbl(5.9, 2.82, "pre-registered validation", 3.2, INK, "bold") +
   lbl(5.9, 2.46, "expectation written first;\ntested on unjudged data", 2.5, MUTED) +
