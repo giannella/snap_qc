@@ -115,4 +115,4 @@ and charts from our own runs, never with authority or intuition. Rules:
 
 - `methods/modeling_findings.md` — all empirical results with artifact pointers (winner's curse, engine studies, strata, ESAP, states).
 - `methods/design_drop_pre_architecture.md` — the v2 design rationale and decisions.
-- `Definitions for variables used.txt` — feature dictionary.
+- `DATA_DICTIONARY.md` (rendered) / `Definitions for variables used.txt` (original) — feature dictionary.

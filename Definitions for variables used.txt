@@ -1,3 +1,4 @@
+# Rendered version: DATA_DICTIONARY.md (same content, formatted)
 # Describes the variables used in scripts in this repo
 # Many thanks to Jesse Shaw for putting this together and sharing it back
 # See source documentation for public SNAP QC data: https://snapqcdata.net/sites/default/files/2026-05/FY-2024-Tech-Doc.pdf

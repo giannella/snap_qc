@@ -50,7 +50,7 @@ and ranked on the any-error target.
 
 | column | meaning |
 |---|---|
-| `rule` | the flag condition, in public QC variable vocabulary (see `Definitions for variables used.txt`) |
+| `rule` | the flag condition, in public QC variable vocabulary (see [the data dictionary](../DATA_DICTIONARY.md)) |
 | `hh` | household-size stratum the rule applies to (`1`, `2-3`, `4+`, from `cert_HH_size_FS_n`) |
 | `pool` | which pool the rule came from: `national` or `state` |
 | `engines` | which tree engine(s) produced the rule: `xgboost`, `ranger`, or `ranger+xgboost` |

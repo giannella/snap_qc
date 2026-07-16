@@ -5,6 +5,12 @@ they're using and clarity in terms of what changes and why. Below is how we
 determine how improvements get rolled out, previous versions are maintained,
 and changes are communicated.
 
+Methodology changes follow the same discipline — explored head-to-head,
+validated on data that never judged them, and either adopted or retired in
+writing:
+
+![How we determine what is adopted or retired](presentation_figures/refinement_loop.png)
+
 ## What counts as the public interface
 
 Three things are "interface" here — changing any of them incompatibly is a
