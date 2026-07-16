@@ -4,15 +4,19 @@ Code and data for modeling SNAP payment errors with interpretable and easy-to-im
 
 Putting this out on my github with an Apache 2.0 license as an assurance that anyone can freely use and build upon the code, ideas, or results.
 
+## Updates and compatibility
+
+This repository follows a written [versioning and compatibility policy](VERSIONING.md): tagged releases, plain-language change summaries in [CHANGELOG.md](CHANGELOG.md), deprecation before removal, and superseded outputs archived rather than deleted. If you build a process on this code, pin a release tag and read the changelog before updating.
+
 ---
 
 ## Two versions of this pipeline
 
-**v2 (recommended, below)** mines rules with gradient-boosted trees (xgboost) plus a random forest (ranger), and filters each rule on a statistical lower bound on its precision. It replaces the earlier RuleFit/{pre}-based pipeline.
+**v2 (recommended, below)** mines rules with gradient-boosted trees (xgboost) plus a random forest (ranger), and filters each rule on a statistical lower bound on its precision (precision = the share of flagged cases that truly have an error). It replaces the earlier RuleFit/{pre}-based pipeline.
 
 **v1 (preserved, [further down](#v1-documentation-legacy))** is the original {pre}-based pipeline. Everything v1 still works and its documentation is kept intact below — if you have invested in v1, nothing you built is broken or removed. New projects should start with v2.
 
-Why v2 exists, in one paragraph: testing showed that shortlisting mined rules by their raw training precision suffers a strong winner's curse — a "20% precision" rule list delivered ~10% out of sample. v2 fixes this by filtering rules on the **lower confidence bound (Wilson LCB)** of their training precision, so a rule passing a 20% filter actually delivers ~20% on hold-out data. Along the way the pipeline became ~5x faster, runs on a 16 GB laptop (v1's internal lasso needed 40+ GB at scale), evaluates every rule against **all** error types (a rule mined for earned-income errors gets credit when the case it flags has a deduction error — deployment reality), and adds the largest unmodeled error category (`other_error`), which is primarily **deductions**. The engine change itself also has a measured gain — about seven points more error-dollar recall at the same precision-confidence floor — with that and other improvements described in the [guidance section](#guidance-from-the-validation-studies) below and, in full, in [`methods/modeling_findings.md`](methods/modeling_findings.md).
+Why v2 exists, in one paragraph: testing showed that shortlisting mined rules by their raw training precision suffers a strong winner's curse — rules picked because they look best tend to have been lucky, so a "20% precision" rule list delivered ~10% on data it hadn't seen. v2 fixes this by filtering rules on the **lower confidence bound (Wilson LCB)** of their training precision, so a rule passing a 20% filter actually delivers ~20% on hold-out data (data set aside and never used to build or select the rules). Along the way the pipeline became ~5x faster, runs on a 16 GB laptop (v1's internal lasso needed 40+ GB at scale), evaluates every rule against **all** error types (a rule mined for earned-income errors gets credit when the case it flags has a deduction error — deployment reality), and adds the largest unmodeled error category (`other_error`), which is primarily **deductions**. The engine change itself also has a measured gain — about seven points more error-dollar recall (the share of all error dollars caught) at the same precision-confidence floor — with that and other improvements described in the [guidance section](#guidance-from-the-validation-studies) below and, in full, in [`methods/modeling_findings.md`](methods/modeling_findings.md).
 
 ---
 
@@ -46,7 +50,7 @@ generate  ->  canonicalize  ->  dedup  ->  evaluate  ->  sweep / shortlist
 4. **Evaluate** — each rule's flags are computed on training data, a hold-out year, and the full **any-error universe** (all error types). Frame-relative precision understates deployed precision roughly 2x; both are reported.
 5. **Filter + sweep** — rules are filtered at the one-sided 99% Wilson lower bound of train precision (`LCB_Z = 2.326`). The sweep reports, for each filter floor, the union's hold-out precision, recall, and dollar recall — an error caught by several rules counts once, so redundancy never overstates recall. There are no greedy "nets" in v2; the filtered rule list plus the sweep replaces them.
 
-The philosophy on ensemble size: **mine big, filter stringently**. Large ensembles extend recall reach; the strict bounds remove the extra selection noise they bring.
+The approach to ensemble size: mine a large candidate pool, then filter it strictly. Large ensembles reach more of the errors; the strict confidence bounds remove the extra selection noise that more candidates would otherwise inject.
 
 ## v2 scripts
 
@@ -65,13 +69,13 @@ The philosophy on ensemble size: **mine big, filter stringently**. Large ensembl
 
 Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-out/any-error stats, filtered shortlists, sweep curves), `exclusion_rules_by_hh_size_v2/`, and `state_delivery_lists/` (the deployment deliverable). The superseded per-state threshold-tuning outputs live in `archive/state_rules_v2/`.
 
-## Key config knobs (v2)
+## Key settings (v2)
 
-| knob | default | meaning |
+| setting | default | meaning |
 |---|---|---|
 | `LCB_Z` | 2.326 (99%) | filter stringency; use 1.2816 (90%) for exploration |
 | `THRESHOLD_GRID` | .05-.95 | filter floors reported by the sweep |
-| `MIN_TRAIN_FLAGGED` | 10 | support backstop (the LCB does the real work) |
+| `MIN_TRAIN_FLAGGED` | 10 | minimum flagged training cases per rule (a backstop; the lower bound provides the main protection) |
 | `MIN_PRECISION` | 0.20 | shortlist floor, applied to the LCB |
 | `OBJECTIVE` | "dollars" | recall basis for plots (counts always also written) |
 | engine settings | see above | defaults chosen by hyperparameter sweeps on hold-out data (July 2026); evidence in `methods/parameter_tuning_v2/` |
@@ -83,7 +87,7 @@ Packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional
 - **Mine per error type AND pooled, then combine** (the inclusion driver does both) — typed frames edge a single all-errors model slightly; their union catches 3-6 points more recall at any given filter floor for a modest precision cost (roughly a tie at matched recall; table in [`methods/modeling_findings.md`](methods/modeling_findings.md)). If you want one simple model, the all-errors model gets ~95% of the way.
 - **Stratify by household size coarsely (1 / 2-3 / 4+)** — on v2 engines the precision gap vs pooling is small, but the coarse split buys meaningfully more recall reach and ~5x the filtered rule inventory. Finer splits (e.g., 5 HH size strata) perform less well.
 - **Evaluate at review budgets, not just filter floors.** A confidence floor produces whatever workload it produces (on the current data, the 0.20 floor's rule union flags roughly half the caseload). States plan around review capacity, so we also report budget-filled performance: rules added in descending lower-bound order until 5% or 10% of the caseload is flagged. Tested a year ahead (rules trained on 2022-23, scored on each state's 2024), the national rules deliver median 0.30 precision catching 16% of error dollars at a 5% budget and 0.27 catching 25% at 10% — above every one of 18 states' base error rates (1.5-3.4x lift over random review). A budget-filled union is built by a few dozen rules (26-67 across the 18 states), not thousands.
-- **Deploy the national ranking as the default; adapt to a state only as a validated fallback.** Re-filtering or re-tuning the national rules on each state's own data did not beat applying them in national-confidence order for the median state in the future-year test; adaptation paid only where the national list underperformed (New Jersey, Mississippi, DC). Where a state's sample is thin, small-sample tuning remains winner's-curse territory — require a hard support floor (~30 flagged training cases per rule) and a hold-out year.
+- **Deploy the national ranking as the default; adapt to a state only as a validated fallback.** Re-filtering or re-tuning the national rules on each state's own data did not beat applying them in national-confidence order for the median state in the future-year test; adaptation paid only where the national list underperformed (New Jersey, Mississippi, DC). Where a state's sample is thin, small-sample tuning remains prone to the same lucky-selection problem — require a hard support floor (at least ~30 flagged training cases per rule) and a hold-out year.
 - **Hand a state one frozen ranked list with buffer rules.** Freeze the list against the state's own recent caseload (core sized to the review budget, buffer to 3x that depth) and have the state activate rules in rank order while its capacity fits — outcome-free, absorbs both under- and over-firing as patterns drift, and committing a year in advance cost almost nothing in testing (median precision 0.294 vs 0.301 for a list packed against the realized year, at identical review volume). `INCL_build_blended_delivery_list_v2.R` builds the deliverable.
 - **Blend the state's own mined rules into the national pool on the confidence-bound scale.** Ranking every rule by its own 99% lower bound lets high-precision state rules earn slots over national rules while the bound automatically discounts their smaller support; the blend beat the national-only list at a 5% budget (median 0.324 vs 0.294) and tied at 10%. Known blind spot: a national rule's bound says nothing about how it transfers to your state, so in states the national mix fits worst the scale over-trusts national rules — keep the state's own-pool list as the fallback, and let the state's internal validation on newer data decide.
 - **Include finding any-error (even outside the mined error type) as a win** — a flagged case with a different error type than the rule was mined for will sometimes help with finding an error that can be remedied. 
