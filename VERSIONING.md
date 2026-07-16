@@ -50,7 +50,7 @@ progress between releases.
 - Method-level results and the evidence behind recommendations live in
   `methods/modeling_findings.md`; design decisions in `methods/design_*.md`.
 
-## How we avoid breaking you
+## How we keep existing workflows working
 
 - **Deprecate before removing.** A superseded script keeps working for at
   least one MINOR release with a two-line header pointing to its successor
