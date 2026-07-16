@@ -140,14 +140,15 @@ substitutes to 3x depth", 2.6, MUTED) +
   lbl(11.5, 2.32, "reviewers", 3.3, INK, "bold") +
   lbl(11.5, 1.86, "work rules in order
 until capacity fits;
-no outcome data
-needed", 2.6, MUTED) +
+uses case facts only -
+no error findings
+required to run it", 2.5, MUTED) +
   seg(10.27, 2.0, 10.72, 2.0) +
   annotate("text", x = 10.45, y = 1.14, hjust = 0.5, label = "blended_delivery_<State>_budget05/10.csv",
            size = 2.2, colour = BLUE, family = "mono") +
-  lbl(6.3, 3.95, "Two engines, two data sources, one evidence-ranked list", 5, INK, "bold") +
+  lbl(6.3, 3.95, "How a state's ranked review list is built", 5, INK, "bold") +
   lbl(6.3, 0.02, "Small-sample state rules are automatically discounted by the confidence bound; they earn slots only where their evidence overcomes the penalty (e.g., DC: 16 of its 18 deployed rules are its own).", 2.7, MUTED) +
-  lbl(6.3, -0.22, "Refresh cadence: re-run mining when a new QC year is released; during the year, reviewers work the frozen list and never need outcome data.", 2.7, MUTED) +
+  lbl(6.3, -0.22, "Refresh cadence: re-run mining when a new QC year is released; during the year, reviewers simply work the frozen list.", 2.7, MUTED) +
   coord_cartesian(xlim = c(0.1, 12.4), ylim = c(-0.35, 4.2)) +
   theme_void()
 ggsave("presentation_figures/pipeline_option_B.png", pB,
