@@ -65,6 +65,11 @@ expectation; anything adopted must then pass the honest designs (national
 2022/2023 tuning split; 2017-19 era check). Failures are retired in writing
 in `modeling_findings.md`, like the subsampling claim.
 
+If adoption replaces the 99% Wilson LCB as the ranking statistic, update
+the README pipeline figure (`methods/draw_pipeline_options.R` ->
+`presentation_figures/pipeline_option_B.png`) — its confidence-scale box
+names the bound explicitly.
+
 Status at write time:
 - Layer 2 audition running: `neardup_collapse_sweep_v2.R` (does
   support-preferring collapse close the five-frame gap? does the deployed-rule
