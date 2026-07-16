@@ -138,7 +138,7 @@ which get implemented", 2.5, MUTED) +
   lbl(11.5, 1.95, "work rules in order
 until capacity fits", 2.8, MUTED) +
   seg(10.27, 2.0, 10.72, 2.0) +
-  annotate("text", x = 10.45, y = 1.14, hjust = 0.5, label = "blended_delivery_<State>_2022_2024_lcb99_workloadfill_budget05/10.csv",
+  annotate("text", x = 10.45, y = 1.14, hjust = 0.5, label = "blended_delivery_<State>_2022_2024_budget05/10.csv",
            size = 2.2, colour = BLUE, family = "mono") +
   lbl(6.3, 3.95, "How lists are built", 5, INK, "bold") +
   coord_cartesian(xlim = c(0.1, 12.4), ylim = c(0.05, 4.2)) +
@@ -167,7 +167,7 @@ steps <- data.frame(
   runs = c("1_data_munging_..._public_qc_data.R",
            "INCL_build_blended_delivery_list_v2.R  (steps 2-7, one script)",
            "", "", "", "",
-           "-> state_delivery_lists/blended_delivery_<State>_..._lcb99_workloadfill_budget05/10.csv")
+           "-> state_delivery_lists/blended_delivery_<State>_2022_2024_budget05/10.csv")
 )
 pC <- ggplot(steps) +
   annotate("segment", x = 0.32, xend = 0.32, y = 0.65, yend = 7.35,

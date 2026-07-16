@@ -27,18 +27,21 @@ This is the default deployment deliverable described in the README and
 The machinery that mines rules and computes their evidence is general
 purpose; the RANKING STATISTIC and the GOAL METRIC it is judged by are a
 module the user chooses (see the README's "Statistics and goal metrics"
-section). Every list file names the pairing that produced it:
+section). The naming rule: the DEFAULT, validated pairing keeps the plain
+filename; any other pairing carries its label:
 
 ```
-blended_delivery_<State>_2022_2024_<statistic>_<goalmetric>_budget05.csv
+blended_delivery_<State>_2022_2024_budget05.csv                      <- the default
+blended_delivery_<State>_2022_2024_<statistic>_<goalmetric>_budget05.csv   <- anything else
 ```
 
-The published lists use `lcb99_workloadfill`: rules ranked by the one-sided
-99% Wilson lower confidence bound of any-error precision, filled to a review
-workload of 5% or 10% of the caseload. This pairing is the one validated on
-the train-2022-23 / test-2024 benchmark; a different goal (for example,
-prioritizing error dollars) is a different pairing and gets its own label
-after it passes the same validation.
+An unlabeled file always means "the recommended list." The default pairing
+is `lcb99_workloadfill`: rules ranked by the one-sided 99% Wilson lower
+confidence bound of any-error precision, filled to a review workload of 5%
+or 10% of the caseload — the pairing validated on the train-2022-23 /
+test-2024 benchmark. A different goal (for example, prioritizing error
+dollars) is a different pairing and ships with its own label only after it
+passes the same validation.
 
 ## Columns
 

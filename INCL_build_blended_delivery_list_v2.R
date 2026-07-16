@@ -41,9 +41,13 @@ MIN_TRAIN_FLAGGED <- 30
 
 # The statistic-goal pairing this script implements. The evidence core above
 # is general purpose; ranking statistic + goal metric are the user-chosen
-# module (see README "Statistics and goal metrics"). The label goes into the
-# output filenames so a list always names the pairing that produced it.
-PAIRING <- "lcb99_workloadfill"
+# module (see README "Statistics and goal metrics"). The DEFAULT, validated
+# pairing keeps the plain filename; any other pairing gets its label in the
+# filename, so an unlabeled file always means "the recommended list" and a
+# labeled one visibly announces it is something else.
+DEFAULT_PAIRING <- "lcb99_workloadfill"
+if (!exists("PAIRING")) PAIRING <- DEFAULT_PAIRING
+PAIRING_TAG <- if (identical(PAIRING, DEFAULT_PAIRING)) "" else paste0("_", PAIRING)
 
 # Which frames feed the vocabulary. The typed + pooled union is the validated
 # default (findings #3: typed frames surface specialized rules the pooled
@@ -212,8 +216,8 @@ for (b in BUDGETS) {
   hand$n_new_at_rank <- nn
   hand$rank <- seq_along(sel)
   hand$role <- rep(c("core", "buffer"), c(length(frozen), length(buffer)))
-  fn <- file.path(out_dir, sprintf("blended_delivery_%s_2022_2024_%s_budget%02.0f.csv",
-                                   gsub(" ", "_", DELIVERY_STATE), PAIRING, 100 * b))
+  fn <- file.path(out_dir, sprintf("blended_delivery_%s_2022_2024%s_budget%02.0f.csv",
+                                   gsub(" ", "_", DELIVERY_STATE), PAIRING_TAG, 100 * b))
   write.csv(hand, fn, row.names = FALSE)
   cat(sprintf("budget %2.0f%%: core %d + buffer %d (state rules: %d core, %d buffer) -> %s\n",
               100 * b, length(frozen), length(buffer),
