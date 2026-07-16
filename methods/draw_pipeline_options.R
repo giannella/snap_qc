@@ -123,8 +123,9 @@ precision on its own training data", 2.6, MUTED) +
   # ── frozen list ──
   box(9.4, 2.0, 1.7, 1.3, fill = BOX, colour = EDGE) +
   lbl(9.4, 2.32, "your ranked list", 3.3, INK, "bold") +
-  lbl(9.4, 1.86, "filled to your 5% or 10%
-review budget, plus substitute
+  lbl(9.4, 1.86, "filter to a customizable
+percentage of cases to be
+reviewed (e.g., 5%), plus substitute
 rules to allow staff to determine
 which get implemented", 2.5, MUTED) +
   seg(8.12, 2.0, 8.52, 2.0) +
