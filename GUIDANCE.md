@@ -1,4 +1,4 @@
-# Guidance from the validation studies
+# Guidance from validation studies
 
 What moved held-out performance in experiments we actually ran, with the
 evidence for each point in [`methods/modeling_findings.md`](methods/modeling_findings.md).

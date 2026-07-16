@@ -4,7 +4,7 @@ Code and data for modeling SNAP payment errors with interpretable and easy-to-im
 
 Putting this out on my github with an Apache 2.0 license as an assurance that anyone can freely use and build upon the code, ideas, or results.
 
-**[Updates & compatibility](VERSIONING.md)** · **[Guidance from the validation studies](GUIDANCE.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Changelog](CHANGELOG.md)**
+**[Updates & compatibility](VERSIONING.md)** · **[Guidance from validation studies](GUIDANCE.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Changelog](CHANGELOG.md)**
 
 ## Updates and compatibility
 
@@ -30,7 +30,7 @@ Why v2 exists, in one paragraph: testing showed that shortlisting mined rules by
 
 ![How a state's ranked review list is built](presentation_figures/pipeline_option_B.png) A state can also run the same script as a hybrid: mine its own pool from internal case files (which include the ineligible determinations the public files exclude) and blend that with the pool mined from other states' public QC data — the confidence-bound scale is what makes rules from the two sources directly comparable, so nothing else changes.
 
-The same two use cases as always:
+Two routes, depending on your use case:
 
 **I have a pile of cases already flagged for review and want to cut it down** → `EXCL_find_exclusion_rules_by_hh_size_v2.R`
 
@@ -96,7 +96,7 @@ Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-o
 
 Packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional bagged-CART engine). No `{pre}` required.
 
-## Guidance from the validation studies
+## Guidance from validation studies
 
 Moved to its own page: [GUIDANCE.md](GUIDANCE.md) — what moved held-out
 performance in the experiments we ran, from selection statistics to
