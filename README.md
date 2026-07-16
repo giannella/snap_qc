@@ -8,6 +8,10 @@ Putting this out on my github with an Apache 2.0 license as an assurance that an
 
 This repository follows a written [versioning and compatibility policy](VERSIONING.md): tagged releases, plain-language change summaries in [CHANGELOG.md](CHANGELOG.md), deprecation before removal, and superseded outputs archived rather than deleted. If you build a process on this code, pin a release tag and read the changelog before updating.
 
+Methodology changes follow the same discipline — explored head-to-head, validated on data that never judged them, and either adopted or retired in writing:
+
+![How a change earns its way into the recommended workflow](presentation_figures/refinement_loop.png)
+
 ---
 
 ## Two versions of this pipeline
