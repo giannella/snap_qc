@@ -1,6 +1,6 @@
 # snap_qc
 
-Code and data for modeling SNAP payment errors with interpretable and easy-to-implement decision rules.  
+Code and data for modeling SNAP payment errors with interpretable and easy-to-implement decision rules. 
 
 Putting this out on my github with an Apache 2.0 license as an assurance that anyone can freely use and build upon the code, ideas, or results.
 
@@ -34,9 +34,13 @@ Two routes, depending on your use case:
 
 **I have a pile of cases already flagged for review and want to cut it down** → `EXCL_find_exclusion_rules_by_hh_size_v2.R`
 
-**I don't have a flagging system and want to identify which cases are most likely to have an error** → `INCL_build_blended_delivery_list_v2.R` builds the blended delivery list described above and is self-contained: it mines the national and state rule pools itself (any-error target) — it does not consume the outputs of `INCL_find_inclusion_rules_by_hh_size_v2.R`. If you only want to use internal data, use `INCL_find_inclusion_rules_by_hh_size_v2.R` since it does not expect the national data as an input. Run `INCL_find_inclusion_rules_by_hh_size_v2.R` when you want the full exploration outputs instead: rules mined per error type as well as pooled, filtered shortlists, and the filter-floor sweep curves (see `state_delivery_lists/README.md` for the delivery lists' column definitions and caveats). If you want to keep it very simple, start from the national rule lists in `inclusion_rules_by_hh_size_v2/`. Per-state threshold tuning (`state_threshold_gridsearch_v2.R`) remains available, but in an 18-state future-year test it did not beat deploying the national ranking as-is for the median state — treat tuning as a fallback and validate it on your own hold-out year first.
+**I don't have a flagging system and want to identify which cases are most likely to have an error** → `INCL_build_blended_delivery_list_v2.R` builds the blended delivery list described above and is self-contained: it mines the national and state rule pools itself. 
 
-As in v1, the scripts expect a data frame with one row per case, a column indicating whether the case is a true error, and your features. Update the config block at the top of the script: the `features` vector and `TARGET_IS_ERROR` expression are the main things to change. Features must be numeric, logical, or two-level factors (multi-level factors are rejected with a clear message — recode upstream). See [the data dictionary](DATA_DICTIONARY.md) for the default feature set.
+If you only want to use internal data, use `INCL_find_inclusion_rules_by_hh_size_v2.R` since it does not expect the national data as an input. You can also use `INCL_find_inclusion_rules_by_hh_size_v2.R` when you want the full exploration outputs instead: rules mined per error type as well as pooled, filtered shortlists, and the filter-floor sweep curves (see `state_delivery_lists/README.md` for the delivery lists' column definitions and caveats). 
+
+If you want to keep it very simple, start from the rule lists for your state in `state_delivery_lists/`. Note that per-state threshold tuning (`state_threshold_gridsearch_v2.R`) remains available, but in an 18-state future-year test it did not beat deploying the national ranking as-is for the median state — so treat tuning as a fallback and validate it on your own hold-out year first.
+
+The scripts expect a data frame with one row per case, a column indicating whether the case is a true error, and your features. Update the config block at the top of the script: the `features` vector and `TARGET_IS_ERROR` expression are the main things to change. Features must be numeric, logical, or two-level factors (multi-level factors are rejected with a clear message — recode upstream). See [the data dictionary](DATA_DICTIONARY.md) for the default feature set.
 
 To use the national public QC data, build `reg_model_data` with `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` (unchanged from v1).
 
