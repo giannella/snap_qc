@@ -107,8 +107,6 @@ reused for every state", 2.4, MUTED) +
        "xgboost (boosted trees)") +
   chip(3.0, 0.70, 1.55, 0.48, scales::alpha(ORANGE, 0.12), ORANGE,
        "ranger (random forest)") +
-  lbl(3.0, 0.30, "the same mining machinery,
-run on your data", 2.4, MUTED) +
   seg(1.82, 1.12, 2.18, 1.28, ORANGE) + seg(1.82, 0.88, 2.18, 0.72, ORANGE) +
   seg(3.82, 1.28, 4.18, 1.10, ORANGE) + seg(3.82, 0.72, 4.18, 0.90, ORANGE) +
   box(5.0, 1.0, 1.6, 1.0, fill = scales::alpha(ORANGE, 0.22), colour = ORANGE) +
