@@ -70,54 +70,11 @@ the README pipeline figure (`methods/draw_pipeline_options.R` ->
 `presentation_figures/pipeline_option_B.png`) — its confidence-scale box
 names the bound explicitly.
 
-## Audition outcomes (2026-07-15/16, all exploratory on 2024)
-
-- **Layer 2 (families/collapse)**: mechanism CONFIRMED — the deployed-rule
-  autopsy showed the five-frame walk deploying median-support-59 rules with
-  39pp train->2024 deflation vs support-77 / 22pp for the any-error pool;
-  collapse (J=0.95) normalized both (support 81, deflation 23pp) and lifted
-  the five-frame 5%-budget median 0.306 -> 0.319. But it did NOT beat the
-  production baseline (0.324) and HURT the production pool at 5%. Not adopted
-  as a ranking step; the `family_id` substitutes column remains a planned
-  deliverable feature. (`neardup_collapse_sweep.csv`)
-- **Layer 3 (EB shrinkage ranking)**: REFUTED in the simple per-stratum
-  beta-binomial form — posterior-mean ranking degraded the production pool's
-  5% median to 0.259-0.293 vs 0.324 for the Wilson LCB; the posterior 5%
-  quantile tracked the LCB slightly worse everywhere.
-  (`estimation_admission_sweep.csv`)
-- **Layer 1 (FDR admission)**: audition INVALID as designed — the cached
-  pools were already support/base-rate filtered, so BH admission was a no-op
-  (identical medians across admission arms). A true test must replace the
-  build-time filter, which requires caching the raw unfiltered vocabulary.
-  Roadmap, together with the z(N) era validation (2017-19).
-- **Net decision**: the production recipe (any-error vocabulary, Wilson LCB
-  ranking, no collapse) stays; the provenance schema is adopted; the typed
-  vocabulary is retired at delivery scale after three failed rescue attempts
-  (stringency, collapse, shrinkage). Delivery lists rebuilt on this settled
-  recipe 2026-07-16.
-
-## Revision (2026-07-16): the goal-agnostic core
-
-The EB audit's deeper lesson: ranking by an average-calibrated estimate lost
-because budget-fill is a TAIL decision — there is no single best estimate,
-only a best statistic for a given decision. The architecture therefore
-separates:
-
-- **Evidence core (invariant)**: per-rule counts, coverage, families,
-  provenance, calibrated uncertainty; capacity-matched evaluation on unjudged
-  years; assumption-free certification. Goal-independent, column-agnostic.
-- **Statistic-goal module (user-chosen)**: a ranking statistic paired with
-  the goal metric it is judged by. Delivery filenames carry the pairing label
-  (`lcb99_workloadfill` today); the exclusion pipeline's clean-rate LCB is a
-  second, pre-existing pairing. New pairings audition in the harness against
-  their own goal metric and pass the honest designs before shipping.
-
-Opening measurement for the dollar goal (dollar_persistence_check_v2.R,
-train 2022-23 pools scored per state on 2024, 169k rule-state pairs with
-n_train >= 30, n_test >= 10): per-rule dollars-per-flag persists train->test
-MORE strongly than precision in every support band — Spearman 0.560 / 0.699 /
-0.789 / 0.677 (bands 30-60 / 61-120 / 121-300 / 300+) vs 0.497 / 0.634 /
-0.708 / 0.673 for precision. Error magnitude is anchored to observable case
-characteristics (benefit levels, household size), so a dollar-yield statistic
-needs less shrinkage than feared. Next: audition a dollar-LCB ranking against
-dollars-at-capacity in the goal-parametric harness.
+Status at write time:
+- Layer 2 audition running: `neardup_collapse_sweep_v2.R` (does
+  support-preferring collapse close the five-frame gap? does the deployed-rule
+  autopsy confirm displacement?).
+- Layer 1 + 3 audition written: `estimation_admission_sweep_v2.R` (EB ranking
+  x FDR admission, composed with layer 2's winning collapse setting).
+- Published delivery lists stay as-is until the audited architecture settles;
+  no rebuild in between, to avoid shipping the folder twice.

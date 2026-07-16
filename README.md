@@ -58,16 +58,6 @@ generate  ->  canonicalize  ->  dedup  ->  evaluate  ->  sweep / shortlist
 
 The approach to ensemble size: mine a large candidate pool, then filter it strictly. Large ensembles reach more of the errors; the strict confidence bounds remove the extra selection noise that more candidates would otherwise inject.
 
-## Statistics and goal metrics
-
-The five-stage machinery is general purpose: for every rule it produces honest evidence — support, precision, confidence bounds, provenance. What to *optimize* is a separate, user-chosen module: a **ranking statistic** paired with the **goal metric** it is judged by. Different goals need different statistics (a statistic that wins at one goal can lose at another — we measured exactly that), so delivered files carry their pairing in the filename, and a new pairing is adopted only after it passes the same held-out-year validation as everything else.
-
-| your goal | statistic | where | status |
-|---|---|---|---|
-| find errors at a fixed review workload | 99% Wilson lower bound of any-error precision (`lcb99_workloadfill`) | `INCL_build_blended_delivery_list_v2.R` → `state_delivery_lists/` | validated on 2024, 18 states |
-| cut an existing review pile safely | 99% lower bound of the clean rate among dropped cases | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | reported against a held-out year |
-| prioritize error dollars | dollar-yield statistic | in audition — per-rule dollars-per-flag persists train→test *more* strongly than precision (Spearman 0.56–0.79 by support band vs 0.50–0.71) | roadmap |
-
 ## v2 scripts
 
 | script | purpose |

@@ -10,39 +10,6 @@ moved or behaves differently.
 
 ## [Unreleased]
 
-Dollar-prioritizing ranking (a `*_dollaryield_*` pairing) is in audition;
-the FDR admission test and the 2017-19 era validation of pool-size-scaled
-stringency are on the research roadmap.
-
-## [3.0.0] - 2026-07-16
-
-### Changed (breaking)
-- **Delivery list filenames now name the statistic-goal pairing that built
-  them.** `blended_delivery_<State>_2022_2024_budget05.csv` is now
-  `blended_delivery_<State>_2022_2024_lcb99_workloadfill_budget05.csv`
-  (same for budget10). Update any saved links or scripts that read these
-  files; contents are the rebuilt lists below.
-- **All 19 states' delivery lists rebuilt on one recipe and one schema**:
-  the any-error vocabulary with the 12-column provenance schema. This
-  replaces the 10 lists briefly published from five-frame mining — a
-  vocabulary change that a train-2022-23/test-2024 benchmark showed was
-  WORSE at the 5% review budget (median precision 0.306 vs 0.324) and that
-  three rescue attempts (higher stringency, near-duplicate collapse,
-  shrinkage estimates) did not repair. Details in
-  `methods/design_selection_layers_v3.md` and the findings file.
-
-### Added
-- The machinery/goal separation made explicit: a "Statistics and goal
-  metrics" section in the README, pairing labels in filenames, and
-  breadcrumbs in the driver scripts. The mining and evidence machinery is
-  general purpose; the ranking statistic + goal metric are a module the
-  user chooses.
-- Pipeline and process figures in the README
-  (`presentation_figures/pipeline_option_B.png`, `refinement_loop.png`).
-- Measured: per-rule error-dollar size persists from training to a future
-  year more strongly than precision does (`dollar_persistence_check_v2.R`) —
-  groundwork for the dollar-prioritizing pairing.
-
 Work in progress on a revised rule-selection method (see
 `methods/design_selection_layers_v3.md`): admission by false-discovery-rate
 control instead of a fixed confidence cutoff, grouping of near-duplicate

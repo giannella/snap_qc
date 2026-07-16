@@ -1,5 +1,3 @@
-# Statistic: any-error precision 99% LCB, reported across filter floors
-# (exploration outputs). Statistic-goal pairings: README "Statistics and goal metrics".
 # ──────────────────────────────────────────────────────────────────────────────
 # INCLUSION rules v2 — no {pre}, no lasso, no nets.
 #

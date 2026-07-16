@@ -22,28 +22,13 @@ This is the default deployment deliverable described in the README and
   rules while review capacity fits. No outcome data or modeling is needed
   to run it.
 
-## File names: the statistic-goal pairing
-
-The machinery that mines rules and computes their evidence is general
-purpose; the RANKING STATISTIC and the GOAL METRIC it is judged by are a
-module the user chooses (see the README's "Statistics and goal metrics"
-section). Every list file names the pairing that produced it:
-
-```
-blended_delivery_<State>_2022_2024_<statistic>_<goalmetric>_budget05.csv
-```
-
-The published lists use `lcb99_workloadfill`: rules ranked by the one-sided
-99% Wilson lower confidence bound of any-error precision, filled to a review
-workload of 5% or 10% of the caseload. This pairing is the one validated on
-the train-2022-23 / test-2024 benchmark; a different goal (for example,
-prioritizing error dollars) is a different pairing and gets its own label
-after it passes the same validation.
-
 ## Columns
 
-A rule's mining frame is provenance only — every rule is scored, filtered,
-and ranked on the any-error target.
+Lists built since 2026-07-14 mine five frames (the four error types plus
+all-errors) and carry rule provenance; earlier lists mined the all-errors
+frame only and use `source` in place of `pool`, without the provenance and
+state-flag columns. A rule's mining frame is provenance only — every rule is
+scored, filtered, and ranked on the any-error target.
 
 | column | meaning |
 |---|---|
