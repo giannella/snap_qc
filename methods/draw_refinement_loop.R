@@ -51,8 +51,6 @@ p <- ggplot() +
   seg(7.15, 3.4, 7.33, 3.4, lw = 0.45) +
   seg(7.15, 2.6, 7.15, 1.4, ah = FALSE, lw = 0.45) +
   seg(7.15, 1.4, 7.33, 1.4, lw = 1.8) +
-  lbl(7.02, 3.62, "meets expectation", 2.1, MUTED) +
-  lbl(6.95, 1.18, "falls short", 2.1, MUTED) +
   ## exploration kill-path joins the falls-short rail
   seg(3.55, 2.05, 3.55, 1.4, ah = FALSE, lw = 1.8) +
   seg(3.55, 1.4, 7.14, 1.4, ah = FALSE, lw = 1.8) +
