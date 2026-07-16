@@ -114,10 +114,6 @@ run on your data", 2.4, MUTED) +
   box(5.0, 1.0, 1.6, 1.0, fill = scales::alpha(ORANGE, 0.22), colour = ORANGE) +
   lbl(5.0, 1.0, "your state's rule pool
 (same filter)", 3.1, INK) +
-  # ── shared evidence bar note between lanes ──
-  lbl(4.4, 2.00, "filter, both pools: keep a rule only if precision
-is statistically above the base error rate
-(99% lower bound, support >= 30)", 2.4, MUTED) +
   # ── merge on one scale ──
   box(7.2, 2.0, 1.8, 1.3, fill = BOX, colour = EDGE) +
   lbl(7.2, 2.30, "one confidence scale", 3.3, INK, "bold") +
@@ -143,9 +139,7 @@ until capacity fits", 2.8, MUTED) +
   annotate("text", x = 10.45, y = 1.14, hjust = 0.5, label = "blended_delivery_<State>_budget05/10.csv",
            size = 2.2, colour = BLUE, family = "mono") +
   lbl(6.3, 3.95, "How a state's ranked review list is built", 5, INK, "bold") +
-  lbl(6.3, 0.02, "Small-sample state rules are automatically discounted by the confidence bound; they earn slots only where their evidence overcomes the penalty (e.g., DC: 16 of its 18 deployed rules are its own).", 2.7, MUTED) +
-  lbl(6.3, -0.22, "Refresh cadence: re-run mining when a new QC year is released; during the year, reviewers simply work the frozen list.", 2.7, MUTED) +
-  coord_cartesian(xlim = c(0.1, 12.4), ylim = c(-0.35, 4.2)) +
+  coord_cartesian(xlim = c(0.1, 12.4), ylim = c(0.05, 4.2)) +
   theme_void()
 ggsave("presentation_figures/pipeline_option_B.png", pB,
        width = 13.2, height = 4.9, dpi = 300, bg = "white")
