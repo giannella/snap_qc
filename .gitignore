@@ -18,3 +18,4 @@ do_not_commit_decks/
 methods/state_similarity_v2/transfer_benchmark_train2223_test24/dollar_persistence.csv
 methods/state_similarity_v2/transfer_benchmark_train2223_test24/fdr_raw_vocab/
 methods/state_similarity_v2/transfer_benchmark_train2223_test24/dollar_stats_cache/
+reg_model_data.csv
