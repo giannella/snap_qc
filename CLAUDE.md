@@ -48,6 +48,7 @@ generate -> canonicalize -> dedup -> evaluate -> sweep / shortlist
 
 - Engines: xgboost (nrounds 1000, eta 0.02, subsample 0.20) + ranger (1000 trees, mtry 2), depth 4. The PAIR beats either alone and beats rpart+ranger.
 - **"Mine big, filter stringently"**: big ensembles extend recall reach; `LCB_Z = 2.326` (99%) removes their selection-multiplicity noise. 90% (1.2816) for exploration only.
+- Delivery-builder admission (since v2.3.0, findings 19): Benjamini-Hochberg at FDR 10% vs the stratum base rate AND `n >= 30`. Floorless BH is refuted (the floor is an estimation-quality guard, not a discovery guard); `ADMISSION <- "legacy"` restores the old raw-precision filter. Ordering stays the 99% Wilson LCB — vindicated on two eras (findings 20); shrinkage ordering and the typed delivery vocabulary are retired (findings 17-18).
 - Raw train precision suffers a strong winner's curse (nominal 0.20 -> ~0.10 holdout); the LCB fixes calibration. Never shortlist on raw precision or on holdout performance.
 - Strata: household size 1 / 2-3 / 4+ (`cert_HH_size_FS_n` collapsed). Year-dependent margins (2023: pooling matched precision, split won reach; 2024: split won precision +4pp, pooling won floor-reach) but the coarse split never loses - it stays the default. 5-way adds nothing over 3-way at ~1.6x compute (2024 re-test; findings 11).
 - elderly/disabled: a FEATURE, not a stratum (settled empirically — the ensembles carve the caseload themselves).

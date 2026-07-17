@@ -10,9 +10,35 @@ moved or behaves differently.
 
 ## [Unreleased]
 
-Dollar-prioritizing ranking (a `*_dollaryield_*` pairing) is in audition;
-the FDR admission test and the 2017-19 era validation of pool-size-scaled
-stringency are on the research roadmap.
+Nothing user-facing in progress. Research results, including several
+retired approaches, are recorded in `methods/modeling_findings.md`
+(sections 17-22).
+
+## [2.3.0] - 2026-07-17
+
+No action needed: filenames, columns, and script interfaces are unchanged.
+
+### Changed
+- **The delivery builder's admission test.** A candidate rule was
+  previously admitted if it flagged at least 30 training cases, had raw
+  precision of at least 0.05, and was above its stratum's base error
+  rate. It is now admitted if a Benjamini-Hochberg test (false-discovery
+  rate 10%) rejects "precision at or below the stratum base rate" and it
+  flags at least 30 training cases. The new test sets its own bar from
+  the number of candidates and the strength of their evidence, which
+  matters when the code runs on data of a different size than ours. On
+  two held-out years it matched the previous filter at the 5% review
+  budget and was slightly better at 10% (`methods/modeling_findings.md`
+  section 19). The previous filter remains available (`ADMISSION <-
+  "legacy"` in the builder).
+- **All 19 states' delivery lists rebuilt with the new admission test**,
+  under the existing filenames. Differences from the previous lists are
+  small; the evidence for the change is in the findings file, not in
+  large deliverable movements.
+
+### Added
+- Findings 17-22: the selection-method studies behind this release,
+  including the approaches that were tested and not adopted.
 
 ## [2.2.0] - 2026-07-16
 

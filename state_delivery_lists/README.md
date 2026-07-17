@@ -8,6 +8,9 @@ This is the default deployment deliverable described in the README and
 
 ## How each list is built
 
+- A candidate rule is admitted to a pool if a Benjamini-Hochberg test
+  (false-discovery rate 10%) rejects "precision at or below the stratum
+  base rate" and it flags at least 30 training cases.
 - The state's own mined rule pool is merged into the national pool on one
   scale: every rule is ranked by the one-sided 99% Wilson lower confidence
   bound of its training precision (`precision_train_lcb`).

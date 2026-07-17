@@ -49,6 +49,14 @@ DEFAULT_PAIRING <- "lcb99_workloadfill"
 if (!exists("PAIRING")) PAIRING <- DEFAULT_PAIRING
 PAIRING_TAG <- if (identical(PAIRING, DEFAULT_PAIRING)) "" else paste0("_", PAIRING)
 
+# Admission test for candidate rules. "fdr10": a rule is admitted when a
+# Benjamini-Hochberg test (false-discovery rate 10%) rejects "precision at
+# or below the stratum base rate", and it flags at least MIN_TRAIN_FLAGGED
+# training cases. Validated on two held-out years against the earlier
+# hand-set filter (modeling_findings.md section 19). "legacy" restores that
+# earlier filter (raw precision >= 0.05 and above the stratum base rate).
+if (!exists("ADMISSION")) ADMISSION <- "fdr10"
+
 # Which frames feed the vocabulary. The typed + pooled union is the validated
 # default (findings #3: typed frames surface specialized rules the pooled
 # target misses). Set to "any_error" alone to reproduce the original
@@ -59,7 +67,7 @@ if (!exists("MINING_FRAMES"))
 FRAME_TAG <- if (identical(MINING_FRAMES, "any_error")) "anyerror" else
   sprintf("%dframes", length(MINING_FRAMES))
 
-POOL_CACHE <- "methods/delivery_pools_2022_2024_v2"
+POOL_CACHE <- "methods/delivery_pools_2022_2024_v3"   # keyed by admission below
 out_dir <- "state_delivery_lists"
 dir.create(POOL_CACHE, showWarnings = FALSE, recursive = TRUE)
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
@@ -92,7 +100,7 @@ cat(sprintf("frame: %d rows, years %s | mining frames: %s\n",
             paste(MINING_FRAMES, collapse = ", ")))
 
 mine_pool <- function(pool_states, cache_name) {
-  cache <- file.path(POOL_CACHE, sprintf("pool_%s_%s.rds", cache_name, FRAME_TAG))
+  cache <- file.path(POOL_CACHE, sprintf("pool_%s_%s_%s.rds", cache_name, FRAME_TAG, ADMISSION))
   if (file.exists(cache)) return(readRDS(cache))
   train <- adf[st %in% pool_states, , drop = FALSE]
   tg_tr <- targets_of(train)
@@ -111,7 +119,7 @@ mine_pool <- function(pool_states, cache_name) {
   # identical to filtering the combined vocabulary.
   filt <- list()
   for (fn in MINING_FRAMES) {
-    ck <- file.path(POOL_CACHE, sprintf("filtered_%s_%s.rds", cache_name, fn))
+    ck <- file.path(POOL_CACHE, sprintf("filtered_%s_%s_%s.rds", cache_name, fn, ADMISSION))
     if (file.exists(ck)) { filt[[fn]] <- readRDS(ck); next }
     rows <- if (fn == "any_error") seq_len(nrow(train))
             else which(es %in% c(fn, "no_error"))
@@ -128,7 +136,16 @@ mine_pool <- function(pool_states, cache_name) {
     k_tr <- vapply(idx, function(ix) sum(tg_tr$ie[ix]), numeric(1))
     raw  <- ifelse(n_tr > 0, k_tr / n_tr, NA_real_)
     base <- vapply(rdf$hh, function(h) mean(tg_tr$ie[strata_tr[[h]]]), numeric(1))
-    keep <- !is.na(raw) & n_tr >= MIN_TRAIN_FLAGGED & raw >= 0.05 & raw > base
+    if (ADMISSION == "fdr10") {
+      # BH within this frame's candidates, one-sided vs the stratum base rate
+      pv <- pbinom(k_tr - 1, n_tr, base, lower.tail = FALSE)
+      m <- length(pv); o <- order(pv)
+      thr <- max(c(0L, which(pv[o] <= 0.10 * seq_len(m) / m)))
+      bh <- rep(FALSE, m); if (thr > 0) bh[o[seq_len(thr)]] <- TRUE
+      keep <- bh & n_tr >= MIN_TRAIN_FLAGGED
+    } else {
+      keep <- !is.na(raw) & n_tr >= MIN_TRAIN_FLAGGED & raw >= 0.05 & raw > base
+    }
     rdf <- rdf[keep, , drop = FALSE]
     rdf$n_flagged_train <- n_tr[keep]
     rdf$precision_train <- round(raw[keep], 4)
