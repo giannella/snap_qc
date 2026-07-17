@@ -31,7 +31,7 @@ stages <- data.frame(
           "99% lower confidence\nbound of precision;\nstate + national together",
           "add rules in rank order\nuntil review capacity fits"),
   n = c("146,787 candidate rules", "~80,000 distinct rules",
-        "48,429 rules with evidence", "one ranked pool",
+        "37,795 rules with evidence", "one ranked pool",
         "23-42 rules deployed")
 )
 polys <- do.call(rbind, lapply(1:4, function(i) data.frame(
@@ -96,7 +96,7 @@ every tree branch becomes a candidate rule", 2.4, MUTED) +
   box(5.0, 3.0, 1.6, 1.0, fill = scales::alpha(BLUE, 0.18), colour = BLUE) +
   lbl(5.0, 3.17, "national rule pool
 (passed the filter)", 3.1, INK) +
-  lbl(5.0, 2.72, "146,787 -> 48,429", 2.8, BLUE, "bold") +
+  lbl(5.0, 2.72, "146,787 -> 37,795", 2.8, BLUE, "bold") +
   lbl(5.0, 2.30, "mined once, cached,
 reused for every state", 2.4, MUTED) +
   # ── state lane ──
