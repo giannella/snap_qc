@@ -24,13 +24,13 @@ TARGETS <- c("Massachusetts", "Michigan", "North Carolina", "Connecticut",
              "Mississippi", "New Jersey", "Colorado",
              "Maine", "Maryland", "Missouri",
              "District of Columbia", "Tennessee")
-TRAIN_YEARS <- c("2022", "2023")
+if (!exists("TRAIN_YEARS")) TRAIN_YEARS <- c("2022", "2023")
 XGB <- list(nrounds = 1000, max_depth = 4, eta = 0.02, subsample = 0.20)
 RF  <- list(num_trees = 1000, max_depth = 4, mtry = 2, min_node_size = 20)
 SIGNIF_DIGITS <- 3
 
 out_dir <- "methods/state_similarity_v2/transfer_benchmark_train2223_test24"
-RAWDIR  <- file.path(out_dir, "fdr_raw_vocab")
+if (!exists("RAWDIR")) RAWDIR <- file.path(out_dir, "fdr_raw_vocab")
 dir.create(RAWDIR, showWarnings = FALSE)
 
 features <- c(
