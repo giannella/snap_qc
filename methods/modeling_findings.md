@@ -745,3 +745,141 @@ option truly performs better there; the state's internal check decides.
 methods/state_similarity_v2/transfer_benchmark_train2223_test24/blended_frozen_results.csv;
 blended_frozen_run.log (same folder); comparison inputs:
 frozen_list_results.csv, frozen_own_list_results.csv.*
+
+## 17. Typed-frame delivery vocabulary: retired after three rescue attempts (2026-07-15/16)
+
+Mining the delivery pools on the five frames (four typed + any_error) tripled
+the candidate vocabulary (48,429 -> 159,245 national rules on 2022-24) and
+LOST budget-filled precision on the train-2022-23/test-2024 benchmark:
+median any-error precision 0.306 vs 0.324 at the 5% budget (0.277 vs 0.262
+at 10%; dollars 13.9% vs 14.6% and 23.7% vs 24.2%). Three rescue attempts
+failed to put it at-or-above the any-error baseline at the 5% budget:
+
+- Stringency: no fixed z in {2.326, 2.576, 2.74, 3.09} x floors {30, 50,
+  100} closed the gap (best five-frame 0.318 vs 0.335 for the best
+  any-error configuration in the same sweep).
+- Near-duplicate collapse (Jaccard 0.95, keep max support): lifted the
+  five-frame 5% median 0.306 -> 0.319, still short of 0.324. The deployed-
+  rule autopsy CONFIRMED the mechanism: uncollapsed, the five-frame walk
+  deploys median-support-59 rules with 0.39 median train->2024 precision
+  deflation vs support-77 / 0.23 for the any-error pool; collapse
+  normalizes both (support 81, deflation 0.23).
+- Shrinkage ranking (section 18) did not help either arm.
+
+The typed+pooled union's filter-floor advantage (section 3) is real but does
+not survive capacity-constrained selection: forced to CHOOSE ~20-50 rules on
+a noisy statistic, the enlarged pool's extra small-support, high-raw-
+precision candidates displace honest rules at the top. Ten five-frame lists
+were briefly published (2.1.x) and replaced in v2.2.0.
+
+*Artifacts: methods/state_similarity_v2/transfer_benchmark_train2223_test24/
+blended_frozen_results_5frames.csv, stringency_vocabulary_sweep.csv,
+neardup_collapse_sweep.csv (incl. the autopsy columns);
+methods/design_selection_layers_v3.md.*
+
+## 18. Shrinkage (empirical-Bayes) ranking: refuted on two eras (2026-07-16/17)
+
+Ranking rules by a beta-binomial posterior mean (prior fit per stratum)
+instead of the Wilson lower bound degraded the production pool's 5%-budget
+median from 0.324 to 0.259 on the 2024 benchmark (posterior 5% quantile:
+0.298 — tracks the bound, slightly worse). A repaired variant for the era
+validation (prior fit on near-duplicate family representatives only,
+Jaccard 0.95, max-support representative) was the worst ordering arm on
+2019 as well: 0.201 at the 5% budget vs 0.219 for the z = 2.326 bound
+(0.173 vs 0.221 at 10%). Interpretation that survives both eras: budget
+fill is a tail decision; posterior-mean ordering floods the top with large-
+support, mildly-above-average rules, while quantile-type statistics
+penalize exactly the noise that concentrates there.
+
+*Artifacts: methods/state_similarity_v2/transfer_benchmark_train2223_test24/
+estimation_admission_sweep.csv;
+methods/state_similarity_v2/era_validation_train1718_test19/
+era_validation_results.csv (ordering comparison, famEB arm).*
+
+## 19. Admission: FDR + support floor validated on two eras; floorless FDR refuted (2026-07-16/17)
+
+On raw unfiltered vocabularies (144,533 national candidates on 2022-23;
+145,313 on 2017-18), Benjamini-Hochberg admission against the stratum base
+rate PLUS the n >= 30 floor ("fdr10f") matched the hand-tuned production
+filter (n >= 30, raw >= 0.05, raw > base) exactly at the 5% budget on both
+eras and was never worse:
+
+- 2024 test: fdr10f 0.335 / prod 0.335 at 5%; 0.275 / 0.262 at 10% —
+  with a ~40% smaller admitted pool (median 54,261 vs 93,869 rules).
+- 2019 test: identical medians at both budgets (0.219 at 5%, 0.221 at 10%).
+
+FLOORLESS BH was refuted on 2024: 0.284 (alpha .10) / 0.293 (alpha .05) at
+the 5% budget — the same small-support collapse as the state-scale lesson
+(section 13) and the displacement autopsy (section 17). The support floor
+is an ESTIMATION-QUALITY guard (is the estimate reliable enough to rank
+on?), which multiplicity control (is the rule real?) does not substitute
+for. The admitted-count self-scaling worked as intended: at alpha .10 the
+gate admitted 54k of 145k nationally but only 1,336 of 67k for Michigan
+and 96 of 62k for Texas at alpha .05 — no hand-set constant involved.
+Caveat: the first FDR audition (estimation_admission_sweep.csv) was invalid
+— it applied BH on already-filtered pools, a no-op; only the raw-vocabulary
+runs test admission.
+
+*Artifacts: methods/state_similarity_v2/transfer_benchmark_train2223_test24/
+fdr_admission_audition.csv;
+methods/state_similarity_v2/era_validation_train1718_test19/
+era_validation_results.csv (admission comparison);
+methods/fdr_raw_vocabulary_mine_v2.R (raw caches regenerable, gitignored).*
+
+## 20. Ordering stringency: z = 2.326 vindicated across eras; the 2024 bump did not replicate (2026-07-17)
+
+The 2024 stringency sweep suggested raising z helps (orig pool: 0.335 at
+z = 2.576 vs 0.324 at z = 2.326 at the 5% budget). Pre-registered on the
+2017-19 era (expectation E2), the direction did NOT replicate: z = 2.576
+0.216 vs z = 2.326 0.219 at 5% (z = 3.09: 0.223 at 5% but 0.200 at 10%).
+No fixed z dominated 2.326 at both budgets on 2019. The competition-scaled
+formula z(N) = qnorm(1 - 0.01 * 48429 / N) landed within 1pp of the best
+fixed z at both budgets (E3), i.e. safe parity, no gain. Conclusion:
+z = 2.326 stays; the "under-stringent" hint was era noise.
+
+*Artifacts: methods/state_similarity_v2/era_validation_train1718_test19/
+era_validation_results.csv (ordering comparison);
+methods/preregistration_era_validation_2026-07.md (E2, E3);
+methods/state_similarity_v2/transfer_benchmark_train2223_test24/
+stringency_vocabulary_sweep.csv (the 2024 side).*
+
+## 21. Dollar-yield ranking: direction consistent, magnitude era-unstable; not adopted (2026-07-16/17)
+
+Groundwork: per-rule error dollars per flagged case persist train->test
+MORE strongly than precision in every support band (train 2022-23 pools
+scored on 2024; Spearman 0.560 / 0.699 / 0.789 / 0.677 for support bands
+30-60 / 61-120 / 121-300 / 300+, vs 0.498 / 0.634 / 0.708 / 0.672 for
+precision; 169,402 rule-state pairs) — error magnitude is anchored to
+observable case characteristics. Ranking by dollars per flagged case (dpf)
+then beat the precision bound on dollars at the 10% budget by +3.5pp on
+2024 (27.8% vs 24.2%, precision 0.255 vs 0.262) but by only +1.0pp on the
+2019 pre-registered replication (22.7% vs 21.6%, precision 0.191 vs
+0.221), under the pre-set >= 2pp bar (E4). The log-scale lower-bound
+variant (dpflb) beat the baseline on BOTH metrics at 10% on 2024 (0.278 /
+25.0%) but not on 2019. Not adopted; recorded as a real but era-unstable
+direction. A structure-anchored dollar statistic (size credited only as
+far as flagged cases' benefit levels justify) is the untested follow-up.
+
+*Artifacts: methods/state_similarity_v2/transfer_benchmark_train2223_test24/
+dollaryield_audition.csv, dollar_persistence.csv (regenerable, gitignored;
+methods/dollar_persistence_check_v2.R);
+methods/state_similarity_v2/era_validation_train1718_test19/
+era_validation_results.csv (dollar comparison).*
+
+## 22. The winner's curse at the top, demonstrated directly (2026-07-17)
+
+Equal-footing cross-fit on 2017-18 (identical half-mined vocabulary,
+identical admitted set of 66,540 rules): ordering by the UNTOUCHED half's
+Wilson bound beats ordering by the MINING half's bound by +1.6pp median
+precision at the 5% budget on 2019 (0.216 vs 0.200) — the selection bias
+of ranking on in-sample estimates, isolated from every other factor. At
+the 10% budget the arms are within noise (0.192 vs 0.200 precision, 21.3%
+vs 20.0% dollars), consistent with the curse concentrating in the extreme
+tail. Caveat: the pre-registered cross-fit arm (E6) initially FAILED
+because it confounded selection-free ordering with a half-sized mining
+vocabulary; this equal-footing rerun is the diagnosis required by the
+pre-registration's own decision rule.
+
+*Artifacts: methods/state_similarity_v2/era_validation_train1718_test19/
+era_xfit_diagnosis.csv, era_validation_results.csv (xfit comparison);
+methods/era_xfit_mine_v2.R, methods/era_xfit_diagnosis_v2.R.*
