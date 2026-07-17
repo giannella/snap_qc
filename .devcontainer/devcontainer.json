@@ -1,0 +1,49 @@
+{
+  "name": "snap_qc",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "TZ": "${localEnv:TZ:America/New_York}",
+      "CLAUDE_CODE_VERSION": "latest"
+    }
+  },
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW",
+    "--env-file",
+    "${localWorkspaceFolder}/.devcontainer/.env"
+  ],
+  "initializeCommand": "test -f \"${localWorkspaceFolder}/.devcontainer/.env\" || touch \"${localWorkspaceFolder}/.devcontainer/.env\"",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "REditorSupport.r",
+        "ms-python.python",
+        "quarto.quarto"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "r.rterm.linux": "/usr/local/bin/R",
+        "claudeCode.allowDangerouslySkipPermissions": true,
+        "claudeCode.initialPermissionMode": "bypassPermissions"
+      }
+    }
+  },
+  "remoteUser": "dev",
+  "mounts": [
+    "source=snapqc-claude-config-${devcontainerId},target=/home/dev/.claude,type=volume",
+    "source=${localEnv:QC_DATA_DIR:${localWorkspaceFolder}/.devcontainer/qc_placeholder},target=/data/qc,type=bind,consistency=cached"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/dev/.claude",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "DISABLE_AUTOUPDATER": "1",
+    "QC_DATA_DIR": "/data/qc"
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "waitFor": "postStartCommand"
+}
