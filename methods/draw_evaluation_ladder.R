@@ -16,10 +16,10 @@ rungs <- data.frame(
     "The state's own FY25/26 validation"),
   example = c(
     "a '0.20 precision' shortlist... that delivers 0.10",
-    "tests interpolation, not the forward leap a state\nfaces - and the judge never changes",
+    "tests interpolation, not the forward leap a state\nfaces, and the judge never changes",
     "3 of 4 selection claims survived; 1 retired",
     "the number a state should actually expect:\nmedian 0.27-0.30 at review budgets",
-    "the only judge that sees the full error population\n(public files show 43-81% of error cases)")
+    "the only judge that sees the full error population\n(public files show 43-91% of error cases)")
 )
 
 p <- ggplot(rungs) +
