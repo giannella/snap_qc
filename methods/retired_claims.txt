@@ -20,3 +20,8 @@ strata perform less well
 # "Admission" was renamed to "which rules to keep" (findings §19). The word survives
 # only in code (the ADMISSION config) and artifact filenames, never as reader prose:
 Admit rules with a false-discovery-rate
+
+# Public-data visibility was stated as "43-81%"; the source CSV
+# (state_error_accounting/visibility_by_state_2022_2024.csv) shows the true range is
+# 43% (New Jersey) to 91% (Georgia). Guard the stale upper bound:
+43-81%

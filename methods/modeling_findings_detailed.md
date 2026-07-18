@@ -544,7 +544,7 @@ in run1_lcb_criterion/).*
 
 > **Takeaway: about the data (and it matters a lot).** The public QC file does not
 > show a state its whole error population. It excludes ineligible cases entirely, so
-> a state sees only 43-81% of its own errors (New Jersey: 43%, Tennessee: 51%). Any
+> a state sees only part of its own errors, from 43% (New Jersey) to 91% (Georgia). Any
 > rule mined on public data is therefore blind to a large slice of reality. States
 > below roughly 60% visibility should treat public/national rules as a *supplement*
 > and run the pipeline on their own internal data.
@@ -564,7 +564,7 @@ Two pipeline defects were found and fixed, then the remaining gap quantified:
   earlier circumstantial attribution to it was wrong).
 
 Post-fix VISIBILITY (frame errors / [raw over-threshold errors + ineligible
-exclusions], FY22-24): national 71%; WA/VA/LA now 78-81%. The floor is
+exclusions], FY22-24): national 71%; WA/VA/LA now 78-81% (Georgia highest, at 91%). The floor is
 INELIGIBLE CASES, which the public file excludes entirely and which are
 100%-of-benefit errors: NJ sees only 43% of its error population, TN 51%,
 AR/MO/UT ~53%. **Guidance: states below ~60% visibility should treat
@@ -895,7 +895,7 @@ their base rate at both sizings.
 Deployment recipe this supports: hand each state its frozen list (mined
 and sized on public data through the latest year), with the instruction to
 validate internally on their own newer data before relying on it. The
-public files see only 43-81% of error cases (section 10), and this
+public files see only 43-91% of error cases (section 10), and this
 experiment validates one year ahead only.
 
 *Artifacts:

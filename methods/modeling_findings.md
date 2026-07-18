@@ -360,7 +360,7 @@ single-state mining detail: [detailed record](modeling_findings_detailed.md), §
 
 > **Takeaway: about the data (and it matters a lot).** The public QC file does not
 > show a state its whole error population: it excludes ineligible cases entirely, so
-> a state sees only 43-81% of its own errors (New Jersey: 43%, Tennessee: 51%). Any
+> a state sees only part of its own errors, from 43% (New Jersey) to 91% (Georgia). Any
 > rule mined on public data is therefore blind to a large slice of reality. States
 > below roughly 60% visibility should treat public/national rules as a *supplement*
 > and run the pipeline on their own internal data.
@@ -377,7 +377,7 @@ permanent):
 With those fixed, we measured how much of each state's true error population the
 public file can even show, defined as frame errors divided by all over-threshold
 errors plus ineligible exclusions, over FY22-24. Nationally it is 71%; the
-best-covered states reach 78-81%. The floor is set by *ineligible cases*, which the
+best-covered states reach about 87-91% (Georgia highest, at 91%). The floor is set by *ineligible cases*, which the
 public file omits entirely and which are 100%-of-benefit errors: New Jersey sees just
 43% of its errors, Tennessee 51%, several states ~53%. Below ~60%, public rules are
 only a supplement, and the state should mine its own internal data, which contains
