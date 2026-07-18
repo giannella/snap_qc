@@ -64,8 +64,20 @@ number survived in the ladder, below).
 
 1. **` - ` dashes in figure titles/subtitles** are the same compression problem as the deck
    text. Sweep the committed figure scripts and convert them to spare punctuation.
-2. **Commit the missing figure scripts.** `winners_curse_raw_vs_lcb`, `states_two_regimes`,
-   `esap_error_mix`, and `mine_big_filter_stringently` have no committed generating script,
+2. **Commit the missing figure scripts.** These four were committed as PNG binaries only,
    so they cannot be regenerated or checked when a number changes — which is precisely how
-   the ladder kept a stale "43-81%". Committing them makes the figures reproducible and lets
-   `check_doc_consistency` (or a figure equivalent) guard them.
+   the ladder kept a stale "43-81%". Progress on reconstructing them:
+   - **`mine_big_filter_stringently`** — reconstructed as `draw_mine_big_filter_stringently.R`
+     from committed data (`parameter_tuning_v2/v2_lcbz_sweeps.csv`); reproduces the original
+     exactly (789 vs 2,026 rules), with the ` - ` title dash fixed. Done.
+   - **`esap_error_mix`** — reconstructed as `draw_esap_error_mix.R`, but it COMPUTES the mix
+     from `reg_model_data.rds` (not committed here), so it must be run on a machine with the
+     frame. This deliberately avoids hardcoding the original's 64/18/11/6 split, which
+     predates the 2026-07-07 rebuild and may be stale.
+   - **`states_two_regimes`** — NOT reconstructed: the only committed data
+     (`archive/state_rules_v2/state_union_summary.csv`) is a different, superseded run whose
+     story contradicts the original figure (it shows tuning helping 6/7 states; the original
+     shows it hurting 4). Rebuilding from it would misrepresent. Needs the original script,
+     or a fresh figure built on the current §14 deployment data.
+   - **`winners_curse_raw_vs_lcb`** — NOT reconstructed: the raw-vs-lower-bound decay is not
+     committed as a single sweep CSV. Needs the original script or the frame.
