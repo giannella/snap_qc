@@ -20,17 +20,38 @@ See [VERSIONING.md](VERSIONING.md): tagged releases, plain-language change summa
 
 **Why v2 exists.** Shortlisting mined rules by their raw training precision suffers a strong winner's curse: a rule looks best partly because it got lucky, so a list built to hit 20% precision delivered only ~10% on data it hadn't seen. v2 filters on the **lower confidence bound (Wilson LCB)** of each rule's training precision instead. A rule that clears a 20% filter now delivers about 20% on hold-out data (data set aside and never used to build or pick the rules).
 
-The rebuild paid off in other ways. The pipeline runs about 5x faster and fits on a 16 GB laptop; v1's internal lasso needed 40+ GB at scale. It scores every rule against **all** error types, so a rule mined for earned-income errors still gets credit when the case it flags turns out to have a deduction error, which is what happens in deployment. And it mines the largest error category v1 left out, `other_error`, which is mostly **deductions**. The engine change alone catches about seven more points of error-dollar recall (the share of all error dollars caught) at the same precision-confidence floor. The [guidance section](#guidance-from-the-validation-studies) summarizes these results; [`methods/modeling_findings.md`](methods/modeling_findings.md) gives them in full.
+The rebuild paid off in other ways. The pipeline runs several times faster (v1 mined one error-type dataset in about 40 minutes; v2 mines all four typed datasets plus the pooled all-errors model in about 45) and fits on a 16 GB laptop, where v1's internal lasso needed 40+ GB at scale. It scores every rule against **all** error types, so a rule mined for earned-income errors still gets credit when the case it flags turns out to have a deduction error, which is what happens in deployment. And it mines the largest error category v1 left out, `other_error`, which is mostly **deductions**. The engine change alone catches 55% of error dollars at the 0.20 filter floor versus 47% for the CART-based generator {pre} used. That is about eight more points of error-dollar recall (the share of all error dollars caught), at slightly higher precision. The [guidance section](#guidance-from-the-validation-studies) summarizes these results; [`methods/modeling_findings.md`](methods/modeling_findings.md) gives them in full.
 
 ---
 
 # v2 documentation (recommended)
 
+## Requirements
+
+**Software.** R (developed on 4.5.1) and four packages (no `{pre}` needed):
+
+```r
+install.packages(c("dplyr", "ggplot2", "ranger", "xgboost"))
+# add "rpart" only if you want the optional bagged-CART engine
+```
+
+**Data.** Bring a data frame with one row per case, a column flagging whether the case is a true error, and your features; or build the national public-QC frame with `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` (details under [Where to start](#where-to-start)).
+
+**Running a script, two ways.** Open it in R/RStudio and source it after editing the config block at the top, or run it non-interactively through its runner (which loads `reg_model_data.rds` and sources the driver). For example, to build the delivery lists:
+
+```
+Rscript runners/run_blended_delivery_batch.R > blended_delivery_run.log 2>&1
+```
+
 ## Where to start
 
-**The best-validated approach in this repo is the blended delivery list**, built by `INCL_build_blended_delivery_list_v2.R`: one frozen, ranked rule list per state. It works in three steps. First, each rule pool keeps only rules that statistically beat the base error rate (a false-discovery-rate test; details in the folder README). Second, it merges the state's own rules into the national pool on one confidence scale, ranking every rule by the 99% lower bound of its own training precision. Third, it fills the list against the state's caseload to a 5% or 10% review budget and adds ranked buffer rules out to 3x that depth; the state then activates rules in rank order until review capacity fills, needing no outcome data at any step.
+**The best-validated approach in this repo is the blended delivery list**, built by `INCL_build_blended_delivery_list_v2.R`: one frozen, ranked rule list per state. It works in three steps:
 
-Tested a full year ahead of the training data (mined on 2022-23, scored on each state's 2024), this recipe beat the national-only list at the 5% budget (median precision 0.324 vs 0.294), tied it at 10%, and cleared every one of 18 states' base error rates. Ready-built lists are in [`state_delivery_lists/`](state_delivery_lists/).
+1. **Admit rules.** Each rule pool keeps only rules that both statistically beat the base error rate (a false-discovery-rate test) *and* flag at least 30 training cases, so poorly-measured rules stay out of the ranking (details in the folder README).
+2. **Rank on one scale.** The state's own rules are merged into the national pool, and every rule is ranked by the 99% lower bound of its own training precision, so state and national rules compete on comparable, confidence-discounted evidence.
+3. **Fill to budget.** The list is filled against the state's caseload to a 5% or 10% review budget (the *core*) and extended with ranked *buffer* rules out to 3x that depth. The state activates rules in rank order until review capacity fills, with no outcome data needed at any step.
+
+Tested a full year ahead of the training data (mined on 2022-23, scored on each state's 2024), this recipe beat the national-only list at the 5% budget (median precision 0.324 vs 0.294, catching 15% vs 12% of error dollars), came out about even at 10% (0.262 vs 0.270), and cleared every one of 18 states' base error rate (national ~11%, a 1.5-3.4x lift over reviewing at random). Ready-built lists are in [`state_delivery_lists/`](state_delivery_lists/).
 
 ![The delivery-list build: mine rule pools, rank them on one confidence scale, fill to the review budget](presentation_figures/pipeline_option_B.png)
 
@@ -74,7 +95,7 @@ The five-stage machinery is general purpose: for every rule it produces honest e
 |---|---|---|---|
 | find errors at a fixed review workload | 99% Wilson lower bound of any-error precision (`lcb99_workloadfill`) | `INCL_build_blended_delivery_list_v2.R` → `state_delivery_lists/` | validated on 2024, 18 states |
 | cut an existing review pile safely | 99% lower bound of the clean rate among dropped cases | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | reported against a held-out year |
-| prioritize error dollars | dollars per flagged case (plus a heavy-tail-robust variant) | `methods/dollaryield_audition_v2.R` | not adopted: +3.5pp of error dollars at the 10% budget on 2024, but only +1.0pp on the 2019 replication, under the pre-set bar (findings 21) |
+| prioritize error dollars | dollars per flagged case (plus a heavy-tail-robust variant) | `methods/dollaryield_audition_v2.R` | not adopted: beat the default `lcb99_workloadfill` ranking by +3.5pp of error dollars at the 10% budget on 2024, but only +1.0pp on the 2019 replication, short of the pre-set 2-point bar (see [`modeling_findings.md`](methods/modeling_findings.md) §21) |
 
 ## v2 scripts
 
