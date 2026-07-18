@@ -70,10 +70,10 @@ number survived in the ladder, below).
    - **`mine_big_filter_stringently`** — reconstructed as `draw_mine_big_filter_stringently.R`
      from committed data (`parameter_tuning_v2/v2_lcbz_sweeps.csv`); reproduces the original
      exactly (789 vs 2,026 rules), with the ` - ` title dash fixed. Done.
-   - **`esap_error_mix`** — reconstructed as `draw_esap_error_mix.R`, but it COMPUTES the mix
-     from `reg_model_data.rds` (not committed here), so it must be run on a machine with the
-     frame. This deliberately avoids hardcoding the original's 64/18/11/6 split, which
-     predates the 2026-07-07 rebuild and may be stale.
+   - **`esap_error_mix`** — reconstructed as `draw_esap_error_mix.R` and regenerated from the
+     current frame (it COMPUTES the mix rather than hardcoding it). Current-frame result is
+     63/20/11/6 (elderly) and 29/10/44/17 (other), essentially the original 64/18/11/6 &
+     29/10/45/16. Done.
    - **`states_two_regimes`** — NOT reconstructed: the only committed data
      (`archive/state_rules_v2/state_union_summary.csv`) is a different, superseded run whose
      story contradicts the original figure (it shows tuning helping 6/7 states; the original
