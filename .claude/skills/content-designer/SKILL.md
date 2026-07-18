@@ -58,7 +58,7 @@ it.
 FRAME=earned_income XGB_NROUNDS=60 RF_TREES=60 Rscript .claude/skills/principal-data-scientist/driver.R
 ```
 
-It writes `earned_income_lcb_sweep_smoke.png` to `$CLAUDE_JOB_DIR/tmp`, so open
+It writes `earned_income_lcb_sweep_quick.png` to `$CLAUDE_JOB_DIR/tmp`, so open
 it and look. Describe it the Healy way. Two panels share an x-axis, the 99%
 lower-bound precision floor. The left panel is hold-out precision, the right is
 the hold-out share of error dollars caught. The two line styles are what each is
@@ -94,9 +94,9 @@ skill, which enforces verified numbers, artifact pointers, and honest caveats.
   This is a rough preview, not identical to PowerPoint, so do not do final deck
   QA here. Never edit a deck silently to match a superseded number; list the
   affected slides for the user (the `log-finding` skill's propagation step).
-- The driver's PNG is a smoke figure (small ensembles, marked in the subtitle),
-  so the numbers on it are illustrative of shape, not the production sweep.
-  Quote production numbers from the committed CSVs, not from a smoke run.
+- The driver's PNG is a quick-run figure (small ensembles, marked in the
+  subtitle), so the numbers on it are illustrative of shape, not the production
+  sweep. Quote production numbers from the committed CSVs, not from a quick run.
 - `reg_model_data.rds` is gitignored and absent in a git worktree. The driver
   locates it, but a bare `readRDS` from a worktree fails, so pass `DATA=` or run
   from `/workspace`.

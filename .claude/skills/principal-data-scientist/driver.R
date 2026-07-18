@@ -214,13 +214,13 @@ p <- ggplot(sweep_long, aes(threshold, value, linetype = scoring)) +
   facet_wrap(~metric, nrow = 1) +
   labs(x = "99% lower bound precision floor", y = NULL, linetype = "Scored against",
        title = sprintf("What the kept rules achieve together, by precision floor (%s)", FRAME),
-       subtitle = sprintf("xgboost(%d)+ranger(%d) [SMOKE ensembles], trained %s, scored on %s",
+       subtitle = sprintf("xgboost(%d)+ranger(%d) [quick-run ensembles], trained %s, scored on %s",
                           XGB_N, RF_N, paste(TRAIN_YEARS, collapse="/"),
                           paste(HOLDOUT_YEARS, collapse="/"))) +
   coord_cartesian(xlim = c(0.05, max(0.7, max(sweeps$threshold) + 0.05)), ylim = c(0, 1)) +
   theme_minimal(base_size = 12) + theme(legend.position = "top")
-png_path <- file.path(OUT_DIR, sprintf("%s_lcb_sweep_smoke.png", FRAME))
-csv_path <- file.path(OUT_DIR, sprintf("%s_rules_smoke.csv", FRAME))
+png_path <- file.path(OUT_DIR, sprintf("%s_lcb_sweep_quick.png", FRAME))
+csv_path <- file.path(OUT_DIR, sprintf("%s_rules_quick.csv", FRAME))
 save_png(p, png_path, 9, 4.5)
 write.csv(rule_eval, csv_path, row.names = FALSE)
 

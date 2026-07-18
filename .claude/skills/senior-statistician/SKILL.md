@@ -46,7 +46,7 @@ Paths below are relative to the repo root.
    positive. Frame-relative precision understates deployed precision about 2x,
    so always compute and quote the any-error number beside it.
 
-## See the winner's curse on real data (a few minutes)
+## See the winner's curse on real data (a quick run, a few minutes)
 
 The shared driver runs the real five-stage pipeline on the real frame and prints
 a winner's-curse block: median raw train precision vs its 99% LCB vs the
@@ -58,7 +58,7 @@ FRAME=earned_income XGB_NROUNDS=60 RF_TREES=60 Rscript .claude/skills/principal-
 
 Read the `WINNER'S CURSE` block. Raw train precision sits above the hold-out
 number while the LCB is a conservative floor beneath it, and any-error precision
-runs well above frame-relative (on one real earned-income smoke: raw 0.103,
+runs well above frame-relative (on one real earned-income quick run: raw 0.103,
 hold-out 0.087, any-error 0.20). The `FILTER-FLOOR SWEEP` block shows the same
 discipline at the list level: hold-out precision rises and recall falls as the
 LCB floor tightens, and no error is double-counted in the union.

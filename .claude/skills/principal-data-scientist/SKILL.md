@@ -26,8 +26,10 @@ pipeline from `rule_mining_helpers.R` on the actual modelling frame
 small ensembles so it finishes in a few minutes instead of the tens a full run
 takes. It is a faithful slice of `INCL_find_inclusion_rules_by_hh_size_v2.R`
 (same helpers, same screen/dedup/shortlist/sweep, same 99% Wilson-LCB selection
-statistic), not a re-implementation. Use it to see the deliverable shape and to
-sanity-check a change before committing to a full run.
+statistic), not a re-implementation. Use it as a **quick run** (aka a "smoke
+run"), meaning a fast, shallow end-to-end pass that confirms the pipeline runs
+and produces sane output. It lets you see the deliverable shape and sanity-check
+a change before committing to a full run.
 
 ```bash
 # One typed frame (about 4 to 5 minutes; the bottleneck is flag evaluation over
@@ -40,8 +42,8 @@ Rscript .claude/skills/principal-data-scientist/driver.R
 
 It prints three blocks: a winner's-curse table (raw train vs 99% LCB vs
 hold-out), the shortlist (rules whose train-LCB clears 0.20), and the
-filter-floor sweep. It writes `<FRAME>_rules_smoke.csv` and
-`<FRAME>_lcb_sweep_smoke.png` to `$CLAUDE_JOB_DIR/tmp` (or `./driver_out`). Env
+filter-floor sweep. It writes `<FRAME>_rules_quick.csv` and
+`<FRAME>_lcb_sweep_quick.png` to `$CLAUDE_JOB_DIR/tmp` (or `./driver_out`). Env
 knobs: `FRAME` (`earned_income`, `unearned_income`, `underissuance`,
 `other_error`, `any_error`), `XGB_NROUNDS`, `RF_TREES`, `TRAIN_YEARS`,
 `HOLDOUT_YEARS`, `OUT_DIR`, `DATA`, `HELPERS`. It auto-locates
@@ -114,7 +116,7 @@ Long scripts checkpoint mined vocabularies to `.rds` and honor
 ## Gotchas found running this in-container
 
 - The `any_error` frame is the largest (all error types plus clean, 3 years), so
-  even the smoke driver takes several minutes on it. For a quick check, use a
+  even the quick run takes several minutes on it. For the fastest check, use a
   typed frame with `XGB_NROUNDS=60 RF_TREES=60`.
 - On the `any_error` frame the sweep's "frame only" and "any error type" lines
   coincide, because that frame already is all error types. The split separates
