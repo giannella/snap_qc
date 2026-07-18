@@ -1,8 +1,8 @@
 # snap_qc
 
-Code and data for modeling SNAP payment errors with interpretable and easy-to-implement decision rules. 
+Code and data for modeling SNAP payment errors as interpretable, easy-to-implement decision rules.
 
-Putting this out on my github with an Apache 2.0 license as an assurance that anyone can freely use and build upon the code, ideas, or results.
+Released under the Apache 2.0 license: use and build on the code, ideas, or results freely.
 
 **[Updates & compatibility](VERSIONING.md)** · **[Guidance from validation studies](GUIDANCE.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Changelog](CHANGELOG.md)**
 
@@ -18,7 +18,9 @@ See [VERSIONING.md](VERSIONING.md): tagged releases, plain-language change summa
 
 **v1 (preserved, [further down](#v1-documentation-legacy))** is the original {pre}-based pipeline. Everything v1 still works and its documentation is kept intact below — if you have invested in v1, nothing you built is broken or removed. New projects should start with v2.
 
-Why v2 exists, in one paragraph: testing showed that shortlisting mined rules by their raw training precision suffers a strong winner's curse — rules picked because they look best tend to have been lucky, so a "20% precision" rule list delivered ~10% on data it hadn't seen. v2 fixes this by filtering rules on the **lower confidence bound (Wilson LCB)** of their training precision, so a rule passing a 20% filter actually delivers ~20% on hold-out data (data set aside and never used to build or select the rules). Along the way the pipeline became ~5x faster, runs on a 16 GB laptop (v1's internal lasso needed 40+ GB at scale), evaluates every rule against **all** error types (a rule mined for earned-income errors gets credit when the case it flags has a deduction error — deployment reality), and adds the largest unmodeled error category (`other_error`), which is primarily **deductions**. The engine change itself also has a measured gain — about seven points more error-dollar recall (the share of all error dollars caught) at the same precision-confidence floor — with that and other improvements described in the [guidance section](#guidance-from-the-validation-studies) below and, in full, in [`methods/modeling_findings.md`](methods/modeling_findings.md).
+**Why v2 exists.** Shortlisting mined rules by their raw training precision suffers a strong winner's curse: a rule looks best partly because it got lucky, so a list built to hit 20% precision delivered only ~10% on data it hadn't seen. v2 filters on the **lower confidence bound (Wilson LCB)** of each rule's training precision instead. A rule that clears a 20% filter now delivers about 20% on hold-out data — data set aside and never used to build or pick the rules.
+
+The rebuild paid off in other ways. The pipeline runs about 5x faster and fits on a 16 GB laptop; v1's internal lasso needed 40+ GB at scale. It scores every rule against **all** error types, so a rule mined for earned-income errors still gets credit when the case it flags turns out to have a deduction error — which is what happens in deployment. And it mines the largest error category v1 left out, `other_error`, which is mostly **deductions**. The engine change alone catches about seven more points of error-dollar recall (the share of all error dollars caught) at the same precision-confidence floor. The [guidance section](#guidance-from-the-validation-studies) summarizes these results; [`methods/modeling_findings.md`](methods/modeling_findings.md) gives them in full.
 
 ---
 
@@ -26,9 +28,13 @@ Why v2 exists, in one paragraph: testing showed that shortlisting mined rules by
 
 ## Where to start
 
-**The best-validated approach in this repo is the blended delivery list, built by `INCL_build_blended_delivery_list_v2.R`** — one frozen, ranked rule list per state. Each pool keeps only rules that statistically beat the base error rate (a false-discovery-rate test; details in the folder README). It then merges the state's own rules into the national pool on a single confidence scale — every rule ranked by the 99% lower bound of its own training precision — and fills the list against the state's caseload to a 5% or 10% review budget, and adds ranked buffer rules to 3x that depth; the state activates rules in rank order until review capacity fits, with no outcome data needed at any step. In an 18-state test a full year ahead of the training data (mined on 2022-23, scored on each state's 2024), this recipe beat the national-only list at the 5% budget (median precision 0.324 vs 0.294) and tied it at 10%, and every state cleared its base error rate. Ready-built lists are in [`state_delivery_lists/`](state_delivery_lists/).
+**The best-validated approach in this repo is the blended delivery list**, built by `INCL_build_blended_delivery_list_v2.R` — one frozen, ranked rule list per state. It works in three steps. First, each rule pool keeps only rules that statistically beat the base error rate (a false-discovery-rate test; details in the folder README). Second, it merges the state's own rules into the national pool on one confidence scale, ranking every rule by the 99% lower bound of its own training precision. Third, it fills the list against the state's caseload to a 5% or 10% review budget and adds ranked buffer rules out to 3x that depth; the state then activates rules in rank order until review capacity fills, needing no outcome data at any step.
 
-![How a state's ranked review list is built](presentation_figures/pipeline_option_B.png) A state can also run the same script as a hybrid: mine its own pool from internal case files (which include the ineligible determinations the public files exclude) and blend that with the pool mined from other states' public QC data — the confidence-bound scale is what makes rules from the two sources directly comparable, so nothing else changes.
+Tested a full year ahead of the training data — mined on 2022-23, scored on each state's 2024 — this recipe beat the national-only list at the 5% budget (median precision 0.324 vs 0.294), tied it at 10%, and cleared every one of 18 states' base error rates. Ready-built lists are in [`state_delivery_lists/`](state_delivery_lists/).
+
+![The delivery-list build: mine rule pools, rank them on one confidence scale, fill to the review budget](presentation_figures/pipeline_option_B.png)
+
+A state can also run the same script as a hybrid. It mines its own pool from internal case files — which include the ineligible determinations the public files leave out — and blends that with the pool mined from other states' public QC data. The confidence-bound scale is what makes rules from the two sources directly comparable, so nothing else in the recipe changes.
 
 Two routes, depending on your use case:
 
@@ -197,4 +203,4 @@ Once you have rules you want to implement, **`methods/parse_tree.R`** provides a
 
 ---
 
-The main goal of putting up this repo is to make it unambiguous that anyone can freely use ideas / materials they've seen me present regarding SNAP QC. I'll continue adding to and cleaning up the code based on what's useful so please reach out!
+The point of this repo is to make one thing unambiguous: anyone can freely use the ideas and materials I've presented on SNAP QC. I'll keep adding to and cleaning up the code as I learn what's useful — so please reach out.

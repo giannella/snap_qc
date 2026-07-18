@@ -1,13 +1,12 @@
 # Versioning and compatibility policy
 
-This repository is used by agencies and they require some continuity in what
-they're using and clarity in terms of what changes and why. Below is how we
-determine how improvements get rolled out, previous versions are maintained,
-and changes are communicated.
+Agencies build processes on this code, so they need continuity in what they
+run and a clear account of what changes and why. This page explains how
+improvements roll out, how older versions are kept working, and how changes
+are announced.
 
-Methodology changes follow the same discipline — explored head-to-head,
-validated on data that never judged them, and either adopted or retired in
-writing:
+Methodology changes follow the same discipline: explored head-to-head,
+validated on data that never judged them, then adopted or retired in writing.
 
 ![How we determine what is adopted or retired](presentation_figures/refinement_loop.png)
 
