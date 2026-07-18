@@ -281,9 +281,9 @@ experiences.
 > win, not a headline.
 
 In 2023, `other_error` (deductions, shelter, household composition) accounted for
-1,377 of 2,994 errors (more than any single income-error type), and no prior version
-had mined it. It produced our single largest block of kept rules (1,082, median
-holdout precision 0.212), so whatever heterogeneity it has, it is learnable. (Program
+2,007 of 4,460 errors (more than any single income-error type), and no prior version
+had mined it. It produced our single largest block of kept rules (1,700, median
+holdout precision 0.25), so whatever heterogeneity it has, it is learnable. (Program
 caveat, restated: many states treat these as small-dollar and low-priority, so this
 is completeness, not a headline.)
 

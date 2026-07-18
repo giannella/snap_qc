@@ -377,9 +377,9 @@ outputs carry both views; quote the any-error numbers to states.
 > these as small-dollar, low-priority errors, so "we can find them" is a completeness
 > win, not a headline.
 
-other_error (deductions, shelter, household composition; 1,377 of 2,994 total
+other_error (deductions, shelter, household composition; 2,007 of 4,460 total
 2023 errors, more than any typed category) had never been mined. It produced
-the single largest filtered-in block (1,082 rules, median hold-out 0.212).
+the single largest filtered-in block (1,700 rules, median hold-out 0.25).
 Heterogeneous or not, it has learnable structure.
 
 ## 8. ESAP / elderly-disabled: feature suffices, and why
