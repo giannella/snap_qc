@@ -48,7 +48,7 @@ No action needed: filenames, columns, and script interfaces are unchanged.
 - **All 19 states' delivery lists refreshed onto one recipe and one
   schema**: the any-error vocabulary with the 12-column provenance schema,
   under the existing filenames. This replaces the 10 lists briefly
-  published from five-frame mining — a vocabulary change that a
+  published from five-frame mining, a vocabulary change that a
   train-2022-23/test-2024 benchmark showed was worse at the 5% review
   budget (median precision 0.306 vs 0.324) and that three rescue attempts
   (higher stringency, near-duplicate collapse, shrinkage estimates) did
@@ -65,8 +65,8 @@ No action needed: filenames, columns, and script interfaces are unchanged.
 - Pipeline and process figures in the README
   (`presentation_figures/pipeline_option_B.png`, `refinement_loop.png`).
 - Measured: per-rule error-dollar size persists from training to a future
-  year more strongly than precision does (`dollar_persistence_check_v2.R`) —
-  groundwork for a dollar-prioritizing pairing.
+  year more strongly than precision does (`dollar_persistence_check_v2.R`),
+  which is groundwork for a dollar-prioritizing pairing.
 
 Work in progress on a revised rule-selection method (see
 `methods/design_selection_layers_v3.md`): admission by false-discovery-rate
@@ -78,13 +78,13 @@ current scripts and lists are unaffected.
 ## [2.1.0] - 2026-07-14
 
 ### Added
-- `state_delivery_lists/` — ready-built, ranked rule lists per state (5% and
+- `state_delivery_lists/`: ready-built, ranked rule lists per state (5% and
   10% review budgets), with a README defining every column. This folder is
   the recommended starting point for states.
 - Rule provenance columns in newly built delivery lists: which engine(s) and
   which mining pass(es) produced each rule, plus per-state flag counts
   (`pool`, `engines`, `mined_frames`, `n_flagged_state`, `n_new_at_rank`).
-- `INCL_build_blended_delivery_list_v2.R` promoted to a top-level script —
+- `INCL_build_blended_delivery_list_v2.R` promoted to a top-level script:
   it is self-contained (mines its own rule pools) and is the recommended
   v2 entry point.
 

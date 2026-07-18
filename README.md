@@ -16,11 +16,11 @@ See [VERSIONING.md](VERSIONING.md): tagged releases, plain-language change summa
 
 **v2 (recommended, below)** mines rules with gradient-boosted trees (xgboost) plus a random forest (ranger), and filters each rule on a statistical lower bound on its precision (precision = the share of flagged cases that truly have an error). It replaces the earlier RuleFit/{pre}-based pipeline.
 
-**v1 (preserved, [further down](#v1-documentation-legacy))** is the original {pre}-based pipeline. Everything v1 still works and its documentation is kept intact below — if you have invested in v1, nothing you built is broken or removed. New projects should start with v2.
+**v1 (preserved, [further down](#v1-documentation-legacy))** is the original {pre}-based pipeline. Everything v1 still works and its documentation is kept intact below. If you have invested in v1, nothing you built is broken or removed. New projects should start with v2.
 
-**Why v2 exists.** Shortlisting mined rules by their raw training precision suffers a strong winner's curse: a rule looks best partly because it got lucky, so a list built to hit 20% precision delivered only ~10% on data it hadn't seen. v2 filters on the **lower confidence bound (Wilson LCB)** of each rule's training precision instead. A rule that clears a 20% filter now delivers about 20% on hold-out data — data set aside and never used to build or pick the rules.
+**Why v2 exists.** Shortlisting mined rules by their raw training precision suffers a strong winner's curse: a rule looks best partly because it got lucky, so a list built to hit 20% precision delivered only ~10% on data it hadn't seen. v2 filters on the **lower confidence bound (Wilson LCB)** of each rule's training precision instead. A rule that clears a 20% filter now delivers about 20% on hold-out data (data set aside and never used to build or pick the rules).
 
-The rebuild paid off in other ways. The pipeline runs about 5x faster and fits on a 16 GB laptop; v1's internal lasso needed 40+ GB at scale. It scores every rule against **all** error types, so a rule mined for earned-income errors still gets credit when the case it flags turns out to have a deduction error — which is what happens in deployment. And it mines the largest error category v1 left out, `other_error`, which is mostly **deductions**. The engine change alone catches about seven more points of error-dollar recall (the share of all error dollars caught) at the same precision-confidence floor. The [guidance section](#guidance-from-the-validation-studies) summarizes these results; [`methods/modeling_findings.md`](methods/modeling_findings.md) gives them in full.
+The rebuild paid off in other ways. The pipeline runs about 5x faster and fits on a 16 GB laptop; v1's internal lasso needed 40+ GB at scale. It scores every rule against **all** error types, so a rule mined for earned-income errors still gets credit when the case it flags turns out to have a deduction error, which is what happens in deployment. And it mines the largest error category v1 left out, `other_error`, which is mostly **deductions**. The engine change alone catches about seven more points of error-dollar recall (the share of all error dollars caught) at the same precision-confidence floor. The [guidance section](#guidance-from-the-validation-studies) summarizes these results; [`methods/modeling_findings.md`](methods/modeling_findings.md) gives them in full.
 
 ---
 
@@ -28,13 +28,13 @@ The rebuild paid off in other ways. The pipeline runs about 5x faster and fits o
 
 ## Where to start
 
-**The best-validated approach in this repo is the blended delivery list**, built by `INCL_build_blended_delivery_list_v2.R` — one frozen, ranked rule list per state. It works in three steps. First, each rule pool keeps only rules that statistically beat the base error rate (a false-discovery-rate test; details in the folder README). Second, it merges the state's own rules into the national pool on one confidence scale, ranking every rule by the 99% lower bound of its own training precision. Third, it fills the list against the state's caseload to a 5% or 10% review budget and adds ranked buffer rules out to 3x that depth; the state then activates rules in rank order until review capacity fills, needing no outcome data at any step.
+**The best-validated approach in this repo is the blended delivery list**, built by `INCL_build_blended_delivery_list_v2.R`: one frozen, ranked rule list per state. It works in three steps. First, each rule pool keeps only rules that statistically beat the base error rate (a false-discovery-rate test; details in the folder README). Second, it merges the state's own rules into the national pool on one confidence scale, ranking every rule by the 99% lower bound of its own training precision. Third, it fills the list against the state's caseload to a 5% or 10% review budget and adds ranked buffer rules out to 3x that depth; the state then activates rules in rank order until review capacity fills, needing no outcome data at any step.
 
-Tested a full year ahead of the training data — mined on 2022-23, scored on each state's 2024 — this recipe beat the national-only list at the 5% budget (median precision 0.324 vs 0.294), tied it at 10%, and cleared every one of 18 states' base error rates. Ready-built lists are in [`state_delivery_lists/`](state_delivery_lists/).
+Tested a full year ahead of the training data (mined on 2022-23, scored on each state's 2024), this recipe beat the national-only list at the 5% budget (median precision 0.324 vs 0.294), tied it at 10%, and cleared every one of 18 states' base error rates. Ready-built lists are in [`state_delivery_lists/`](state_delivery_lists/).
 
 ![The delivery-list build: mine rule pools, rank them on one confidence scale, fill to the review budget](presentation_figures/pipeline_option_B.png)
 
-A state can also run the same script as a hybrid. It mines its own pool from internal case files — which include the ineligible determinations the public files leave out — and blends that with the pool mined from other states' public QC data. The confidence-bound scale is what makes rules from the two sources directly comparable, so nothing else in the recipe changes.
+A state can also run the same script as a hybrid. It mines its own pool from internal case files (which include the ineligible determinations the public files leave out) and blends that with the pool mined from other states' public QC data. The confidence-bound scale is what makes rules from the two sources directly comparable, so nothing else in the recipe changes.
 
 Two routes, depending on your use case:
 
@@ -44,9 +44,9 @@ Two routes, depending on your use case:
 
 If you only want to use internal data, use `INCL_find_inclusion_rules_by_hh_size_v2.R` since it does not expect the national data as an input. You can also use `INCL_find_inclusion_rules_by_hh_size_v2.R` when you want the full exploration outputs instead: rules mined per error type as well as pooled, filtered shortlists, and the filter-floor sweep curves (see `state_delivery_lists/README.md` for the delivery lists' column definitions and caveats). 
 
-If you want to keep it very simple, start from the rule lists for your state in `state_delivery_lists/`. Note that per-state threshold tuning (`state_threshold_gridsearch_v2.R`) remains available, but in an 18-state future-year test it did not beat deploying the national ranking as-is for the median state — so treat tuning as a fallback and validate it on your own hold-out year first.
+If you want to keep it very simple, start from the rule lists for your state in `state_delivery_lists/`. Note that per-state threshold tuning (`state_threshold_gridsearch_v2.R`) remains available, but in an 18-state future-year test it did not beat deploying the national ranking as-is for the median state, so treat tuning as a fallback and validate it on your own hold-out year first.
 
-The scripts expect a data frame with one row per case, a column indicating whether the case is a true error, and your features. Update the config block at the top of the script: the `features` vector and `TARGET_IS_ERROR` expression are the main things to change. Features must be numeric, logical, or two-level factors (multi-level factors are rejected with a clear message — recode upstream). See [the data dictionary](DATA_DICTIONARY.md) for the default feature set.
+The scripts expect a data frame with one row per case, a column indicating whether the case is a true error, and your features. Update the config block at the top of the script: the `features` vector and `TARGET_IS_ERROR` expression are the main things to change. Features must be numeric, logical, or two-level factors (multi-level factors are rejected with a clear message, so recode upstream). See [the data dictionary](DATA_DICTIONARY.md) for the default feature set.
 
 To use the national public QC data, build `reg_model_data` with `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` (unchanged from v1).
 
@@ -58,17 +58,17 @@ Every driver runs the same five-stage pipeline, implemented once in **`rule_mini
 generate  ->  canonicalize  ->  dedup  ->  evaluate  ->  sweep / shortlist
 ```
 
-1. **Generate** — two tree ensembles per mining frame and household-size stratum (1 / 2-3 / 4+): xgboost (1,000 rounds, eta .02, subsample .20) and ranger (1,000 trees, mtry 2). The inclusion driver mines five frames: one per error type (earned, unearned, underissuance, other) **plus a pooled all-errors frame**, since the typed and pooled vocabularies catch complementary rules. Every node's root-to-node path becomes a candidate rule; the engines are likewise complementary, so unions beat any single source.
-2. **Canonicalize** — thresholds rounded to 3 significant digits, redundant bounds collapsed, conditions put in a canonical order.
-3. **Dedup** — three layers: exact text, exact coverage (two rules flagging identical cases collapse to the simpler one), and same-structure dominance (a rule is dropped only when a looser rule with an equal-or-better statistic provably contains it — overlapping rules with *different* structure are deliberately kept, so agencies can drop any rule on expert judgment and keep others that catch the same errors).
-4. **Evaluate** — each rule's flags are computed on training data, a hold-out year, and the full **any-error universe** (all error types). Frame-relative precision understates deployed precision roughly 2x; both are reported.
-5. **Filter + sweep** — rules are filtered at the one-sided 99% Wilson lower bound of train precision (`LCB_Z = 2.326`). The sweep reports, for each filter floor, the union's hold-out precision, recall, and dollar recall — an error caught by several rules counts once, so redundancy never overstates recall. There are no greedy "nets" in v2; the filtered rule list plus the sweep replaces them.
+1. **Generate.** Two tree ensembles per mining frame and household-size stratum (1 / 2-3 / 4+): xgboost (1,000 rounds, eta .02, subsample .20) and ranger (1,000 trees, mtry 2). The inclusion driver mines five frames: one per error type (earned, unearned, underissuance, other) **plus a pooled all-errors frame**, since the typed and pooled vocabularies catch complementary rules. Every node's root-to-node path becomes a candidate rule; the engines are likewise complementary, so unions beat any single source.
+2. **Canonicalize.** Thresholds rounded to 3 significant digits, redundant bounds collapsed, conditions put in a canonical order.
+3. **Dedup** in three layers: exact text, exact coverage (two rules flagging identical cases collapse to the simpler one), and same-structure dominance (a rule is dropped only when a looser rule with an equal-or-better statistic provably contains it). Overlapping rules with *different* structure are deliberately kept, so agencies can drop any rule on expert judgment and keep others that catch the same errors.
+4. **Evaluate.** Each rule's flags are computed on training data, a hold-out year, and the full **any-error universe** (all error types). Frame-relative precision understates deployed precision roughly 2x; both are reported.
+5. **Filter and sweep.** Rules are filtered at the one-sided 99% Wilson lower bound of train precision (`LCB_Z = 2.326`). The sweep reports, for each filter floor, the union's hold-out precision, recall, and dollar recall; an error caught by several rules counts once, so redundancy never overstates recall. There are no greedy "nets" in v2, and the filtered rule list plus the sweep replaces them.
 
 The approach to ensemble size: mine a large candidate pool, then filter it strictly. Large ensembles reach more of the errors; the strict confidence bounds remove the extra selection noise that more candidates would otherwise inject.
 
 ## Statistics and goal metrics
 
-The five-stage machinery is general purpose: for every rule it produces honest evidence — support, precision, confidence bounds, provenance. What to *optimize* is a separate, user-chosen module: a **ranking statistic** paired with the **goal metric** it is judged by. Different goals need different statistics (a statistic that wins at one goal can lose at another — we measured exactly that), so delivered files carry their pairing in the filename, and a new pairing is adopted only after it passes the same held-out-year validation as everything else.
+The five-stage machinery is general purpose: for every rule it produces honest evidence, namely support, precision, confidence bounds, and provenance. What to *optimize* is a separate, user-chosen module: a **ranking statistic** paired with the **goal metric** it is judged by. Different goals need different statistics (a statistic that wins at one goal can lose at another, and we measured exactly that), so delivered files carry their pairing in the filename, and a new pairing is adopted only after it passes the same held-out-year validation as everything else.
 
 | your goal | statistic | where | status |
 |---|---|---|---|
@@ -81,7 +81,7 @@ The five-stage machinery is general purpose: for every rule it produces honest e
 | script | purpose |
 |---|---|
 | `rule_mining_helpers.R` | all shared logic (the five stages) |
-| `test_rule_mining_helpers.R` | 26-check regression test on synthetic data — run after touching the helpers |
+| `test_rule_mining_helpers.R` | 26-check regression test on synthetic data; run after touching the helpers |
 | `INCL_find_inclusion_rules_by_hh_size_v2.R` | inclusion rules per mining frame (earned, unearned, underissuance, other, + pooled all-errors) x household size |
 | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | exclusion rules: filter safe-to-skip cases by clean-rate LCB; reports workload cut vs error-dollar retention |
 | `state_threshold_gridsearch_v2.R` | tunes national rule thresholds per state and tests on a hold-out year, incl. a "deploy national as-is" benchmark |
@@ -108,7 +108,7 @@ Packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional
 
 ## Guidance from validation studies
 
-Moved to its own page: [GUIDANCE.md](GUIDANCE.md) — what moved held-out
+Moved to its own page, [GUIDANCE.md](GUIDANCE.md): what moved held-out
 performance in the experiments we ran, from selection statistics to
 stratification to data visibility.
 
@@ -128,8 +128,8 @@ stratification to data visibility.
 Conceptual changes:
 
 - **Nets are gone.** v1 greedily OR-ed rules into a net; v2 reports the union of all filtered-in rules at each floor. Same no-double-counting guarantee, simpler to explain, and rules stay independent so experts can drop any rule without re-optimizing.
-- **Stringent filtering replaces raw thresholds.** A v2 "0.20 shortlist" is rules whose precision is *statistically at least* 0.20 — expect shorter, more trustworthy lists than v1 at the same nominal number.
-- **Class rebalancing is gone** (v2 mines on the natural base rate). Note for v1 users: the 14:1 rebalancing block in the v1 INCL scripts is now commented out, restoring the originally intended default — uncomment to reproduce old runs exactly.
+- **Stringent filtering replaces raw thresholds.** A v2 "0.20 shortlist" is rules whose precision is *statistically at least* 0.20, so expect shorter, more trustworthy lists than v1 at the same nominal number.
+- **Class rebalancing is gone** (v2 mines on the natural base rate). Note for v1 users: the 14:1 rebalancing block in the v1 INCL scripts is now commented out, restoring the originally intended default (uncomment to reproduce old runs exactly).
 - **Two small v1 housekeeping changes**: the `pre_param_sweep/` folder is renamed `parameter_tuning/` (its committed contents now live at `methods/parameter_tuning/`), and a dead-logic typo in the data munging script's `other_error` definition was fixed (no behavioral change).
 
 What you can keep unchanged: the data munging script and `reg_model_data`, the data dictionary, `methods/parse_tree.R` (SQL conversion), the visualization scripts, and all v1 outputs already produced.
@@ -148,7 +148,7 @@ There are two main use cases. If you have your own internal data, you can go dir
 
 **I don't have a flagging system and want to identify which cases are most likely to have an error** → go to the [INCL_ scripts](#inclusion-rules-incl_-scripts).
 
-In both cases, the scripts expect a data frame in your R environment with one row per case, a column indicating whether the case is a true error, and whatever features you want to use as predictors. You can swap in your own internal data and your own feature list — just update the config section at the top of the script. The `features` vector and the `TARGET_IS_ERROR` expression are the main things to change. See [the data dictionary](DATA_DICTIONARY.md) for documentation of the features used in the default setup.
+In both cases, the scripts expect a data frame in your R environment with one row per case, a column indicating whether the case is a true error, and whatever features you want to use as predictors. You can swap in your own internal data and your own feature list; just update the config section at the top of the script. The `features` vector and the `TARGET_IS_ERROR` expression are the main things to change. See [the data dictionary](DATA_DICTIONARY.md) for documentation of the features used in the default setup.
 
 If you want to use national public QC data rather than internal data, see [What data is required?](#what-data-is-required) below. The national data can be useful for finding more specific patterns since the number of errors in any one state is limited.
 
@@ -158,11 +158,11 @@ Note that I recommend running all the models stratified by household size (e.g.,
 
 You have a list of cases flagged for review. These scripts help you find simple rules that let you drop low-risk cases from that pile, leaving a more targeted set for reviewers.
 
-1. **`EXCL_find_exclusion_rules_by_hh_size.R`** — runs RuleFit on your flagged cases, stratified by household size (1, 2-3, 4+), to find candidate exclusion rules. Outputs rule CSVs to `exclusion_rules/`. If your internal data is rich enough, you may be able to stop here and apply the rules directly.
+1. **`EXCL_find_exclusion_rules_by_hh_size.R`** runs RuleFit on your flagged cases, stratified by household size (1, 2-3, 4+), to find candidate exclusion rules. Outputs rule CSVs to `exclusion_rules/`. If your internal data is rich enough, you may be able to stop here and apply the rules directly.
 
-2. **`EXCL_optimize_single_exclusion_rule_by_hh_size_for_a_state.R`** — takes one rule from step 1 and grid-searches its numeric thresholds on a specific state's data, maximizing workload cut while retaining a floor of error dollars. This is useful if you have identified a small number of rules of interest that you really want to get right.
+2. **`EXCL_optimize_single_exclusion_rule_by_hh_size_for_a_state.R`** takes one rule from step 1 and grid-searches its numeric thresholds on a specific state's data, maximizing workload cut while retaining a floor of error dollars. This is useful if you have identified a small number of rules of interest that you really want to get right.
 
-3. **`EXCL_optimize_set_of_exclusion_rules_by_hh_size_for_a_state.R`** — same as step 2 but optimizes the full exclusion shortlist at once. This is useful if you're taking rules from national data and adjusting them to your state.
+3. **`EXCL_optimize_set_of_exclusion_rules_by_hh_size_for_a_state.R`** does the same as step 2 but optimizes the full exclusion shortlist at once. This is useful if you're taking rules from national data and adjusting them to your state.
 
 Examples of exclusion rule outputs are in the `archive/exclusion_rules/` folder.
 
@@ -170,11 +170,11 @@ Examples of exclusion rule outputs are in the `archive/exclusion_rules/` folder.
 
 These scripts find candidate prioritization rules (i.e., rules that flag cases more likely to have an error). The goal is to increase the yield of review time and you can set the particular strategy for that in the script (e.g., dollar recall with a minimum floor of precision).
 
-1. **`INCL_find_inclusion_rules_multi_model_by_hh_size.R`** — runs RuleFit separately by error type (configurable, but in the script, it's just based on error element and status from the QC data: earned overissuance, unearned overissuance, underissuance) and household size. Outputs rule CSVs to `inclusion_rules_by_hh_size/`. If you have a lot of internal labeled data, you may be done after this step.
+1. **`INCL_find_inclusion_rules_multi_model_by_hh_size.R`** runs RuleFit separately by error type (configurable, but in the script, it's just based on error element and status from the QC data: earned overissuance, unearned overissuance, underissuance) and household size. Outputs rule CSVs to `inclusion_rules_by_hh_size/`. If you have a lot of internal labeled data, you may be done after this step.
 
-2. **`INCL_optimize_single_inclusion_rule_by_hh_size_for_a_state.R`** — takes one rule from step 1 (or a rule from any source) and grid-searches its numeric thresholds for a specific state to maximize precision at a recall floor.
+2. **`INCL_optimize_single_inclusion_rule_by_hh_size_for_a_state.R`** takes one rule from step 1 (or a rule from any source) and grid-searches its numeric thresholds for a specific state to maximize precision at a recall floor.
 
-3. **`INCL_optimize_set_of_inclusion_rules_by_hh_size_for_a_state.R`** — same as step 2 but tunes all high-precision rules for a state at once. The results will change quite a bit as you modify the OBJECTIVE (dollars vs. counts), OPTIMIZE_FOR (precision vs recall), MIN_FLAGGED (cases flagged by each rule), PRECISION_TARGET (floor for precision).
+3. **`INCL_optimize_set_of_inclusion_rules_by_hh_size_for_a_state.R`** does the same as step 2 but tunes all high-precision rules for a state at once. The results will change quite a bit as you modify the OBJECTIVE (dollars vs. counts), OPTIMIZE_FOR (precision vs recall), MIN_FLAGGED (cases flagged by each rule), PRECISION_TARGET (floor for precision).
 
 An example of a general rule list mined from national data can be found in this file:
 `archive/inclusion_rules_by_hh_size/final_by_HHsize_inclusion_rules_highprecision.csv`
@@ -185,7 +185,7 @@ For a walkthrough of the inclusion rules workflow, see these [slides](https://do
 
 ## What data is required?
 
-You don't have to use the national QC data to use these scripts — it's easy to adjust the `features` list and `TARGET_IS_ERROR` expression to work with your own internal data and the variables you'd like to use.
+You don't have to use the national QC data to use these scripts. It's easy to adjust the `features` list and `TARGET_IS_ERROR` expression to work with your own internal data and the variables you'd like to use.
 
 If you want to mine patterns from the national data, it is included in this repo in the `qc_data/` folder, so you don't need to download it separately. The source is [snapqcdata.net](https://snapqcdata.net). The main reason to use it to get started is that there is a lot more error signal. You can train on a much larger number of error cases and identify more detailed patterns than a single state's data might support. The examples in this repo reflect me mining rules from national data then tuning them to states using the `INCL_optimize_*` or `EXCL_optimize_*` scripts.
 
@@ -195,7 +195,7 @@ If you want to use the national data, you'll see the `reg_model_data` data frame
 
 ## Data dictionary
 
-Variable definitions and sourcing notes are in [the data dictionary](DATA_DICTIONARY.md). Covers all model features — income variables, deductions, household composition indicators, benefit ratios — and maps them back to the raw QC data elements. Many thanks to Jesse Shaw for putting this together.
+Variable definitions and sourcing notes are in [the data dictionary](DATA_DICTIONARY.md). Covers all model features (income variables, deductions, household composition indicators, benefit ratios) and maps them back to the raw QC data elements. Many thanks to Jesse Shaw for putting this together.
 
 ## Converting rules to SQL
 
@@ -203,4 +203,4 @@ Once you have rules you want to implement, **`methods/parse_tree.R`** provides a
 
 ---
 
-The point of this repo is to make one thing unambiguous: anyone can freely use the ideas and materials I've presented on SNAP QC. I'll keep adding to and cleaning up the code as I learn what's useful — so please reach out.
+The point of this repo is to make one thing unambiguous: anyone can freely use the ideas and materials I've presented on SNAP QC. I'll keep adding to and cleaning up the code as I learn what's useful, so please reach out.
