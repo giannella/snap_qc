@@ -141,7 +141,7 @@ silent rewrites.
 
 ## 1. The winner's curse, diagnosed and addressed
 
-> **Takeaway — about the data (a statistical fact you'll hit too).** If you
+> **Takeaway: about the data (a statistical fact you'll hit too).** If you
 > shortlist rules by their raw accuracy on the same data you measured them on, you
 > reward luck: rules that looked ~20% accurate came in around ~10% on fresh data.
 > The cure is to rank and filter on a cautious *lower* bound of each rule's precision
@@ -181,14 +181,14 @@ menu axis whose number reads "at least this". Side-by-side figure:
 
 ## 2. Results of dropping {pre} r package in favor of rolling our own
 
-> **Takeaway — about our pipeline.** Replacing the off-the-shelf `pre` R package with
-> our own rule generator gave the same rule quality at a fraction of the cost (about a
-> fifth of the compute, and a >40 GB memory peak brought down to a few GB), and it
-> made analyses possible that `pre` simply could not fit (the
-> pooled any-error model, 853k-rule comparisons, a regression test). Worth knowing:
-> swapping the underlying tree engines barely moved precision (~1 point) — the real
-> gains come from strict filtering and from scoring on any-error, not from the choice
-> of algorithm.
+> **Takeaway: about our pipeline.** Replacing the off-the-shelf `pre` R package with
+> our own rule generator gave the same rule quality at a fraction of the cost: it
+> mines all four typed frames in about the time `pre` took to mine one, and its peak
+> memory drops from over 40 GB to a few GB. It also made analyses possible that `pre`
+> simply could not fit: the pooled any-error model, 853k-rule comparisons, a
+> regression test. Worth knowing: swapping the underlying tree engines barely moved
+> precision (about 1 point). The real gains come from strict filtering and from
+> scoring on any-error, not from the choice of algorithm.
 
 Same rule quality, ~5x cheaper, ~3x smaller memory, and it unlocked analyses
 pre() could not run:
@@ -221,7 +221,7 @@ methods/design_drop_pre_architecture.md.*
 
 ## 3. Typed frames vs one any-error model (head-to-head)
 
-> **Takeaway — about our pipeline.** Mining the four error-type datasets separately
+> **Takeaway: about our pipeline.** Mining the four error-type datasets separately
 > beats a single all-errors model, but only by about a percentage point, and one
 > all-errors model gets ~95% of the way at a quarter of the cost. Because the two
 > approaches find largely different rules, the best move is to mine both and pool
@@ -281,7 +281,7 @@ sweep + summary CSVs; small-ensemble run preserved as xgb300rf500_).*
 
 ## 4. Engine tuning: what matters and what doesn't
 
-> **Takeaway — about our pipeline.** Most tuning knobs barely matter. The few that do:
+> **Takeaway: about our pipeline.** Most tuning knobs barely matter. The few that do:
 > give the random forest a little signal to split on (mtry = 2, not 1), use slow,
 > low-sample boosting, and grow trees to depth 4-5. More trees don't buy precision at
 > a fixed filter setting — they buy a bigger *menu* of rules, which pays off only when
@@ -324,7 +324,7 @@ v2_subsample_fine.*
 
 ## 5. "Mine big, filter stringently" — the flexible LCB
 
-> **Takeaway — about our pipeline.** Mining a big pool of rules and then filtering it
+> **Takeaway: about our pipeline.** Mining a big pool of rules and then filtering it
 > hard lands on the same accuracy as mining a small pool and filtering it gently — the
 > big pool's advantage isn't better numbers, it's a longer list of usable rules, so
 > states have substitutes when they veto one on expert judgment. The strict filter
@@ -357,7 +357,7 @@ inclusion_rules_by_hh_size_v2/ (run1_small_ensembles_z90/ preserved).*
 
 ## 6. Frame-relative vs deployed (any-error) performance
 
-> **Takeaway — about the data.** A rule you mined to catch one kind of error routinely
+> **Takeaway: about the data.** A rule you mined to catch one kind of error routinely
 > flags cases that have some *other* error too, and in real review that still counts
 > as a hit. So a rule's real-world precision runs about 2x its narrow, single-type
 > precision. Always quote states the any-error number — the narrow one understates
@@ -370,7 +370,7 @@ outputs carry both views; quote the any-error numbers to states.
 
 ## 7. other_error: the largest, previously unmodeled category
 
-> **Takeaway — about the data.** The biggest single category of SNAP errors is the
+> **Takeaway: about the data.** The biggest single category of SNAP errors is the
 > "other" bucket (deductions, shelter, household composition) — larger than any of the
 > classic income-error types — and nobody had tried to model it. It turns out to have
 > plenty of learnable structure. One caveat from the program side: many states treat
@@ -384,7 +384,7 @@ heterogeneous or not, it has learnable structure.
 
 ## 8. ESAP / elderly-disabled: feature suffices, and why
 
-> **Takeaway — about the data.** Elderly and disabled households (ESAP = the Elderly
+> **Takeaway: about the data.** Elderly and disabled households (ESAP = the Elderly
 > Simplified Application Project population) are about half the caseload but are *not*
 > more error-prone. What differs is the *mix* of their errors — mostly the
 > easy-to-detect types — which is why our models catch far more of their errors (~27%
@@ -414,7 +414,7 @@ themselves:
 
 ## 9. States: a clean two-regime deployment rule
 
-> **Takeaway — about our pipeline (with one portable caution).** When a state has
+> **Takeaway: about our pipeline (with one portable caution).** When a state has
 > enough of its own data (roughly 30+ rules clearing the bar), tuning rules on that
 > state's data can pay off well; when it doesn't, tuning collapses to noise and you
 > should just deploy the national rules unchanged. The portable part is the caution:
@@ -542,7 +542,7 @@ in run1_lcb_criterion/).*
 ## 10. Data visibility: how much of a state's error population the public
 ## data can even show (2026-07-07)
 
-> **Takeaway — about the data (and it matters a lot).** The public QC file does not
+> **Takeaway: about the data (and it matters a lot).** The public QC file does not
 > show a state its whole error population — it excludes ineligible cases entirely, so
 > a state sees only 43-81% of its own errors (New Jersey: 43%, Tennessee: 51%). Any
 > rule mined on public data is therefore blind to a large slice of reality. States
@@ -583,7 +583,7 @@ in `methods/effects_of_munging_options.md`.
 
 ## 11. Household-size stratification: split, but split coarsely
 
-> **Takeaway — about our pipeline.** Splitting the caseload by household size
+> **Takeaway: about our pipeline.** Splitting the caseload by household size
 > (1 / 2-3 / 4+) and mining each group separately reliably helps, or at worst never
 > hurts, so it is our default. Splitting *finer* (a 5-way split) does not help and
 > costs more compute — past a point, smaller groups just starve each rule of the cases
@@ -627,7 +627,7 @@ the coarse split never loses, so it stays the default. NOT replicated:
 
 ## 12. Cross-state transfer vs honest national baselines (2026-07-09)
 
-> **Takeaway — about our pipeline (now superseded).** In a same-year test, pools of a
+> **Takeaway: about our pipeline (now superseded).** In a same-year test, pools of a
 > few "similar" states looked competitive with the full national pool at moderate
 > review budgets. That advantage did *not* survive a proper future-year test (section
 > 14), so it is recorded here for the trail but is no longer the guidance. The durable
@@ -699,7 +699,7 @@ methods/budgeted_transfer_menu_v2.R; overnight_nb_loo_run.log.*
 
 ## 13. Pre-registered year-swap replication of the model-selection studies (2026-07-09)
 
-> **Takeaway — about our pipeline (and our honesty check on it).** Every modeling
+> **Takeaway: about our pipeline (and our honesty check on it).** Every modeling
 > choice above had been judged on one test year (2023). We wrote our predictions down
 > in advance and re-ran the four big ones on a fresh year (2024): three held up, and
 > one ("low subsampling helps") did not and was retired. The value here is the
@@ -772,7 +772,7 @@ methods/run_selection_yearswap.R.*
 
 ## 14. Time-shifted deployment benchmark: own-state vs NB transfer vs national on 2024 (2026-07-10)
 
-> **Takeaway — about our pipeline (with one portable caution).** Tested the way a
+> **Takeaway: about our pipeline (with one portable caution).** Tested the way a
 > state would actually face it — rules built on past years, scored on a future year —
 > the plain national rule list is the best default: the highest precision at both
 > budgets among the lists a state can actually deploy, and never a disaster. Mining on a state's *own* data has the biggest upside but is
@@ -854,7 +854,7 @@ deploy_own_vs_national_budget05/10.png.*
 
 ## 15. Frozen per-state lists: the handable deliverable, priced (2026-07-10)
 
-> **Takeaway — about our pipeline.** A state can't wait for the test year — it needs a
+> **Takeaway: about our pipeline.** A state can't wait for the test year — it needs a
 > fixed list in hand. Freezing the national list and sizing it against the state's own
 > caseload (with a buffer so reviewers never run dry) costs almost nothing versus an
 > idealized after-the-fact list: under a point of precision. Each list personalizes
@@ -908,7 +908,7 @@ methods/count_contributing_rules_v2.R -> contributing_rules_summary.csv.*
 
 ## 16. Blending state and national rules on one confidence scale (2026-07-10)
 
-> **Takeaway — about our pipeline (the current default deliverable).** Put each
+> **Takeaway: about our pipeline (the current default deliverable).** Put each
 > state's own mined rules and the national rules on one honest confidence scale (the
 > 99% bound) and let them interleave. This "blend" is the recipe we now ship: better
 > at a 5% budget, about even at 10% (0.262 vs 0.270 precision), and no case-by-case
@@ -961,7 +961,7 @@ frozen_list_results.csv, frozen_own_list_results.csv.*
 
 ## 17. Typed-frame delivery vocabulary: retired after three rescue attempts (2026-07-15/16)
 
-> **Takeaway — about our pipeline.** Adding the four typed datasets to the delivery
+> **Takeaway: about our pipeline.** Adding the four typed datasets to the delivery
 > pool tripled the candidate rules but *lowered* delivered precision, and three
 > attempts to rescue it failed. The reason is general enough to remember: when you must
 > pick only 20-50 rules to fit a review budget, a bigger pool mostly adds small-sample,
@@ -999,7 +999,7 @@ methods/design_selection_layers_v3.md.*
 
 ## 18. Shrinkage (empirical-Bayes) ranking: refuted on two eras (2026-07-16/17)
 
-> **Takeaway — about our pipeline (with a portable statistical reason).** Ranking rules
+> **Takeaway: about our pipeline (with a portable statistical reason).** Ranking rules
 > by a smoothed "posterior mean" precision did worse than our lower-bound ranking on
 > two separate eras. The reason travels: filling a small review budget is a decision
 > about the *top* of the list, and posterior-mean ranking floods the top with big,
@@ -1023,38 +1023,43 @@ estimation_admission_sweep.csv;
 methods/state_similarity_v2/era_validation_train1718_test19/
 era_validation_results.csv (ordering comparison, famEB arm).*
 
-## 19. Admission: FDR + support floor validated on two eras; floorless FDR refuted (2026-07-16/17)
+## 19. Which rules to keep: a false-discovery-rate test plus a minimum-support floor (2026-07-16/17)
 
-> **Takeaway — about our pipeline (with a portable statistical lesson).** A standard
-> multiple-testing gate (Benjamini-Hochberg controlling the false-discovery rate at
-> 10%) plus the n >= 30 support floor matched our hand-tuned admission filter at the
-> 5% budget on two eras (and was never worse), with a smaller admitted pool — so that
-> is now the principled default.
-> The lesson that generalizes: multiplicity control ("is this rule real?") and a
-> support floor ("is the estimate reliable enough to rank on?") are different jobs;
-> dropping the floor let small-sample rules collapse the results.
+> **Takeaway: about our pipeline (with a portable statistical lesson).** Before we
+> rank rules, we decide which ones to keep. A false-discovery-rate test
+> (Benjamini-Hochberg at 10%) plus the n >= 30 support floor matched our old
+> hand-tuned filter at the 5% budget on two eras, was never worse, and kept a smaller
+> pool, so it is now the default. The two checks do different jobs and you need both:
+> the test limits how many kept rules are flukes (whose true precision is no better
+> than the base error rate), and the floor keeps out rules whose precision is measured
+> from too few cases to trust. Drop the floor and those small-sample rules get
+> deployed and underperform on the test year.
 
 On raw unfiltered vocabularies (144,533 national candidates on 2022-23;
-145,313 on 2017-18), Benjamini-Hochberg admission against the stratum base
+145,313 on 2017-18), keeping rules by Benjamini-Hochberg against the stratum base
 rate PLUS the n >= 30 floor ("fdr10f") matched the hand-tuned production
 filter (n >= 30, raw >= 0.05, raw > base) exactly at the 5% budget on both
 eras and was never worse:
 
-- 2024 test: fdr10f 0.335 / prod 0.335 at 5%; 0.275 / 0.262 at 10% —
-  with a ~40% smaller admitted pool (median 54,261 vs 93,869 rules).
+- 2024 test: fdr10f 0.335 / prod 0.335 at 5%; 0.275 / 0.262 at 10%, with a ~40%
+  smaller kept pool (median 54,261 vs 93,869 rules).
 - 2019 test: identical medians at both budgets (0.219 at 5%, 0.221 at 10%).
 
 FLOORLESS BH was refuted on 2024: 0.284 (alpha .10) / 0.293 (alpha .05) at
-the 5% budget — the same small-support collapse as the state-scale lesson
-(section 13) and the displacement autopsy (section 17). The support floor
-is an ESTIMATION-QUALITY guard (is the estimate reliable enough to rank
-on?), which multiplicity control (is the rule real?) does not substitute
-for. The admitted-count self-scaling worked as intended: at alpha .10 the
-gate admitted 54k of 145k nationally but only 1,336 of 67k for Michigan
-and 96 of 62k for Texas at alpha .05 — no hand-set constant involved.
-Caveat: the first FDR audition (estimation_admission_sweep.csv) was invalid
-— it applied BH on already-filtered pools, a no-op; only the raw-vocabulary
-runs test admission.
+the 5% budget, the same small-support collapse as the state-scale lesson
+(section 13) and the displacement autopsy (section 17). The two checks answer
+different questions. The false-discovery-rate test controls how many kept rules
+are flukes, meaning rules whose true precision is no better than the base rate.
+The support floor is a separate guard on estimation quality: a rule can be
+genuinely above the base rate yet have a precision estimate too noisy to rank on
+when it comes from very few cases. Dropping the floor let those small-sample rules
+through, and they underperformed a year later, so this is a reliability failure,
+not a failure of the fluke test (which was still running). The self-scaling worked
+as intended: at alpha .10 the gate kept 54k of 145k nationally but only 1,336 of
+67k for Michigan and 96 of 62k for Texas at alpha .05, with no hand-set constant
+involved. Caveat: the first FDR audition (estimation_admission_sweep.csv) was
+invalid because it applied BH on already-filtered pools, a no-op; only the
+raw-vocabulary runs test this filtering.
 
 *Artifacts: methods/state_similarity_v2/transfer_benchmark_train2223_test24/
 fdr_admission_audition.csv;
@@ -1064,7 +1069,7 @@ methods/fdr_raw_vocabulary_mine_v2.R (raw caches regenerable, gitignored).*
 
 ## 20. Ordering stringency: z = 2.326 vindicated across eras; the 2024 bump did not replicate (2026-07-17)
 
-> **Takeaway — about our pipeline.** A 2024 sweep hinted that filtering even more
+> **Takeaway: about our pipeline.** A 2024 sweep hinted that filtering even more
 > strictly than our 99% bound would help; pre-registered on a separate era, that hint
 > did not replicate, so we kept z = 2.326. A useful reminder that a single year can
 > whisper a false signal — the second era is what settled it.
@@ -1086,7 +1091,7 @@ stringency_vocabulary_sweep.csv (the 2024 side).*
 
 ## 21. Dollar-yield ranking: direction consistent, magnitude era-unstable; not adopted (2026-07-16/17)
 
-> **Takeaway — about the data (but not adopted).** A rule's average error *dollars per
+> **Takeaway: about the data (but not adopted).** A rule's average error *dollars per
 > flagged case* carries over from one year to the next more reliably than its precision
 > does — error size seems anchored to observable case traits. Ranking by dollars beat
 > ranking by precision on dollar recall in 2024, but the gain shrank on the 2017-19
@@ -1116,7 +1121,7 @@ era_validation_results.csv (dollar comparison).*
 
 ## 22. The winner's curse at the top, demonstrated directly (2026-07-17)
 
-> **Takeaway — about the data (a clean demonstration).** Using the same data to both
+> **Takeaway: about the data (a clean demonstration).** Using the same data to both
 > choose and rank rules inflates how good the top of the list looks. We isolated this
 > by ranking one half of the data on rules mined from the *other* half: the clean
 > ranking beat the self-scored one by ~1.6 points of precision at a 5% budget, and the
