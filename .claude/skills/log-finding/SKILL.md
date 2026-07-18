@@ -42,12 +42,26 @@ The Takeaway blockquote text is identical in both files.
    if a number would make the reader ask "compared to what?", it belongs in the
    takeaway layer, not just the record.
 
-4. **Propagate:**
+4. **Propagate (this is how the docs avoid drift):**
+   - **Cite, don't restate.** The findings docs own every number. When a reader doc
+     (README.md, GUIDANCE.md, a deck) states a number, it must carry its source
+     `§N` citation. Never let a derived doc originate a number or silently diverge
+     from the findings value.
    - If the finding changes a default (engine setting, floor, stratum scheme), update
      the CLAUDE.md knob table / architecture notes to match.
+   - **If the finding supersedes or retires a prior claim,** grep the derived docs for
+     the old claim, number, or term and reconcile each: run `grep -n` across
+     README.md, GUIDANCE.md, and the deck text. A retired claim left standing in a
+     derived doc is the main way these docs drift (it is exactly how a strata claim
+     retired in the findings stayed asserted in GUIDANCE). Add the old assertion to
+     `methods/retired_claims.txt` so the consistency checker guards against its return.
    - Check whether the decks (`how_to_use_*.pptx`, `workshop_*.pptx`,
      `lessons_*.pptx`) quote numbers this finding supersedes. Do NOT edit decks
      silently; list the affected slides for the user.
+   - Before finishing, run `methods/check_doc_consistency.sh` (flags em-dashes and any
+     retired phrasing that reached a reader doc). At each validated-change or release,
+     also re-run the full reader-expectation audit (numbers-trace, completeness,
+     right-altitude), not just this checker.
 
 5. **Date** the entry (YYYY-MM-DD) and add a one-line breadcrumb to §0's chronology.
 

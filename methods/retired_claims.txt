@@ -1,0 +1,22 @@
+# Retired / superseded claims that must NOT be asserted as current in the derived
+# reader docs (README.md, GUIDANCE.md). methods/check_doc_consistency.sh greps these
+# docs for each phrase below (fixed-string, case-sensitive) and fails if one appears.
+#
+# How to use:
+#   - When a finding RETIRES or SUPERSEDES a prior claim, add the old assertion here.
+#   - Make each entry SPECIFIC enough that it only matches the claim stated as
+#     CURRENT, not a legitimate "was retired" mention. (That is why the check runs
+#     only against README/GUIDANCE, which state current guidance, and not against the
+#     findings docs, which discuss retired claims with supersession notes.)
+#   - One phrase per line. Lines starting with # are comments.
+#
+# --- seeded from the 2026-07 doc audit ---
+
+# The 5-way household-size split was retired as "worse"; findings §11 now says it
+# "adds nothing over the 3-way split and costs more compute." Guard the old wording:
+strata) perform less well
+strata perform less well
+
+# "Admission" was renamed to "which rules to keep" (findings §19). The word survives
+# only in code (the ADMISSION config) and artifact filenames, never as reader prose:
+Admit rules with a false-discovery-rate

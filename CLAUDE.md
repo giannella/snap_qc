@@ -118,3 +118,4 @@ and charts from our own runs, never with authority or intuition. Rules:
 - `methods/modeling_findings_detailed.md` — the complete evidence log: full numbers, tables, caveats, and artifact pointers for every section (winner's curse, engine studies, strata, ESAP, states).
 - `methods/design_drop_pre_architecture.md` — the v2 design rationale and decisions.
 - `DATA_DICTIONARY.md` (rendered) / `Definitions for variables used.txt` (original) — feature dictionary.
+- `methods/check_doc_consistency.sh` (with `methods/retired_claims.txt`): guards the docs against drift. It checks that the reader docs carry no em-dashes and that no retired claim reappears in README/GUIDANCE. Run it after logging a finding and before a release. Rule of thumb: reader docs (README, GUIDANCE, decks) cite the findings by section number and never originate a number.
