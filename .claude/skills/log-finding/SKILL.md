@@ -1,38 +1,97 @@
 ---
 name: log-finding
-description: Record an empirical finding from a run or study into methods/modeling_findings.md using the repo's evidence conventions (verified numbers, artifact pointers, honest caveats)
+description: Record an empirical finding from a run or study into the project's findings docs — a plain-language takeaway in methods/modeling_findings.md plus the full evidence in methods/modeling_findings_detailed.md — using the repo's evidence conventions: verified numbers, every arm of every comparison shown, artifact pointers, honest caveats.
 ---
 
 You are recording an empirical finding for the SNAP QC rule-mining project.
 The finding is described in the invocation arguments (or, if absent, take the
 most recent completed run/study discussed in the conversation).
 
+The audience for what you write is a data scientist with a few years of experience
+at a state SNAP agency who did NOT watch the run and has NOT read the code. Write so
+that person can reconstruct the result — every comparison, on what data, how sure —
+without asking you a follow-up question.
+
+## Where it goes (two files, kept in sync)
+
+- **`methods/modeling_findings_detailed.md`** — the complete evidence log: full
+  numbers, every arm of every comparison, tables, caveats, and artifact paths. This
+  is the source of truth. Write it first.
+- **`methods/modeling_findings.md`** — the plain-language version: a tagged
+  **Takeaway**, the load-bearing numbers only, and a link to the detailed section.
+  No artifact-path dumps here.
+
+The Takeaway blockquote text is identical in both files.
+
 ## Steps
 
-1. **Verify before writing.** Re-derive every number you are about to record
-   from its artifact (CSV, log, RDS), never from memory of the conversation.
-   If a number cannot be traced to a file in the repo, do not record it.
+1. **Verify before writing.** Re-derive every number from its artifact (CSV, log,
+   RDS), never from memory of the conversation. If a number cannot be traced to a
+   file in the repo, do not record it.
 
-2. **Write into `methods/modeling_findings.md`:**
-   - If the finding extends an existing numbered section, add to it (as the
-     calibration note in §1 does). Otherwise append a new numbered section.
-   - Structure: WHAT was compared (configurations, data, years), the numbers
-     (held-out wherever available; both frame-relative and any-error when the
-     metric is precision/recall), the conclusion in one sentence, then
-     *Artifacts:* with relative paths to the CSVs/figures/scripts.
-   - Include the caveats that survive scrutiny (e.g., in-sample flattering,
-     era confounds, small support). A finding without its caveat is a claim
-     we will have to walk back later.
-   - Date the entry (YYYY-MM-DD).
+2. **Draft the detailed entry** in `methods/modeling_findings_detailed.md` — extend
+   an existing numbered section if the finding belongs to one, else append a new
+   numbered section. Then run the completeness checklist below over it and fill every
+   gap before moving on.
 
-3. **Propagate:**
-   - If the finding changes a default (engine setting, floor, stratum scheme),
-     update the CLAUDE.md knob table / architecture notes to match.
+3. **Write the plain-language layer** in `methods/modeling_findings.md`: the same
+   section number and header, a 1-3 sentence **Takeaway** tagged either *about the
+   data* (a result likely to hold regardless of pipeline) or *about our pipeline* (a
+   modeling choice that may not generalize), the few numbers that carry the point, and
+   a `→ detailed record §N` link. Keep the load-bearing comparison complete here too —
+   if a number would make the reader ask "compared to what?", it belongs in the
+   takeaway layer, not just the record.
+
+4. **Propagate:**
+   - If the finding changes a default (engine setting, floor, stratum scheme), update
+     the CLAUDE.md knob table / architecture notes to match.
    - Check whether the decks (`how_to_use_*.pptx`, `workshop_*.pptx`,
-     `lessons_*.pptx`) quote numbers this finding supersedes. Do NOT edit
-     decks silently; list the affected slides for the user.
+     `lessons_*.pptx`) quote numbers this finding supersedes. Do NOT edit decks
+     silently; list the affected slides for the user.
 
-4. **Style:** follow the "Presentations and write-ups" section of CLAUDE.md,
-   modeling conclusions only, every claim carries its measurement, no
-   slogans, plain English. Entries should be diff-friendly (wrap lines,
-   no reflowing of untouched text).
+5. **Date** the entry (YYYY-MM-DD) and add a one-line breadcrumb to §0's chronology.
+
+## Completeness checklist — write these or the finding is incomplete
+
+These are the omissions that have repeatedly made past findings unreadable to someone
+who wasn't at the console. Every item is mandatory for the detailed entry; carry the
+ones that bear on the headline into the plain-language takeaway too.
+
+- [ ] **Every arm, standalone.** Name each configuration compared and give each one's
+      own number — including the baseline and *each component* of any combined /
+      pooled / blended / best-of / paired result. If you report "combined = A + B,"
+      report A alone and B alone. (The bug that started this checklist: a table showed
+      "typed → combined" and never named or scored the any-error arm that "combined"
+      was combining.)
+- [ ] **Both endpoints of every comparison.** No bare deltas or one-sided numbers.
+      "A beats B" records A's value and B's value; "2x", "~1/3", "+3.5pp", "N× lift"
+      each record the two raw numbers behind them.
+- [ ] **The metric's expected companions.** Precision with recall AND the base rate
+      (so lift is legible); error dollars with case counts; a filter-floor result with
+      the review-budget (5% / 10% of caseload) result; frame-relative with any-error
+      precision.
+- [ ] **Define every option/term at first use** in the entry — qualification bars
+      ("the bar"), pool names (national-as-is / LOO / own-pool / NB / fire / IDF /
+      policy), core/buffer, stratum labels. Don't make the reader look elsewhere.
+- [ ] **Test design, stated.** Train year(s) / test year; whether the test year is
+      *interpolated* (sits between the training years, which flatters every option) or
+      a true future / held-out year; sample sizes and rule support.
+- [ ] **Replication & falsification status.** Pre-registered? Replicated on a second
+      era or year? What was the pre-set bar, and did it clear it? Record
+      non-replications and retractions as first-class results, not footnotes.
+- [ ] **What did NOT move.** The null, refuted, and "within noise" arms belong in the
+      record too — omitting them is how the winner's curse creeps back in.
+- [ ] **Caveats that survive scrutiny**, plus any supersession pointer
+      ("superseded by §N").
+- [ ] **Artifact path + regenerating script** for every number.
+
+**Smell test before saving:** imagine the state data scientist reading only this
+entry. Can they answer "compared to what?", "what did each piece do on its own?", and
+"how sure are we, and on what data?" without asking you? If any answer requires
+information you didn't write down, a number is missing.
+
+## Style
+
+Follow the "Presentations and write-ups" section of CLAUDE.md: modeling conclusions
+only, every claim carries its measurement, no slogans, plain English, define terms
+inline once. Entries are diff-friendly — wrap lines, don't reflow untouched text.

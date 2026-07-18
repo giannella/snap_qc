@@ -114,6 +114,7 @@ and charts from our own runs, never with authority or intuition. Rules:
 
 ## Reference documents
 
-- `methods/modeling_findings.md` — all empirical results with artifact pointers (winner's curse, engine studies, strata, ESAP, states).
+- `methods/modeling_findings.md` — plain-language summary of every finding: a tagged "Takeaway" per section (data-vs-pipeline), a glossary, and links into the detailed record. Read this first.
+- `methods/modeling_findings_detailed.md` — the complete evidence log: full numbers, tables, caveats, and artifact pointers for every section (winner's curse, engine studies, strata, ESAP, states).
 - `methods/design_drop_pre_architecture.md` — the v2 design rationale and decisions.
 - `DATA_DICTIONARY.md` (rendered) / `Definitions for variables used.txt` (original) — feature dictionary.
