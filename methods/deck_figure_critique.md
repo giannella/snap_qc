@@ -74,10 +74,13 @@ number survived in the ladder, below).
      current frame (it COMPUTES the mix rather than hardcoding it). Current-frame result is
      63/20/11/6 (elderly) and 29/10/44/17 (other), essentially the original 64/18/11/6 &
      29/10/45/16. Done.
-   - **`states_two_regimes`** — NOT reconstructed: the only committed data
-     (`archive/state_rules_v2/state_union_summary.csv`) is a different, superseded run whose
-     story contradicts the original figure (it shows tuning helping 6/7 states; the original
-     shows it hurting 4). Rebuilding from it would misrepresent. Needs the original script,
-     or a fresh figure built on the current §14 deployment data.
-   - **`winners_curse_raw_vs_lcb`** — NOT reconstructed: the raw-vs-lower-bound decay is not
-     committed as a single sweep CSV. Needs the original script or the frame.
+   - **`states_two_regimes`** — rebuilt as `draw_states_two_regimes.R` on the CURRENT §14
+     deployment data (own-state vs national, 2024, 10% budget), since the only committed
+     data for the original was a superseded run that contradicted it. Redesigned per Healy
+     as a single-metric dumbbell (base rate marked; own-state green/grey/red) instead of the
+     dual-encoded bars. Fresh data, so the states and numbers differ from the original. Done.
+   - **`winners_curse_raw_vs_lcb`** — rebuilt as `draw_winners_curse_raw_vs_lcb.R`, which
+     RE-MINES the any-error frame and sweeps `precision_sweep()` on raw precision vs the 99%
+     lower bound. Reproduces the effect (cautious selection beats raw at every floor) and the
+     title now fits (the original was cut off). Fresh run on the current frame, so it extends
+     further than the original PNG but tells the same story. Done.
