@@ -94,7 +94,7 @@ The five-stage machinery is general purpose: for every rule it produces honest e
 | your goal | statistic | where | status |
 |---|---|---|---|
 | find errors at a fixed review workload | 99% Wilson lower bound of any-error precision (`lcb99_workloadfill`) | `INCL_build_blended_delivery_list_v2.R` → `state_delivery_lists/` | validated twice with hold-out testing on 2019 (train 2017-18) and 2024 (train 2022-23), 18 states (see [`modeling_findings.md`](methods/modeling_findings.md) §20) |
-| cut an existing review pile safely | 99% lower bound of the clean rate among dropped cases | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | reported against a held-out year |
+| cut an existing review pile safely | 95% lower bound of the clean rate among dropped cases | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | reported on a held-out year (2023): a workload-cut vs error-dollar-retention curve (e.g. drop the safest ~17% of the pile and keep ~96% of its error dollars) under a relative safety standard (excluded cases at least 5x safer than the pile average); not yet multi-era or multi-state validated (see [`modeling_findings.md`](methods/modeling_findings.md) §23) |
 | prioritize error dollars | dollars per flagged case (plus a heavy-tail-robust variant) | `methods/dollaryield_audition_v2.R` | an option you can use, though not the default: it ranks by error dollars per flagged case, and was only modestly better at error-dollar recall than `lcb99_workloadfill` (+3.5pp at the 10% budget on 2024, +1.0pp on the 2019 replication), below the pre-set 2-point adoption bar (see [`modeling_findings.md`](methods/modeling_findings.md) §21) |
 
 ## v2 scripts

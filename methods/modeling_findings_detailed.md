@@ -1147,3 +1147,35 @@ pre-registration's own decision rule.
 *Artifacts: methods/state_similarity_v2/era_validation_train1718_test19/
 era_xfit_diagnosis.csv, era_validation_results.csv (xfit comparison);
 methods/era_xfit_mine_v2.R, methods/era_xfit_diagnosis_v2.R.*
+
+## 23. Exclusion rules: cutting a review pile safely
+
+> **Takeaway: about our pipeline.** The exclusion pipeline is the inclusion pipeline
+> run in reverse: the same tree ensembles, but it keeps rules that identify
+> very-likely-error-free cases (scored on the clean rate with a 95% lower bound) so a
+> state can drop low-risk cases from an existing review pile. On a held-out year it
+> traces a workload-cut vs error-dollar-retention curve, e.g. dropping the safest ~17%
+> of the pile keeps ~96% of its error dollars. It is validated less deeply than the
+> inclusion list: a single hold-out year (2023), with no multi-era or multi-state
+> deployment test yet.
+
+Two things differ from the inclusion pipeline:
+
+- Rules are kept by a 95% Wilson lower bound on the *clean* rate (the share of flagged
+  cases with no error), with a stiffer support floor (at least 25 training cases;
+  exclusions warrant more support than inclusions).
+- A *relative* safety standard: an excluded pocket must carry at most 1/5 of its
+  stratum's base error rate, i.e. excluded cases are at least 5x safer than the pile
+  average. Base error rates run about 8/15/20% by household size, so a relative bar is
+  what makes exclusion meaningful in every stratum.
+
+Held-out (2023) operating points from the clean-rate sweep (share of the pile dropped
+/ share of error dollars kept): 10% / 98%, 17% / 96%, 37% / 85%, 58% / 69%.
+
+Per-state adaptation exists (`EXCL_optimize_single_`, `EXCL_optimize_set_`), parallel
+to the inclusion gridsearch, but has not been through the future-year, 18-state
+validation the inclusion blended list has (sections 14-16, 20).
+
+*Artifacts: exclusion_rules_by_hh_size_v2/ (exclusion_rules_all.csv,
+exclusion_rules_highclean.csv, exclusion_lcb_sweep.csv/png); driver
+EXCL_find_exclusion_rules_by_hh_size_v2.R.*
