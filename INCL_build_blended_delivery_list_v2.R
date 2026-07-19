@@ -49,6 +49,15 @@ DEFAULT_PAIRING <- "lcb99_workloadfill"
 if (!exists("PAIRING")) PAIRING <- DEFAULT_PAIRING
 PAIRING_TAG <- if (identical(PAIRING, DEFAULT_PAIRING)) "" else paste0("_", PAIRING)
 
+# Ranking statistic = the "statistic" half of the pairing. The default fills the
+# list in descending 99% Wilson lower bound of precision. Set PAIRING to
+# "dpf_workloadfill" (one line, e.g. in a runner before source()) to instead rank
+# by error dollars per flagged case: an audition-only alternative that was modestly
+# higher on dollar recall but stayed below the adoption bar (modeling_findings.md
+# §21). Ranking by dollars needs a fresh pool cache, since the statistic is
+# computed at pool-build time (delete POOL_CACHE once to switch).
+RANK_STAT <- if (identical(PAIRING, "dpf_workloadfill")) "dollars_per_flag_train" else "precision_train_lcb"
+
 # Admission test for candidate rules. "fdr10": a rule is admitted when a
 # Benjamini-Hochberg test (false-discovery rate 10%) rejects "precision at
 # or below the stratum base rate", and it flags at least MIN_TRAIN_FLAGGED
@@ -110,6 +119,7 @@ mine_pool <- function(pool_states, cache_name) {
   empty <- data.frame(hh = character(), rule = character(), engines = character(),
                       mined_frames = character(), n_flagged_train = integer(),
                       precision_train = numeric(), precision_train_lcb = numeric(),
+                      dollars_per_flag_train = numeric(),
                       stringsAsFactors = FALSE)
   # One frame at a time, checkpointed: mine, score on the any-error target
   # over the pool's full caseload, apply the per-rule filters, keep only the
@@ -134,6 +144,7 @@ mine_pool <- function(pool_states, cache_name) {
                            label = sprintf("pool-train %s", fn))
     n_tr <- lengths(idx)
     k_tr <- vapply(idx, function(ix) sum(tg_tr$ie[ix]), numeric(1))
+    d_tr <- vapply(idx, function(ix) sum(tg_tr$ed[ix]), numeric(1))  # error dollars per rule
     raw  <- ifelse(n_tr > 0, k_tr / n_tr, NA_real_)
     base <- vapply(rdf$hh, function(h) mean(tg_tr$ie[strata_tr[[h]]]), numeric(1))
     if (ADMISSION == "fdr10") {
@@ -150,6 +161,7 @@ mine_pool <- function(pool_states, cache_name) {
     rdf$n_flagged_train <- n_tr[keep]
     rdf$precision_train <- round(raw[keep], 4)
     rdf$precision_train_lcb <- round(wilson_lcb(k_tr[keep], n_tr[keep], LCB_Z), 4)
+    rdf$dollars_per_flag_train <- round(d_tr[keep] / n_tr[keep], 2)
     saveRDS(rdf, ck)
     filt[[fn]] <- rdf
     rm(idx); invisible(gc())
@@ -197,14 +209,16 @@ if (is.null(own)) {
 
 # one confidence scale; deterministic tie-break so reruns reproduce exactly
 pool <- bind_rows(natl, own) %>%
-  arrange(desc(precision_train_lcb), hh, rule) %>%
+  arrange(desc(.data[[RANK_STAT]]), hh, rule) %>%
   distinct(hh, rule, .keep_all = TRUE)
 
 tr <- adf[st == DELIVERY_STATE, , drop = FALSE]
 strata_tr <- lapply(setNames(nm = HH_LEVELS), function(h)
   which(hh_group_of(tr$cert_HH_size_FS_n) %in% h))
 idx_tr <- flags_for_rules(pool, tr, strata_tr, label = "")
-ord <- order(-pool$precision_train_lcb, pool$hh, pool$rule, method = "radix")
+if (!RANK_STAT %in% names(pool))
+  stop(sprintf("pool cache lacks '%s' (it predates the dollar-yield statistic); delete %s and re-run", RANK_STAT, POOL_CACHE))
+ord <- order(-pool[[RANK_STAT]], pool$hh, pool$rule, method = "radix")
 
 for (b in BUDGETS) {
   cap <- floor(b * nrow(tr)); cap_buf <- floor(BUFFER_MULT * b * nrow(tr))
@@ -220,8 +234,10 @@ for (b in BUDGETS) {
     }
   }
   sel <- c(frozen, buffer)
-  hand <- pool[sel, c("rule", "hh", "pool", "engines", "mined_frames",
-                      "n_flagged_train", "precision_train", "precision_train_lcb")]
+  hand_cols <- c("rule", "hh", "pool", "engines", "mined_frames",
+                 "n_flagged_train", "precision_train", "precision_train_lcb")
+  if ("dollars_per_flag_train" %in% names(pool)) hand_cols <- c(hand_cols, "dollars_per_flag_train")
+  hand <- pool[sel, hand_cols]
   hand$n_flagged_state <- lengths(idx_tr[sel])
   # marginal new cases at each rank, walked in the DELIVERED order (core then
   # buffer) -- what a state activating rules in rank order actually sees
