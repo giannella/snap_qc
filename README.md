@@ -118,24 +118,49 @@ Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-o
 
 ## Key settings (v2)
 
-| setting | default | meaning |
-|---|---|---|
-| `LCB_Z` | 2.326 (99%) | filter stringency; use 1.2816 (90%) for exploration |
-| `THRESHOLD_GRID` | .05-.95 | filter floors reported by the sweep |
-| `MIN_TRAIN_FLAGGED` | 10 | minimum flagged training cases per rule (a backstop; the lower bound provides the main protection) |
-| `MIN_PRECISION` | 0.20 | shortlist floor, applied to the LCB |
-| `OBJECTIVE` | "dollars" | recall basis for plots (counts always also written) |
-| engine settings | see above | defaults chosen by hyperparameter sweeps on hold-out data (July 2026); evidence in `methods/parameter_tuning_v2/` |
+Each script's tunable settings sit at the top of the file (or can be set in a runner before `source()`). The three main scripts and their knobs:
 
-The table above is for the finder (`INCL_find_inclusion_rules_by_hh_size_v2.R`). The delivery builder (`INCL_build_blended_delivery_list_v2.R`) has its own switches, set in a runner before `source()`:
+### Delivery builder: `INCL_build_blended_delivery_list_v2.R`
+
+The recommended path (the blended, budget-filled state list). Changing `ADMISSION`, `FDR_ALPHA`, `PAIRING`, or `MINING_FRAMES` needs a fresh pool cache (delete `POOL_CACHE`), since the admitted set and per-rule statistics are computed at pool-build time.
 
 | setting | default | meaning |
 |---|---|---|
-| `ADMISSION` | `"fdr10"` | which candidate rules to keep: `"fdr10"` = a Benjamini-Hochberg false-discovery-rate test against the stratum base rate (plus `n >= 30`); `"legacy"` = the old raw-precision filter |
+| `DELIVERY_STATE` | `"Connecticut"` | the state the list is built and sized for |
+| `BUDGETS` | `0.05, 0.10` | review budgets (share of caseload) to size the core list to |
+| `BUFFER_MULT` | `3` | how far past the budget to extend buffer (substitute) rules |
+| `MINING_FRAMES` | typed + pooled | which frames feed the vocabulary; set to `"any_error"` for the pooled model only |
+| `ADMISSION` | `"fdr10"` | which candidate rules to keep: `"fdr10"` = Benjamini-Hochberg false-discovery-rate test vs the stratum base rate (plus `n >= 30`); `"legacy"` = the old raw-precision filter |
 | `FDR_ALPHA` | `0.10` | the false-discovery-rate target, used when `ADMISSION == "fdr10"` |
-| `PAIRING` | `"lcb99_workloadfill"` | ranking statistic for the fill order; set `"dpf_workloadfill"` to rank by error dollars per flagged case instead (see the Statistics and goal metrics table) |
+| `PAIRING` | `"lcb99_workloadfill"` | ranking statistic for the fill order; set `"dpf_workloadfill"` to rank by error dollars per flagged case (see the Statistics and goal metrics table) |
 
-Changing `ADMISSION`, `FDR_ALPHA`, or `PAIRING` needs a fresh pool cache (delete `POOL_CACHE`), since the admitted set and per-rule statistics are computed at pool-build time.
+(Engine, year, and `LCB_Z` = 2.326 defaults match the inclusion finder below.)
+
+### Inclusion finder: `INCL_find_inclusion_rules_by_hh_size_v2.R`
+
+Finds and scores candidate inclusion rules per error type and household size.
+
+| setting | default | meaning |
+|---|---|---|
+| `LCB_Z` | `2.326` (99%) | filter stringency; use `1.2816` (90%) for exploration |
+| `THRESHOLD_GRID` | `.05-.95` | filter floors reported by the sweep |
+| `MIN_TRAIN_FLAGGED` | `10` | minimum flagged training cases per rule (a backstop; the lower bound provides the main protection) |
+| `MIN_PRECISION` | `0.20` | shortlist floor, applied to the LCB |
+| `OBJECTIVE` | `"dollars"` | recall basis for plots (counts always also written) |
+| engine settings | `XGB`, `RF` | defaults chosen by hyperparameter sweeps on hold-out data (July 2026); evidence in `methods/parameter_tuning_v2/` |
+
+### Exclusion finder: `EXCL_find_exclusion_rules_by_hh_size_v2.R`
+
+Finds rules that safely drop low-risk cases from a review pile (scored on the clean rate).
+
+| setting | default | meaning |
+|---|---|---|
+| `LCB_Z` | `1.645` (95%) | confidence level for the clean-rate lower bound |
+| `SAFETY_MULT` | `5` | relative safety standard: excluded cases must be at least this many times safer than the pile average |
+| `MIN_TRAIN_FLAGGED` | `25` | minimum flagged training cases per rule (higher than inclusion) |
+| `THRESHOLD_GRID` | `.90-.999` | clean-rate floors reported by the sweep |
+| `TRAIN_YEARS` / `HOLDOUT_YEARS` | `2022+2024` / `2023` | training years and the held-out test year |
+| engine settings | `XGB`, `RF` | the same xgboost + ranger defaults as the inclusion finder |
 
 Packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional bagged-CART engine). No `{pre}` required.
 
