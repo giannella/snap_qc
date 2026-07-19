@@ -59,7 +59,7 @@ A state can also run the same script as a hybrid. It mines its own pool from int
 
 Two alternate routes, depending on your use case:
 
-**I have a pile of cases already flagged for review and want to cut it down** → `EXCL_find_exclusion_rules_by_hh_size_v2.R` is the mirror image, built with the same machinery: instead of flagging likely errors, it finds rules for cases that are very likely error-free (scored on the clean rate with the same confidence bound), so you can drop those low-risk cases and shrink the pile while keeping nearly all of its error dollars.
+**I have a pile of cases already flagged for review and want to cut it down** → `EXCL_find_exclusion_rules_by_hh_size_v2.R`: instead of flagging likely errors, it finds rules for cases that are very likely error-free (scored on the clean rate with a confidence bound), so you can drop those low-risk cases and shrink the pile while keeping as much of the error dollars as possible.
 
 **I don't have a flagging system and want to identify which cases are most likely to have an error** → `INCL_build_blended_delivery_list_v2.R` builds the blended delivery list described above and is self-contained: it mines the national and state rule pools itself. 
 
