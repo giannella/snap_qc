@@ -57,7 +57,7 @@ Tested a full year ahead of the training data (mined on 2022-23, scored on each 
 
 A state can also run the same script as a hybrid. It mines its own pool from internal case files (which include the ineligible determinations the public files leave out) and blends that with the pool mined from other states' public QC data. The confidence-bound scale is what makes rules from the two sources directly comparable, so nothing else in the recipe changes.
 
-Two routes, depending on your use case:
+Two alternate routes, depending on your use case:
 
 **I have a pile of cases already flagged for review and want to cut it down** → `EXCL_find_exclusion_rules_by_hh_size_v2.R`
 
