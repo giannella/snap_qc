@@ -387,8 +387,8 @@ Heterogeneous or not, it has learnable structure.
 > **Takeaway: about the data.** Elderly and disabled households (ESAP = the Elderly
 > Simplified Application Project population) are about half the caseload but are *not*
 > more error-prone. What differs is the *mix* of their errors, mostly the
-> easy-to-detect types, which is why our models catch far more of their errors (~27%
-> vs ~7% for other households). The hard, still-open problem is working households
+> easy-to-detect types, which is why our models catch far more of their errors (~19%
+> vs ~8% at a 5% review budget). The hard, still-open problem is working households
 > with volatile earned income. Practical upshot: this group did not need its own
 > model; letting the ensemble see it as a feature was enough.
 
@@ -404,9 +404,12 @@ themselves:
   flags are elderly HHs; all 96 of its indicator-using rules REQUIRE
   elderly/disabled. The earned frame is the mirror image (82% non-elderly
   flags; its indicator rules require NOT-elderly).
-- Union recall: 26.7% of elderly-HH errors vs 7.2% of other-HH errors (dollar
-  recall 28.2% vs 7.4%); precision slightly HIGHER inside elderly flags
-  (0.219 vs 0.188).
+- Union recall at a 5% review budget: 19.0% of elderly-HH errors vs 8.2% of
+  other-HH errors (dollar recall 21.1% vs 9.0%); precision slightly HIGHER inside
+  elderly flags (0.320 vs 0.252). At a 10% budget: 27.9% vs 19.2%, precision
+  0.274 vs 0.240. (The old figures were at an unspecified, looser operating point;
+  at the full LCB>=0.20 union the groups converge, so the edge is a
+  tight-operating-point effect.)
 - The real gap is non-elderly working households (earned-income volatility).
   This could lack of signal issue, but also is an area I'm continuing to explore. 
 

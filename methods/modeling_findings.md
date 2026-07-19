@@ -294,8 +294,8 @@ is completeness, not a headline.)
 > **Takeaway: about the data.** Elderly and disabled households (ESAP = the Elderly
 > Simplified Application Project population) are about half the caseload but are *not*
 > more error-prone. What differs is the *mix* of their errors, mostly the
-> easy-to-detect types, which is why our models catch far more of their errors (~27%
-> vs ~7% for other households). The hard, still-open problem is working households
+> easy-to-detect types, which is why our models catch far more of their errors (~19%
+> vs ~8% at a 5% review budget). The hard, still-open problem is working households
 > with volatile earned income. Practical upshot: this group did not need its own
 > model; letting the ensemble see it as a feature was enough.
 
@@ -308,8 +308,9 @@ The numbers behind the takeaway:
 - The models split the caseload on their own: the unearned frame's flags are 91.8%
   elderly households, and every one of its indicator-using rules requires
   elderly/disabled; the earned frame is the mirror image.
-- Result: we catch 26.7% of elderly-household errors vs 7.2% for others, at slightly
-  higher precision inside the flags (0.219 vs 0.188).
+- Result: at a 5% review budget the union catches 19.0% of elderly-household errors
+  vs 8.2% for others (dollar recall 21.1% vs 9.0%), at higher precision inside the
+  flags (0.32 vs 0.25); the edge holds at a 10% budget (27.9% vs 19.2%).
 
 So there was nothing to gain from a separate elderly model. The real frontier is
 non-elderly working households with volatile earned income, still an open problem.
