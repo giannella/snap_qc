@@ -130,8 +130,8 @@ The recommended path (the blended, budget-filled state list). Changing `ADMISSIO
 | `BUDGETS` | `0.05, 0.10` | review budgets (share of caseload) to size the core list to |
 | `BUFFER_MULT` | `3` | how far past the budget to extend buffer (substitute) rules |
 | `MINING_FRAMES` | typed + pooled | which frames feed the vocabulary; set to `"any_error"` for the pooled model only |
-| `ADMISSION` | `"fdr10"` | which candidate rules to keep: `"fdr10"` = Benjamini-Hochberg false-discovery-rate test vs the stratum base rate (plus `n >= 30`); `"legacy"` = the old raw-precision filter |
-| `FDR_ALPHA` | `0.10` | the false-discovery-rate target, used when `ADMISSION == "fdr10"` |
+| `ADMISSION` | `"fdr10"` | which candidate rules to keep by a false-discovery-rate (**FDR**) test vs the stratum base rate, plus `n >= 30`; set `"legacy"` for the old raw-precision filter |
+| `FDR_ALPHA` | `0.10` | the FDR level (default 10%), used when `ADMISSION` is `"fdr10"` |
 | `PAIRING` | `"lcb99_workloadfill"` | ranking statistic for the fill order; set `"dpf_workloadfill"` to rank by error dollars per flagged case (see the Statistics and goal metrics table) |
 
 (Engine, year, and `LCB_Z` = 2.326 defaults match the inclusion finder below.)
