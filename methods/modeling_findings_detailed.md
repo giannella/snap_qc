@@ -284,7 +284,7 @@ sweep + summary CSVs; small-ensemble run preserved as xgb300rf500_).*
 > **Takeaway: about our pipeline.** Most tuning knobs barely matter. The few that do:
 > give the random forest a little signal to split on (mtry = 2, not 1), use slow,
 > low-sample boosting, and grow trees to depth 4-5. More trees don't buy precision at
-> a fixed filter setting. They buy a bigger *menu* of rules, which pays off only when
+> a fixed filter setting; they buy a bigger *menu* of rules, which pays off only when
 > you also filter more strictly (section 5).
 
 19-config one-at-a-time grid (any-error frame, frontier = mean hold-out
@@ -326,7 +326,7 @@ v2_subsample_fine.*
 
 > **Takeaway: about our pipeline.** Mining a big pool of rules and then filtering it
 > hard lands on the same accuracy as mining a small pool and filtering it gently. The
-> big pool's advantage isn't better numbers, it's a longer list of usable rules, so
+> big pool's advantage isn't better numbers; it's a longer list of usable rules, so
 > states have substitutes when they veto one on expert judgment. The strict filter
 > (the 99% bound) is what keeps the big pool from drowning in lucky rules.
 
@@ -360,7 +360,7 @@ inclusion_rules_by_hh_size_v2/ (run1_small_ensembles_z90/ preserved).*
 > **Takeaway: about the data.** A rule you mined to catch one kind of error routinely
 > flags cases that have some *other* error too, and in real review that still counts
 > as a hit. So a rule's real-world precision runs about 2x its narrow, single-type
-> precision. Always quote states the any-error number. The narrow one understates
+> precision. Always quote states the any-error number; the narrow one understates
 > what they would actually see.
 
 A rule mined for one error type flags cases whose OTHER errors count as wins
@@ -546,7 +546,7 @@ in run1_lcb_criterion/).*
 ## data can even show (2026-07-07)
 
 > **Takeaway: about the data (and it matters a lot).** The public QC file does not
-> show a state its whole error population. It excludes ineligible cases entirely, so
+> show a state its whole error population: it excludes ineligible cases entirely, so
 > a state sees only part of its own errors, from 43% (New Jersey) to 91% (Georgia). Any
 > rule mined on public data is therefore blind to a large slice of reality. States
 > below roughly 60% visibility should treat public/national rules as a *supplement*
@@ -589,7 +589,7 @@ in `methods/effects_of_munging_options.md`.
 > **Takeaway: about our pipeline.** Splitting the caseload by household size
 > (1 / 2-3 / 4+) and mining each group separately reliably helps, or at worst never
 > hurts, so it is our default. Splitting *finer* (a 5-way split) does not help and
-> costs more compute. Past a point, smaller groups just starve each rule of the cases
+> costs more compute; past a point, smaller groups just starve each rule of the cases
 > it needs to clear the bar.
 
 Established under the pre-era methodology (June 2026, earned income, greedy
@@ -706,7 +706,7 @@ methods/budgeted_transfer_menu_v2.R; overnight_nb_loo_run.log.*
 > choice above had been judged on one test year (2023). We wrote our predictions down
 > in advance and re-ran the four big ones on a fresh year (2024): three held up, and
 > one ("low subsampling helps") did not and was retired. The value here is the
-> discipline. Pre-committing to predictions is what lets you tell a real effect from
+> discipline: pre-committing to predictions is what lets you tell a real effect from
 > a lucky one.
 
 Every model-selection decision (engines, subsample, filter stringency,
@@ -778,11 +778,12 @@ methods/run_selection_yearswap.R.*
 > **Takeaway: about our pipeline (with one portable caution).** Tested the way a
 > state would actually face it (rules built on past years, scored on a future year),
 > the plain national rule list is the best default: the highest precision at both
-> budgets among the lists a state can actually deploy, and never a disaster. Mining on a state's *own* data has the biggest upside but is
-> high-variance and can fail below the random-review base rate (Washington did).
-> Portable caution: don't assume a state's own rules beat the national ones; make the
-> state confirm it on their own held-out year. ("NB transfer" = a pool of a few
-> statistically similar states, picked by a naive-Bayes similarity measure.)
+> budgets among the lists a state can actually deploy, and never a disaster. Mining on
+> a state's *own* data has the biggest upside but is high-variance and can fail below
+> the random-review base rate (Washington did). Portable caution: don't assume a
+> state's own rules beat the national ones; make the state confirm it on their own
+> held-out year. ("NB transfer" = a pool of a few statistically similar states, picked
+> by a naive-Bayes similarity measure.)
 
 Section 12's transfer benchmark scored every pool on the same era it was
 mined from, so its verdicts could lean on same-era correlation
@@ -857,11 +858,11 @@ deploy_own_vs_national_budget05/10.png.*
 
 ## 15. Frozen per-state lists: the handable deliverable, priced (2026-07-10)
 
-> **Takeaway: about our pipeline.** A state can't wait for the test year. It needs a
+> **Takeaway: about our pipeline.** A state can't wait for the test year; it needs a
 > fixed list in hand. Freezing the national list and sizing it against the state's own
 > caseload (with a buffer so reviewers never run dry) costs almost nothing versus an
 > idealized after-the-fact list: under a point of precision. Each list personalizes
-> itself through the state's own case mix. About a third of every state's list is
+> itself through the state's own case mix, and about a third of every state's list is
 > unique to it.
 
 The deployment benchmark's budget fill (section 14) chooses rules against
@@ -915,10 +916,9 @@ methods/count_contributing_rules_v2.R -> contributing_rules_summary.csv.*
 > state's own mined rules and the national rules on one honest confidence scale (the
 > 99% bound) and let them interleave. This "blend" is the recipe we now ship: better
 > at a 5% budget, about even at 10% (0.262 vs 0.270 precision), and no case-by-case
-> decision to defend. Its one
-> blind spot (a national rule's bound says nothing about whether it *transfers* to a
-> given state) is why we keep the state's own-rules list as a fallback where their
-> internal validation shows the blend underperforming.
+> decision to defend. Its one blind spot (a national rule's bound says nothing about
+> whether it *transfers* to a given state) is why we keep the state's own-rules list
+> as a fallback where their internal validation shows the blend underperforming.
 
 Never previously run: merge each state's OWN mined pool into the national
 pool and rank every rule by its own-training 99% Wilson LCB (national
@@ -1075,7 +1075,7 @@ methods/fdr_raw_vocabulary_mine_v2.R (raw caches regenerable, gitignored).*
 > **Takeaway: about our pipeline.** A 2024 sweep hinted that filtering even more
 > strictly than our 99% bound would help; pre-registered on a separate era, that hint
 > did not replicate, so we kept z = 2.326. A useful reminder that a single year can
-> whisper a false signal. The second era is what settled it.
+> whisper a false signal; the second era is what settled it.
 
 The 2024 stringency sweep suggested raising z helps (orig pool: 0.335 at
 z = 2.576 vs 0.324 at z = 2.326 at the 5% budget). Pre-registered on the
@@ -1096,7 +1096,7 @@ stringency_vocabulary_sweep.csv (the 2024 side).*
 
 > **Takeaway: about the data (but not adopted).** A rule's average error *dollars per
 > flagged case* carries over from one year to the next more reliably than its precision
-> does. Error size seems anchored to observable case traits. Ranking by dollars beat
+> does; error size seems anchored to observable case traits. Ranking by dollars beat
 > ranking by precision on dollar recall in 2024, but the gain shrank on the 2017-19
 > replication and missed our pre-set bar, so we did not adopt it. Recorded as a real
 > but era-unstable direction worth revisiting.
