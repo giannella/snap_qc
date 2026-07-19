@@ -18,7 +18,7 @@ Scripts are run interactively in R (RStudio) or non-interactively via the `run_*
 "C:\Program Files\R\R-4.5.1\bin\Rscript.exe" runners/run_incl_v2.R > incl_v2_run.log 2>&1
 ```
 
-Runners load `reg_model_data.rds` (a saved copy of the main modelling frame, expected in the repo root) then source the driver. There is no package or build system. **After changing `rule_mining_helpers.R`, always run the regression test**: `Rscript test_rule_mining_helpers.R` (26 checks, all must PASS).
+Runners load `reg_model_data.rds` (a saved copy of the main modelling frame, expected in the repo root) then source the driver. There is no package or build system. **After changing `rule_mining_helpers.R`, always run the regression test**: `Rscript methods/test_rule_mining_helpers.R` (26 checks, all must PASS).
 
 Key v2 packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional bagged-CART engine). v1 additionally needs `pre`. Parse-check scripts with `Rscript -e "invisible(parse('file.R'))"` before running.
 
@@ -59,7 +59,7 @@ generate -> canonicalize -> dedup -> evaluate -> sweep / shortlist
 
 | script | role |
 |---|---|
-| `rule_mining_helpers.R` + `test_rule_mining_helpers.R` | shared pipeline + regression test |
+| `rule_mining_helpers.R` + `methods/test_rule_mining_helpers.R` | shared pipeline + regression test |
 | `INCL_find_inclusion_rules_by_hh_size_v2.R` | inclusion rules per mining frame (4 typed + pooled any_error) x stratum -> `inclusion_rules_by_hh_size_v2/` |
 | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | exclusion rules (clean-rate LCB; workload cut vs dollar retention) -> `exclusion_rules_by_hh_size_v2/` |
 | `INCL_build_blended_delivery_list_v2.R` (+ `runners/run_blended_delivery_batch.R`) | the deployment deliverable: blended frozen list per state -> `state_delivery_lists/` |
@@ -87,7 +87,7 @@ Long-running scripts checkpoint mined vocabularies to `.rds` and support `RESUME
 
 ## v1 (legacy) — handle with care
 
-v1 = the {pre}-based scripts documented in the README's legacy section: `INCL_find_inclusion_rules_multi_model_by_hh_size.R` (+ `_c50`, `_xrf`), `EXCL_find_exclusion_rules_by_hh_size.R`, the `INCL/EXCL_optimize_*_for_a_state.R` grid searches, `optimize_rulefit_params.R` / `single_model_optimize_params.R`, and `code_for_single_model_combined_HH_sizes/`. Their outputs are consumed by external users — treat the CONTENT as frozen; the folders were relocated 2026-07-14: `archive/inclusion_rules_by_hh_size/`, `archive/exclusion_rules/`, `archive/inclusion_rules_combined_hh_sizes/`, `archive/code_for_single_model_combined_HH_sizes/`, `methods/parameter_tuning/`, `methods/compare_models_by_HHsize_vs_pooled/`. The 14:1 rebalancing blocks in v1 INCL scripts are commented out by design (original intent); greedy "nets" exist only in v1.
+v1 = the {pre}-based scripts documented in the README's legacy section: `INCL_find_inclusion_rules_multi_model_by_hh_size.R` (+ `_c50`, `_xrf`), `EXCL_find_exclusion_rules_by_hh_size.R`, the `INCL/EXCL_optimize_*_for_a_state.R` grid searches, `archive/optimize_rulefit_params.R` / `methods/single_model_optimize_params.R`, and `code_for_single_model_combined_HH_sizes/`. Their outputs are consumed by external users — treat the CONTENT as frozen; the folders were relocated 2026-07-14: `archive/inclusion_rules_by_hh_size/`, `archive/exclusion_rules/`, `archive/inclusion_rules_combined_hh_sizes/`, `archive/code_for_single_model_combined_HH_sizes/`, `methods/parameter_tuning/`, `methods/compare_models_by_HHsize_vs_pooled/`. The 14:1 rebalancing blocks in v1 INCL scripts are commented out by design (original intent); greedy "nets" exist only in v1.
 
 ## Presentations and write-ups (decks, docs, README prose)
 

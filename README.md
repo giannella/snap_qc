@@ -104,7 +104,7 @@ Scripts: **[1]** `INCL_build_blended_delivery_list_v2.R` (writes `state_delivery
 | script | purpose |
 |---|---|
 | `rule_mining_helpers.R` | all shared logic (the five stages) |
-| `test_rule_mining_helpers.R` | 26-check regression test on synthetic data; run after touching the helpers |
+| `methods/test_rule_mining_helpers.R` | 26-check regression test on synthetic data; run after touching the helpers |
 | `INCL_find_inclusion_rules_by_hh_size_v2.R` | inclusion rules per mining frame (earned, unearned, underissuance, other, + pooled all-errors) x household size |
 | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | exclusion rules: filter safe-to-skip cases by clean-rate LCB; reports workload cut vs error-dollar retention |
 | `state_threshold_gridsearch_v2.R` | tunes national rule thresholds per state and tests on a hold-out year, incl. a "deploy national as-is" benchmark |
@@ -179,7 +179,7 @@ stratification to data visibility.
 | `INCL_find_inclusion_rules_multi_model_by_hh_size.R` (+ `_c50`, `_xrf`) | `INCL_find_inclusion_rules_by_hh_size_v2.R` |
 | `EXCL_find_exclusion_rules_by_hh_size.R` | `EXCL_find_exclusion_rules_by_hh_size_v2.R` |
 | `INCL/EXCL_optimize_*_for_a_state.R` | `state_threshold_gridsearch_v2.R` |
-| `optimize_rulefit_params.R` | `methods/tune_engine_params_v2.R` |
+| `archive/optimize_rulefit_params.R` | `methods/tune_engine_params_v2.R` |
 | greedy "net" outputs (`*_net_*`) | the LCB threshold sweep (`*_lcb_sweep.csv`) |
 | `MIN_PRECISION` on raw train precision | `MIN_PRECISION` on the train-precision LCB |
 

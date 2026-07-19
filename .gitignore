@@ -28,3 +28,4 @@ methods/delivery_pools_2022_2024_v3/
 # Dev container local files
 .devcontainer/.env
 reg_model_data.rds
+desktop.ini

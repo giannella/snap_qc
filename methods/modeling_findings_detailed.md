@@ -216,7 +216,7 @@ pre() could not run:
   recall, while stringent filtering and any-error scoring supply the larger gains.
   *Artifacts: methods/compare_engines_v2/ (engine_ and combo_ sweeps + summaries).*
 
-*Artifacts: rule_mining_helpers.R, test_rule_mining_helpers.R,
+*Artifacts: rule_mining_helpers.R, methods/test_rule_mining_helpers.R,
 methods/design_drop_pre_architecture.md.*
 
 ## 3. Typed frames vs one any-error model (head-to-head)
