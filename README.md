@@ -93,7 +93,7 @@ The five-stage machinery is general purpose: for every rule it produces honest e
 
 | your goal | statistic | where | status |
 |---|---|---|---|
-| find errors at a fixed review workload | 99% Wilson lower bound of any-error precision (`lcb99_workloadfill`) | `INCL_build_blended_delivery_list_v2.R` → `state_delivery_lists/` | validated on 2024, 18 states |
+| find errors at a fixed review workload | 99% Wilson lower bound of any-error precision (`lcb99_workloadfill`) | `INCL_build_blended_delivery_list_v2.R` → `state_delivery_lists/` | validated twice with hold-out testing on 2019 (train 2017-18) and 2024 (train 2022-23), 18 states (see [`modeling_findings.md`](methods/modeling_findings.md) §20) |
 | cut an existing review pile safely | 99% lower bound of the clean rate among dropped cases | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | reported against a held-out year |
 | prioritize error dollars | dollars per flagged case (plus a heavy-tail-robust variant) | `methods/dollaryield_audition_v2.R` | not adopted: beat the default `lcb99_workloadfill` ranking by +3.5pp of error dollars at the 10% budget on 2024, but only +1.0pp on the 2019 replication, short of the pre-set 2-point bar (see [`modeling_findings.md`](methods/modeling_findings.md) §21) |
 
