@@ -348,9 +348,9 @@ the dilution is mostly CORRECTABLE in order to keep the potential for greater re
   z fixes it.
 
 Production recipe adopted: xgb 1000 rounds / eta .02 / subsample .20, ranger
-1000 trees / mtry 2, z = 2.326. Result: **1,535 filtered-in rules** (vs 834
+1000 trees / mtry 2, z = 2.326. Result: **11,036 filtered-in rules** (vs 834
 under small ensembles at 90%), with better median hold-out quality per frame
-(e.g. other_error 0.212 vs 0.197; unearned 432 rules at 0.284).
+(e.g. other_error 0.25 vs 0.197; unearned 896 rules at 0.314).
 
 *Artifacts: methods/parameter_tuning_v2/v2_lcbz_sweep.png + v2_lcbz_summary.csv;
 inclusion_rules_by_hh_size_v2/ (run1_small_ensembles_z90/ preserved).*
@@ -395,10 +395,10 @@ Heterogeneous or not, it has learnable structure.
 Decision: NO fourth stratum or separate model. The models carved the caseload
 themselves:
 
-- elderly/disabled HHs are 49.8% of caseload, 48.2% of error cases, 40.9% of
+- elderly/disabled HHs are 50.7% of caseload, 47.1% of error cases, 39.2% of
   error dollars: NOT more error-prone.
-- Their error MIX is what differs: 64% other_error + 18% unearned (the two
-  most detectable types) vs other households' 45% earned (the least
+- Their error MIX is what differs: 63% other_error + 20% unearned (the two
+  most detectable types) vs other households' 44% earned (the least
   detectable). Detection asymmetry is compositional.
 - The unearned frame became a de facto elderly model on its own: 91.8% of its
   flags are elderly HHs; all 96 of its indicator-using rules REQUIRE

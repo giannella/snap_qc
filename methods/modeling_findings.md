@@ -250,7 +250,7 @@ the confidence level shows that dilution is mostly correctable:
 - A residual ~1/3 of the dilution is just marginal-rule quality; no bound fixes it.
 
 Production settings: xgboost 1000 rounds (eta 0.02, subsample 0.20) + ranger 1000
-trees (mtry 2), 99% bound. That keeps about 1,535 rules, with better median holdout
+trees (mtry 2), 99% bound. That keeps about 11,000 rules, with better median holdout
 quality per frame than the small-ensemble setup.
 
 *Full sweep and figure: [detailed record](modeling_findings_detailed.md), §5.*
@@ -301,10 +301,10 @@ is completeness, not a headline.)
 
 The numbers behind the takeaway:
 
-- Elderly/disabled households are 49.8% of the caseload, 48.2% of error cases, and
-  40.9% of error dollars, right about their share, not more.
-- Their error *mix* differs: 64% `other_error` + 18% unearned (both easy to detect)
-  versus 45% earned-income errors (the hardest to detect) for everyone else.
+- Elderly/disabled households are 50.7% of the caseload, 47.1% of error cases, and
+  39.2% of error dollars, right about their share, not more.
+- Their error *mix* differs: 63% `other_error` + 20% unearned (both easy to detect)
+  versus 44% earned-income errors (the hardest to detect) for everyone else.
 - The models split the caseload on their own: the unearned frame's flags are 91.8%
   elderly households, and every one of its indicator-using rules requires
   elderly/disabled; the earned frame is the mirror image.
