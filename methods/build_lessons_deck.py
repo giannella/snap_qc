@@ -11,8 +11,8 @@ import shutil
 from pptx import Presentation
 from pptx.util import Inches, Pt
 
-SRC = "how_to_use_the_snap_qc_inclusion_rules_scripts.pptx"
-OUT = "lessons_getting_more_signal_from_snap_qc_data.pptx"
+SRC = "slides/how_to_use_the_snap_qc_inclusion_rules_scripts.pptx"
+OUT = "slides/lessons_getting_more_signal_from_snap_qc_data.pptx"
 TEMPLATE_IDX = 16          # "Appendix: lucky rules, measured" - title/body/tag boxes
 TAG = "SNAP QC modeling lessons - July 2026"
 

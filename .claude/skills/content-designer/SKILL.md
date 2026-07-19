@@ -90,7 +90,7 @@ skill, which enforces verified numbers, artifact pointers, and honest caveats.
 ## Gotchas
 
 - Decks are `.pptx`. Preview them headless with
-  `soffice --headless --convert-to pdf lessons_*.pptx`, then rasterize a page.
+  `soffice --headless --convert-to pdf slides/lessons_*.pptx`, then rasterize a page.
   This is a rough preview, not identical to PowerPoint, so do not do final deck
   QA here. Never edit a deck silently to match a superseded number; list the
   affected slides for the user (the `log-finding` skill's propagation step).

@@ -55,8 +55,8 @@ The Takeaway blockquote text is identical in both files.
      derived doc is the main way these docs drift (it is exactly how a strata claim
      retired in the findings stayed asserted in GUIDANCE). Add the old assertion to
      `methods/retired_claims.txt` so the consistency checker guards against its return.
-   - Check whether the decks (`how_to_use_*.pptx`, `workshop_*.pptx`,
-     `lessons_*.pptx`) quote numbers this finding supersedes. Do NOT edit decks
+   - Check whether the decks (`slides/how_to_use_*.pptx`, `slides/workshop_*.pptx`,
+     `slides/lessons_*.pptx`) quote numbers this finding supersedes. Do NOT edit decks
      silently; list the affected slides for the user.
    - Before finishing, run `methods/check_doc_consistency.sh` (flags em-dashes and any
      retired phrasing that reached a reader doc). At each validated-change or release,

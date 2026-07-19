@@ -15,9 +15,9 @@ import shutil
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 
-SRC = "lessons_getting_more_signal_from_snap_qc_data.pptx"
-OUT_A = "lessons_getting_more_signal_from_snap_qc_data_revA.pptx"
-OUT_B = "lessons_getting_more_signal_from_snap_qc_data_revB.pptx"
+SRC = "slides/lessons_getting_more_signal_from_snap_qc_data.pptx"
+OUT_A = "slides/lessons_getting_more_signal_from_snap_qc_data_revA.pptx"
+OUT_B = "slides/lessons_getting_more_signal_from_snap_qc_data_revB.pptx"
 DEPLOY = "methods/state_similarity_v2/transfer_benchmark_train2223_test24"
 STRATA = "methods/compare_hh_strata_v2/yearswap_train2223_test24"
 FIG_2024_FLOORS = "presentation_figures/floor_definitions_educational_2024.png"

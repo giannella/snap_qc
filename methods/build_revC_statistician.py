@@ -20,8 +20,8 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.text.text import _Paragraph
 
-SRC = "lessons_getting_more_signal_from_snap_qc_data_revB.pptx"
-OUT = "lessons_getting_more_signal_from_snap_qc_data_revC.pptx"
+SRC = "slides/lessons_getting_more_signal_from_snap_qc_data_revB.pptx"
+OUT = "slides/lessons_getting_more_signal_from_snap_qc_data_revC.pptx"
 DEPLOY = "methods/state_similarity_v2/transfer_benchmark_train2223_test24"
 
 

@@ -15,8 +15,8 @@ from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.enum.text import PP_ALIGN
 
-REV_A = "lessons_getting_more_signal_from_snap_qc_data_revA.pptx"
-REV_B = "lessons_getting_more_signal_from_snap_qc_data_revB.pptx"
+REV_A = "slides/lessons_getting_more_signal_from_snap_qc_data_revA.pptx"
+REV_B = "slides/lessons_getting_more_signal_from_snap_qc_data_revB.pptx"
 
 
 def find_slide(p, substr, required=True):

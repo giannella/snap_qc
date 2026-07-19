@@ -133,7 +133,7 @@ def fix_emdash(t):
 
 counts = {old: 0 for old, _ in SWAPS}
 em = 0
-for deck in sorted(glob.glob("*.pptx")):
+for deck in sorted(glob.glob("slides/*.pptx")):
     p = Presentation(deck)
     touched = False
     for slide in p.slides:

@@ -239,7 +239,7 @@ An example of a general rule list mined from national data can be found in this 
 
 And examples of state rule outputs are in the `archive/inclusion_rules_by_hh_size/` folder.
 
-For a walkthrough of the inclusion rules workflow, see these [slides](https://docs.google.com/presentation/d/1bagahNH8kP_PbISx5s7fsNk1gHvY84w5/edit?slide=id.p1#slide=id.p1), which are the same as the `how_to_use_the_snap_qc_inclusion_rules_scripts.pptx` in this repo.
+For a walkthrough of the inclusion rules workflow, see these [slides](https://docs.google.com/presentation/d/1bagahNH8kP_PbISx5s7fsNk1gHvY84w5/edit?slide=id.p1#slide=id.p1), which are the same as the `slides/how_to_use_the_snap_qc_inclusion_rules_scripts.pptx` in this repo.
 
 ## What data is required?
 

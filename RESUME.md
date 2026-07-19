@@ -94,7 +94,7 @@ only needed to rebuild it.
 
 ## Decks (local, mostly uncommitted)
 
-`lessons_getting_more_signal_from_snap_qc_data.pptx` is the presented deck;
+`slides/lessons_getting_more_signal_from_snap_qc_data.pptx` is the presented deck;
 earlier revisions and backups are in gitignored `do_not_commit_decks/`.
 Deck edits are held locally and committed only when asked. Slide rendering
 used Windows PowerPoint automation on the host; in the container use

@@ -14,8 +14,8 @@ import os
 from pptx import Presentation
 from pptx.util import Inches, Pt
 
-REV_A = "lessons_getting_more_signal_from_snap_qc_data_revA.pptx"
-REV_B = "lessons_getting_more_signal_from_snap_qc_data_revB.pptx"
+REV_A = "slides/lessons_getting_more_signal_from_snap_qc_data_revA.pptx"
+REV_B = "slides/lessons_getting_more_signal_from_snap_qc_data_revB.pptx"
 DEPLOY = "methods/state_similarity_v2/transfer_benchmark_train2223_test24"
 STRATA = "methods/compare_hh_strata_v2/yearswap_train2223_test24"
 

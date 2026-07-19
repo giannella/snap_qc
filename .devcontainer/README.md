@@ -60,6 +60,6 @@ empty on first open and is gitignored) and `post-create.sh` wires up
 
 ## Rendering slides
 
-`soffice --headless --convert-to pdf lessons_*.pptx` then rasterize a page,
+`soffice --headless --convert-to pdf slides/lessons_*.pptx` then rasterize a page,
 or `--convert-to png`. This is a rough preview, not identical to PowerPoint;
 final deck checks still belong on a machine with PowerPoint.
