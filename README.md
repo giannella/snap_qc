@@ -125,6 +125,16 @@ Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-o
 | `OBJECTIVE` | "dollars" | recall basis for plots (counts always also written) |
 | engine settings | see above | defaults chosen by hyperparameter sweeps on hold-out data (July 2026); evidence in `methods/parameter_tuning_v2/` |
 
+The table above is for the finder (`INCL_find_inclusion_rules_by_hh_size_v2.R`). The delivery builder (`INCL_build_blended_delivery_list_v2.R`) has its own switches, set in a runner before `source()`:
+
+| setting | default | meaning |
+|---|---|---|
+| `ADMISSION` | `"fdr10"` | which candidate rules to keep: `"fdr10"` = a Benjamini-Hochberg false-discovery-rate test against the stratum base rate (plus `n >= 30`); `"legacy"` = the old raw-precision filter |
+| `FDR_ALPHA` | `0.10` | the false-discovery-rate target, used when `ADMISSION == "fdr10"` |
+| `PAIRING` | `"lcb99_workloadfill"` | ranking statistic for the fill order; set `"dpf_workloadfill"` to rank by error dollars per flagged case instead (see the Statistics and goal metrics table) |
+
+Changing `ADMISSION`, `FDR_ALPHA`, or `PAIRING` needs a fresh pool cache (delete `POOL_CACHE`), since the admitted set and per-rule statistics are computed at pool-build time.
+
 Packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional bagged-CART engine). No `{pre}` required.
 
 ## Guidance from validation studies

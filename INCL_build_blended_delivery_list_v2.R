@@ -65,6 +65,7 @@ RANK_STAT <- if (identical(PAIRING, "dpf_workloadfill")) "dollars_per_flag_train
 # hand-set filter (modeling_findings.md section 19). "legacy" restores that
 # earlier filter (raw precision >= 0.05 and above the stratum base rate).
 if (!exists("ADMISSION")) ADMISSION <- "fdr10"
+if (!exists("FDR_ALPHA")) FDR_ALPHA <- 0.10   # false-discovery-rate target used when ADMISSION == "fdr10"
 
 # Which frames feed the vocabulary. The typed + pooled union is the validated
 # default (findings #3: typed frames surface specialized rules the pooled
@@ -151,7 +152,7 @@ mine_pool <- function(pool_states, cache_name) {
       # BH within this frame's candidates, one-sided vs the stratum base rate
       pv <- pbinom(k_tr - 1, n_tr, base, lower.tail = FALSE)
       m <- length(pv); o <- order(pv)
-      thr <- max(c(0L, which(pv[o] <= 0.10 * seq_len(m) / m)))
+      thr <- max(c(0L, which(pv[o] <= FDR_ALPHA * seq_len(m) / m)))
       bh <- rep(FALSE, m); if (thr > 0) bh[o[seq_len(thr)]] <- TRUE
       keep <- bh & n_tr >= MIN_TRAIN_FLAGGED
     } else {
