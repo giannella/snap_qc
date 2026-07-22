@@ -336,6 +336,37 @@ flags_for_rules <- function(rules_df, data, strata_idx, label = "") {
   out
 }
 
+# Memory-frugal per-rule reduction. Gives results identical to
+#   t(vapply(flags_for_rules(rules_df, data, strata_idx), fun, numeric(k)))
+# but never holds all rules' flag vectors at once: the shared condition index is
+# built once, then rules are walked in `chunk`-sized blocks, each block's flag
+# vectors reduced by fun() and immediately discarded. fun() takes an integer
+# flag-index vector and returns a fixed-length-k numeric vector; the result is a
+# numeric matrix with one ROW per rule (row order = rules_df order). Used for the
+# national pool, where materialising ~150k rules' flag vectors exhausts RAM.
+reduce_flags_for_rules <- function(rules_df, data, strata_idx, fun,
+                                   chunk = 4096L, label = "") {
+  ci <- build_condition_index(rules_df$rule)
+  if (nzchar(label))
+    cat(sprintf("  [%s] %d rules -> %d unique conditions\n",
+                label, nrow(rules_df), length(ci$conditions)))
+  idx <- eval_conditions(ci$conditions, data)
+  n  <- nrow(rules_df)
+  k  <- length(fun(integer(0)))
+  out <- matrix(NA_real_, nrow = n, ncol = k)
+  hh <- rules_df$hh
+  for (start in seq.int(1L, n, by = chunk)) {
+    rows <- start:min(start + chunk - 1L, n)
+    for (h in unique(hh[rows])) {
+      hr <- rows[hh[rows] == h]
+      fl <- rule_flag_idx(ci$rule_conds[hr], idx, base_idx = strata_idx[[h]])
+      out[hr, ] <- do.call(rbind, lapply(fl, fun))
+      rm(fl)
+    }
+  }
+  out
+}
+
 ## ── 4. Dedup ──────────────────────────────────────────────────────────────────
 
 # (a) exact coverage: rules flagging the SAME training cases collapse to one —

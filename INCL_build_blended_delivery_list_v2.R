@@ -141,13 +141,21 @@ mine_pool <- function(pool_states, cache_name) {
     if (is.null(rdf) || nrow(rdf) == 0) {
       saveRDS(empty, ck); filt[[fn]] <- empty; next
     }
-    idx <- flags_for_rules(rdf, train, strata_tr,
-                           label = sprintf("pool-train %s", fn))
-    n_tr <- lengths(idx)
-    k_tr <- vapply(idx, function(ix) sum(tg_tr$ie[ix]), numeric(1))
-    d_tr <- vapply(idx, function(ix) sum(tg_tr$ed[ix]), numeric(1))  # error dollars per rule
+    # Score every candidate in a memory-frugal chunked pass: n flagged, errors
+    # flagged (k), and error dollars flagged (d) per rule. Materialising all
+    # ~150k national rules' flag vectors at once exhausts RAM, so we reduce to
+    # these three scalars chunk by chunk (identical values, flat memory).
+    stats <- reduce_flags_for_rules(
+      rdf, train, strata_tr,
+      fun = function(ix) c(length(ix), sum(tg_tr$ie[ix]), sum(tg_tr$ed[ix])),
+      label = sprintf("pool-train %s", fn))
+    n_tr <- as.integer(stats[, 1])
+    k_tr <- stats[, 2]
+    d_tr <- stats[, 3]                              # error dollars per rule
     raw  <- ifelse(n_tr > 0, k_tr / n_tr, NA_real_)
-    base <- vapply(rdf$hh, function(h) mean(tg_tr$ie[strata_tr[[h]]]), numeric(1))
+    # per-stratum base error rate, computed once (not once per rule)
+    base_by_hh <- vapply(strata_tr, function(rows) mean(tg_tr$ie[rows]), numeric(1))
+    base <- base_by_hh[rdf$hh]
     if (ADMISSION == "fdr10") {
       # BH within this frame's candidates, one-sided vs the stratum base rate
       pv <- pbinom(k_tr - 1, n_tr, base, lower.tail = FALSE)
@@ -165,7 +173,7 @@ mine_pool <- function(pool_states, cache_name) {
     rdf$dollars_per_flag_train <- round(d_tr[keep] / n_tr[keep], 2)
     saveRDS(rdf, ck)
     filt[[fn]] <- rdf
-    rm(idx); invisible(gc())
+    rm(stats); invisible(gc())
   }
   all_f <- do.call(rbind, filt)
   if (is.null(all_f) || nrow(all_f) == 0) return(NULL)

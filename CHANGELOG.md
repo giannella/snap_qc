@@ -10,9 +10,25 @@ moved or behaves differently.
 
 ## [Unreleased]
 
-Nothing user-facing in progress. Research results, including several
-retired approaches, are recorded in `methods/modeling_findings.md`
-(sections 17-22).
+### Changed
+- State delivery lists rebuilt with a uniform 13-column schema. Every list in
+  `state_delivery_lists/` now carries `dollars_per_flag_train` (mean error
+  dollars per flagged training case), so all 49 states share one format. 19
+  states previously used a 12-column format without that column.
+- 14 states still built under the pre-v2.3.0 raw-precision admission (Arizona,
+  California, Colorado, and 11 others) now use the Benjamini-Hochberg FDR
+  admission adopted in v2.3.0 (findings 19), matching every other state.
+
+### Notes
+- The lists are one fresh mine of the current recipe. The ranger forest is not
+  thread-pinned, so re-mining on a different machine gives a different draw: the
+  rebuilt lists differ from the prior committed ones by roughly 10 to 15 percent
+  of rows, in both directions, including states whose recipe did not change.
+  xgboost and the filters are deterministic; the variation is ranger's default
+  multi-threading. Neither draw is more correct than the other.
+
+Other research results, including several retired approaches, are recorded in
+`methods/modeling_findings.md` (sections 17-22).
 
 ## [2.3.0] - 2026-07-17
 

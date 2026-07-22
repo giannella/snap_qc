@@ -75,6 +75,12 @@ chk <- vapply(sample(seq_len(nrow(rules_df)), 25), function(i)
   identical(sort(idx[[i]]), direct(i)), logical(1))
 ok("sparse flags match direct eval (25 sampled)", all(chk))
 
+## memory-frugal chunked reduction matches the full flags_for_rules path
+redfun <- function(ix) c(length(ix), sum(ix))
+red  <- reduce_flags_for_rules(rules_df, d2, strata_idx, fun = redfun, chunk = 7L)
+full <- t(vapply(idx, redfun, numeric(2)))
+ok("reduce_flags_for_rules matches full path (chunked)", identical(red, full))
+
 ## exact-coverage dedup: same coverage, different text
 rd <- data.frame(rule = c("x1 <= 0.5", "x1 <= 0.5 & x2 <= 2", "x1 <= 0.4"), hh = "1",
                  stringsAsFactors = FALSE)
