@@ -2,6 +2,7 @@
 library(ranger)
 library(yardstick)
 library(dplyr)
+library(tidyr)
 library(here)
 library(ggplot2)
 library(scales)
@@ -78,6 +79,23 @@ mydata <- mydata %>%
     qc_natures %>% rename(nature = description),
     by = c("NATURE1" = "code")
   )
+
+# Add standard medical deduction amounts by year
+smd_by_year <- read.csv(paste0(folder, "additional_data/standard_medical_deductions.csv"))
+smd_long <- smd_by_year %>%
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "fiscal_year",
+    names_prefix = "X",
+    values_to = "smd_amt"
+  ) %>%
+  mutate(
+    fiscal_year = as.integer(fiscal_year),
+    smd_amt = na_if(smd_amt, 0)
+  )
+
+mydata <- mydata %>%
+  left_join(smd_long, by = c("state_name", "fiscal_year"))
 
 # Correlations between variables
 mean(abs(mydata$FSBEN - mydata$RAWBEN) <= 1, na.rm = TRUE) * 100 # 61.93%
