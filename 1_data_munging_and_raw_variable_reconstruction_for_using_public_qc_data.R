@@ -2,6 +2,7 @@
 library(ranger)
 library(yardstick)
 library(dplyr)
+library(here)
 library(ggplot2)
 library(scales)
 library(haven)
@@ -11,8 +12,7 @@ correct_variables <- TRUE
 apply_correction_smoothing <- TRUE
 
 # 1. Load data
- folder <- "C:/Users/ericg/qc/"
-#folder <- "~/Desktop/BGL/QC/"
+folder <- paste0(here(), "/")
 
 data_2017 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2017.sav"))
 data_2018 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2018.sav"))
