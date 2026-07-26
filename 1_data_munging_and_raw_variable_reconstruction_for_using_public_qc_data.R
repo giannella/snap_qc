@@ -11,6 +11,7 @@ options(max.print = 10000)
 
 correct_variables <- TRUE
 apply_correction_smoothing <- TRUE
+exclude_2020_2021 <- TRUE
 
 # 1. Load data
 folder <- paste0(here(), "/")
@@ -18,25 +19,29 @@ folder <- paste0(here(), "/")
 data_2017 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2017.sav"))
 data_2018 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2018.sav"))
 data_2019 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2019.sav"))
-# data_2021 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2021.sav"))
+if (exclude_2020_2021) {
+  data_2020 <- NULL
+  data_2021 <- NULL
+} else {
+  # Merge 2020 data which was split into three parts
+  data_2020 <- bind_rows(
+    read_sav(paste0(folder, "qc_data/qc_pub_fy2020.sav")),
+    read_sav(paste0(folder, "qc_data/qc_pub_fy2020_per1.sav")),
+    read_sav(paste0(folder, "qc_data/qc_pub_fy2020_per2.sav"))
+  )
+  data_2021 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2021.sav"))
+}
 data_2022 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2022.sav"))
 data_2023 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2023.sav"))
 data_2024 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2024.sav"))
-
-# # Merge 2020 data which was split into three parts
-# data_2020 <- bind_rows(
-#   read_sav(paste0(folder, "qc_data/qc_pub_fy2020.sav")),
-#   read_sav(paste0(folder, "qc_data/qc_pub_fy2020_per1.sav")),
-#   read_sav(paste0(folder, "qc_data/qc_pub_fy2020_per2.sav"))
-# )
 
 # Merge all years
 mydata <- bind_rows(
   data_2017,
   data_2018,
   data_2019,
-  # data_2020,
-#  data_2021,
+  data_2020,
+  data_2021,
   data_2022,
   data_2023,
   data_2024
@@ -45,8 +50,8 @@ mydata <- bind_rows(
 rm(  data_2017,
      data_2018,
      data_2019,
-     # data_2020,
-#     data_2021,
+     data_2020,
+     data_2021,
      data_2022,
      data_2023,
      data_2024)
