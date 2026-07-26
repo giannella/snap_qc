@@ -196,6 +196,10 @@ mydata$max_shelter_deduction <- ifelse(
   mydata$max_shelter_deduction
 )
 
+# Medicare Part B Premium by Year
+medicare_part_b_premium_by_year <- setNames(year_data$medicare_part_b_premium, as.character(year_data$year))
+mydata$medicare_part_b_premium <- medicare_part_b_premium_by_year[as.character(mydata$fiscal_year)]
+
 # Step 4. Recreate the FS benefit using the formula inputs
 
 # Adjust minimum ben (it should be $0 for households >2)
