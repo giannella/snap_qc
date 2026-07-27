@@ -2,6 +2,8 @@
 library(ranger)
 library(yardstick)
 library(dplyr)
+library(tidyr)
+library(here)
 library(ggplot2)
 library(scales)
 library(haven)
@@ -9,33 +11,37 @@ options(max.print = 10000)
 
 correct_variables <- TRUE
 apply_correction_smoothing <- TRUE
+exclude_2020_2021 <- TRUE
 
 # 1. Load data
- folder <- "C:/Users/ericg/qc/"
-#folder <- "~/Desktop/BGL/QC/"
+folder <- paste0(here(), "/")
 
 data_2017 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2017.sav"))
 data_2018 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2018.sav"))
 data_2019 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2019.sav"))
-# data_2021 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2021.sav"))
+if (exclude_2020_2021) {
+  data_2020 <- NULL
+  data_2021 <- NULL
+} else {
+  # Merge 2020 data which was split into three parts
+  data_2020 <- bind_rows(
+    read_sav(paste0(folder, "qc_data/qc_pub_fy2020.sav")),
+    read_sav(paste0(folder, "qc_data/qc_pub_fy2020_per1.sav")),
+    read_sav(paste0(folder, "qc_data/qc_pub_fy2020_per2.sav"))
+  )
+  data_2021 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2021.sav"))
+}
 data_2022 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2022.sav"))
 data_2023 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2023.sav"))
 data_2024 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2024.sav"))
-
-# # Merge 2020 data which was split into three parts
-# data_2020 <- bind_rows(
-#   read_sav(paste0(folder, "qc_data/qc_pub_fy2020.sav")),
-#   read_sav(paste0(folder, "qc_data/qc_pub_fy2020_per1.sav")),
-#   read_sav(paste0(folder, "qc_data/qc_pub_fy2020_per2.sav"))
-# )
 
 # Merge all years
 mydata <- bind_rows(
   data_2017,
   data_2018,
   data_2019,
-  # data_2020,
-#  data_2021,
+  data_2020,
+  data_2021,
   data_2022,
   data_2023,
   data_2024
@@ -44,8 +50,8 @@ mydata <- bind_rows(
 rm(  data_2017,
      data_2018,
      data_2019,
-     # data_2020,
-#     data_2021,
+     data_2020,
+     data_2021,
      data_2022,
      data_2023,
      data_2024)
@@ -78,6 +84,23 @@ mydata <- mydata %>%
     qc_natures %>% rename(nature = description),
     by = c("NATURE1" = "code")
   )
+
+# Add standard medical deduction amounts by year
+smd_by_year <- read.csv(paste0(folder, "additional_data/standard_medical_deductions.csv"))
+smd_long <- smd_by_year %>%
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "fiscal_year",
+    names_prefix = "X",
+    values_to = "smd_amt"
+  ) %>%
+  mutate(
+    fiscal_year = as.integer(fiscal_year),
+    smd_amt = na_if(smd_amt, 0)
+  )
+
+mydata <- mydata %>%
+  left_join(smd_long, by = c("state_name", "fiscal_year"))
 
 # Correlations between variables
 mean(abs(mydata$FSBEN - mydata$RAWBEN) <= 1, na.rm = TRUE) * 100 # 61.93%
@@ -177,6 +200,10 @@ mydata$max_shelter_deduction <- ifelse(
   Inf,
   mydata$max_shelter_deduction
 )
+
+# Medicare Part B Premium by Year
+medicare_part_b_premium_by_year <- setNames(year_data$medicare_part_b_premium, as.character(year_data$year))
+mydata$medicare_part_b_premium <- medicare_part_b_premium_by_year[as.character(mydata$fiscal_year)]
 
 # Step 4. Recreate the FS benefit using the formula inputs
 

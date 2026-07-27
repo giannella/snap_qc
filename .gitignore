@@ -29,3 +29,6 @@ methods/delivery_pools_2022_2024_v3/
 .devcontainer/.env
 reg_model_data.rds
 desktop.ini
+.Rproj.user
+.DS_Store
+snap_qc.Rproj
