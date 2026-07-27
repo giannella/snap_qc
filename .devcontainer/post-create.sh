@@ -9,7 +9,8 @@ set -euo pipefail
 echo "== snap_qc dev container: post-create =="
 
 # --- R toolchain check ---------------------------------------------------
-Rscript -e 'pkgs <- c("dplyr","ggplot2","ranger","xgboost","rpart","haven","scales");
+Rscript -e 'pkgs <- c("dplyr","ggplot2","ranger","xgboost","rpart","haven","scales",
+    "here","tidyr","yardstick");
   miss <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)];
   if (length(miss)) stop("missing R packages: ", paste(miss, collapse=", "));
   cat("R", as.character(getRversion()), "OK; packages present:", paste(pkgs, collapse=", "), "\n")'
@@ -49,13 +50,16 @@ else
   echo "reg_model_data.rds MISSING. Copy it into the workspace root, or rebuild it"
   echo "  from the raw QC files (see note below)."
 fi
-if [ -d /data/qc/qc_data ] && ls /data/qc/qc_data/*.sav >/dev/null 2>&1; then
-  echo "raw QC .sav files mounted at /data/qc/qc_data."
-  echo "NOTE: the munging script (1_data_munging_...R) hardcodes Windows paths"
-  echo "  (C:/Users/ericg/qc/); rebuilding reg_model_data in-container needs those"
-  echo "  paths parameterized to \$QC_DATA_DIR first. See .devcontainer/README.md."
+if ls /workspace/qc_data/*.sav >/dev/null 2>&1; then
+  echo "raw QC .sav files present at /workspace/qc_data (tracked in the repo)."
+  echo "  The munging script resolves paths with here(), which is /workspace in"
+  echo "  this container, so rebuilding reg_model_data works with no extra setup."
+elif [ -d /data/qc/qc_data ] && ls /data/qc/qc_data/*.sav >/dev/null 2>&1; then
+  echo "raw QC .sav files mounted at /data/qc/qc_data, but the munging script"
+  echo "  reads here()/qc_data (= /workspace/qc_data). Symlink or copy them there"
+  echo "  to rebuild in-container. See .devcontainer/README.md."
 else
-  echo "raw QC data not mounted (set QC_DATA_DIR on the host to your qc/ folder)."
+  echo "raw QC .sav files not found at /workspace/qc_data."
   echo "  Not needed for work that reads reg_model_data.rds, which is almost all of it."
 fi
 echo

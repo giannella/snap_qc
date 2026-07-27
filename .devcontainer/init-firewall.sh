@@ -16,11 +16,23 @@ iptables -F; iptables -X; iptables -t nat -F || true; iptables -t nat -X || true
 ipset destroy allowed 2>/dev/null || true
 ipset create allowed hash:net
 
-# Preserve Docker's embedded DNS so name resolution keeps working.
-iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
-iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
-iptables -A INPUT  -p udp --sport 53 -j ACCEPT
-iptables -A INPUT  -p tcp --sport 53 -j ACCEPT
+# Preserve DNS, but only to the resolvers this container is actually configured
+# to use -- Docker's embedded resolver (127.0.0.11) on a user-defined network,
+# or the inherited host resolvers on the default bridge. An unrestricted
+# "--dport 53 to anywhere" rule is an open DNS tunnel straight through the
+# allowlist, which defeats the point of default-deny.
+dns_servers=$(awk '/^nameserver/ {print $2}' /etc/resolv.conf | grep -E '^[0-9.]+$' || true)
+if [ -z "$dns_servers" ]; then
+  echo "[firewall] FATAL: no IPv4 nameserver found in /etc/resolv.conf"; exit 1
+fi
+while read -r ns; do
+  [ -n "$ns" ] || continue
+  iptables -A OUTPUT -p udp --dport 53 -d "$ns" -j ACCEPT
+  iptables -A OUTPUT -p tcp --dport 53 -d "$ns" -j ACCEPT
+  iptables -A INPUT  -p udp --sport 53 -s "$ns" -j ACCEPT
+  iptables -A INPUT  -p tcp --sport 53 -s "$ns" -j ACCEPT
+  echo "[firewall] DNS resolver $ns allowed"
+done <<< "$dns_servers"
 
 # Loopback and established/related traffic.
 iptables -A OUTPUT -o lo -j ACCEPT
@@ -77,10 +89,24 @@ iptables -P FORWARD DROP
 iptables -P OUTPUT DROP
 iptables -A OUTPUT -j REJECT --reject-with icmp-port-unreachable
 
-# No IPv6 egress (avoid an unfiltered path around the v4 allowlist).
-ip6tables -P OUTPUT DROP 2>/dev/null || true
-ip6tables -P INPUT DROP 2>/dev/null || true
-ip6tables -A OUTPUT -o lo -j ACCEPT 2>/dev/null || true
+# No IPv6 egress: an unfiltered v6 path routes straight around the v4 allowlist.
+# This must NOT be best-effort. If the kernel has IPv6 but ip6tables cannot set
+# policy, the allowlist is not actually enforced, so fail closed and say why.
+if ip6tables -L >/dev/null 2>&1; then
+  ip6tables -F
+  ip6tables -P INPUT DROP
+  ip6tables -P FORWARD DROP
+  ip6tables -P OUTPUT DROP
+  ip6tables -A OUTPUT -o lo -j ACCEPT
+  ip6tables -A INPUT  -i lo -j ACCEPT
+  echo "[firewall] IPv6 egress dropped"
+elif [ -e /proc/net/if_inet6 ]; then
+  echo "[firewall] FATAL: IPv6 is enabled in the kernel but ip6tables is unusable;"
+  echo "[firewall]        refusing to run with an unfiltered IPv6 path."
+  exit 1
+else
+  echo "[firewall] IPv6 not enabled in kernel; nothing to filter"
+fi
 
 # Smoke test: a non-allowlisted host must fail, GitHub must succeed.
 echo "[firewall] verifying"

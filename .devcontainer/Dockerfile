@@ -36,12 +36,16 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
   && apt-get update && apt-get install -y --no-install-recommends gh \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# R packages for the v2 pipeline. rocker configures the Posit binary repo, so
-# these install as precompiled binaries (minutes, not a from-source build).
-# {pre} (the v1 legacy engine) is intentionally omitted -- it is heavy and no
-# current work needs it; add it if you must run the {pre}-based v1 scripts.
+# R packages: the v2 pipeline on the first line, the munging script's extra
+# dependencies on the second ({here} resolves the data paths, {tidyr} reshapes
+# the standard-medical-deduction lookup, {yardstick} is loaded at its top).
+# rocker configures the Posit binary repo, so these install as precompiled
+# binaries (minutes, not a from-source build). The v1 legacy engines ({pre},
+# {C50}, {xrf}) are intentionally omitted -- they are heavy and no current work
+# needs them; add them if you must run the v1 scripts.
 RUN install2.r --error --skipinstalled \
   dplyr ggplot2 ranger xgboost rpart haven scales \
+  here tidyr yardstick \
   && rm -rf /tmp/downloaded_packages
 
 # Python deck tooling (python-pptx); the analysis scripts use only the stdlib.
