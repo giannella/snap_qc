@@ -24,7 +24,7 @@ Key v2 packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the o
 
 ## Data
 
-Public SNAP QC `.sav` files are expected at `C:/Users/ericg/qc/qc_data/`. Auxiliary lookups live in `additional_data/`. The main modelling frame `reg_model_data` is built by `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` (shared by v1 and v2) and cached as `reg_model_data.rds`.
+Public SNAP QC `.sav` files are expected at `qc_data/` under the repo root; auxiliary lookups live in `additional_data/`. The munging script resolves both through `here()`, so it needs the `here` package and no hardcoded paths (it read from a separate `C:/Users/ericg/qc/` checkout until 2026-07-26; that copy is byte-identical and is no longer used by this repo). The main modelling frame `reg_model_data` is built by `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` (shared by v1 and v2) and cached as `reg_model_data.rds`.
 
 `error_status` values: `earned_overissuance`, `unearned_overissuance`, `underissuance`, `other_error`, `no_error`. A case is an error when `over_threshold != 0` (aligned 1:1 with error_status). Base rates are low: ~11% of cases have any over-threshold error (post-2026-07-07 rebuild; was ~8.4% on the stale single-element frame); typed frames run 0.4-6% by stratum. `other_error` is the LARGEST error category and is mined in v2 (it never was in v1).
 
