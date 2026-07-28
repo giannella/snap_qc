@@ -31,6 +31,13 @@ fi
 DOTCLAUDE="$HOME/.claude.json"
 [ -f "$DOTCLAUDE" ] || echo '{ "hasCompletedOnboarding": true }' > "$DOTCLAUDE"
 
+# --- git: trust the bind-mounted workspace -------------------------------
+# /workspace is bind-mounted from the host and owned by root, while we run as
+# `dev`. Without this, every git command fails with "detected dubious
+# ownership" and has to be run as `git -c safe.directory=/workspace ...`.
+git config --global --add safe.directory /workspace
+echo "marked /workspace as a safe.directory"
+
 # --- git auth from a token, if one was passed via .devcontainer/.env ------
 TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
 if [ -n "$TOKEN" ]; then
