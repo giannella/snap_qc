@@ -33,8 +33,9 @@ Paths below are relative to the repo root.
    runs on data of a different size than ours. Floorless BH is refuted.
 3. **Small-sample collapse.** Below roughly 30 flagged training cases a rule's
    precision is too noisy to trust at the top of a ranking, and the LCB alone
-   does not save it at state scale (median hold-out precision hit 0 at `n >= 5`
-   in the Virginia work). The `n >= 30` support floor is non-negotiable. It is
+   does not save it (median hold-out precision hit 0 at `n >= 5` in
+   single-state mining at state scale). The `n >= 30` support floor is
+   non-negotiable. It is
    an estimation-quality guard, not a discovery guard.
 4. **Era confounds and same-year judging.** Every choice here was first judged on
    one hold-out year. Re-run the decisive comparison with the year roles
