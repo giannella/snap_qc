@@ -116,6 +116,31 @@ Scripts: **[1]** `INCL_build_blended_delivery_list_v2.R` (writes `state_delivery
 
 Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-out/any-error stats, filtered shortlists, sweep curves), `exclusion_rules_by_hh_size_v2/`, and `state_delivery_lists/` (the deployment deliverable). The superseded per-state threshold-tuning outputs live in `archive/state_rules_v2/`.
 
+## Tree visualization (exploration)
+
+Two scripts at the repo root fit a single `rpart` regression tree predicting the error dollar amount (`total_error_amount`) and render it as an annotated plot, with nodes shaded by how the error dollars at each level divide across sibling nodes:
+
+| script | purpose |
+|---|---|
+| `visualize_state_regression_trees_predicting_dollar_amounts.R` | one tree per state, to PNG and PDF in `state_income_error_trees_any_timeper/` |
+| `visualize_national_regression_trees_by_type_of_error.R` | one tree per error type (earned overissuance, unearned overissuance, underissuance), to PNG in `income_error_trees/` |
+
+Both source their fitting metrics and plot wrappers from `tree_visualization_helpers/`.
+
+These are for looking at the data, not for producing rules. They share no code with `rule_mining_helpers.R`, they use a single tree rather than the xgboost and ranger ensembles, and nothing in the delivery pipeline reads their output. Treat what a tree shows as a starting point for a question, not as a validated result: a single deep tree fit on all of a state's rows has no hold-out and carries the winner's curse described under [Guidance from validation studies](#guidance-from-validation-studies).
+
+They need two more packages than the pipeline, and they expect the modelling frame to already be in the environment:
+
+```r
+install.packages(c("rpart", "rpart.plot"))
+reg_model_data <- readRDS("reg_model_data.rds")
+source("visualize_national_regression_trees_by_type_of_error.R")
+```
+
+Two things to know before running the state script. It fits every predictor at `maxdepth = 6` with `cp = 0.000001`, so one state takes a few minutes and the PNGs run to a few megabytes. And its `states` vector is overridden just above the loop to a single state, so it plots Washington only until you set it to `unique(reg_model_data$state)`.
+
+The committed PNG and PDF files were built before the 2026-07-07 frame rebuild, on the older feature names. Rerunning will not reproduce them byte-for-byte.
+
 ## Key settings (v2)
 
 Each script's tunable settings sit at the top of the file (or can be set in a runner before `source()`). The three main scripts and their knobs:

@@ -69,8 +69,13 @@ generate -> canonicalize -> dedup -> evaluate -> sweep / shortlist
 | `methods/compare_anyerror_vs_typed_frames_v2.R` | typed vs pooled-target mining -> `methods/compare_anyerror_vs_typed_v2/` |
 | `methods/compare_hh_strata_v2.R` | stratification schemes -> `methods/compare_hh_strata_v2/` |
 | `methods/check_esap_coverage_v2.R` | elderly/disabled coverage parity check |
+| `visualize_state_regression_trees_predicting_dollar_amounts.R` | exploration, NOT rule mining: one `rpart` tree on `total_error_amount` per state -> `state_income_error_trees_any_timeper/` |
+| `visualize_national_regression_trees_by_type_of_error.R` | exploration, NOT rule mining: one `rpart` tree on `total_error_amount` per error type -> `income_error_trees/` |
+| `tree_visualization_helpers/` | the two scripts above: fitting + split/error-capture metrics (`regression_tree_functions.R`) and the `rpart.plot` wrappers (`regression_tree_plots_simplified.R`) |
 
 Long-running scripts checkpoint mined vocabularies to `.rds` and support `RESUME_FROM_CHECKPOINT` (pre-set it in a runner before `source()`). Comparison outputs from superseded configurations are kept in suffixed/archived copies (e.g., `run1_*` subfolders) — don't delete them.
+
+The two tree-visualization scripts are for looking at where error dollars concentrate; they feed no rule list and share nothing with `rule_mining_helpers.R`. They need `rpart.plot` on top of the pipeline packages, expect `reg_model_data` in the environment, and write PNG plus PDF into the two output folders. The state script's `states` vector is overridden near the loop to a single state (Washington); set it to `unique(reg_model_data$state)` for the full 49-state set. Their committed PNG/PDF outputs were built on the pre-2026-07-07 frame, so a rerun today will not reproduce them byte-for-byte.
 
 **State-specific custom work stays out of GitHub**: scripts and outputs tailored to a single state's engagement (custom floors, no-holdout tuning, state-mined rules) go in `custom_one_off/<state>/`, which is gitignored. The public repo carries generic tooling and comparative studies only. Lesson from the Virginia work (2026-07-06, artifacts in `custom_one_off/virginia/`): single-state mining needs a hard support floor (n >= 30) — at state scale the LCB alone does not prevent collapse (median holdout precision 0 at n >= 5); with the floor, rules deflate gently (~1/3) instead.
 
