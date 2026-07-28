@@ -9,9 +9,7 @@ source("tree_visualization_helpers/regression_tree_plots_simplified.R")
 source("tree_visualization_helpers/regression_tree_functions.R")
 
 income_and_clean_data <- reg_model_data %>%
-  filter(year %in% c("2022","2023")) %>%
-  #two predictors below are not columns of the saved frame; build them here the
-  #same way visualize_state_regression_trees_predicting_dollar_amounts.R does
+  filter(year %in% c("2022","2023","2024")) %>%
   mutate(
     deductions_by_hh_size    = fstotded / cert_HH_size_FS_n,
     HH_size_rel_cert_HH_size = HH_size_n / cert_HH_size_FS_n
@@ -160,7 +158,7 @@ for (error_type in error_types) {
   tree_results[[error_type]] <- results
   
   # Plot tree
-  plot_path <- paste0("income_error_trees/", error_type, "_2022_2023_any_timeper_small.png")
+  plot_path <- paste0("income_error_trees/", error_type, "_2022_2024_any_timeper_small.png")
   dir.create("income_error_trees", showWarnings = FALSE, recursive = TRUE)
   
   plot_pooled_tree(

@@ -5,17 +5,13 @@ library(rpart.plot)
 source("tree_visualization_helpers/regression_tree_plots_simplified.R")
 source("tree_visualization_helpers/regression_tree_functions.R")
 
+reg_model_data <- readRDS("reg_model_data.rds")
 states <- unique(reg_model_data$state)
 
-#rawben_rel_max is already in the frame; the munging script computes it as
-#raw_benefit_amount / maximum_benefit_for_HH_size. It used to be recomputed here
-#against a rawbenmax column, which the munging script no longer keeps in the
-#saved frame, so that line errored.
 reg_model_data$deductions_by_hh_size = reg_model_data$fstotded/reg_model_data$cert_HH_size_FS_n
 
-
-#main decision here is whether to use rawben_no_cap_rel_max (harder to construct) vs. rawben_rel_max (easier to construct)
-#those are defined in 1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R
+#vars below are defined in 1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R
+#if using public data, be sure to run that script and use the resulting data frame "reg_model_data" so that you're not fitting models on corrected case data.
 
 features <- c(
   "cert_HH_size_FS_n",            # certified household size
