@@ -51,7 +51,7 @@ knobs: `FRAME` (`earned_income`, `unearned_income`, `underissuance`,
 too, where the gitignored `.rds` lives back in `/workspace`.
 
 For an instant sanity check, run the regression test. Always run it after
-touching the helpers. It has 26 checks and all must PASS, in about 7 seconds:
+touching the helpers. It has 27 checks and all must PASS, in about 7 seconds:
 
 ```bash
 Rscript methods/test_rule_mining_helpers.R
