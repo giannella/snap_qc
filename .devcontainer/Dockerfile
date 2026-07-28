@@ -38,7 +38,8 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
 
 # R packages: the v2 pipeline on the first line, the munging script's extra
 # dependencies on the second ({here} resolves the data paths, {tidyr} reshapes
-# the standard-medical-deduction lookup, {yardstick} is loaded at its top).
+# the standard-medical-deduction lookup, {yardstick} is loaded at its top), and
+# {rpart.plot} on the third for the top-level tree visualization scripts.
 # rocker configures the Posit binary repo, so these install as precompiled
 # binaries (minutes, not a from-source build). The v1 legacy engines ({pre},
 # {C50}, {xrf}) are intentionally omitted -- they are heavy and no current work
@@ -46,6 +47,7 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
 RUN install2.r --error --skipinstalled \
   dplyr ggplot2 ranger xgboost rpart haven scales \
   here tidyr yardstick \
+  rpart.plot \
   && rm -rf /tmp/downloaded_packages
 
 # Python deck tooling (python-pptx); the analysis scripts use only the stdlib.

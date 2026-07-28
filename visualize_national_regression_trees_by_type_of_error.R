@@ -5,10 +5,17 @@ library(rpart)
 library(rpart.plot)
 library(dplyr)
 
-source("helper_functions/regression_tree_plots_simplified.R")
-source("helper_functions/regression_tree_functions.R")
+source("tree_visualization_helpers/regression_tree_plots_simplified.R")
+source("tree_visualization_helpers/regression_tree_functions.R")
 
-income_and_clean_data <- reg_model_data %>% filter(year %in% c("2022","2023"))
+income_and_clean_data <- reg_model_data %>%
+  filter(year %in% c("2022","2023")) %>%
+  #two predictors below are not columns of the saved frame; build them here the
+  #same way visualize_state_regression_trees_predicting_dollar_amounts.R does
+  mutate(
+    deductions_by_hh_size    = fstotded / cert_HH_size_FS_n,
+    HH_size_rel_cert_HH_size = HH_size_n / cert_HH_size_FS_n
+  )
 
 cat(sprintf("\n=== Data Summary ===\n"))
 income_and_clean_data %>%
@@ -29,16 +36,16 @@ features <- c(
   "cert_HH_size_FS_n",            # certified household size
   "HH_size_rel_cert_HH_size",     # ratio of people in HH to cert HH size
   "children_i",                   # children indicator
-  "elderly_or_disabled_i",       # combined indicator
+  "elderly_disabled_i",          # combined indicator (was elderly_or_disabled_i)
   "deductions_by_hh_size",          # deductions by HH size
   "expedited_i",                  # expedited service
-  "cat_elig",                     # categorical eligibility 
+  "cat_elig",                     # categorical eligibility
   "rawben_rel_max",
-  "med_expenses",
+  "medical_deductions",           # was med_expenses
   "shelter_expenses",
   "utilities",
   "married",
-  "shelter_to_gross_income_ratio",
+  "shelter_to_gross_ratio",       # was shelter_to_gross_income_ratio
   "homeless",
   "earned_by_hh_size",
   "unearned_by_hh_size",
@@ -46,8 +53,10 @@ features <- c(
   "lf_composition",
   "n_income_types", 
   "n_deduction_types", 
-  "count_divisible_by_10",
-  "DemonstrationsElderlyDisability",
+  "count_divisible_by_100",       # the frame has no count_divisible_by_10; this
+                                  # is a different threshold, not a rename
+#  "DemonstrationsElderlyDisability",  # comes from snap_state_options_2023.csv,
+#  which the current munging script does not join onto the frame
 #  "rawben_no_cap_rel_max",
   "months_since_cert_n"
 )
@@ -66,8 +75,12 @@ for (error_type in error_types) {
   
   # Filter to this error type + clean cases only
   # Excludes other income error types and non-income errors
+  # status_clean was tolower(trimws(status)) back when status carried its value
+  # labels; the saved frame keeps status as the raw code, where the munging
+  # script reads 2 as overissuance and 3 as underissuance, leaving 1 as the
+  # "amount correct" cases this filter wants.
   subset_data <- income_and_clean_data %>%
-    filter(error_status == error_type | status_clean=="amount correct")
+    filter(error_status == error_type | status == 1)
   
   if (nrow(subset_data) == 0) {
     cat("  No cases for", error_type, "— skipping\n")

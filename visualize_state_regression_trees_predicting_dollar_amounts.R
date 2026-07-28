@@ -1,21 +1,21 @@
-library(tidyverse)
+library(dplyr)
 library(rpart)
 library(rpart.plot)
 
-source("helper_functions/regression_tree_plots_simplified.R")
-source("helper_functions/regression_tree_functions.R")
+source("tree_visualization_helpers/regression_tree_plots_simplified.R")
+source("tree_visualization_helpers/regression_tree_functions.R")
 
 states <- unique(reg_model_data$state)
-table(reg_model_data$element1)
-names(reg_model_data)
-reg_model_data$unc_rawben_rel_max
 
-reg_model_data$rawben_rel_max = reg_model_data$raw_benefit_amount/reg_model_data$rawbenmax
+#rawben_rel_max is already in the frame; the munging script computes it as
+#raw_benefit_amount / maximum_benefit_for_HH_size. It used to be recomputed here
+#against a rawbenmax column, which the munging script no longer keeps in the
+#saved frame, so that line errored.
 reg_model_data$deductions_by_hh_size = reg_model_data$fstotded/reg_model_data$cert_HH_size_FS_n
 
 
 #main decision here is whether to use rawben_no_cap_rel_max (harder to construct) vs. rawben_rel_max (easier to construct)
-#those are defined in the 1_data_munging_and_income_var_recovery.R script
+#those are defined in 1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R
 
 features <- c(
   "cert_HH_size_FS_n",            # certified household size
@@ -49,6 +49,9 @@ setdiff(features, names(reg_model_data))
 
 tree_results <- list()
 tree_models <- list()
+#this overrides the full state list assigned above; the committed PNG/PDF set in
+#state_income_error_trees_any_timeper/ was built with all states, i.e. by
+#deleting this line or setting states <- unique(reg_model_data$state)
 states = c("Washington")
 
 for (state in states) {
