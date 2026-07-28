@@ -16,7 +16,9 @@ dev container, translated to this project's R/Python/deck toolchain.
   use only the stdlib).
 - **LibreOffice** (headless) to render `.pptx` slides to PDF/PNG — the Linux
   stand-in for the Windows PowerPoint automation used on the host.
-- **git, gh, node, claude-code**, and the iptables/ipset egress firewall.
+- **git, gh, Node 22, claude-code**, and the iptables/ipset egress firewall.
+  Node comes from NodeSource, not the base distro: the distro ships Node 18
+  and claude-code requires >= 22.
 
 ## Fewer approvals, safely
 

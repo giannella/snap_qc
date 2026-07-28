@@ -24,9 +24,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libcurl4-openssl-dev libssl-dev libxml2-dev libgit2-dev \
   python3 python3-pip python3-venv \
   libreoffice-impress libreoffice-core \
-  nodejs npm \
   iptables ipset iproute2 dnsutils aggregate jq \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Node from NodeSource. The base distro ships Node 18, but claude-code requires
+# >= 22 (npm warns EBADENGINE and the CLI runs on an unsupported engine), so
+# take it from the vendor's signed apt source instead. This package bundles its
+# own npm -- do NOT also install the distro `npm`, they conflict.
+RUN mkdir -p -m 755 /etc/apt/keyrings \
+  && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+     | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+  && chmod go+r /etc/apt/keyrings/nodesource.gpg \
+  && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
+  && apt-get update && apt-get install -y --no-install-recommends nodejs \
+  && apt-get clean && rm -rf /var/lib/apt/lists/* \
+  && node --version
 
 # The GitHub CLI is not in the base repos; add its official signed apt source.
 RUN mkdir -p -m 755 /etc/apt/keyrings \
