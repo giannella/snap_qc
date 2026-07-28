@@ -168,7 +168,7 @@ for (error_type in error_types) {
                        "Errors"),
     predictor_vars = predictor_vars,
     save_path = plot_path,
-    width_inches = 60,
+    width_inches = 75,
     height_inches = 20,
     dpi = 300
   )

@@ -1,0 +1,6 @@
+"state","split_order","variable","split_value","node_mean","n_cases"
+"Washington",1,"shelter_expenses",1251.5,14.0198944376776,4926
+"Washington",2,"earned_by_hh_size",163.375,10.7379199263691,4926
+"Washington",3,"unc_rawben_rel_max",2.5,8.70603955104222,4926
+"Washington",4,"shelter_expenses",1.5,8.06137968495383,4926
+"Washington",5,"n_income_types",1,5.67420977011494,4926

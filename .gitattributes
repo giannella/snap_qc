@@ -1,3 +1,10 @@
+# Normalize text files to LF in the repository. Without this, a working tree
+# checked out on Windows (CRLF on disk) reads as wholly rewritten from inside
+# the Linux dev container, burying real edits under hundreds of phantom
+# modifications. Checkout endings are unchanged: Windows still gets CRLF via
+# its core.autocrlf, Linux gets LF. Binary files are auto-detected and skipped.
+* text=auto
+
 # Shell scripts must keep LF endings or they break in the Linux dev container.
 *.sh text eol=lf
 .devcontainer/** text eol=lf
