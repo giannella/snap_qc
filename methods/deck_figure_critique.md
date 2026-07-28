@@ -1,4 +1,4 @@
-# Deck figure critique (Kieran Healy pass, 2026-07)
+# Deck figure critique (figure-design pass, 2026-07)
 
 Simplify-first review of the deck figures. Bias: less ink, one idea per figure, direct
 labels over legends, no dual-encoding, and every number traceable to the findings docs.
@@ -27,7 +27,7 @@ number survived in the ladder, below).
 - **`states_two_regimes.png`** — the weakest figure. It **dual-encodes**: bar height is
   "share of error dollars caught" while a text label on every bar reads "accuracy 0.XX"
   (precision). Two metrics per bar, fourteen "accuracy" labels, and the two regimes
-  (states with enough data vs not) are told only in the subtitle, not shown. Healy rebuild:
+  (states with enough data vs not) are told only in the subtitle, not shown. Rebuild:
   a single-metric dot plot of **tuned minus national** per state, ordered by that gap and
   faceted or colored by "enough data / too little," so the regime split is the visual. Data
   is committed (`archive/state_rules_v2/state_union_summary.csv`) but the generating script
@@ -56,7 +56,7 @@ number survived in the ladder, below).
 ## Lower priority
 
 - **Tuning-sweep appendix charts** (xgboost / ranger / stringency / subsampling sweeps,
-  single-engines-vs-pairs, mtry frontier). Appropriate as an appendix. Healy notes: keep
+  single-engines-vs-pairs, mtry frontier). Appropriate as an appendix. Notes: keep
   axes identical across the small multiples so panels are comparable, thin the gridlines,
   and prefer direct labels to legends where a panel has 2-3 series. Not urgent.
 
@@ -76,7 +76,7 @@ number survived in the ladder, below).
      29/10/45/16. Done.
    - **`states_two_regimes`** — rebuilt as `draw_states_two_regimes.R` on the CURRENT §14
      deployment data (own-state vs national, 2024, 10% budget), since the only committed
-     data for the original was a superseded run that contradicted it. Redesigned per Healy
+     data for the original was a superseded run that contradicted it. Redesigned
      as a single-metric dumbbell (base rate marked; own-state green/grey/red) instead of the
      dual-encoded bars. Fresh data, so the states and numbers differ from the original. Done.
    - **`winners_curse_raw_vs_lcb`** — rebuilt as `draw_winners_curse_raw_vs_lcb.R`, which

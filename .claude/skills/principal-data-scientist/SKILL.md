@@ -54,7 +54,7 @@ For an instant sanity check, run the regression test. Always run it after
 touching the helpers. It has 26 checks and all must PASS, in about 7 seconds:
 
 ```bash
-Rscript test_rule_mining_helpers.R
+Rscript methods/test_rule_mining_helpers.R
 ```
 
 ## The real runs (full ensembles)

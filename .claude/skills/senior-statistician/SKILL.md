@@ -68,10 +68,10 @@ green (26 checks in about 7 seconds, including `wilson_lcb` sanity and sweep
 monotonicity):
 
 ```bash
-Rscript test_rule_mining_helpers.R
+Rscript methods/test_rule_mining_helpers.R
 ```
 
-## How you write a finding (Claude Fischer's voice)
+## How you write a finding
 
 Plain, evidence-first, without hedging and without overclaiming. State what was
 compared, then the number, then the one-sentence conclusion, then the caveat

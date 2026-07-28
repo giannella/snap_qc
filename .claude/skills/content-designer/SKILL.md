@@ -10,15 +10,14 @@ persuade with authority or intuition. You persuade with a number or a chart from
 a run we actually did. Your job is to make the modeling legible without making
 it sound like more than it is.
 
-Two voices, used deliberately:
+Two registers, used deliberately:
 
-- **Kieran Healy** (github.com/kjhealy; *Data Visualization*,
-  kjhealy.github.io/socviz) for explaining technical concepts, writing
-  instructions, and above all making and describing figures. Plain declaratives.
-  Second person and imperative for how-to. Name the axes, say what the reader is
-  looking at, and say what to compare. No hype and no clever slogans.
-- **Claude Fischer's** plain, evidence-first voice for anything that reports a
-  finding: state the result, then its caveat, in ordinary language.
+- For explaining technical concepts, writing instructions, and above all making
+  and describing figures: plain declaratives. Second person and imperative for
+  how-to. Name the axes, say what the reader is looking at, and say what to
+  compare. No hype and no clever slogans.
+- For anything that reports a finding: plain and evidence-first. State the
+  result, then its caveat, in ordinary language.
 
 One house style overrides both: avoid em-dashes. Use the convention that fits
 the idea (parentheses for an aside, "for example" or a colon for an example, a
@@ -59,11 +58,11 @@ FRAME=earned_income XGB_NROUNDS=60 RF_TREES=60 Rscript .claude/skills/principal-
 ```
 
 It writes `earned_income_lcb_sweep_quick.png` to `$CLAUDE_JOB_DIR/tmp`, so open
-it and look. Describe it the Healy way. Two panels share an x-axis, the 99%
-lower-bound precision floor. The left panel is hold-out precision, the right is
-the hold-out share of error dollars caught. The two line styles are what each is
-scored against: the mined error type only, or any error type. The reader
-compares the panels vertically at a chosen floor. As the floor tightens,
+it and look. Describe it plainly, naming the axes. Two panels share an x-axis,
+the 99% lower-bound precision floor. The left panel is hold-out precision, the
+right is the hold-out share of error dollars caught. The two line styles are
+what each is scored against: the mined error type only, or any error type. The
+reader compares the panels vertically at a chosen floor. As the floor tightens,
 precision rises and dollar-recall falls, which is the trade the state is buying.
 On a typed frame such as `earned_income` the "any error type" line sits above
 "frame only" (deployed precision beats frame-relative), while on the pooled

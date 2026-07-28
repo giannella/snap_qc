@@ -5,7 +5,7 @@
 # exclude national_asis. (The time-shifted 2024-test charts, where including
 # the target state IS honest, live in visualize_deployment_own_vs_national_v2.R.)
 #
-# Charts (Healy-style: ordered dot plots, pointrange uncertainty, direct labels):
+# Charts (ordered dot plots, pointrange uncertainty, direct labels):
 #   dotplot_best_pool_budget05/10.png  best honest pool per state, labeled
 #   dotplot_loo_budget05/10.png        LOO national only (no labels needed)
 #   budget_slopes.png                  5% -> 10% movement, precision + $ panels
