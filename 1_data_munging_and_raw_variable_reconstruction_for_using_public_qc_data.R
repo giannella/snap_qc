@@ -242,6 +242,7 @@ mydata$fsben_uncapped <- mydata$BENMAX - (0.3 * mydata$fsnet_allow_negative)
 mydata$fsben_uncapped <- floor(mydata$fsben_uncapped)
 mydata$fsben_recreated <- pmax(mydata$fsben_uncapped, mydata$fsminimum_ben)
 mydata$fsben_recreated <- pmin(mydata$fsben_recreated, mydata$BENMAX)
+mydata$unc_fsben_rel_max <- mydata$fsben_uncapped / mydata$BENMAX
 
 # CHECK - should be >99.9%
 mean(mydata$fsben_recreated == mydata$FSBEN) * 100 
