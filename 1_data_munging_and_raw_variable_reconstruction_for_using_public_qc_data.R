@@ -12,6 +12,8 @@ options(max.print = 10000)
 correct_variables <- TRUE
 apply_correction_smoothing <- TRUE
 exclude_2020_2021 <- TRUE
+exclude_MFIP <- TRUE
+exclude_SSI_CAP <- TRUE
 
 # 1. Load data
 folder <- paste0(here(), "/")
@@ -144,6 +146,12 @@ mydata <- mydata %>%
 # Keep 48 states and DC only (related to max allotment)
 mydata <- mydata[!mydata$state_name %in% c("Alaska", "Hawaii", "Guam", "Virgin Islands"), ]
 nrow(mydata) # 135980
+
+# Exclude MFIP and SSI_CAP cases
+# Due to non-standard benefits calculations
+if (exclude_MFIP)    mydata <- mydata[mydata$MN_FIP  %in% 0, ]
+if (exclude_SSI_CAP) mydata <- mydata[mydata$SSI_CAP %in% 0, ]
+nrow(mydata)
 
 # If you wanted to be very careful, you could drop all observations with second error elements 
 ## we lose even more signal from errors for most purposes so commenting out by default
