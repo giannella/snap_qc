@@ -46,17 +46,19 @@ EDITIONS <- tribble(
   ~year, ~path,                                                    ~note,
   2016L, "state options reports/12-State_Options_Oct1_2015.pdf",   "12th ed, as of Oct 1 2015, published Apr 15 2016. Preferred over snap_options_2016.csv, which is the same edition with ~24 cells carrying text from a neighbouring row",
   2017L, "state options reports/state_options_revised_2016.pdf",   "13th ed, as of Oct 1 2016; named for its as-of year. Preferred over snap_options_2017.csv, which is the same edition with page footers and neighbouring rows folded into ~76 cells",
-  2018L, "snap_options_2018.csv",                                  "14th ed, as of Oct 1 2017; covers 45 of 53 jurisdictions (stops at Utah)",
+  2018L, "state options reports/snap_stateOptionsReport_2018.pdf", "14th ed, as of Oct 1 2017. Preferred over snap_options_2018.csv, which covers only 45 of 53 jurisdictions and omits the ABAWD and ineligible-noncitizen options",
   2023L, "state options reports/snap_stateOptionsReport_2023.pdf", "15th ed, as of Oct 1 2022",
   2024L, "state options reports/snap-stateOptionsReport_2024.pdf", "16th ed, as of Oct 1 2023",
   2025L, "state options reports/snap-stateOptionsReport_2025.pdf", "17th ed"
 )
 
-# Present but not read. snap_stateOptionsReport_2018.pdf (14th ed) has no
-# per-jurisdiction table at all: it discusses each option in prose and lists the
-# jurisdictions that chose it, one page per option, which needs a different
-# parser. snap_options_2016.csv and snap_options_2017.csv are superseded by the
-# PDFs of the same editions, see the notes above.
+# Present but not read: snap_options_2016.csv, snap_options_2017.csv and
+# snap_options_2018.csv are all superseded by the PDFs of the same editions, see
+# the notes above.
+#
+# The 12th to 14th editions open with a section of one page per option, giving
+# prose and the list of jurisdictions that chose each one, and only then a
+# section of per-jurisdiction pages. It is the second section this parser reads.
 #
 # Editions are identified from the cover page, not the file name: the 12th is
 # "Options as of October 1, 2015" published April 2016, and the 13th is "as of
@@ -254,18 +256,28 @@ page_line_text <- function(page_lines) {
     pull(txt)
 }
 
+# The 12th-14th editions open a jurisdiction page with its name and the State's
+# name for the program, e.g. "Alabama-Food Assistance Program". The dash is what
+# makes this safe to anchor on: the option pages in those editions list
+# jurisdiction names too, but in running prose and in columns, never as a title.
+PROFILE_TITLE_PATTERN <- paste0(
+  "^(", paste(str_to_lower(JURISDICTIONS), collapse = "|"), ")\\s*[—–-]")
+
 has_header_row <- function(page_lines) {
   txt <- page_line_text(page_lines)
   # A column header can sit anywhere on the page: the 17th edition starts a new
   # sub-table half way down.
   if (any(str_detect(txt, HEADER_PATTERN))) return(TRUE)
-  # The 13th edition's profile pages have no column header and are recognised by
-  # their running title. That is not enough on its own: the 15th edition's
-  # contents page uses the same words as its own heading and then lists every
-  # jurisdiction against a page number, which parses as a full page of option
-  # rows. Contents pages are set with dot leaders and the tables never are.
-  if (!any(str_detect(head(txt, 2), "^snap state agency profiles"))) return(FALSE)
-  mean(str_detect(txt, "\\.{4,}")) < 0.3
+  # Contents pages are set with dot leaders and the tables never are. This has to
+  # be tested first: the 15th edition's contents page is headed with the same
+  # words as the 13th edition's running title, and it lists every jurisdiction
+  # against a page number, which would otherwise parse as a page of option rows.
+  if (mean(str_detect(txt, "\\.{4,}")) >= 0.3) return(FALSE)
+  top <- head(txt, 2)
+  # 12th and 13th editions: a running title sits above the jurisdiction name.
+  if (any(str_detect(top, "^snap state agency profiles"))) return(TRUE)
+  # 14th edition: no running title, so the page opens with the jurisdiction name.
+  any(str_detect(top, PROFILE_TITLE_PATTERN))
 }
 
 detect_split_x <- function(page_lines) {
