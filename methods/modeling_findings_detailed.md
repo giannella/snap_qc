@@ -133,6 +133,12 @@ we learned is recoverable. Each points to its numbered section.
   figure scripts; mtry frontier chart added
   (methods/visualize_mtry_frontier_v2.R).
 
+- **07-29**: Tested the munging script's row exclusions by relaxing them and
+  rebuilding the frame (#24): rejected. The one consequential filter is
+  additive-only on the six years we use and the rows it excludes have both a
+  circular error label and a failed pre-QC restoration; FY2020/FY2021 excluded by
+  decision; the max-allotment filter removes only FY2021. No pipeline change.
+
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
 registered in methods/make_all_charts_v2.R so figures regenerate in one
@@ -1179,3 +1185,178 @@ validation the inclusion blended list has (sections 14-16, 20).
 *Artifacts: exclusion_rules_by_hh_size_v2/ (exclusion_rules_all.csv,
 exclusion_rules_highclean.csv, exclusion_lcb_sweep.csv/png); driver
 EXCL_find_exclusion_rules_by_hh_size_v2.R.*
+
+## 24. Munging row exclusions: tested by relaxing them, and kept (2026-07-29)
+
+> **Takeaway: about the data.** We tested whether the munging script is throwing
+> away usable rows, by re-running it with its row exclusions relaxed. It is not.
+> Relaxing the one consequential filter adds 19,095 rows carrying 12,782 apparent
+> errors, and both are artefacts of the same inconsistency that got those rows
+> excluded: their error label is derived from a benefit discrepancy that the case's
+> own reported error amount contradicts, and the pre-QC variable restoration fails
+> on them (the recomputed benefit misses its target by a median $51 against $0 on
+> the rows that pass). FY2020 and FY2021 are excluded by decision, not by
+> measurement: the data is poor and misleading and state practices were
+> qualitatively different. The useful by-product is a guarantee: on the six years
+> we use, the filter is additive-only, reproducing the production frame's rows and
+> errors exactly, year by year.
+
+The modelling frame `reg_model_data.rds` is built by
+`1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R`, which
+drops rows in four places. The question asked here was whether any of that is
+costing us usable data. Method: re-run the munging script with the exclusions
+relaxed, write the result to a separate file, and compare. The script itself was
+not edited or forked; the runner reads its text, applies named substitutions,
+prints each one, and evaluates the result, so what changed is explicit. Both
+`saveRDS` targets were redirected and the production frame's checksum was verified
+unchanged afterwards.
+
+This is a frame-composition check, not a model comparison. There is no train/test
+split and no rule mining in it; the rule-level consequence is in the last
+subsection.
+
+**The four exclusions, and what was done with each.**
+
+| # | exclusion | in the script | action here |
+|---|---|---|---|
+| 1 | `exclude_2020_2021 <- TRUE`: skip the FY2020 and FY2021 data files | line 14 | relaxed in the first run, then reinstated by decision (see below) |
+| 2 | drop Alaska, Hawaii, Guam, Virgin Islands | line 145 | kept |
+| 3 | keep only rows where `abs(absbendiff - AMTERR) <= 5` | line 157 | relaxed: recorded as an `amterr_reconciles` flag instead of dropping |
+| 4 | keep only rows where `BENMAX == rawbenmax` | line 367 | kept (measured separately) |
+
+Terms used below. `FSBEN` and `RAWBEN` are the two benefit figures the public file
+carries per case; `absbendiff` is `abs(RAWBEN - FSBEN)`, and the pipeline calls a
+case an error when that difference exceeds the fiscal year's threshold
+(`over_threshold != 0`). `AMTERR` is the file's separately reported amount of
+benefit in error, so the file states the same quantity twice by two routes.
+`rawben_recreated` is the benefit the script recomputes from the restored pre-QC
+fields, and `BENMAX` is the file's own maximum-allotment field against which the
+script checks its `additional_data/max_allotments.csv` lookup (`rawbenmax`).
+
+**Exclusion 2 was kept on validity grounds, not measured.** The max-allotment and
+standard-deduction lookups in `additional_data/` are keyed by year and household
+size only, i.e. they hold the 48-state values. Alaska and Hawaii have different
+allotments, so keeping those rows would give them a wrong maximum benefit and
+therefore a wrong `rawben_rel_max`. Adding rows that carry broken features is not
+the same as keeping data.
+
+**Frame totals.** Relaxing exclusions 1 and 3 (and zero-filling NA `RENT`/`UTIL`
+rather than dropping them, which turned out to affect 0 rows) produced:
+
+| frame | rows | errors | error dollars | states |
+|---|---|---|---|---|
+| production (`reg_model_data.rds`) | 237,391 | 24,334 | $3,684,635 | 49 |
+| minimal-exclusion rebuild | 305,954 | 42,102 | $4,667,571 | 49 |
+
+The difference decomposes exactly, with no residual:
+
+| | rows | errors |
+|---|---|---|
+| production frame | 237,391 | 24,334 |
+| + FY2020 rows that pass the AMTERR filter | +49,468 | +4,986 |
+| + rows the AMTERR filter had dropped (all years) | +19,095 | +12,782 |
+| = minimal-exclusion rebuild | 305,954 | 42,102 |
+
+**The AMTERR filter is additive-only.** On the six years both frames contain
+(FY2017-19, FY2022-24), the subset of the rebuild that passes the filter
+reproduces the production frame exactly: 0 row mismatches and 0 error mismatches
+across all six years, year by year. So the filter does not alter any row it keeps.
+That is worth having on record independently of the verdict: it means we know
+precisely what the filter removes and that it perturbs nothing else. It also means
+every one of the 12,782 extra errors sits on a row the filter excluded.
+
+**The excluded rows are not usable, for two independent reasons.** Restricting to
+FY2022-24 (126,176 rows in the rebuild), where the delivery lists are built:
+
+| FY2022-24 | rows | errors | error rate | error dollars |
+|---|---|---|---|---|
+| passes the AMTERR filter | 118,263 | 13,288 | 11.2% | $2,334,189 |
+| excluded by it | 7,913 | 5,270 | 66.6% | $174,290 |
+
+*First, the error label on the excluded rows is circular.* These are by
+construction the rows where `absbendiff` and `AMTERR` disagree by more than $5. On
+4,639 of the 7,913 (59%) `AMTERR` is exactly 0, i.e. the file reports no error,
+while `absbendiff` on the same rows has a median of $93 (mean $137). Since the
+pipeline's error test is `absbendiff` against the threshold, the disagreement that
+excluded these rows is the same thing that makes them test positive. The 66.6%
+error rate against 11.2% in the rest of the frame is therefore a restatement of
+the inconsistency, not a property of the households, and the file's own error
+amount says most of them are not errors at all. Nothing in the data resolves which
+of the two statements is right.
+
+*Second, the pre-QC restoration does not converge on them.* Measured within the
+single rebuild run, comparing `abs(RAWBEN - rawben_recreated)` between the two
+groups:
+
+| FY2022-24 | rows | median residual | within $5 | off by more than $50 |
+|---|---|---|---|---|
+| passes the AMTERR filter | 118,263 | $0 | 95.5% | 2.1% |
+| excluded by it | 7,913 | $51 | 29.3% | 50.0% |
+
+So on the excluded rows the restored fields do not reproduce the benefit they were
+restored against. Since the whole point of these features is that they are the
+restored pre-QC values (it is why the Python state workbook was moved off its own
+feature reconstruction and onto this frame, 2026-07-29), rows where the restoration
+failed carry feature values we cannot describe.
+
+**What did not discriminate.** The `correctednotes == "no_change"` share is
+essentially identical in both groups, 64.5% on the excluded rows against 63.5% on
+the rows that pass, so it carries no signal here. Most cases have no error element
+to correct in the first place, so "no change" is the normal outcome. An earlier
+reading of this number as evidence of failure was wrong; the residual is what
+separates the groups.
+
+**Exclusion 4 removes FY2021 and nothing else.** Measured by running the pipeline
+only as far as that filter (`methods/measure_benmax_filter.R`), with exclusions 1
+and 3 relaxed so all seven years reach it: 315,410 rows arrive, the filter drops
+9,456 of them (3.0%), carrying 1,683 errors (3.8% of the 43,785 errors present).
+Every one of those 9,456 rows is FY2021, which is 100% of that year, and the filter
+drops 0 rows in every other year (FY2017, 2018, 2019, 2020, 2022, 2023, 2024: 0.0%
+each). The reason is visible in the ratio `BENMAX / rawbenmax` on the dropped rows,
+which takes only three values: 1.147 (5,576 rows), 1.15 (2,509) and 1.151 (1,371),
+the spread being integer rounding of the pandemic 15% allotment increase that the
+lookup table does not carry. So despite looking like a general data-quality guard,
+in this data the filter functions as a switch that deletes FY2021. It would be
+recoverable by using the file's own `BENMAX` as the denominator rather than the
+lookup, which is a change to the script's logic rather than a flag.
+
+**FY2020 and FY2021 are excluded by decision, not by this measurement**
+(2026-07-29). Both years are not to be used: the data is poor and misleading, and
+the practices states used were qualitatively different, so pooling them with
+FY2017-19 and FY2022-24 mixes eras rather than adding data. This is why exclusion 1
+was reinstated and why exclusion 4 has nothing left to remove. For scale, FY2021 in
+the public files is only 9,832 rows covering July to September 2021, quality
+control having been suspended for the rest of that year; FY2020 is 49,468 rows
+passing the AMTERR filter, carrying 4,986 errors.
+
+**Rule-level consequence, Washington FY2022-24.** The state whose workbook this was
+checked against went from 2,356 rows / 223 errors to 2,464 rows / 289 errors. The
+108 added rows are the inconsistent kind and 66 of them (61.1%) are labelled
+errors. On the 2,356 shared rows the two frames agree: 0 error-flag disagreements,
+and feature disagreements on at most 3 rows (`rawben_rel_max`,
+`unc_rawben_rel_max` and `total_deductions_by_hh_size` on 3 of 2,356 each,
+`medical_deductions` on 1; every other rule feature 0). So the rebuild is additive
+rather than disruptive, which is the reassuring part: the check did not cast doubt
+on the frame we use. Separately, 2,464 is exactly the Washington row count the
+Python dashboard builder read before applying its own consistency filter and
+landing on 2,356, confirming that filter was reproducing exclusion 3.
+
+**Conclusion.** No pipeline change. `reg_model_data.rds` stands, and each exclusion
+is a validity guard rather than conservatism. The falsifiable version of this
+finding, for anyone tempted to revisit it: relaxing exclusion 3 would be justified
+if the excluded rows' restoration residuals matched the retained rows', or if their
+`AMTERR` and `absbendiff` agreed after some repair. Neither holds.
+
+**Caveats.** The convergence comparison is within a single rebuild run, which is
+the right comparison (same correction loops, two groups of rows) but does not tell
+us how those rows would behave if the correction were redesigned around them. The
+FY2020/FY2021 decision is a judgement about data quality and state practice, not a
+measurement, and this entry does not test it. Exclusion 2 was reasoned about rather
+than measured.
+
+*Artifacts: `methods/munging_exclusion_check/` (`rebuild_run.log`,
+`frame_comparison.log`, `benmax_filter.log`, `verification.log`). Regenerating
+scripts: `methods/test_munging_exclusions_minimal.R` (the ~10-minute rebuild;
+writes `reg_model_data_minexcl.rds`, ~60 MB, not committed),
+`methods/measure_benmax_filter.R`, `methods/verify_munging_exclusions.R`
+(re-derives every number above from the two frames in seconds).*

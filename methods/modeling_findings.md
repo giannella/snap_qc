@@ -725,3 +725,58 @@ to the inclusion gridsearch, but has not been through the future-year, 18-state
 validation the inclusion blended list has (sections 14-16, 20).
 
 *Detail and artifacts: [detailed record](modeling_findings_detailed.md), §23.*
+
+## 24. Munging row exclusions: tested by relaxing them, and kept
+
+> **Takeaway: about the data.** We tested whether the munging script is throwing
+> away usable rows, by re-running it with its row exclusions relaxed. It is not.
+> Relaxing the one consequential filter adds 19,095 rows carrying 12,782 apparent
+> errors, and both are artefacts of the same inconsistency that got those rows
+> excluded: their error label is derived from a benefit discrepancy that the case's
+> own reported error amount contradicts, and the pre-QC variable restoration fails
+> on them (the recomputed benefit misses its target by a median $51 against $0 on
+> the rows that pass). FY2020 and FY2021 are excluded by decision, not by
+> measurement: the data is poor and misleading and state practices were
+> qualitatively different. The useful by-product is a guarantee: on the six years
+> we use, the filter is additive-only, reproducing the production frame's rows and
+> errors exactly, year by year.
+
+The munging script drops rows in four places, and the question was whether any of
+that costs us usable data. We re-ran it with the exclusions relaxed, into a
+separate file, leaving the production frame untouched.
+
+Relaxing them took the frame from 237,391 rows and 24,334 errors to 305,954 rows
+and 42,102 errors. That difference decomposes exactly: 49,468 rows and 4,986 errors
+from adding FY2020, and 19,095 rows and 12,782 errors from switching off one
+filter, the one that keeps only rows where the file's two statements of the benefit
+error agree within $5.
+
+Those 19,095 rows look like a rich seam and are not one. In FY2022-24 they are
+7,913 rows of which 66.6% are labelled errors, against 11.2% in the rest of the
+frame. But they are by definition the rows where the two statements disagree, and
+the pipeline's error test reads one of those two statements, so the 66.6% is a
+restatement of the disagreement. On 59% of them the file's reported error amount is
+zero while the benefit figures differ by a median of $93. Independently, the pre-QC
+restoration fails on them: the benefit recomputed from the restored fields misses
+its target by a median $51 against $0 on the rows that pass the filter, with 29.3%
+landing within $5 against 95.5%. An untrustworthy label and unreconstructed
+features.
+
+FY2020 and FY2021 are excluded by decision rather than by this measurement: the
+data is poor and misleading and state practices were qualitatively different. That
+also settles the fourth exclusion, which turns out to drop 9,456 rows that are all
+FY2021, 100% of that year and 0% of every other, because FY2021 carries the
+pandemic 15% allotment increase the lookup table does not.
+
+The by-product is worth more than the verdict. On the six years we use, the filter
+is additive-only: the rows it keeps reproduce the production frame's rows and
+errors exactly, year by year, 0 mismatches. So we know exactly what it removes and
+that it changes nothing else. For Washington, the frame the state workbook reads is
+unaffected: 0 error-flag disagreements on the 2,356 shared rows and feature
+disagreements on at most 3 of them.
+
+No pipeline change came out of this. Each exclusion is a validity guard rather than
+conservatism.
+
+*Full tables, the FY2021 diagnosis, caveats and artifacts:
+[detailed record](modeling_findings_detailed.md), §24.*

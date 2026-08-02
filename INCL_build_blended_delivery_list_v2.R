@@ -157,10 +157,13 @@ mine_pool <- function(pool_states, cache_name) {
     base_by_hh <- vapply(strata_tr, function(rows) mean(tg_tr$ie[rows]), numeric(1))
     base <- base_by_hh[rdf$hh]
     if (ADMISSION == "fdr10") {
-      # BH within this frame's candidates, one-sided vs the stratum base rate
-      pv <- pbinom(k_tr - 1, n_tr, base, lower.tail = FALSE)
-      m <- length(pv); o <- order(pv)
-      thr <- max(c(0L, which(pv[o] <= FDR_ALPHA * seq_len(m) / m)))
+      # BH within this frame's candidates, one-sided vs the stratum base rate.
+      # NB: named `pvals`, not `pv` -- `pv` is the feature vector this loop
+      # passes to mine_rule_vocabulary(), and a local `pv` here would shadow it
+      # for every later frame (invisible while MINING_FRAMES held one frame).
+      pvals <- pbinom(k_tr - 1, n_tr, base, lower.tail = FALSE)
+      m <- length(pvals); o <- order(pvals)
+      thr <- max(c(0L, which(pvals[o] <= FDR_ALPHA * seq_len(m) / m)))
       bh <- rep(FALSE, m); if (thr > 0) bh[o[seq_len(thr)]] <- TRUE
       keep <- bh & n_tr >= MIN_TRAIN_FLAGGED
     } else {

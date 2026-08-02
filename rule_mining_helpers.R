@@ -372,7 +372,14 @@ reduce_flags_for_rules <- function(rules_df, data, strata_idx, fun,
 # (a) exact coverage: rules flagging the SAME training cases collapse to one —
 # the one with the fewest conditions (then shortest text). Cheap prehash on
 # (length, first, last, sum) keeps identical() comparisons within tiny groups.
-dedup_exact_coverage <- function(rules_df, idx_tr) {
+#
+# `priority` (optional, lower = keep first) outranks both tie-breaks, so a
+# caller can say which PROVENANCE survives when two rules are interchangeable —
+# e.g. keep the typed-frame rule over an any-error rule with identical coverage,
+# since the error type is information the state agency can act on. NULL (the
+# default) leaves the original fewest-conditions-then-shortest ordering.
+dedup_exact_coverage <- function(rules_df, idx_tr, priority = NULL) {
+  if (is.null(priority)) priority <- rep(0L, nrow(rules_df))
   key <- vapply(idx_tr, function(ix)
     paste(length(ix),
           if (length(ix) > 0) ix[1] else 0L,
@@ -382,7 +389,7 @@ dedup_exact_coverage <- function(rules_df, idx_tr) {
   drop <- rep(FALSE, nrow(rules_df))
   for (g in unique(key[duplicated(key)])) {
     ix <- which(key == g)
-    ord <- ix[order(n_conds[ix], nchar(rules_df$rule[ix]))]
+    ord <- ix[order(priority[ix], n_conds[ix], nchar(rules_df$rule[ix]))]
     for (a in ord[-1]) {
       for (b in ord) {
         if (a == b || drop[b]) next
@@ -417,7 +424,15 @@ dedup_exact_coverage <- function(rules_df, idx_tr) {
   all(ifelse(bs$dir == "upper", bs$thr >= as$thr, bs$thr <= as$thr))
 }
 
-dedup_dominated <- function(rules_df, stat, stat_eps = 0.01) {
+#
+# `priority` (optional, lower = keep first) only ever decides EPS-TWIN cases —
+# rules the stat cannot separate. A rule is never rescued from a strictly
+# better dominator, so the coverage argument for dropping nested rules is
+# untouched; the flag just says which of two indistinguishable rungs should
+# represent the family. NULL (the default) reproduces the original behaviour
+# exactly.
+dedup_dominated <- function(rules_df, stat, stat_eps = 0.01, priority = NULL) {
+  if (is.null(priority)) priority <- rep(0L, nrow(rules_df))
   structs <- lapply(rules_df$rule, .rule_struct)
   sig  <- paste(rules_df$hh, vapply(structs, function(s) s$sig, ""))
   drop <- rep(FALSE, nrow(rules_df))
@@ -430,10 +445,16 @@ dedup_dominated <- function(rules_df, stat, stat_eps = 0.01) {
       loose_first <- if (structs[[ix[1]]]$dir == "upper")
         ix[order(-vapply(structs[ix], function(s) s$thr, 0))]
       else ix[order( vapply(structs[ix], function(s) s$thr, 0))]
-      best <- -Inf
+      best <- -Inf; holder <- NA_integer_
       for (a in loose_first) {
-        if (!is.na(stat[a]) && stat[a] > best + stat_eps) best <- stat[a]
-        else drop[a] <- TRUE
+        if (!is.na(stat[a]) && stat[a] > best + stat_eps) {
+          best <- stat[a]; holder <- a
+        } else if (!is.na(holder) && priority[a] < priority[holder]) {
+          # eps-twin rungs: hand the family to the higher-priority rung
+          drop[holder] <- TRUE
+          if (!is.na(stat[a])) best <- max(best, stat[a])
+          holder <- a
+        } else drop[a] <- TRUE
       }
     } else {
       # a rule can only be (eps-)dominated by one whose stat is >= its own
@@ -446,6 +467,9 @@ dedup_dominated <- function(rules_df, stat, stat_eps = 0.01) {
         for (b in ord) {
           if (b == a || drop[b] || is.na(stat[b])) next
           if (stat[b] < stat[a] - stat_eps) next
+          # a lower-priority rule may only displace a higher-priority one on a
+          # real stat edge, never on an eps tie
+          if (priority[a] < priority[b] && stat[b] < stat[a]) next
           if (.covers(structs[[b]], structs[[a]]) &&
               !identical(structs[[b]]$thr, structs[[a]]$thr)) { drop[a] <- TRUE; break }
         }
