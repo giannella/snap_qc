@@ -1,4 +1,4 @@
-# SNAP QC rule mining: findings: complete detailed record (July 2026 runs)
+# SNAP QC rule mining: findings: complete detailed record
 
 > This is the **full evidence log**: every number, table, caveat, and artifact
 > pointer, in the order the work happened. It is the source of truth and is kept

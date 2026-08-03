@@ -1,4 +1,4 @@
-# SNAP QC rule mining: key findings and syntheses (July 2026 runs)
+# SNAP QC rule mining: key findings and syntheses
 
 This file is the plain-language version of the findings; the full per-run numbers,
 tables, and artifact paths for every section live in the companion
