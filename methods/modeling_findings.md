@@ -780,3 +780,43 @@ conservatism.
 
 *Full tables, the FY2021 diagnosis, caveats and artifacts:
 [detailed record](modeling_findings_detailed.md), §24.*
+
+## 25. Admission stringency: tightening the false-discovery rate from 10% to 5% changes nothing
+
+> **Takeaway: about our pipeline.** We hold rules to a false-discovery-rate test before
+> they can enter a list. Making that test twice as strict (10% to 5%, with the n >= 30
+> support floor left in place) changed nothing: 17 of 18 states delivered a
+> bit-identical list at the 5% review budget and 16 of 18 at the 10% budget, and the
+> paired median difference in precision was 0.000 at both. The reason is positional.
+> Tightening the rate removes rules from the middle and bottom of the ranking, and the
+> highest-ranked rule it removed sat at position 14,449 of 50,697, while a review
+> budget deploys the top 16 to 27 rules. The support floor is the guard that reaches
+> the top of the list; the rate is not.
+
+Two admission arms were compared on the raw 2022-2023 vocabularies and scored on each
+state's FY2024 cases, a true future year. Both keep the n >= 30 support floor and
+differ only in the false-discovery rate. The shipped setting, 10%, admitted 50,697 of
+144,533 national candidates and delivered median holdout precision 0.3345 at the 5%
+budget and 0.2753 at 10%, against a median base error rate of 0.1253, so lift of 2.48x
+and 2.15x. The 5% setting admitted 46,963, which is 92.6% as many, and delivered
+0.3471 and 0.2770. Those medians land on different states; the paired per-state
+difference has a median of exactly 0.000 at both budgets, on precision and on dollar
+recall alike, and the 5% rate was better in 1 state of 18 and worse in 1.
+
+The explanation is that the rate and the floor act on opposite ends of the ranking.
+The rules a stricter rate removes are not less precise, they are less well evidenced:
+median raw training precision 0.202 whether kept or removed, but median 1,163 cases
+flagged among those kept against 360 among those removed. None of them are anywhere
+near the top of the list. Rules flagging 30 to 50 cases carry the highest lower bounds
+(median 0.198, against 0.157 for rules flagging 500 or more) and therefore sort to the
+top, where a review budget actually fills: among the top 25 rules by lower bound, 96%
+flag fewer than 100 cases and median raw precision is 0.608. That is where a support
+floor acts, and it is why section 19 found the floor worth 0.335 against 0.284 while
+this section finds the rate worth nothing.
+
+Caveats: one era only (FY2022-2023 to FY2024), 18 states, exploratory rather than
+pre-registered, and only the 0.05 to 0.10 band was tested. If the multiplicity
+correction should count the searched space rather than the reported one, the
+equivalent rate is on the order of 0.001, far below anything measured here.
+
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md), §25.*

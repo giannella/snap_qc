@@ -138,6 +138,11 @@ we learned is recoverable. Each points to its numbered section.
   additive-only on the six years we use and the rows it excludes have both a
   circular error label and a failed pre-QC restoration; FY2020/FY2021 excluded by
   decision; the max-allotment filter removes only FY2021. No pipeline change.
+- **08-03**: Tightened the admission false-discovery rate from 10% to 5%, floor held
+  at n >= 30 (#25): no effect. 16 of 18 states identical at both review budgets,
+  paired median difference 0.000, because the highest-ranked rule the stricter rate
+  removes sits at position 14,449 of 50,697 and a budget deploys the top 16 to 27.
+  No pipeline change.
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -1360,3 +1365,185 @@ scripts: `methods/test_munging_exclusions_minimal.R` (the ~10-minute rebuild;
 writes `reg_model_data_minexcl.rds`, ~60 MB, not committed),
 `methods/measure_benmax_filter.R`, `methods/verify_munging_exclusions.R`
 (re-derives every number above from the two frames in seconds).*
+
+## 25. Admission stringency: tightening the false-discovery rate from 10% to 5% changes nothing (2026-08-03)
+
+> **Takeaway: about our pipeline.** We hold rules to a false-discovery-rate test before
+> they can enter a list. Making that test twice as strict (10% to 5%, with the n >= 30
+> support floor left in place) changed nothing: 17 of 18 states delivered a
+> bit-identical list at the 5% review budget and 16 of 18 at the 10% budget, and the
+> paired median difference in precision was 0.000 at both. The reason is positional.
+> Tightening the rate removes rules from the middle and bottom of the ranking, and the
+> highest-ranked rule it removed sat at position 14,449 of 50,697, while a review
+> budget deploys the top 16 to 27 rules. The support floor is the guard that reaches
+> the top of the list; the rate is not.
+
+### What was compared
+
+Two admission arms, identical in every other respect. Both were applied to the raw,
+unfiltered 2022-2023 rule vocabularies (144,533 national candidates), which are the
+same candidate sets the production pipeline mines.
+
+- **fdr10f** (the shipped admission): a rule is admitted when a Benjamini-Hochberg
+  test at a false-discovery rate of 10%, one-sided against its own household-size
+  stratum base error rate, rejects "this rule is no better than the base rate", AND
+  the rule flags at least 30 training cases. Admitted 50,697 of 144,533 national
+  candidates.
+- **fdr05f**: the same test at a false-discovery rate of 5%, with the same n >= 30
+  floor. Admitted 46,963 of 144,533, which is 92.6% of what fdr10f admitted.
+
+Everything downstream is the settled recipe and is identical across arms: rules are
+ordered by the one-sided 99% Wilson lower confidence bound of their training
+precision; each state's own mined pool is blended with the national pool on that one
+scale; the list is filled to the review budget as "core" and out to 3x depth as
+"buffer"; the frozen list is then scored on that state's FY2024 cases. FY2024 is a
+true future year relative to the FY2022-2023 training window, not an interpolated
+one; nothing from it touched mining, admission, ranking, or fill.
+
+Two arms from the earlier admission audition (section 19) are the relevant prior
+context, because they isolate what the floor does. Both were run without the support
+floor: **fdr10** (rate 10%, no floor) reached 0.2840 median precision at the 5%
+budget, and **fdr05** (rate 5%, no floor) reached 0.2931, against **fdr10f** at
+0.3345. Tightening the rate while the floor was absent recovered less than a fifth of
+the gap the floor itself was worth. Section 19 recorded that the floor is not
+optional. This entry records that once the floor is present, the rate is inert.
+
+### Result: 18 states, both review budgets
+
+Median across the 18 states, with the base error rate given so lift is legible.
+
+| | 5% budget, fdr10f | 5% budget, fdr05f | 10% budget, fdr10f | 10% budget, fdr05f |
+|---|---|---|---|---|
+| admitted rules (blended pool) | 54,261 | 49,360 | 54,261 | 49,360 |
+| rules deployed | 16 | 18 | 27 | 27 |
+| workload (share of caseload) | 0.0493 | 0.0493 | 0.0994 | 0.0994 |
+| holdout precision | 0.3345 | 0.3471 | 0.2753 | 0.2770 |
+| holdout dollar recall | 0.1461 | 0.1565 | 0.2484 | 0.2375 |
+| base error rate | 0.1253 | 0.1253 | 0.1253 | 0.1253 |
+| lift over base rate (median of the per-state ratio) | 2.48x | 2.56x | 2.15x | 2.09x |
+
+The median precision row moves from 0.3345 to 0.3471 at the 5% budget, and that
+apparent gain is an artifact of the median landing on a different state. The lift row
+shows the same trap from the other side: at the 10% budget the 5% rate has the higher
+median precision (0.2770 against 0.2753) but the lower median lift (2.09x against
+2.15x), because a median of ratios is not the ratio of medians. The paired
+per-state difference is the honest statistic, and **its median is exactly 0.0000 at
+both budgets**, for precision and for dollar recall alike. At the 5% budget fdr05f
+was better in 1 state and worse in 0; at the 10% budget better in 1 and worse in 1.
+
+Per state, precision and dollar recall, fdr10f then fdr05f. The blended pool fell to
+90-92% of its size for every state, so the pool did shrink; the delivered list did
+not change.
+
+| state | base rate | prec 5% | $rec 5% | prec 10% | $rec 10% |
+|---|---|---|---|---|---|
+| Arizona | 0.112 | 0.279 / 0.279 | 0.224 / 0.224 | 0.326 / 0.326 | 0.376 / 0.376 |
+| California | 0.130 | 0.275 / 0.275 | 0.194 / 0.194 | 0.247 / 0.247 | 0.294 / 0.294 |
+| Colorado | 0.121 | 0.525 / 0.525 | 0.201 / 0.201 | 0.362 / 0.362 | 0.259 / 0.259 |
+| Connecticut | 0.145 | 0.386 / 0.386 | 0.160 / 0.160 | 0.371 / 0.371 | 0.274 / 0.274 |
+| District of Columbia | 0.219 | 0.638 / 0.638 | 0.135 / 0.135 | 0.474 / 0.474 | 0.217 / 0.217 |
+| Louisiana | 0.110 | 0.209 / 0.209 | 0.100 / 0.100 | 0.207 / 0.207 | 0.235 / 0.235 |
+| Maine | 0.124 | 0.326 / 0.326 | 0.241 / 0.241 | 0.250 / 0.250 | 0.315 / 0.315 |
+| Maryland | 0.144 | 0.353 / 0.353 | 0.086 / 0.086 | 0.357 / 0.357 | 0.230 / 0.230 |
+| Massachusetts | 0.137 | 0.488 / 0.488 | 0.158 / 0.158 | 0.333 / 0.333 | 0.218 / 0.218 |
+| Michigan | 0.131 | **0.279 / 0.372** | **0.138 / 0.159** | **0.279 / 0.233** | **0.257 / 0.194** |
+| Mississippi | 0.123 | 0.415 / 0.415 | 0.155 / 0.155 | 0.374 / 0.374 | 0.257 / 0.257 |
+| Missouri | 0.090 | 0.351 / 0.351 | 0.194 / 0.194 | 0.253 / 0.253 | 0.288 / 0.288 |
+| New Jersey | 0.094 | 0.129 / 0.129 | 0.095 / 0.095 | 0.161 / 0.161 | 0.164 / 0.164 |
+| North Carolina | 0.127 | 0.289 / 0.289 | 0.107 / 0.107 | 0.233 / 0.233 | 0.147 / 0.147 |
+| Tennessee | 0.099 | 0.244 / 0.244 | 0.125 / 0.125 | 0.194 / 0.194 | 0.240 / 0.240 |
+| Texas | 0.149 | 0.309 / 0.309 | 0.115 / 0.115 | **0.247 / 0.282** | **0.178 / 0.205** |
+| Virginia | 0.168 | 0.343 / 0.343 | 0.106 / 0.106 | 0.329 / 0.329 | 0.201 / 0.201 |
+| Washington | 0.085 | 0.375 / 0.375 | 0.230 / 0.230 | 0.272 / 0.272 | 0.351 / 0.351 |
+
+**What did not move** is the finding. Sixteen states are identical on both metrics at
+both budgets. Michigan moved in opposite directions at the two budgets (+0.093 at 5%,
+-0.047 at 10%), which is what per-state sampling noise looks like rather than an
+effect, and Texas moved at the 10% budget only (+0.035). No state changed by a
+consistent sign across both budgets.
+
+### Why the rate cannot reach the delivered list
+
+Measured on the national 2022-2023 pool. The 5% rate removes 3,734 of the 50,697
+rules fdr10f admits, which is 7.4% of the pool. Ordering that pool by the 99% Wilson
+lower bound, the statistic the delivered list is filled from:
+
+| position in the ranking | rules the 5% rate removes |
+|---|---|
+| top 50 | 0 |
+| top 100 | 0 |
+| top 500 | 0 |
+| top 1,000 | 0 |
+| top 5,000 | 0 |
+
+The highest-ranked removed rule sits at **position 14,449 of 50,697**. A 5% review
+budget deploys a median of 16 rules and a 10% budget 27, all drawn from the very top
+of that ranking, so the removed rules were never candidates for delivery.
+
+The removed rules are not low-precision; they are low-evidence. Median raw training
+precision is 0.202 among the rules the 5% rate keeps and 0.202 among those it
+removes, identical. What differs is support: median 1,163 cases flagged among the
+kept against 360 among the removed, which is why their binomial p-values against the
+base rate are weaker. Median 99% lower bound is 0.167 for kept and 0.142 for removed.
+
+The support floor acts at the opposite end of the same ranking. In the same 2022-2023
+national admitted pool:
+
+| cases flagged | rules | median 99% LCB | median raw precision |
+|---|---|---|---|
+| 30-50 | 2,102 | 0.198 | 0.344 |
+| 50-100 | 4,116 | 0.190 | 0.298 |
+| 100-200 | 5,172 | 0.185 | 0.259 |
+| 200-500 | 7,381 | 0.176 | 0.226 |
+| 500+ | 31,926 | 0.157 | 0.174 |
+
+Thinly-supported rules carry the *highest* bounds, so they sort to the top, and the
+top of the ranking is almost entirely made of them: among the top 25 rules by lower
+bound the median rule flags 50 cases and 96% flag fewer than 100; among the top 100
+the median flags 68 and 81% flag fewer than 100; every one of the top 500 flags fewer
+than 200. Median raw precision in the top 25 is 0.608. Section 1's selection
+arithmetic puts the precision reachable by noise alone at n = 30, in a search of this
+size, at about 0.34. So the rules a tight review budget deploys are the ones whose
+apparent precision is least distinguishable from luck. That is a description of where
+a floor would act, not a test of one; a floor sweep is a separate arm and is not
+reported here.
+
+### Caveats
+
+- **Single era, not replicated.** One training window (FY2022-2023) and one test year
+  (FY2024). Section 20 is the precedent for why that matters: a stringency effect
+  visible on 2024 failed to replicate on 2019. A null result is less fragile than a
+  positive one, but this has not been confirmed on the FY2017-2018 to FY2019 era.
+- **Exploratory, not pre-registered.** No bar was set in advance.
+- **18 states, not 49.** The audition harness runs the 18 benchmark states, because
+  those are the states whose raw vocabularies were cached.
+- **The harness re-fills against the test year.** This audition walks core AND buffer
+  rules against each state's FY2024 caseload and stops at the FY2024 cap, so its
+  workload equals the review budget by construction (median 0.0493 at the 5% budget,
+  0.0994 at the 10%). That is what makes the arms comparable to each other, and it is
+  also why these precision numbers are NOT comparable to the frozen-list scorecard in
+  `methods/anyerror_blended_holdout_2024/`, where a list filled on FY2022-2023 is
+  scored on FY2024 without refilling and carries a median 0.855 of its budgeted
+  workload at the 5% budget. Fill ratios from the two designs measure different
+  quantities and must not be quoted against each other.
+- **Only the 0.05 to 0.10 band was tested.** If the right multiplicity denominator is
+  the searched space rather than the reported one (roughly 5.7 million depth-4
+  conjunctions per stratum against the roughly 49,000 reported per stratum), the
+  equivalent rate is on the order of 0.001, two orders of magnitude below anything
+  measured here. This entry says the rate is inert where we looked. It does not say
+  the test is correctly specified.
+
+*Artifacts:
+`methods/state_similarity_v2/transfer_benchmark_train2223_test24/fdr05f_audition.csv`
+(72 rows: 18 states x 2 budgets x 2 arms). The console log is written beside it as
+`fdr05f_audition_run.log` but is not tracked, since the repo ignores `*.log`.
+Regenerating script: `methods/fdr_admission_alpha05_v2.R` (runner:
+`runners/run_fdr_admission_alpha05.R`), which is `methods/fdr_admission_audition_v2.R`
+with `adm_fdr05f <- adm_fdr05 & r$n >= 30` added and `ARMS <- c("fdr10f", "fdr05f")`;
+it mines nothing and reads the cached raw vocabularies in
+`.../fdr_raw_vocab/`. Prior arms (prod, fdr10, fdr05, fdr10f):
+`.../fdr_admission_audition.csv`. The positional and support-band numbers in this
+entry are re-derived from `.../fdr_raw_vocab/raw_national.rds`. The re-run of fdr10f
+reproduced the recorded audition exactly across all 36 rows (maximum absolute
+difference 0 in both precision and dollar recall), which is the check that the two
+arms differ only in alpha.*
