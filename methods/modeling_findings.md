@@ -820,3 +820,45 @@ correction should count the searched space rather than the reported one, the
 equivalent rate is on the order of 0.001, far below anything measured here.
 
 *Detail and artifacts: [detailed record](modeling_findings_detailed.md), §25.*
+
+## 26. The support floor: raising it costs precision, and n >= 30 is near optimal from both directions
+
+> **Takeaway: about our pipeline (a refuted prediction).** The n >= 30 support floor
+> admits rules whose apparent precision noise alone could reach, so we expected raising
+> it to help. It does not. Raising the national floor to 66, 195 or 778 cases lowered
+> median holdout precision at the 5% review budget from 0.3345 to 0.3000, 0.2950 and
+> 0.2826, monotonically, and lowering the state floor to about 15 (a flat 1% of a state
+> caseload) lowered it further to 0.2558. Section 19 already showed that removing the
+> floor entirely costs precision (0.2840 against 0.3345), so 30 is close to best from
+> both directions. The floor is an estimation-quality guard, not a precision dial, and
+> the prediction that a bigger search needs a bigger floor was wrong on this era.
+
+Seven floors were compared on the same raw 2022-2023 vocabularies, with the
+false-discovery rate held at 10% so the floor is the only thing that moves, and each
+list scored on FY2024, a true future year. Because a state's public caseload is only
+about 1,500 cases, a percentage floor written as max(30, q x caseload) leaves every
+state at 30 and changes the national pool alone, which makes the comparison clean.
+At the 5% review budget, against a median base error rate of 0.1253: floor 30 gave
+0.3345 precision (2.48x lift), 66 gave 0.3000, 195 gave 0.2950, 778 gave 0.2826, and
+dropping states to a flat 1% of their caseload (about 15 cases) gave 0.2558 (1.93x).
+At the 10% budget floors up to about 200 are a wash, with paired median differences of
+exactly 0.000; only the 778-case floors lose.
+
+The mechanism is that a higher floor admits only broader rules, and broader rules are
+less precise: median raw training precision runs 0.344 for rules flagging 30 to 50
+cases against 0.174 for rules flagging 500 or more. Filling a fixed budget out of
+broader rules lands on lower-precision cases and takes fewer rules to do it, with
+median rules deployed falling from 16.5 to 6.0.
+
+This also answers a specific proposal in the direction of "no": that a pool mined from
+a much larger caseload should carry a much larger floor. The national pool holds 77,806
+training cases, roughly the scale of a state's internal QA data, and it is exactly the
+pool where raising the floor hurt most.
+
+Caveats: one era (FY2022-2023 to FY2024), 18 states, exploratory rather than
+pre-registered, coarse floor values, and the harness re-fills against the test year, so
+these numbers compare to each other and to section 25 but not to the frozen-list
+scorecard. A state running this on its own 40k to 100k internal cases would also have a
+much larger own pool, which no arm here simulates.
+
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md), §26.*

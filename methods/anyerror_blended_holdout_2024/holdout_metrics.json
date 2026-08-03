@@ -6,6 +6,7 @@
   "admission": "BH FDR 10% vs stratum base rate AND n >= 30",
   "ranking": "one-sided 99.0% Wilson LCB of training precision",
   "per_basis": "dollar recall: flagged error dollars / total error dollars",
+  "scoring_bases": "two readings per state and budget. FROZEN CORE (fields without a _refill suffix): the core list filled on the training caseload, frozen, scored on the holdout year with no refilling. REFILL (fields suffixed _refill): core and buffer walked against the holdout caseload to that year's budget cap, so workload equals the budget by construction and precision is workload-matched. The refill uses the holdout caseload but never holdout outcomes.",
   "n_records": 98,
   "records": [
     {
@@ -28,7 +29,18 @@
       "weighted_cases_holdout": 355320.522829,
       "precision_holdout": 0.4,
       "base_rate_holdout": 0.134745,
-      "flagged_share_of_caseload": 0.048123
+      "flagged_share_of_caseload": 0.048123,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 21,
+      "n_rules_available_refill": 145,
+      "n_cases_flagged_refill": 51,
+      "flagged_share_of_caseload_refill": 0.049086,
+      "n_errors_flagged_refill": 21,
+      "precision_refill": 0.411765,
+      "per_reduction_pts_unweighted_refill": 13.275291,
+      "per_reduction_pts_weighted_refill": 13.123646,
+      "error_dollars_flagged_holdout_unweighted_refill": 3324,
+      "error_dollars_flagged_holdout_weighted_refill": 1090408.626745
     },
     {
       "state": "Alabama",
@@ -50,7 +62,18 @@
       "weighted_cases_holdout": 355320.522829,
       "precision_holdout": 0.327103,
       "base_rate_holdout": 0.134745,
-      "flagged_share_of_caseload": 0.102984
+      "flagged_share_of_caseload": 0.102984,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 47,
+      "n_rules_available_refill": 279,
+      "n_cases_flagged_refill": 103,
+      "flagged_share_of_caseload_refill": 0.099134,
+      "n_errors_flagged_refill": 33,
+      "precision_refill": 0.320388,
+      "per_reduction_pts_unweighted_refill": 23.507329,
+      "per_reduction_pts_weighted_refill": 23.14671,
+      "error_dollars_flagged_holdout_unweighted_refill": 5886,
+      "error_dollars_flagged_holdout_weighted_refill": 1923198.242659
     },
     {
       "state": "Arizona",
@@ -72,7 +95,18 @@
       "weighted_cases_holdout": 414687.581248,
       "precision_holdout": 0.272727,
       "base_rate_holdout": 0.112009,
-      "flagged_share_of_caseload": 0.050808
+      "flagged_share_of_caseload": 0.050808,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 13,
+      "n_rules_available_refill": 61,
+      "n_cases_flagged_refill": 43,
+      "flagged_share_of_caseload_refill": 0.049654,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.27907,
+      "per_reduction_pts_unweighted_refill": 22.357882,
+      "per_reduction_pts_weighted_refill": 22.597709,
+      "error_dollars_flagged_holdout_unweighted_refill": 4578,
+      "error_dollars_flagged_holdout_weighted_refill": 2258045.362148
     },
     {
       "state": "Arizona",
@@ -94,7 +128,18 @@
       "weighted_cases_holdout": 414687.581248,
       "precision_holdout": 0.303797,
       "base_rate_holdout": 0.112009,
-      "flagged_share_of_caseload": 0.091224
+      "flagged_share_of_caseload": 0.091224,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 27,
+      "n_rules_available_refill": 157,
+      "n_cases_flagged_refill": 86,
+      "flagged_share_of_caseload_refill": 0.099307,
+      "n_errors_flagged_refill": 28,
+      "precision_refill": 0.325581,
+      "per_reduction_pts_unweighted_refill": 37.580582,
+      "per_reduction_pts_weighted_refill": 38.818514,
+      "error_dollars_flagged_holdout_unweighted_refill": 7695,
+      "error_dollars_flagged_holdout_weighted_refill": 3878887.220323
     },
     {
       "state": "Arkansas",
@@ -116,7 +161,18 @@
       "weighted_cases_holdout": 112608.505514,
       "precision_holdout": 0.219512,
       "base_rate_holdout": 0.079532,
-      "flagged_share_of_caseload": 0.047953
+      "flagged_share_of_caseload": 0.047953,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 19,
+      "n_rules_available_refill": 113,
+      "n_cases_flagged_refill": 42,
+      "flagged_share_of_caseload_refill": 0.049123,
+      "n_errors_flagged_refill": 9,
+      "precision_refill": 0.214286,
+      "per_reduction_pts_unweighted_refill": 16.36474,
+      "per_reduction_pts_weighted_refill": 17.411395,
+      "error_dollars_flagged_holdout_unweighted_refill": 1617,
+      "error_dollars_flagged_holdout_weighted_refill": 218173.747707
     },
     {
       "state": "Arkansas",
@@ -138,7 +194,18 @@
       "weighted_cases_holdout": 112608.505514,
       "precision_holdout": 0.236364,
       "base_rate_holdout": 0.079532,
-      "flagged_share_of_caseload": 0.064327
+      "flagged_share_of_caseload": 0.064327,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 34,
+      "n_rules_available_refill": 210,
+      "n_cases_flagged_refill": 85,
+      "flagged_share_of_caseload_refill": 0.099415,
+      "n_errors_flagged_refill": 17,
+      "precision_refill": 0.2,
+      "per_reduction_pts_unweighted_refill": 31.019128,
+      "per_reduction_pts_weighted_refill": 31.173341,
+      "error_dollars_flagged_holdout_unweighted_refill": 3065,
+      "error_dollars_flagged_holdout_weighted_refill": 390618.007373
     },
     {
       "state": "California",
@@ -160,7 +227,18 @@
       "weighted_cases_holdout": 2849942.227389,
       "precision_holdout": 0.3125,
       "base_rate_holdout": 0.130221,
-      "flagged_share_of_caseload": 0.019656
+      "flagged_share_of_caseload": 0.019656,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 19,
+      "n_rules_available_refill": 67,
+      "n_cases_flagged_refill": 40,
+      "flagged_share_of_caseload_refill": 0.04914,
+      "n_errors_flagged_refill": 11,
+      "precision_refill": 0.275,
+      "per_reduction_pts_unweighted_refill": 19.439452,
+      "per_reduction_pts_weighted_refill": 15.538928,
+      "error_dollars_flagged_holdout_unweighted_refill": 4002,
+      "error_dollars_flagged_holdout_weighted_refill": 11151217.999864
     },
     {
       "state": "California",
@@ -182,7 +260,18 @@
       "weighted_cases_holdout": 2849942.227389,
       "precision_holdout": 0.25,
       "base_rate_holdout": 0.130221,
-      "flagged_share_of_caseload": 0.093366
+      "flagged_share_of_caseload": 0.093366,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 25,
+      "n_rules_available_refill": 165,
+      "n_cases_flagged_refill": 81,
+      "flagged_share_of_caseload_refill": 0.099509,
+      "n_errors_flagged_refill": 21,
+      "precision_refill": 0.259259,
+      "per_reduction_pts_unweighted_refill": 30.684412,
+      "per_reduction_pts_weighted_refill": 27.585755,
+      "error_dollars_flagged_holdout_unweighted_refill": 6317,
+      "error_dollars_flagged_holdout_weighted_refill": 19796395.391751
     },
     {
       "state": "Colorado",
@@ -204,7 +293,18 @@
       "weighted_cases_holdout": 285824.609049,
       "precision_holdout": 0.529412,
       "base_rate_holdout": 0.120797,
-      "flagged_share_of_caseload": 0.042341
+      "flagged_share_of_caseload": 0.042341,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 26,
+      "n_rules_available_refill": 137,
+      "n_cases_flagged_refill": 40,
+      "flagged_share_of_caseload_refill": 0.049813,
+      "n_errors_flagged_refill": 21,
+      "precision_refill": 0.525,
+      "per_reduction_pts_unweighted_refill": 20.120684,
+      "per_reduction_pts_weighted_refill": 20.48911,
+      "error_dollars_flagged_holdout_unweighted_refill": 3968,
+      "error_dollars_flagged_holdout_weighted_refill": 1389087.958659
     },
     {
       "state": "Colorado",
@@ -226,7 +326,18 @@
       "weighted_cases_holdout": 285824.609049,
       "precision_holdout": 0.380952,
       "base_rate_holdout": 0.120797,
-      "flagged_share_of_caseload": 0.104608
+      "flagged_share_of_caseload": 0.104608,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 44,
+      "n_rules_available_refill": 226,
+      "n_cases_flagged_refill": 80,
+      "flagged_share_of_caseload_refill": 0.099626,
+      "n_errors_flagged_refill": 29,
+      "precision_refill": 0.3625,
+      "per_reduction_pts_unweighted_refill": 25.860758,
+      "per_reduction_pts_weighted_refill": 26.108096,
+      "error_dollars_flagged_holdout_unweighted_refill": 5100,
+      "error_dollars_flagged_holdout_weighted_refill": 1770035.001594
     },
     {
       "state": "Connecticut",
@@ -248,7 +359,18 @@
       "weighted_cases_holdout": 217393.082462,
       "precision_holdout": 0.350877,
       "base_rate_holdout": 0.144605,
-      "flagged_share_of_caseload": 0.063404
+      "flagged_share_of_caseload": 0.063404,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 15,
+      "n_rules_available_refill": 99,
+      "n_cases_flagged_refill": 44,
+      "flagged_share_of_caseload_refill": 0.048943,
+      "n_errors_flagged_refill": 17,
+      "precision_refill": 0.386364,
+      "per_reduction_pts_unweighted_refill": 15.971572,
+      "per_reduction_pts_weighted_refill": 19.012937,
+      "error_dollars_flagged_holdout_unweighted_refill": 3753,
+      "error_dollars_flagged_holdout_weighted_refill": 1181128.414536
     },
     {
       "state": "Connecticut",
@@ -270,7 +392,18 @@
       "weighted_cases_holdout": 217393.082462,
       "precision_holdout": 0.363636,
       "base_rate_holdout": 0.144605,
-      "flagged_share_of_caseload": 0.110122
+      "flagged_share_of_caseload": 0.110122,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 29,
+      "n_rules_available_refill": 192,
+      "n_cases_flagged_refill": 89,
+      "flagged_share_of_caseload_refill": 0.098999,
+      "n_errors_flagged_refill": 33,
+      "precision_refill": 0.370787,
+      "per_reduction_pts_unweighted_refill": 27.419355,
+      "per_reduction_pts_weighted_refill": 32.164615,
+      "error_dollars_flagged_holdout_unweighted_refill": 6443,
+      "error_dollars_flagged_holdout_weighted_refill": 1998141.632523
     },
     {
       "state": "Delaware",
@@ -292,7 +425,18 @@
       "weighted_cases_holdout": 54803.316661,
       "precision_holdout": 0.547619,
       "base_rate_holdout": 0.136302,
-      "flagged_share_of_caseload": 0.05668
+      "flagged_share_of_caseload": 0.05668,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 19,
+      "n_rules_available_refill": 52,
+      "n_cases_flagged_refill": 37,
+      "flagged_share_of_caseload_refill": 0.049933,
+      "n_errors_flagged_refill": 18,
+      "precision_refill": 0.486486,
+      "per_reduction_pts_unweighted_refill": 15.722947,
+      "per_reduction_pts_weighted_refill": 15.199208,
+      "error_dollars_flagged_holdout_unweighted_refill": 2749,
+      "error_dollars_flagged_holdout_weighted_refill": 184457.281451
     },
     {
       "state": "Delaware",
@@ -314,7 +458,18 @@
       "weighted_cases_holdout": 54803.316661,
       "precision_holdout": 0.416667,
       "base_rate_holdout": 0.136302,
-      "flagged_share_of_caseload": 0.097166
+      "flagged_share_of_caseload": 0.097166,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 28,
+      "n_rules_available_refill": 85,
+      "n_cases_flagged_refill": 74,
+      "flagged_share_of_caseload_refill": 0.099865,
+      "n_errors_flagged_refill": 30,
+      "precision_refill": 0.405405,
+      "per_reduction_pts_unweighted_refill": 27.293526,
+      "per_reduction_pts_weighted_refill": 27.039992,
+      "error_dollars_flagged_holdout_unweighted_refill": 4772,
+      "error_dollars_flagged_holdout_weighted_refill": 328156.797059
     },
     {
       "state": "District of Columbia",
@@ -336,7 +491,18 @@
       "weighted_cases_holdout": 78616.932633,
       "precision_holdout": 0.589286,
       "base_rate_holdout": 0.219262,
-      "flagged_share_of_caseload": 0.057377
+      "flagged_share_of_caseload": 0.057377,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 6,
+      "n_rules_available_refill": 35,
+      "n_cases_flagged_refill": 47,
+      "flagged_share_of_caseload_refill": 0.048156,
+      "n_errors_flagged_refill": 30,
+      "precision_refill": 0.638298,
+      "per_reduction_pts_unweighted_refill": 13.44617,
+      "per_reduction_pts_weighted_refill": 14.544894,
+      "error_dollars_flagged_holdout_unweighted_refill": 5990,
+      "error_dollars_flagged_holdout_weighted_refill": 482966.198911
     },
     {
       "state": "District of Columbia",
@@ -358,7 +524,18 @@
       "weighted_cases_holdout": 78616.932633,
       "precision_holdout": 0.541176,
       "base_rate_holdout": 0.219262,
-      "flagged_share_of_caseload": 0.08709
+      "flagged_share_of_caseload": 0.08709,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 19,
+      "n_rules_available_refill": 70,
+      "n_cases_flagged_refill": 97,
+      "flagged_share_of_caseload_refill": 0.099385,
+      "n_errors_flagged_refill": 46,
+      "precision_refill": 0.474227,
+      "per_reduction_pts_unweighted_refill": 21.745084,
+      "per_reduction_pts_weighted_refill": 23.451147,
+      "error_dollars_flagged_holdout_unweighted_refill": 9687,
+      "error_dollars_flagged_holdout_weighted_refill": 778700.162605
     },
     {
       "state": "Florida",
@@ -380,7 +557,18 @@
       "weighted_cases_holdout": 1498151.379527,
       "precision_holdout": 0.354167,
       "base_rate_holdout": 0.162816,
-      "flagged_share_of_caseload": 0.052805
+      "flagged_share_of_caseload": 0.052805,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 17,
+      "n_rules_available_refill": 95,
+      "n_cases_flagged_refill": 45,
+      "flagged_share_of_caseload_refill": 0.049505,
+      "n_errors_flagged_refill": 18,
+      "precision_refill": 0.4,
+      "per_reduction_pts_unweighted_refill": 10.935476,
+      "per_reduction_pts_weighted_refill": 11.39314,
+      "error_dollars_flagged_holdout_unweighted_refill": 2871,
+      "error_dollars_flagged_holdout_weighted_refill": 4521952.1484
     },
     {
       "state": "Florida",
@@ -402,7 +590,18 @@
       "weighted_cases_holdout": 1498151.379527,
       "precision_holdout": 0.383178,
       "base_rate_holdout": 0.162816,
-      "flagged_share_of_caseload": 0.117712
+      "flagged_share_of_caseload": 0.117712,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 20,
+      "n_rules_available_refill": 180,
+      "n_cases_flagged_refill": 90,
+      "flagged_share_of_caseload_refill": 0.09901,
+      "n_errors_flagged_refill": 32,
+      "precision_refill": 0.355556,
+      "per_reduction_pts_unweighted_refill": 22.655595,
+      "per_reduction_pts_weighted_refill": 23.357586,
+      "error_dollars_flagged_holdout_unweighted_refill": 5948,
+      "error_dollars_flagged_holdout_weighted_refill": 9270656.436028
     },
     {
       "state": "Georgia",
@@ -424,7 +623,18 @@
       "weighted_cases_holdout": 649597.798567,
       "precision_holdout": 0.311111,
       "base_rate_holdout": 0.189542,
-      "flagged_share_of_caseload": 0.04902
+      "flagged_share_of_caseload": 0.04902,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 6,
+      "n_rules_available_refill": 37,
+      "n_cases_flagged_refill": 45,
+      "flagged_share_of_caseload_refill": 0.04902,
+      "n_errors_flagged_refill": 14,
+      "precision_refill": 0.311111,
+      "per_reduction_pts_unweighted_refill": 7.941366,
+      "per_reduction_pts_weighted_refill": 7.835797,
+      "error_dollars_flagged_holdout_unweighted_refill": 2958,
+      "error_dollars_flagged_holdout_weighted_refill": 2081163.449591
     },
     {
       "state": "Georgia",
@@ -446,7 +656,18 @@
       "weighted_cases_holdout": 649597.798567,
       "precision_holdout": 0.305882,
       "base_rate_holdout": 0.189542,
-      "flagged_share_of_caseload": 0.092593
+      "flagged_share_of_caseload": 0.092593,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 12,
+      "n_rules_available_refill": 121,
+      "n_cases_flagged_refill": 91,
+      "flagged_share_of_caseload_refill": 0.099129,
+      "n_errors_flagged_refill": 27,
+      "precision_refill": 0.296703,
+      "per_reduction_pts_unweighted_refill": 14.806164,
+      "per_reduction_pts_weighted_refill": 14.475345,
+      "error_dollars_flagged_holdout_unweighted_refill": 5515,
+      "error_dollars_flagged_holdout_weighted_refill": 3844606.993428
     },
     {
       "state": "Idaho",
@@ -468,7 +689,18 @@
       "weighted_cases_holdout": 53894.272233,
       "precision_holdout": 0.28,
       "base_rate_holdout": 0.050214,
-      "flagged_share_of_caseload": 0.053419
+      "flagged_share_of_caseload": 0.053419,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 22,
+      "n_rules_available_refill": 104,
+      "n_cases_flagged_refill": 46,
+      "flagged_share_of_caseload_refill": 0.049145,
+      "n_errors_flagged_refill": 13,
+      "precision_refill": 0.282609,
+      "per_reduction_pts_unweighted_refill": 26.473209,
+      "per_reduction_pts_weighted_refill": 25.857637,
+      "error_dollars_flagged_holdout_unweighted_refill": 2080,
+      "error_dollars_flagged_holdout_weighted_refill": 115423.599566
     },
     {
       "state": "Idaho",
@@ -490,7 +722,18 @@
       "weighted_cases_holdout": 53894.272233,
       "precision_holdout": 0.114458,
       "base_rate_holdout": 0.050214,
-      "flagged_share_of_caseload": 0.17735
+      "flagged_share_of_caseload": 0.17735,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 39,
+      "n_rules_available_refill": 217,
+      "n_cases_flagged_refill": 93,
+      "flagged_share_of_caseload_refill": 0.099359,
+      "n_errors_flagged_refill": 16,
+      "precision_refill": 0.172043,
+      "per_reduction_pts_unweighted_refill": 31.742395,
+      "per_reduction_pts_weighted_refill": 31.224914,
+      "error_dollars_flagged_holdout_unweighted_refill": 2494,
+      "error_dollars_flagged_holdout_weighted_refill": 139382.107334
     },
     {
       "state": "Illinois",
@@ -512,7 +755,18 @@
       "weighted_cases_holdout": 996359.59263,
       "precision_holdout": 0.52,
       "base_rate_holdout": 0.165037,
-      "flagged_share_of_caseload": 0.030562
+      "flagged_share_of_caseload": 0.030562,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 15,
+      "n_rules_available_refill": 57,
+      "n_cases_flagged_refill": 40,
+      "flagged_share_of_caseload_refill": 0.0489,
+      "n_errors_flagged_refill": 16,
+      "precision_refill": 0.4,
+      "per_reduction_pts_unweighted_refill": 8.929472,
+      "per_reduction_pts_weighted_refill": 9.021814,
+      "error_dollars_flagged_holdout_unweighted_refill": 2479,
+      "error_dollars_flagged_holdout_weighted_refill": 2984914.345298
     },
     {
       "state": "Illinois",
@@ -534,7 +788,18 @@
       "weighted_cases_holdout": 996359.59263,
       "precision_holdout": 0.277108,
       "base_rate_holdout": 0.165037,
-      "flagged_share_of_caseload": 0.101467
+      "flagged_share_of_caseload": 0.101467,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 21,
+      "n_rules_available_refill": 113,
+      "n_cases_flagged_refill": 81,
+      "flagged_share_of_caseload_refill": 0.099022,
+      "n_errors_flagged_refill": 23,
+      "precision_refill": 0.283951,
+      "per_reduction_pts_unweighted_refill": 12.21814,
+      "per_reduction_pts_weighted_refill": 12.254583,
+      "error_dollars_flagged_holdout_unweighted_refill": 3392,
+      "error_dollars_flagged_holdout_weighted_refill": 4054492.827405
     },
     {
       "state": "Indiana",
@@ -556,7 +821,18 @@
       "weighted_cases_holdout": 272544.60219,
       "precision_holdout": 0.352941,
       "base_rate_holdout": 0.144,
-      "flagged_share_of_caseload": 0.038857
+      "flagged_share_of_caseload": 0.038857,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 14,
+      "n_rules_available_refill": 56,
+      "n_cases_flagged_refill": 43,
+      "flagged_share_of_caseload_refill": 0.049143,
+      "n_errors_flagged_refill": 15,
+      "precision_refill": 0.348837,
+      "per_reduction_pts_unweighted_refill": 14.027557,
+      "per_reduction_pts_weighted_refill": 11.21518,
+      "error_dollars_flagged_holdout_unweighted_refill": 3268,
+      "error_dollars_flagged_holdout_weighted_refill": 743331.709499
     },
     {
       "state": "Indiana",
@@ -578,7 +854,18 @@
       "weighted_cases_holdout": 272544.60219,
       "precision_holdout": 0.296296,
       "base_rate_holdout": 0.144,
-      "flagged_share_of_caseload": 0.092571
+      "flagged_share_of_caseload": 0.092571,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 24,
+      "n_rules_available_refill": 144,
+      "n_cases_flagged_refill": 87,
+      "flagged_share_of_caseload_refill": 0.099429,
+      "n_errors_flagged_refill": 25,
+      "precision_refill": 0.287356,
+      "per_reduction_pts_unweighted_refill": 23.595313,
+      "per_reduction_pts_weighted_refill": 21.317555,
+      "error_dollars_flagged_holdout_unweighted_refill": 5497,
+      "error_dollars_flagged_holdout_weighted_refill": 1412907.69971
     },
     {
       "state": "Iowa",
@@ -600,7 +887,18 @@
       "weighted_cases_holdout": 121005.842252,
       "precision_holdout": 0.36,
       "base_rate_holdout": 0.07906,
-      "flagged_share_of_caseload": 0.026709
+      "flagged_share_of_caseload": 0.026709,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 31,
+      "n_rules_available_refill": 136,
+      "n_cases_flagged_refill": 46,
+      "flagged_share_of_caseload_refill": 0.049145,
+      "n_errors_flagged_refill": 11,
+      "precision_refill": 0.23913,
+      "per_reduction_pts_unweighted_refill": 15.818546,
+      "per_reduction_pts_weighted_refill": 16.89949,
+      "error_dollars_flagged_holdout_unweighted_refill": 2291,
+      "error_dollars_flagged_holdout_weighted_refill": 292990.905795
     },
     {
       "state": "Iowa",
@@ -622,7 +920,18 @@
       "weighted_cases_holdout": 121005.842252,
       "precision_holdout": 0.226667,
       "base_rate_holdout": 0.07906,
-      "flagged_share_of_caseload": 0.080128
+      "flagged_share_of_caseload": 0.080128,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 53,
+      "n_rules_available_refill": 259,
+      "n_cases_flagged_refill": 93,
+      "flagged_share_of_caseload_refill": 0.099359,
+      "n_errors_flagged_refill": 21,
+      "precision_refill": 0.225806,
+      "per_reduction_pts_unweighted_refill": 25.533384,
+      "per_reduction_pts_weighted_refill": 25.677828,
+      "error_dollars_flagged_holdout_unweighted_refill": 3698,
+      "error_dollars_flagged_holdout_weighted_refill": 445183.26267
     },
     {
       "state": "Kansas",
@@ -644,7 +953,18 @@
       "weighted_cases_holdout": 83200.268324,
       "precision_holdout": 0.25641,
       "base_rate_holdout": 0.104358,
-      "flagged_share_of_caseload": 0.044725
+      "flagged_share_of_caseload": 0.044725,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 24,
+      "n_rules_available_refill": 131,
+      "n_cases_flagged_refill": 43,
+      "flagged_share_of_caseload_refill": 0.049312,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.27907,
+      "per_reduction_pts_unweighted_refill": 18.215358,
+      "per_reduction_pts_weighted_refill": 18.930105,
+      "error_dollars_flagged_holdout_unweighted_refill": 2123,
+      "error_dollars_flagged_holdout_weighted_refill": 221909.002971
     },
     {
       "state": "Kansas",
@@ -666,7 +986,18 @@
       "weighted_cases_holdout": 83200.268324,
       "precision_holdout": 0.256098,
       "base_rate_holdout": 0.104358,
-      "flagged_share_of_caseload": 0.094037
+      "flagged_share_of_caseload": 0.094037,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 49,
+      "n_rules_available_refill": 257,
+      "n_cases_flagged_refill": 87,
+      "flagged_share_of_caseload_refill": 0.099771,
+      "n_errors_flagged_refill": 22,
+      "precision_refill": 0.252874,
+      "per_reduction_pts_unweighted_refill": 29.90133,
+      "per_reduction_pts_weighted_refill": 30.430506,
+      "error_dollars_flagged_holdout_unweighted_refill": 3485,
+      "error_dollars_flagged_holdout_weighted_refill": 356722.959628
     },
     {
       "state": "Kentucky",
@@ -688,7 +1019,18 @@
       "weighted_cases_holdout": 227760.770787,
       "precision_holdout": 0.27027,
       "base_rate_holdout": 0.079128,
-      "flagged_share_of_caseload": 0.042431
+      "flagged_share_of_caseload": 0.042431,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 25,
+      "n_rules_available_refill": 128,
+      "n_cases_flagged_refill": 43,
+      "flagged_share_of_caseload_refill": 0.049312,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.27907,
+      "per_reduction_pts_unweighted_refill": 18.718694,
+      "per_reduction_pts_weighted_refill": 20.60324,
+      "error_dollars_flagged_holdout_unweighted_refill": 2317,
+      "error_dollars_flagged_holdout_weighted_refill": 679995.8145
     },
     {
       "state": "Kentucky",
@@ -710,7 +1052,18 @@
       "weighted_cases_holdout": 227760.770787,
       "precision_holdout": 0.265625,
       "base_rate_holdout": 0.079128,
-      "flagged_share_of_caseload": 0.073394
+      "flagged_share_of_caseload": 0.073394,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 47,
+      "n_rules_available_refill": 251,
+      "n_cases_flagged_refill": 87,
+      "flagged_share_of_caseload_refill": 0.099771,
+      "n_errors_flagged_refill": 21,
+      "precision_refill": 0.241379,
+      "per_reduction_pts_unweighted_refill": 36.815317,
+      "per_reduction_pts_weighted_refill": 38.828072,
+      "error_dollars_flagged_holdout_unweighted_refill": 4557,
+      "error_dollars_flagged_holdout_weighted_refill": 1281493.899709
     },
     {
       "state": "Louisiana",
@@ -732,7 +1085,18 @@
       "weighted_cases_holdout": 386234.247536,
       "precision_holdout": 0.216216,
       "base_rate_holdout": 0.109966,
-      "flagged_share_of_caseload": 0.042383
+      "flagged_share_of_caseload": 0.042383,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 23,
+      "n_rules_available_refill": 111,
+      "n_cases_flagged_refill": 43,
+      "flagged_share_of_caseload_refill": 0.049255,
+      "n_errors_flagged_refill": 9,
+      "precision_refill": 0.209302,
+      "per_reduction_pts_unweighted_refill": 9.989817,
+      "per_reduction_pts_weighted_refill": 10.255612,
+      "error_dollars_flagged_holdout_unweighted_refill": 1864,
+      "error_dollars_flagged_holdout_weighted_refill": 880101.111218
     },
     {
       "state": "Louisiana",
@@ -754,7 +1118,18 @@
       "weighted_cases_holdout": 386234.247536,
       "precision_holdout": 0.21519,
       "base_rate_holdout": 0.109966,
-      "flagged_share_of_caseload": 0.090493
+      "flagged_share_of_caseload": 0.090493,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 42,
+      "n_rules_available_refill": 208,
+      "n_cases_flagged_refill": 87,
+      "flagged_share_of_caseload_refill": 0.099656,
+      "n_errors_flagged_refill": 18,
+      "precision_refill": 0.206897,
+      "per_reduction_pts_unweighted_refill": 23.468567,
+      "per_reduction_pts_weighted_refill": 24.705197,
+      "error_dollars_flagged_holdout_unweighted_refill": 4379,
+      "error_dollars_flagged_holdout_weighted_refill": 2120114.53502
     },
     {
       "state": "Maine",
@@ -776,7 +1151,18 @@
       "weighted_cases_holdout": 95780.69036,
       "precision_holdout": 0.333333,
       "base_rate_holdout": 0.123922,
-      "flagged_share_of_caseload": 0.045259
+      "flagged_share_of_caseload": 0.045259,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 8,
+      "n_rules_available_refill": 71,
+      "n_cases_flagged_refill": 46,
+      "flagged_share_of_caseload_refill": 0.049569,
+      "n_errors_flagged_refill": 15,
+      "precision_refill": 0.326087,
+      "per_reduction_pts_unweighted_refill": 24.073499,
+      "per_reduction_pts_weighted_refill": 26.940644,
+      "error_dollars_flagged_holdout_unweighted_refill": 4651,
+      "error_dollars_flagged_holdout_weighted_refill": 545451.108408
     },
     {
       "state": "Maine",
@@ -798,7 +1184,18 @@
       "weighted_cases_holdout": 95780.69036,
       "precision_holdout": 0.2625,
       "base_rate_holdout": 0.123922,
-      "flagged_share_of_caseload": 0.086207
+      "flagged_share_of_caseload": 0.086207,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 27,
+      "n_rules_available_refill": 183,
+      "n_cases_flagged_refill": 92,
+      "flagged_share_of_caseload_refill": 0.099138,
+      "n_errors_flagged_refill": 23,
+      "precision_refill": 0.25,
+      "per_reduction_pts_unweighted_refill": 31.480331,
+      "per_reduction_pts_weighted_refill": 33.535449,
+      "error_dollars_flagged_holdout_unweighted_refill": 6082,
+      "error_dollars_flagged_holdout_weighted_refill": 678972.195291
     },
     {
       "state": "Maryland",
@@ -820,7 +1217,18 @@
       "weighted_cases_holdout": 345132.879028,
       "precision_holdout": 0.387097,
       "base_rate_holdout": 0.144286,
-      "flagged_share_of_caseload": 0.044286
+      "flagged_share_of_caseload": 0.044286,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 4,
+      "n_rules_available_refill": 22,
+      "n_cases_flagged_refill": 34,
+      "flagged_share_of_caseload_refill": 0.048571,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.352941,
+      "per_reduction_pts_unweighted_refill": 8.611453,
+      "per_reduction_pts_weighted_refill": 8.097524,
+      "error_dollars_flagged_holdout_unweighted_refill": 1961,
+      "error_dollars_flagged_holdout_weighted_refill": 823405.972678
     },
     {
       "state": "Maryland",
@@ -842,7 +1250,18 @@
       "weighted_cases_holdout": 345132.879028,
       "precision_holdout": 0.359375,
       "base_rate_holdout": 0.144286,
-      "flagged_share_of_caseload": 0.091429
+      "flagged_share_of_caseload": 0.091429,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 9,
+      "n_rules_available_refill": 81,
+      "n_cases_flagged_refill": 70,
+      "flagged_share_of_caseload_refill": 0.1,
+      "n_errors_flagged_refill": 25,
+      "precision_refill": 0.357143,
+      "per_reduction_pts_unweighted_refill": 23.023889,
+      "per_reduction_pts_weighted_refill": 22.631007,
+      "error_dollars_flagged_holdout_unweighted_refill": 5243,
+      "error_dollars_flagged_holdout_weighted_refill": 2301259.649733
     },
     {
       "state": "Massachusetts",
@@ -864,7 +1283,18 @@
       "weighted_cases_holdout": 636115.101491,
       "precision_holdout": 0.545455,
       "base_rate_holdout": 0.136625,
-      "flagged_share_of_caseload": 0.037887
+      "flagged_share_of_caseload": 0.037887,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 20,
+      "n_rules_available_refill": 119,
+      "n_cases_flagged_refill": 43,
+      "flagged_share_of_caseload_refill": 0.049369,
+      "n_errors_flagged_refill": 21,
+      "precision_refill": 0.488372,
+      "per_reduction_pts_unweighted_refill": 15.820207,
+      "per_reduction_pts_weighted_refill": 14.468379,
+      "error_dollars_flagged_holdout_unweighted_refill": 4389,
+      "error_dollars_flagged_holdout_weighted_refill": 3216176.337186
     },
     {
       "state": "Massachusetts",
@@ -886,7 +1316,18 @@
       "weighted_cases_holdout": 636115.101491,
       "precision_holdout": 0.346939,
       "base_rate_holdout": 0.136625,
-      "flagged_share_of_caseload": 0.112514
+      "flagged_share_of_caseload": 0.112514,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 27,
+      "n_rules_available_refill": 228,
+      "n_cases_flagged_refill": 87,
+      "flagged_share_of_caseload_refill": 0.099885,
+      "n_errors_flagged_refill": 29,
+      "precision_refill": 0.333333,
+      "per_reduction_pts_unweighted_refill": 21.807303,
+      "per_reduction_pts_weighted_refill": 20.445437,
+      "error_dollars_flagged_holdout_unweighted_refill": 6050,
+      "error_dollars_flagged_holdout_weighted_refill": 4544816.631911
     },
     {
       "state": "Michigan",
@@ -908,7 +1349,18 @@
       "weighted_cases_holdout": 720848.49457,
       "precision_holdout": 0.208333,
       "base_rate_holdout": 0.130787,
-      "flagged_share_of_caseload": 0.055556
+      "flagged_share_of_caseload": 0.055556,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 11,
+      "n_rules_available_refill": 85,
+      "n_cases_flagged_refill": 43,
+      "flagged_share_of_caseload_refill": 0.049769,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.27907,
+      "per_reduction_pts_unweighted_refill": 13.751502,
+      "per_reduction_pts_weighted_refill": 13.902136,
+      "error_dollars_flagged_holdout_unweighted_refill": 2747,
+      "error_dollars_flagged_holdout_weighted_refill": 2712860.26047
     },
     {
       "state": "Michigan",
@@ -930,7 +1382,18 @@
       "weighted_cases_holdout": 720848.49457,
       "precision_holdout": 0.27907,
       "base_rate_holdout": 0.130787,
-      "flagged_share_of_caseload": 0.099537
+      "flagged_share_of_caseload": 0.099537,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 19,
+      "n_rules_available_refill": 194,
+      "n_cases_flagged_refill": 86,
+      "flagged_share_of_caseload_refill": 0.099537,
+      "n_errors_flagged_refill": 24,
+      "precision_refill": 0.27907,
+      "per_reduction_pts_unweighted_refill": 25.650781,
+      "per_reduction_pts_weighted_refill": 27.744683,
+      "error_dollars_flagged_holdout_unweighted_refill": 5124,
+      "error_dollars_flagged_holdout_weighted_refill": 5414092.247594
     },
     {
       "state": "Minnesota",
@@ -952,7 +1415,18 @@
       "weighted_cases_holdout": 206062.307528,
       "precision_holdout": 0.361111,
       "base_rate_holdout": 0.122472,
-      "flagged_share_of_caseload": 0.040449
+      "flagged_share_of_caseload": 0.040449,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 22,
+      "n_rules_available_refill": 100,
+      "n_cases_flagged_refill": 44,
+      "flagged_share_of_caseload_refill": 0.049438,
+      "n_errors_flagged_refill": 17,
+      "precision_refill": 0.386364,
+      "per_reduction_pts_unweighted_refill": 21.998662,
+      "per_reduction_pts_weighted_refill": 25.098692,
+      "error_dollars_flagged_holdout_unweighted_refill": 4275,
+      "error_dollars_flagged_holdout_weighted_refill": 1288906.757529
     },
     {
       "state": "Minnesota",
@@ -974,7 +1448,18 @@
       "weighted_cases_holdout": 206062.307528,
       "precision_holdout": 0.369565,
       "base_rate_holdout": 0.122472,
-      "flagged_share_of_caseload": 0.051685
+      "flagged_share_of_caseload": 0.051685,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 41,
+      "n_rules_available_refill": 227,
+      "n_cases_flagged_refill": 89,
+      "flagged_share_of_caseload_refill": 0.1,
+      "n_errors_flagged_refill": 25,
+      "precision_refill": 0.280899,
+      "per_reduction_pts_unweighted_refill": 30.535687,
+      "per_reduction_pts_weighted_refill": 33.426793,
+      "error_dollars_flagged_holdout_unweighted_refill": 5934,
+      "error_dollars_flagged_holdout_weighted_refill": 1716584.256888
     },
     {
       "state": "Mississippi",
@@ -996,7 +1481,18 @@
       "weighted_cases_holdout": 173649.747113,
       "precision_holdout": 0.5,
       "base_rate_holdout": 0.122677,
-      "flagged_share_of_caseload": 0.040892
+      "flagged_share_of_caseload": 0.040892,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 11,
+      "n_rules_available_refill": 71,
+      "n_cases_flagged_refill": 53,
+      "flagged_share_of_caseload_refill": 0.049257,
+      "n_errors_flagged_refill": 22,
+      "precision_refill": 0.415094,
+      "per_reduction_pts_unweighted_refill": 15.466667,
+      "per_reduction_pts_weighted_refill": 16.103149,
+      "error_dollars_flagged_holdout_unweighted_refill": 3654,
+      "error_dollars_flagged_holdout_weighted_refill": 629622.910665
     },
     {
       "state": "Mississippi",
@@ -1018,7 +1514,18 @@
       "weighted_cases_holdout": 173649.747113,
       "precision_holdout": 0.371429,
       "base_rate_holdout": 0.122677,
-      "flagged_share_of_caseload": 0.097584
+      "flagged_share_of_caseload": 0.097584,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 25,
+      "n_rules_available_refill": 153,
+      "n_cases_flagged_refill": 107,
+      "flagged_share_of_caseload_refill": 0.099442,
+      "n_errors_flagged_refill": 40,
+      "precision_refill": 0.373832,
+      "per_reduction_pts_unweighted_refill": 25.710053,
+      "per_reduction_pts_weighted_refill": 26.4835,
+      "error_dollars_flagged_holdout_unweighted_refill": 6074,
+      "error_dollars_flagged_holdout_weighted_refill": 1035488.06023
     },
     {
       "state": "Missouri",
@@ -1040,7 +1547,18 @@
       "weighted_cases_holdout": 295063.90048,
       "precision_holdout": 0.35,
       "base_rate_holdout": 0.089947,
-      "flagged_share_of_caseload": 0.026455
+      "flagged_share_of_caseload": 0.026455,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 13,
+      "n_rules_available_refill": 88,
+      "n_cases_flagged_refill": 37,
+      "flagged_share_of_caseload_refill": 0.048942,
+      "n_errors_flagged_refill": 13,
+      "precision_refill": 0.351351,
+      "per_reduction_pts_unweighted_refill": 19.387662,
+      "per_reduction_pts_weighted_refill": 21.402625,
+      "error_dollars_flagged_holdout_unweighted_refill": 2134,
+      "error_dollars_flagged_holdout_weighted_refill": 953301.846996
     },
     {
       "state": "Missouri",
@@ -1062,7 +1580,18 @@
       "weighted_cases_holdout": 295063.90048,
       "precision_holdout": 0.27451,
       "base_rate_holdout": 0.089947,
-      "flagged_share_of_caseload": 0.06746
+      "flagged_share_of_caseload": 0.06746,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 35,
+      "n_rules_available_refill": 182,
+      "n_cases_flagged_refill": 75,
+      "flagged_share_of_caseload_refill": 0.099206,
+      "n_errors_flagged_refill": 19,
+      "precision_refill": 0.253333,
+      "per_reduction_pts_unweighted_refill": 28.79077,
+      "per_reduction_pts_weighted_refill": 31.431762,
+      "error_dollars_flagged_holdout_unweighted_refill": 3169,
+      "error_dollars_flagged_holdout_weighted_refill": 1400013.136196
     },
     {
       "state": "Montana",
@@ -1084,7 +1613,18 @@
       "weighted_cases_holdout": 38523.856341,
       "precision_holdout": 0.235294,
       "base_rate_holdout": 0.111304,
-      "flagged_share_of_caseload": 0.029565
+      "flagged_share_of_caseload": 0.029565,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 22,
+      "n_rules_available_refill": 90,
+      "n_cases_flagged_refill": 28,
+      "flagged_share_of_caseload_refill": 0.048696,
+      "n_errors_flagged_refill": 8,
+      "precision_refill": 0.285714,
+      "per_reduction_pts_unweighted_refill": 9.983929,
+      "per_reduction_pts_weighted_refill": 11.173657,
+      "error_dollars_flagged_holdout_unweighted_refill": 994,
+      "error_dollars_flagged_holdout_weighted_refill": 74097.596141
     },
     {
       "state": "Montana",
@@ -1106,7 +1646,18 @@
       "weighted_cases_holdout": 38523.856341,
       "precision_holdout": 0.170732,
       "base_rate_holdout": 0.111304,
-      "flagged_share_of_caseload": 0.071304
+      "flagged_share_of_caseload": 0.071304,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 27,
+      "n_rules_available_refill": 176,
+      "n_cases_flagged_refill": 57,
+      "flagged_share_of_caseload_refill": 0.09913,
+      "n_errors_flagged_refill": 10,
+      "precision_refill": 0.175439,
+      "per_reduction_pts_unweighted_refill": 13.288469,
+      "per_reduction_pts_weighted_refill": 14.529113,
+      "error_dollars_flagged_holdout_unweighted_refill": 1323,
+      "error_dollars_flagged_holdout_weighted_refill": 96349.153673
     },
     {
       "state": "Nebraska",
@@ -1128,7 +1679,18 @@
       "weighted_cases_holdout": 69012.456861,
       "precision_holdout": 0.1,
       "base_rate_holdout": 0.061294,
-      "flagged_share_of_caseload": 0.045403
+      "flagged_share_of_caseload": 0.045403,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 27,
+      "n_rules_available_refill": 131,
+      "n_cases_flagged_refill": 44,
+      "flagged_share_of_caseload_refill": 0.049943,
+      "n_errors_flagged_refill": 5,
+      "precision_refill": 0.113636,
+      "per_reduction_pts_unweighted_refill": 7.514799,
+      "per_reduction_pts_weighted_refill": 6.221694,
+      "error_dollars_flagged_holdout_unweighted_refill": 749,
+      "error_dollars_flagged_holdout_weighted_refill": 54375.565478
     },
     {
       "state": "Nebraska",
@@ -1150,7 +1712,18 @@
       "weighted_cases_holdout": 69012.456861,
       "precision_holdout": 0.129032,
       "base_rate_holdout": 0.061294,
-      "flagged_share_of_caseload": 0.105562
+      "flagged_share_of_caseload": 0.105562,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 40,
+      "n_rules_available_refill": 255,
+      "n_cases_flagged_refill": 88,
+      "flagged_share_of_caseload_refill": 0.099886,
+      "n_errors_flagged_refill": 10,
+      "precision_refill": 0.113636,
+      "per_reduction_pts_unweighted_refill": 21.721682,
+      "per_reduction_pts_weighted_refill": 27.048702,
+      "error_dollars_flagged_holdout_unweighted_refill": 2165,
+      "error_dollars_flagged_holdout_weighted_refill": 236396.768392
     },
     {
       "state": "Nevada",
@@ -1172,7 +1745,18 @@
       "weighted_cases_holdout": 239511.693141,
       "precision_holdout": 0.25,
       "base_rate_holdout": 0.091109,
-      "flagged_share_of_caseload": 0.039517
+      "flagged_share_of_caseload": 0.039517,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 21,
+      "n_rules_available_refill": 103,
+      "n_cases_flagged_refill": 45,
+      "flagged_share_of_caseload_refill": 0.049396,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.266667,
+      "per_reduction_pts_unweighted_refill": 17.407712,
+      "per_reduction_pts_weighted_refill": 17.130528,
+      "error_dollars_flagged_holdout_unweighted_refill": 2537,
+      "error_dollars_flagged_holdout_weighted_refill": 805572.794134
     },
     {
       "state": "Nevada",
@@ -1194,7 +1778,18 @@
       "weighted_cases_holdout": 239511.693141,
       "precision_holdout": 0.236111,
       "base_rate_holdout": 0.091109,
-      "flagged_share_of_caseload": 0.079034
+      "flagged_share_of_caseload": 0.079034,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 44,
+      "n_rules_available_refill": 226,
+      "n_cases_flagged_refill": 91,
+      "flagged_share_of_caseload_refill": 0.09989,
+      "n_errors_flagged_refill": 17,
+      "precision_refill": 0.186813,
+      "per_reduction_pts_unweighted_refill": 24.331,
+      "per_reduction_pts_weighted_refill": 24.520693,
+      "error_dollars_flagged_holdout_unweighted_refill": 3546,
+      "error_dollars_flagged_holdout_weighted_refill": 1153099.455849
     },
     {
       "state": "New Hampshire",
@@ -1216,7 +1811,18 @@
       "weighted_cases_holdout": 38876.840879,
       "precision_holdout": 0.230769,
       "base_rate_holdout": 0.11129,
-      "flagged_share_of_caseload": 0.062903
+      "flagged_share_of_caseload": 0.062903,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 15,
+      "n_rules_available_refill": 90,
+      "n_cases_flagged_refill": 31,
+      "flagged_share_of_caseload_refill": 0.05,
+      "n_errors_flagged_refill": 8,
+      "precision_refill": 0.258065,
+      "per_reduction_pts_unweighted_refill": 12.693712,
+      "per_reduction_pts_weighted_refill": 13.200085,
+      "error_dollars_flagged_holdout_unweighted_refill": 1286,
+      "error_dollars_flagged_holdout_weighted_refill": 84288.793186
     },
     {
       "state": "New Hampshire",
@@ -1238,7 +1844,18 @@
       "weighted_cases_holdout": 38876.840879,
       "precision_holdout": 0.280702,
       "base_rate_holdout": 0.11129,
-      "flagged_share_of_caseload": 0.091935
+      "flagged_share_of_caseload": 0.091935,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 32,
+      "n_rules_available_refill": 143,
+      "n_cases_flagged_refill": 62,
+      "flagged_share_of_caseload_refill": 0.1,
+      "n_errors_flagged_refill": 17,
+      "precision_refill": 0.274194,
+      "per_reduction_pts_unweighted_refill": 26.492942,
+      "per_reduction_pts_weighted_refill": 25.223603,
+      "error_dollars_flagged_holdout_unweighted_refill": 2684,
+      "error_dollars_flagged_holdout_weighted_refill": 161064.652736
     },
     {
       "state": "New Jersey",
@@ -1260,7 +1877,18 @@
       "weighted_cases_holdout": 414608.269913,
       "precision_holdout": 0.076923,
       "base_rate_holdout": 0.094249,
-      "flagged_share_of_caseload": 0.041534
+      "flagged_share_of_caseload": 0.041534,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 12,
+      "n_rules_available_refill": 111,
+      "n_cases_flagged_refill": 31,
+      "flagged_share_of_caseload_refill": 0.049521,
+      "n_errors_flagged_refill": 4,
+      "precision_refill": 0.129032,
+      "per_reduction_pts_unweighted_refill": 9.458667,
+      "per_reduction_pts_weighted_refill": 7.590405,
+      "error_dollars_flagged_holdout_unweighted_refill": 968,
+      "error_dollars_flagged_holdout_weighted_refill": 482730.598685
     },
     {
       "state": "New Jersey",
@@ -1282,7 +1910,18 @@
       "weighted_cases_holdout": 414608.269913,
       "precision_holdout": 0.15,
       "base_rate_holdout": 0.094249,
-      "flagged_share_of_caseload": 0.095847
+      "flagged_share_of_caseload": 0.095847,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 27,
+      "n_rules_available_refill": 215,
+      "n_cases_flagged_refill": 62,
+      "flagged_share_of_caseload_refill": 0.099042,
+      "n_errors_flagged_refill": 10,
+      "precision_refill": 0.16129,
+      "per_reduction_pts_unweighted_refill": 16.347469,
+      "per_reduction_pts_weighted_refill": 15.747606,
+      "error_dollars_flagged_holdout_unweighted_refill": 1673,
+      "error_dollars_flagged_holdout_weighted_refill": 1001507.975941
     },
     {
       "state": "New Mexico",
@@ -1304,7 +1943,18 @@
       "weighted_cases_holdout": 219564.260534,
       "precision_holdout": 0.52,
       "base_rate_holdout": 0.157456,
-      "flagged_share_of_caseload": 0.026069
+      "flagged_share_of_caseload": 0.026069,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 24,
+      "n_rules_available_refill": 74,
+      "n_cases_flagged_refill": 47,
+      "flagged_share_of_caseload_refill": 0.049009,
+      "n_errors_flagged_refill": 17,
+      "precision_refill": 0.361702,
+      "per_reduction_pts_unweighted_refill": 12.314131,
+      "per_reduction_pts_weighted_refill": 11.989505,
+      "error_dollars_flagged_holdout_unweighted_refill": 3619,
+      "error_dollars_flagged_holdout_weighted_refill": 761422.203853
     },
     {
       "state": "New Mexico",
@@ -1326,7 +1976,18 @@
       "weighted_cases_holdout": 219564.260534,
       "precision_holdout": 0.364706,
       "base_rate_holdout": 0.157456,
-      "flagged_share_of_caseload": 0.088634
+      "flagged_share_of_caseload": 0.088634,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 24,
+      "n_rules_available_refill": 163,
+      "n_cases_flagged_refill": 95,
+      "flagged_share_of_caseload_refill": 0.099062,
+      "n_errors_flagged_refill": 35,
+      "precision_refill": 0.368421,
+      "per_reduction_pts_unweighted_refill": 23.015414,
+      "per_reduction_pts_weighted_refill": 22.514517,
+      "error_dollars_flagged_holdout_unweighted_refill": 6764,
+      "error_dollars_flagged_holdout_weighted_refill": 1429838.218019
     },
     {
       "state": "New York",
@@ -1348,7 +2009,18 @@
       "weighted_cases_holdout": 1496391.526832,
       "precision_holdout": 0.413793,
       "base_rate_holdout": 0.128834,
-      "flagged_share_of_caseload": 0.035583
+      "flagged_share_of_caseload": 0.035583,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 19,
+      "n_rules_available_refill": 103,
+      "n_cases_flagged_refill": 40,
+      "flagged_share_of_caseload_refill": 0.04908,
+      "n_errors_flagged_refill": 14,
+      "precision_refill": 0.35,
+      "per_reduction_pts_unweighted_refill": 17.2286,
+      "per_reduction_pts_weighted_refill": 17.752066,
+      "error_dollars_flagged_holdout_unweighted_refill": 4277,
+      "error_dollars_flagged_holdout_weighted_refill": 7802382.267781
     },
     {
       "state": "New York",
@@ -1370,7 +2042,18 @@
       "weighted_cases_holdout": 1496391.526832,
       "precision_holdout": 0.383333,
       "base_rate_holdout": 0.128834,
-      "flagged_share_of_caseload": 0.07362
+      "flagged_share_of_caseload": 0.07362,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 34,
+      "n_rules_available_refill": 195,
+      "n_cases_flagged_refill": 81,
+      "flagged_share_of_caseload_refill": 0.099387,
+      "n_errors_flagged_refill": 31,
+      "precision_refill": 0.382716,
+      "per_reduction_pts_unweighted_refill": 35.141994,
+      "per_reduction_pts_weighted_refill": 38.119662,
+      "error_dollars_flagged_holdout_unweighted_refill": 8724,
+      "error_dollars_flagged_holdout_weighted_refill": 16754340.880058
     },
     {
       "state": "North Carolina",
@@ -1392,7 +2075,18 @@
       "weighted_cases_holdout": 658849.358474,
       "precision_holdout": 0.25,
       "base_rate_holdout": 0.126792,
-      "flagged_share_of_caseload": 0.022051
+      "flagged_share_of_caseload": 0.022051,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 27,
+      "n_rules_available_refill": 131,
+      "n_cases_flagged_refill": 45,
+      "flagged_share_of_caseload_refill": 0.049614,
+      "n_errors_flagged_refill": 13,
+      "precision_refill": 0.288889,
+      "per_reduction_pts_unweighted_refill": 10.731227,
+      "per_reduction_pts_weighted_refill": 11.629355,
+      "error_dollars_flagged_holdout_unweighted_refill": 2398,
+      "error_dollars_flagged_holdout_weighted_refill": 1811064.487628
     },
     {
       "state": "North Carolina",
@@ -1414,7 +2108,18 @@
       "weighted_cases_holdout": 658849.358474,
       "precision_holdout": 0.222222,
       "base_rate_holdout": 0.126792,
-      "flagged_share_of_caseload": 0.06946
+      "flagged_share_of_caseload": 0.06946,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 39,
+      "n_rules_available_refill": 242,
+      "n_cases_flagged_refill": 90,
+      "flagged_share_of_caseload_refill": 0.099228,
+      "n_errors_flagged_refill": 21,
+      "precision_refill": 0.233333,
+      "per_reduction_pts_unweighted_refill": 14.669292,
+      "per_reduction_pts_weighted_refill": 16.094549,
+      "error_dollars_flagged_holdout_unweighted_refill": 3278,
+      "error_dollars_flagged_holdout_weighted_refill": 2506438.902985
     },
     {
       "state": "North Dakota",
@@ -1436,7 +2141,18 @@
       "weighted_cases_holdout": 22850.646932,
       "precision_holdout": 0.25,
       "base_rate_holdout": 0.096774,
-      "flagged_share_of_caseload": 0.02765
+      "flagged_share_of_caseload": 0.02765,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 15,
+      "n_rules_available_refill": 79,
+      "n_cases_flagged_refill": 21,
+      "flagged_share_of_caseload_refill": 0.048387,
+      "n_errors_flagged_refill": 5,
+      "precision_refill": 0.238095,
+      "per_reduction_pts_unweighted_refill": 15.150121,
+      "per_reduction_pts_weighted_refill": 17.947116,
+      "error_dollars_flagged_holdout_unweighted_refill": 1317,
+      "error_dollars_flagged_holdout_weighted_refill": 83727.953386
     },
     {
       "state": "North Dakota",
@@ -1458,7 +2174,18 @@
       "weighted_cases_holdout": 22850.646932,
       "precision_holdout": 0.2,
       "base_rate_holdout": 0.096774,
-      "flagged_share_of_caseload": 0.069124
+      "flagged_share_of_caseload": 0.069124,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 28,
+      "n_rules_available_refill": 129,
+      "n_cases_flagged_refill": 43,
+      "flagged_share_of_caseload_refill": 0.099078,
+      "n_errors_flagged_refill": 8,
+      "precision_refill": 0.186047,
+      "per_reduction_pts_unweighted_refill": 22.799954,
+      "per_reduction_pts_weighted_refill": 22.532758,
+      "error_dollars_flagged_holdout_unweighted_refill": 1982,
+      "error_dollars_flagged_holdout_weighted_refill": 105121.166593
     },
     {
       "state": "Ohio",
@@ -1480,7 +2207,18 @@
       "weighted_cases_holdout": 671810.767907,
       "precision_holdout": 0.285714,
       "base_rate_holdout": 0.101676,
-      "flagged_share_of_caseload": 0.054749
+      "flagged_share_of_caseload": 0.054749,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 24,
+      "n_rules_available_refill": 129,
+      "n_cases_flagged_refill": 44,
+      "flagged_share_of_caseload_refill": 0.049162,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.272727,
+      "per_reduction_pts_unweighted_refill": 14.592431,
+      "per_reduction_pts_weighted_refill": 10.954894,
+      "error_dollars_flagged_holdout_unweighted_refill": 2406,
+      "error_dollars_flagged_holdout_weighted_refill": 1255383.764304
     },
     {
       "state": "Ohio",
@@ -1502,7 +2240,18 @@
       "weighted_cases_holdout": 671810.767907,
       "precision_holdout": 0.25,
       "base_rate_holdout": 0.101676,
-      "flagged_share_of_caseload": 0.107263
+      "flagged_share_of_caseload": 0.107263,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 48,
+      "n_rules_available_refill": 265,
+      "n_cases_flagged_refill": 89,
+      "flagged_share_of_caseload_refill": 0.099441,
+      "n_errors_flagged_refill": 23,
+      "precision_refill": 0.258427,
+      "per_reduction_pts_unweighted_refill": 32.939107,
+      "per_reduction_pts_weighted_refill": 31.620299,
+      "error_dollars_flagged_holdout_unweighted_refill": 5431,
+      "error_dollars_flagged_holdout_weighted_refill": 3623550.396577
     },
     {
       "state": "Oklahoma",
@@ -1524,7 +2273,18 @@
       "weighted_cases_holdout": 306029.602432,
       "precision_holdout": 0.341463,
       "base_rate_holdout": 0.159221,
-      "flagged_share_of_caseload": 0.046964
+      "flagged_share_of_caseload": 0.046964,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 23,
+      "n_rules_available_refill": 94,
+      "n_cases_flagged_refill": 43,
+      "flagged_share_of_caseload_refill": 0.049255,
+      "n_errors_flagged_refill": 14,
+      "precision_refill": 0.325581,
+      "per_reduction_pts_unweighted_refill": 9.232648,
+      "per_reduction_pts_weighted_refill": 9.194368,
+      "error_dollars_flagged_holdout_unweighted_refill": 2570,
+      "error_dollars_flagged_holdout_weighted_refill": 882712.462829
     },
     {
       "state": "Oklahoma",
@@ -1546,7 +2306,18 @@
       "weighted_cases_holdout": 306029.602432,
       "precision_holdout": 0.288889,
       "base_rate_holdout": 0.159221,
-      "flagged_share_of_caseload": 0.103093
+      "flagged_share_of_caseload": 0.103093,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 33,
+      "n_rules_available_refill": 196,
+      "n_cases_flagged_refill": 87,
+      "flagged_share_of_caseload_refill": 0.099656,
+      "n_errors_flagged_refill": 25,
+      "precision_refill": 0.287356,
+      "per_reduction_pts_unweighted_refill": 17.164823,
+      "per_reduction_pts_weighted_refill": 17.817784,
+      "error_dollars_flagged_holdout_unweighted_refill": 4778,
+      "error_dollars_flagged_holdout_weighted_refill": 1710610.238797
     },
     {
       "state": "Oregon",
@@ -1568,7 +2339,18 @@
       "weighted_cases_holdout": 399408.437334,
       "precision_holdout": 0.365854,
       "base_rate_holdout": 0.150668,
-      "flagged_share_of_caseload": 0.049818
+      "flagged_share_of_caseload": 0.049818,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 8,
+      "n_rules_available_refill": 74,
+      "n_cases_flagged_refill": 41,
+      "flagged_share_of_caseload_refill": 0.049818,
+      "n_errors_flagged_refill": 15,
+      "precision_refill": 0.365854,
+      "per_reduction_pts_unweighted_refill": 14.665471,
+      "per_reduction_pts_weighted_refill": 14.545484,
+      "error_dollars_flagged_holdout_unweighted_refill": 3597,
+      "error_dollars_flagged_holdout_weighted_refill": 1898900.552196
     },
     {
       "state": "Oregon",
@@ -1590,7 +2372,18 @@
       "weighted_cases_holdout": 399408.437334,
       "precision_holdout": 0.384615,
       "base_rate_holdout": 0.150668,
-      "flagged_share_of_caseload": 0.094775
+      "flagged_share_of_caseload": 0.094775,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 23,
+      "n_rules_available_refill": 133,
+      "n_cases_flagged_refill": 82,
+      "flagged_share_of_caseload_refill": 0.099635,
+      "n_errors_flagged_refill": 30,
+      "precision_refill": 0.365854,
+      "per_reduction_pts_unweighted_refill": 32.51111,
+      "per_reduction_pts_weighted_refill": 31.948774,
+      "error_dollars_flagged_holdout_unweighted_refill": 7974,
+      "error_dollars_flagged_holdout_weighted_refill": 4170885.151253
     },
     {
       "state": "Pennsylvania",
@@ -1612,7 +2405,18 @@
       "weighted_cases_holdout": 999510.921884,
       "precision_holdout": 0.333333,
       "base_rate_holdout": 0.141192,
-      "flagged_share_of_caseload": 0.042746
+      "flagged_share_of_caseload": 0.042746,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 20,
+      "n_rules_available_refill": 116,
+      "n_cases_flagged_refill": 38,
+      "flagged_share_of_caseload_refill": 0.049223,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.315789,
+      "per_reduction_pts_unweighted_refill": 10.892695,
+      "per_reduction_pts_weighted_refill": 10.138486,
+      "error_dollars_flagged_holdout_unweighted_refill": 2283,
+      "error_dollars_flagged_holdout_weighted_refill": 2661793.183798
     },
     {
       "state": "Pennsylvania",
@@ -1634,7 +2438,18 @@
       "weighted_cases_holdout": 999510.921884,
       "precision_holdout": 0.351351,
       "base_rate_holdout": 0.141192,
-      "flagged_share_of_caseload": 0.095855
+      "flagged_share_of_caseload": 0.095855,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 35,
+      "n_rules_available_refill": 218,
+      "n_cases_flagged_refill": 77,
+      "flagged_share_of_caseload_refill": 0.099741,
+      "n_errors_flagged_refill": 26,
+      "precision_refill": 0.337662,
+      "per_reduction_pts_unweighted_refill": 23.398063,
+      "per_reduction_pts_weighted_refill": 22.171695,
+      "error_dollars_flagged_holdout_unweighted_refill": 4904,
+      "error_dollars_flagged_holdout_weighted_refill": 5821033.148979
     },
     {
       "state": "Rhode Island",
@@ -1656,7 +2471,18 @@
       "weighted_cases_holdout": 84341.927873,
       "precision_holdout": 0.419355,
       "base_rate_holdout": 0.180064,
-      "flagged_share_of_caseload": 0.033226
+      "flagged_share_of_caseload": 0.033226,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 7,
+      "n_rules_available_refill": 45,
+      "n_cases_flagged_refill": 45,
+      "flagged_share_of_caseload_refill": 0.048232,
+      "n_errors_flagged_refill": 21,
+      "precision_refill": 0.466667,
+      "per_reduction_pts_unweighted_refill": 14.82905,
+      "per_reduction_pts_weighted_refill": 14.659675,
+      "error_dollars_flagged_holdout_unweighted_refill": 4437,
+      "error_dollars_flagged_holdout_weighted_refill": 418750.23336
     },
     {
       "state": "Rhode Island",
@@ -1678,7 +2504,18 @@
       "weighted_cases_holdout": 84341.927873,
       "precision_holdout": 0.432099,
       "base_rate_holdout": 0.180064,
-      "flagged_share_of_caseload": 0.086817
+      "flagged_share_of_caseload": 0.086817,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 9,
+      "n_rules_available_refill": 89,
+      "n_cases_flagged_refill": 93,
+      "flagged_share_of_caseload_refill": 0.099678,
+      "n_errors_flagged_refill": 37,
+      "precision_refill": 0.397849,
+      "per_reduction_pts_unweighted_refill": 26.77718,
+      "per_reduction_pts_weighted_refill": 26.248401,
+      "error_dollars_flagged_holdout_unweighted_refill": 8012,
+      "error_dollars_flagged_holdout_weighted_refill": 749779.55513
     },
     {
       "state": "South Carolina",
@@ -1700,7 +2537,18 @@
       "weighted_cases_holdout": 257142.006413,
       "precision_holdout": 0.313725,
       "base_rate_holdout": 0.127072,
-      "flagged_share_of_caseload": 0.056354
+      "flagged_share_of_caseload": 0.056354,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 20,
+      "n_rules_available_refill": 72,
+      "n_cases_flagged_refill": 45,
+      "flagged_share_of_caseload_refill": 0.049724,
+      "n_errors_flagged_refill": 10,
+      "precision_refill": 0.222222,
+      "per_reduction_pts_unweighted_refill": 6.484332,
+      "per_reduction_pts_weighted_refill": 6.846391,
+      "error_dollars_flagged_holdout_unweighted_refill": 1285,
+      "error_dollars_flagged_holdout_weighted_refill": 381576.125554
     },
     {
       "state": "South Carolina",
@@ -1722,7 +2570,18 @@
       "weighted_cases_holdout": 257142.006413,
       "precision_holdout": 0.277108,
       "base_rate_holdout": 0.127072,
-      "flagged_share_of_caseload": 0.091713
+      "flagged_share_of_caseload": 0.091713,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 25,
+      "n_rules_available_refill": 146,
+      "n_cases_flagged_refill": 90,
+      "flagged_share_of_caseload_refill": 0.099448,
+      "n_errors_flagged_refill": 24,
+      "precision_refill": 0.266667,
+      "per_reduction_pts_unweighted_refill": 19.488318,
+      "per_reduction_pts_weighted_refill": 20.741956,
+      "error_dollars_flagged_holdout_unweighted_refill": 3862,
+      "error_dollars_flagged_holdout_weighted_refill": 1156030.169342
     },
     {
       "state": "South Dakota",
@@ -1744,7 +2603,18 @@
       "weighted_cases_holdout": 34629.615285,
       "precision_holdout": 0.068966,
       "base_rate_holdout": 0.046105,
-      "flagged_share_of_caseload": 0.046105
+      "flagged_share_of_caseload": 0.046105,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 20,
+      "n_rules_available_refill": 100,
+      "n_cases_flagged_refill": 31,
+      "flagged_share_of_caseload_refill": 0.049285,
+      "n_errors_flagged_refill": 4,
+      "precision_refill": 0.129032,
+      "per_reduction_pts_unweighted_refill": 14.285714,
+      "per_reduction_pts_weighted_refill": 14.550376,
+      "error_dollars_flagged_holdout_unweighted_refill": 705,
+      "error_dollars_flagged_holdout_weighted_refill": 41377.831232
     },
     {
       "state": "South Dakota",
@@ -1766,7 +2636,18 @@
       "weighted_cases_holdout": 34629.615285,
       "precision_holdout": 0.148936,
       "base_rate_holdout": 0.046105,
-      "flagged_share_of_caseload": 0.074722
+      "flagged_share_of_caseload": 0.074722,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 36,
+      "n_rules_available_refill": 193,
+      "n_cases_flagged_refill": 62,
+      "flagged_share_of_caseload_refill": 0.098569,
+      "n_errors_flagged_refill": 9,
+      "precision_refill": 0.145161,
+      "per_reduction_pts_unweighted_refill": 37.831814,
+      "per_reduction_pts_weighted_refill": 37.484035,
+      "error_dollars_flagged_holdout_unweighted_refill": 1867,
+      "error_dollars_flagged_holdout_weighted_refill": 106595.737517
     },
     {
       "state": "Tennessee",
@@ -1788,7 +2669,18 @@
       "weighted_cases_holdout": 326554.232432,
       "precision_holdout": 0.230769,
       "base_rate_holdout": 0.099147,
-      "flagged_share_of_caseload": 0.013859
+      "flagged_share_of_caseload": 0.013859,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 20,
+      "n_rules_available_refill": 72,
+      "n_cases_flagged_refill": 45,
+      "flagged_share_of_caseload_refill": 0.047974,
+      "n_errors_flagged_refill": 11,
+      "precision_refill": 0.244444,
+      "per_reduction_pts_unweighted_refill": 12.534725,
+      "per_reduction_pts_weighted_refill": 12.385823,
+      "error_dollars_flagged_holdout_unweighted_refill": 1850,
+      "error_dollars_flagged_holdout_weighted_refill": 664045.085609
     },
     {
       "state": "Tennessee",
@@ -1810,7 +2702,18 @@
       "weighted_cases_holdout": 326554.232432,
       "precision_holdout": 0.162162,
       "base_rate_holdout": 0.099147,
-      "flagged_share_of_caseload": 0.078891
+      "flagged_share_of_caseload": 0.078891,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 24,
+      "n_rules_available_refill": 174,
+      "n_cases_flagged_refill": 93,
+      "flagged_share_of_caseload_refill": 0.099147,
+      "n_errors_flagged_refill": 18,
+      "precision_refill": 0.193548,
+      "per_reduction_pts_unweighted_refill": 24.026018,
+      "per_reduction_pts_weighted_refill": 25.393943,
+      "error_dollars_flagged_holdout_unweighted_refill": 3546,
+      "error_dollars_flagged_holdout_weighted_refill": 1361453.612582
     },
     {
       "state": "Texas",
@@ -1832,7 +2735,18 @@
       "weighted_cases_holdout": 1291755.92053,
       "precision_holdout": 0.275862,
       "base_rate_holdout": 0.149533,
-      "flagged_share_of_caseload": 0.067757
+      "flagged_share_of_caseload": 0.067757,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 19,
+      "n_rules_available_refill": 75,
+      "n_cases_flagged_refill": 42,
+      "flagged_share_of_caseload_refill": 0.049065,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.285714,
+      "per_reduction_pts_unweighted_refill": 11.031175,
+      "per_reduction_pts_weighted_refill": 9.202537,
+      "error_dollars_flagged_holdout_unweighted_refill": 2300,
+      "error_dollars_flagged_holdout_weighted_refill": 2809149.123081
     },
     {
       "state": "Texas",
@@ -1854,7 +2768,18 @@
       "weighted_cases_holdout": 1291755.92053,
       "precision_holdout": 0.246269,
       "base_rate_holdout": 0.149533,
-      "flagged_share_of_caseload": 0.156542
+      "flagged_share_of_caseload": 0.156542,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 18,
+      "n_rules_available_refill": 179,
+      "n_cases_flagged_refill": 85,
+      "flagged_share_of_caseload_refill": 0.099299,
+      "n_errors_flagged_refill": 21,
+      "precision_refill": 0.247059,
+      "per_reduction_pts_unweighted_refill": 17.81295,
+      "per_reduction_pts_weighted_refill": 13.245577,
+      "error_dollars_flagged_holdout_unweighted_refill": 3714,
+      "error_dollars_flagged_holdout_weighted_refill": 4043319.949476
     },
     {
       "state": "Utah",
@@ -1876,7 +2801,18 @@
       "weighted_cases_holdout": 75475.896718,
       "precision_holdout": 0.115385,
       "base_rate_holdout": 0.043788,
-      "flagged_share_of_caseload": 0.026477
+      "flagged_share_of_caseload": 0.026477,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 22,
+      "n_rules_available_refill": 126,
+      "n_cases_flagged_refill": 49,
+      "flagged_share_of_caseload_refill": 0.049898,
+      "n_errors_flagged_refill": 5,
+      "precision_refill": 0.102041,
+      "per_reduction_pts_unweighted_refill": 9.941079,
+      "per_reduction_pts_weighted_refill": 10.507853,
+      "error_dollars_flagged_holdout_unweighted_refill": 658,
+      "error_dollars_flagged_holdout_weighted_refill": 53487.445171
     },
     {
       "state": "Utah",
@@ -1898,7 +2834,18 @@
       "weighted_cases_holdout": 75475.896718,
       "precision_holdout": 0.117647,
       "base_rate_holdout": 0.043788,
-      "flagged_share_of_caseload": 0.051935
+      "flagged_share_of_caseload": 0.051935,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 41,
+      "n_rules_available_refill": 261,
+      "n_cases_flagged_refill": 98,
+      "flagged_share_of_caseload_refill": 0.099796,
+      "n_errors_flagged_refill": 11,
+      "precision_refill": 0.112245,
+      "per_reduction_pts_unweighted_refill": 21.785768,
+      "per_reduction_pts_weighted_refill": 21.686992,
+      "error_dollars_flagged_holdout_unweighted_refill": 1442,
+      "error_dollars_flagged_holdout_weighted_refill": 110391.898161
     },
     {
       "state": "Vermont",
@@ -1920,7 +2867,18 @@
       "weighted_cases_holdout": 37477.133208,
       "precision_holdout": 0.173913,
       "base_rate_holdout": 0.063391,
-      "flagged_share_of_caseload": 0.0729
+      "flagged_share_of_caseload": 0.0729,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 15,
+      "n_rules_available_refill": 90,
+      "n_cases_flagged_refill": 31,
+      "flagged_share_of_caseload_refill": 0.049128,
+      "n_errors_flagged_refill": 8,
+      "precision_refill": 0.258065,
+      "per_reduction_pts_unweighted_refill": 23.90411,
+      "per_reduction_pts_weighted_refill": 27.20435,
+      "error_dollars_flagged_holdout_unweighted_refill": 1745,
+      "error_dollars_flagged_holdout_weighted_refill": 141249.019519
     },
     {
       "state": "Vermont",
@@ -1942,7 +2900,18 @@
       "weighted_cases_holdout": 37477.133208,
       "precision_holdout": 0.191176,
       "base_rate_holdout": 0.063391,
-      "flagged_share_of_caseload": 0.107765
+      "flagged_share_of_caseload": 0.107765,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 26,
+      "n_rules_available_refill": 171,
+      "n_cases_flagged_refill": 63,
+      "flagged_share_of_caseload_refill": 0.099842,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.190476,
+      "per_reduction_pts_unweighted_refill": 35.205479,
+      "per_reduction_pts_weighted_refill": 35.422278,
+      "error_dollars_flagged_holdout_unweighted_refill": 2570,
+      "error_dollars_flagged_holdout_weighted_refill": 183917.716814
     },
     {
       "state": "Virginia",
@@ -1964,7 +2933,18 @@
       "weighted_cases_holdout": 379578.67705,
       "precision_holdout": 0.355556,
       "base_rate_holdout": 0.168091,
-      "flagged_share_of_caseload": 0.064103
+      "flagged_share_of_caseload": 0.064103,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 23,
+      "n_rules_available_refill": 59,
+      "n_cases_flagged_refill": 35,
+      "flagged_share_of_caseload_refill": 0.049858,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.342857,
+      "per_reduction_pts_unweighted_refill": 10.610393,
+      "per_reduction_pts_weighted_refill": 12.654684,
+      "error_dollars_flagged_holdout_unweighted_refill": 2152,
+      "error_dollars_flagged_holdout_weighted_refill": 1264549.00011
     },
     {
       "state": "Virginia",
@@ -1986,7 +2966,18 @@
       "weighted_cases_holdout": 379578.67705,
       "precision_holdout": 0.321429,
       "base_rate_holdout": 0.168091,
-      "flagged_share_of_caseload": 0.119658
+      "flagged_share_of_caseload": 0.119658,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 25,
+      "n_rules_available_refill": 127,
+      "n_cases_flagged_refill": 70,
+      "flagged_share_of_caseload_refill": 0.099715,
+      "n_errors_flagged_refill": 23,
+      "precision_refill": 0.328571,
+      "per_reduction_pts_unweighted_refill": 20.101568,
+      "per_reduction_pts_weighted_refill": 20.012454,
+      "error_dollars_flagged_holdout_unweighted_refill": 4077,
+      "error_dollars_flagged_holdout_weighted_refill": 1999791.496066
     },
     {
       "state": "Washington",
@@ -2008,7 +2999,18 @@
       "weighted_cases_holdout": 477460.814271,
       "precision_holdout": 0.4,
       "base_rate_holdout": 0.084663,
-      "flagged_share_of_caseload": 0.018405
+      "flagged_share_of_caseload": 0.018405,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 22,
+      "n_rules_available_refill": 99,
+      "n_cases_flagged_refill": 40,
+      "flagged_share_of_caseload_refill": 0.04908,
+      "n_errors_flagged_refill": 15,
+      "precision_refill": 0.375,
+      "per_reduction_pts_unweighted_refill": 23.038412,
+      "per_reduction_pts_weighted_refill": 21.727175,
+      "error_dollars_flagged_holdout_unweighted_refill": 2669,
+      "error_dollars_flagged_holdout_weighted_refill": 1661779.560087
     },
     {
       "state": "Washington",
@@ -2030,7 +3032,18 @@
       "weighted_cases_holdout": 477460.814271,
       "precision_holdout": 0.140351,
       "base_rate_holdout": 0.084663,
-      "flagged_share_of_caseload": 0.139877
+      "flagged_share_of_caseload": 0.139877,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 47,
+      "n_rules_available_refill": 199,
+      "n_cases_flagged_refill": 81,
+      "flagged_share_of_caseload_refill": 0.099387,
+      "n_errors_flagged_refill": 22,
+      "precision_refill": 0.271605,
+      "per_reduction_pts_unweighted_refill": 35.071213,
+      "per_reduction_pts_weighted_refill": 32.617386,
+      "error_dollars_flagged_holdout_unweighted_refill": 4063,
+      "error_dollars_flagged_holdout_weighted_refill": 2494705.590343
     },
     {
       "state": "West Virginia",
@@ -2052,7 +3065,18 @@
       "weighted_cases_holdout": 120302.036613,
       "precision_holdout": 0.235294,
       "base_rate_holdout": 0.07154,
-      "flagged_share_of_caseload": 0.026439
+      "flagged_share_of_caseload": 0.026439,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 23,
+      "n_rules_available_refill": 108,
+      "n_cases_flagged_refill": 32,
+      "flagged_share_of_caseload_refill": 0.049767,
+      "n_errors_flagged_refill": 6,
+      "precision_refill": 0.1875,
+      "per_reduction_pts_unweighted_refill": 9.739583,
+      "per_reduction_pts_weighted_refill": 7.911794,
+      "error_dollars_flagged_holdout_unweighted_refill": 748,
+      "error_dollars_flagged_holdout_weighted_refill": 101613.149391
     },
     {
       "state": "West Virginia",
@@ -2074,7 +3098,18 @@
       "weighted_cases_holdout": 120302.036613,
       "precision_holdout": 0.178571,
       "base_rate_holdout": 0.07154,
-      "flagged_share_of_caseload": 0.087092
+      "flagged_share_of_caseload": 0.087092,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 29,
+      "n_rules_available_refill": 204,
+      "n_cases_flagged_refill": 64,
+      "flagged_share_of_caseload_refill": 0.099533,
+      "n_errors_flagged_refill": 12,
+      "precision_refill": 0.1875,
+      "per_reduction_pts_unweighted_refill": 21.835938,
+      "per_reduction_pts_weighted_refill": 23.777581,
+      "error_dollars_flagged_holdout_unweighted_refill": 1677,
+      "error_dollars_flagged_holdout_weighted_refill": 305381.405619
     },
     {
       "state": "Wisconsin",
@@ -2096,7 +3131,18 @@
       "weighted_cases_holdout": 345580.757005,
       "precision_holdout": 0.145455,
       "base_rate_holdout": 0.060266,
-      "flagged_share_of_caseload": 0.05618
+      "flagged_share_of_caseload": 0.05618,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 19,
+      "n_rules_available_refill": 164,
+      "n_cases_flagged_refill": 48,
+      "flagged_share_of_caseload_refill": 0.04903,
+      "n_errors_flagged_refill": 8,
+      "precision_refill": 0.166667,
+      "per_reduction_pts_unweighted_refill": 10.954663,
+      "per_reduction_pts_weighted_refill": 11.801919,
+      "error_dollars_flagged_holdout_unweighted_refill": 1097,
+      "error_dollars_flagged_holdout_weighted_refill": 428979.34566
     },
     {
       "state": "Wisconsin",
@@ -2118,7 +3164,18 @@
       "weighted_cases_holdout": 345580.757005,
       "precision_holdout": 0.185185,
       "base_rate_holdout": 0.060266,
-      "flagged_share_of_caseload": 0.110317
+      "flagged_share_of_caseload": 0.110317,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 41,
+      "n_rules_available_refill": 317,
+      "n_cases_flagged_refill": 97,
+      "flagged_share_of_caseload_refill": 0.099081,
+      "n_errors_flagged_refill": 17,
+      "precision_refill": 0.175258,
+      "per_reduction_pts_unweighted_refill": 31.695626,
+      "per_reduction_pts_weighted_refill": 30.54261,
+      "error_dollars_flagged_holdout_unweighted_refill": 3174,
+      "error_dollars_flagged_holdout_weighted_refill": 1110171.053629
     },
     {
       "state": "Wyoming",
@@ -2140,7 +3197,18 @@
       "weighted_cases_holdout": 11759.756643,
       "precision_holdout": 0.4,
       "base_rate_holdout": 0.075188,
-      "flagged_share_of_caseload": 0.018797
+      "flagged_share_of_caseload": 0.018797,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 8,
+      "n_rules_available_refill": 61,
+      "n_cases_flagged_refill": 13,
+      "flagged_share_of_caseload_refill": 0.048872,
+      "n_errors_flagged_refill": 3,
+      "precision_refill": 0.230769,
+      "per_reduction_pts_unweighted_refill": 22.858056,
+      "per_reduction_pts_weighted_refill": 29.0602,
+      "error_dollars_flagged_holdout_unweighted_refill": 715,
+      "error_dollars_flagged_holdout_weighted_refill": 50147.856505
     },
     {
       "state": "Wyoming",
@@ -2162,7 +3230,18 @@
       "weighted_cases_holdout": 11759.756643,
       "precision_holdout": 0.130435,
       "base_rate_holdout": 0.075188,
-      "flagged_share_of_caseload": 0.086466
+      "flagged_share_of_caseload": 0.086466,
+      "refill_basis": "core+buffer walked against the holdout caseload to the budget cap",
+      "n_rules_deployed_refill": 13,
+      "n_rules_available_refill": 109,
+      "n_cases_flagged_refill": 26,
+      "flagged_share_of_caseload_refill": 0.097744,
+      "n_errors_flagged_refill": 4,
+      "precision_refill": 0.153846,
+      "per_reduction_pts_unweighted_refill": 25.191816,
+      "per_reduction_pts_weighted_refill": 36.04661,
+      "error_dollars_flagged_holdout_unweighted_refill": 788,
+      "error_dollars_flagged_holdout_weighted_refill": 62203.98386
     }
   ]
 }

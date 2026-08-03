@@ -143,6 +143,11 @@ we learned is recoverable. Each points to its numbered section.
   paired median difference 0.000, because the highest-ranked rule the stricter rate
   removes sits at position 14,449 of 50,697 and a budget deploys the top 16 to 27.
   No pipeline change.
+- **08-03**: Swept the support floor over seven shapes, flat and scaled to pool size
+  (#26): the shipped n >= 30 wins. Raising the national floor to 66, 195 and 778 cost
+  precision monotonically at the 5% budget (0.3345 to 0.3000, 0.2950, 0.2826) and
+  dropping states to a flat 1% cost more (0.2558). Refutes the prediction that a
+  larger search needs a larger floor. No pipeline change.
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -1547,3 +1552,142 @@ entry are re-derived from `.../fdr_raw_vocab/raw_national.rds`. The re-run of fd
 reproduced the recorded audition exactly across all 36 rows (maximum absolute
 difference 0 in both precision and dollar recall), which is the check that the two
 arms differ only in alpha.*
+
+## 26. The support floor: raising it costs precision, and n >= 30 is near optimal from both directions (2026-08-03)
+
+> **Takeaway: about our pipeline (a refuted prediction).** The n >= 30 support floor
+> admits rules whose apparent precision noise alone could reach, so we expected raising
+> it to help. It does not. Raising the national floor to 66, 195 or 778 cases lowered
+> median holdout precision at the 5% review budget from 0.3345 to 0.3000, 0.2950 and
+> 0.2826, monotonically, and lowering the state floor to about 15 (a flat 1% of a state
+> caseload) lowered it further to 0.2558. Section 19 already showed that removing the
+> floor entirely costs precision (0.2840 against 0.3345), so 30 is close to best from
+> both directions. The floor is an estimation-quality guard, not a precision dial, and
+> the prediction that a bigger search needs a bigger floor was wrong on this era.
+
+### What was compared
+
+Seven admission arms on the raw 2022-2023 vocabularies (144,533 national candidates,
+national training caseload 77,806 cases; the 18 state caseloads run about 1,200 to
+1,800 cases). The Benjamini-Hochberg false-discovery rate is held at 10% in every arm,
+so the support floor is the only thing that moves. Each arm's floor is applied to the
+pool that mined the rule, so national and state pools can get different floors. Rules
+are then ordered by the 99% Wilson lower bound, blended, filled to the budget as core
+plus buffer, and scored on FY2024, a true future year.
+
+| arm | rule | national floor | state floor (typical) | national rules admitted |
+|---|---|---|---|---|
+| f30 | n >= 30 (shipped) | 30 | 30 | 50,697 |
+| logeq | n >= 30 log(N)/log(2500) | 43 | 27-29 | 49,278 |
+| p085 | n >= max(30, 0.085% N) | 66 | 30 | 47,142 |
+| p25 | n >= max(30, 0.25% N) | 195 | 30 | 39,586 |
+| log25 | n >= 25 log(N) | 282 | 178-187 | 36,653 |
+| p100 | n >= max(30, 1% N) | 778 | 30 | 27,948 |
+| pure100 | n >= 1% N, no backstop | 778 | 12-18 | 27,948 |
+
+N is the pool's own training caseload. Because a state's public caseload is only about
+1,500 cases, the max(30, ...) form leaves p085, p25 and p100 at 30 for every state, so
+those three arms change the NATIONAL floor only. pure100 differs from p100 solely in
+dropping the state backstop, which isolates the state floor. logeq is the shape that
+equalising selection inflation implies (inflation goes as sqrt(2 log m), so equal
+inflation means n proportional to log m, and log m barely differs between a 78k-case
+pool and a 1.5k-case one); anchored at 30 for a median state it predicts a national
+floor of 43, that is, nearly the flat floor we already use.
+
+### Result: 18 states, both review budgets
+
+Medians across the 18 states. "paired median delta" is the median of the per-state
+difference against f30, which is the honest statistic; the median precision column can
+move on which state lands in the middle.
+
+Budget 5%:
+
+| arm | admitted (blended) | rules deployed | precision | dollar recall | paired median delta | beats f30 | loses | ties |
+|---|---|---|---|---|---|---|---|---|
+| f30 | 54,260 | 16.5 | 0.3345 | 0.1461 | 0.0000 | - | - | - |
+| logeq | 52,914 | 13.0 | 0.3119 | 0.1484 | 0.0000 | 4 | 7 | 7 |
+| p085 | 50,706 | 14.5 | 0.3000 | 0.1444 | 0.0000 | 5 | 8 | 5 |
+| p25 | 43,150 | 8.0 | 0.2950 | 0.1314 | -0.0149 | 4 | 10 | 4 |
+| p100 | 31,513 | 6.0 | 0.2826 | 0.1343 | -0.0223 | 3 | 12 | 3 |
+| log25 | 37,554 | 14.0 | 0.2809 | 0.1211 | -0.0470 | 5 | 11 | 2 |
+| pure100 | 32,058 | 8.0 | 0.2558 | 0.1425 | -0.0242 | 4 | 14 | 0 |
+
+Budget 10%:
+
+| arm | admitted (blended) | rules deployed | precision | dollar recall | paired median delta | beats f30 | loses | ties |
+|---|---|---|---|---|---|---|---|---|
+| logeq | 52,914 | 26.5 | 0.2770 | 0.2510 | 0.0000 | 6 | 6 | 6 |
+| f30 | 54,260 | 27.0 | 0.2754 | 0.2484 | 0.0000 | - | - | - |
+| p085 | 50,706 | 24.0 | 0.2692 | 0.2527 | 0.0000 | 6 | 6 | 6 |
+| log25 | 37,554 | 25.0 | 0.2679 | 0.2477 | 0.0000 | 6 | 8 | 4 |
+| p25 | 43,150 | 19.0 | 0.2655 | 0.2489 | 0.0000 | 7 | 7 | 4 |
+| pure100 | 32,058 | 14.0 | 0.2577 | 0.2347 | -0.0113 | 6 | 10 | 2 |
+| p100 | 31,513 | 13.0 | 0.2474 | 0.2424 | -0.0155 | 6 | 12 | 0 |
+
+The median base error rate across these states is 0.1253, so f30's 0.3345 at the 5%
+budget is 2.48x lift and pure100's 0.2558 is 1.93x.
+
+Two isolations are worth naming:
+
+- **National floor only.** f30 (30) to p085 (66) to p25 (195) to p100 (778), with every
+  state held at 30: 0.3345, 0.3000, 0.2950, 0.2826 at the 5% budget. Monotone decline.
+- **State floor only.** p100 and pure100 share the 778-case national floor and differ
+  only in whether states keep the 30-case backstop: 0.2826 with it, 0.2558 without.
+  Lowering the state floor to roughly 15 costs 0.027.
+
+At the 10% budget the picture is flatter. logeq, p085, log25 and p25 all have a paired
+median delta of exactly 0.0000 against f30, so floors up to about 200 nationally are a
+wash there; only the 778-case floors lose (-0.0155 and -0.0113). The 5% budget is where
+the floor matters, which is consistent with section 22: the top of the list is where
+these effects live.
+
+### Why raising it hurts
+
+Higher floors admit only broader rules, and broader rules are less precise. In the
+2022-2023 national admitted pool, median raw training precision falls from 0.344 for
+rules flagging 30 to 50 cases to 0.174 for rules flagging 500 or more (the full band
+table is in section 25). Filling a fixed review budget out of broader rules therefore
+lands on lower-precision cases, and it takes fewer rules to do it: median rules
+deployed falls from 16.5 at f30 to 6.0 at p100 at the 5% budget. The thin rules at the
+top of the ranking, the ones whose apparent precision is closest to what noise can
+reach, still carried their precision into FY2024 well enough to beat the broader rules
+that replace them.
+
+### The prediction this refutes
+
+Section 1's selection arithmetic says that at n = 30, in a search of this size, noise
+alone can reach a precision near 0.34, and section 25 showed the top 25 rules by lower
+bound have a median raw precision of 0.608 with 96% of them flagging fewer than 100
+cases. The natural inference, that these rules are largely luck and a higher floor
+would improve the delivered list, is refuted here on this era: every arm that raised
+the floor did worse at the 5% budget. The arithmetic bounds what noise COULD produce;
+it does not establish that the rules we deploy ARE noise.
+
+This also answers, in the direction of "no", the specific proposal that a pool mined
+from a much larger caseload should carry a much larger floor. The national pool at
+77,806 cases is roughly the scale of a state's internal QA data (40k to 100k cases),
+and it is exactly the pool where raising the floor hurt most.
+
+### Caveats
+
+- **Single era, not replicated.** FY2022-2023 training, FY2024 test. Not confirmed on
+  the FY2017-2018 to FY2019 era. Section 20 is the precedent for a stringency result
+  that did not survive that check.
+- **Exploratory, not pre-registered**, and 18 states rather than 49.
+- **The harness re-fills against the test year**, so workload equals the budget by
+  construction (see section 25's caveat). Arms are comparable to each other and to
+  section 25's arms, not to the frozen-list scorecard.
+- **Internal-scale deployment is not directly tested.** The national pool is a proxy
+  for a large caseload, but a state running this on 40k to 100k of its own cases would
+  also have a much larger OWN pool, which no arm here simulates.
+- **The floors tested are coarse**, four national values between 30 and 778. Nothing
+  here rules out a small improvement from a value between 30 and 66.
+
+*Artifacts:
+`methods/state_similarity_v2/transfer_benchmark_train2223_test24/support_floor_shape_audition.csv`
+(252 rows: 18 states x 2 budgets x 7 arms). Regenerating script:
+`methods/support_floor_shape_v2.R` (runner: `runners/run_support_floor_shape.R`), which
+is `methods/fdr_admission_audition_v2.R` with the seven floor arms substituted for the
+admission arms; it mines nothing and reads the cached raw vocabularies in
+`.../fdr_raw_vocab/`. The f30 arm is the shipped admission and reproduces the fdr10f
+figures recorded in section 25.*
