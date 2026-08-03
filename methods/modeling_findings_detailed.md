@@ -1531,12 +1531,48 @@ reported here.
   scored on FY2024 without refilling and carries a median 0.855 of its budgeted
   workload at the 5% budget. Fill ratios from the two designs measure different
   quantities and must not be quoted against each other.
-- **Only the 0.05 to 0.10 band was tested.** If the right multiplicity denominator is
-  the searched space rather than the reported one (roughly 5.7 million depth-4
-  conjunctions per stratum against the roughly 49,000 reported per stratum), the
-  equivalent rate is on the order of 0.001, two orders of magnitude below anything
-  measured here. This entry says the rate is inert where we looked. It does not say
-  the test is correctly specified.
+- **Only the 0.05 to 0.10 band was tested by the scored arms.** The test is also not
+  correctly specified: the right multiplicity denominator is the searched space, not
+  the reported one. The addendum below substitutes denominators up to 100 million and
+  finds the delivered list unchanged, so this caveat is now measured rather than open,
+  but it is measured on admission only.
+
+### Addendum (2026-08-03): the multiplicity denominator does not reach the delivered list either
+
+The caveat above notes that the Benjamini-Hochberg step divides by the number of rules
+the ensembles reported, not the number the trees searched, which makes the bar too
+easy. Substituting larger denominators answers the question directly. The support
+floor is held at 30 and the rate at 10%; only the denominator moves.
+
+| denominator | national rules admitted | of top 25 by LCB kept | of top 100 | of top 1,000 |
+|---|---|---|---|---|
+| 144,533 (reported, today) | 50,697 | 25 | 100 | 1,000 |
+| 1,000,000 | 41,650 | 25 | 100 | 1,000 |
+| 5,700,000 | 36,204 | 25 | 100 | 1,000 |
+| 34,000,000 | 31,882 | 25 | 100 | 993 |
+| 100,000,000 | 29,807 | 25 | 100 | 973 |
+
+At a denominator of 100 million, three orders of magnitude beyond what we correct
+against now, the pool falls by 41% but every one of the top 100 rules survives and 973
+of the top 1,000 do. A review budget deploys 16 to 27 rules. So no denominator anyone
+would defend changes a delivered list: the top rules have p-values small enough that
+the multiplicity correction never binds on them. This is the same positional result as
+the rest of the section, in a stronger form, and it means the "wrong denominator"
+weakness cannot be repaired, or even usefully probed, through admission.
+
+Where the search size could still matter is the ORDERING, since the delivered list is
+the top of a ranking rather than a set. A simultaneous bound over m candidates would
+replace z = 2.326 with sqrt(2 log m), which is 4.87 at the reported denominator and
+6.07 at 100 million: three orders of magnitude in the search move z by 1.2, so a
+sweep over z in {2.326, 3, 4, 5, 6} covers every plausible search size and the exact
+denominator never has to be pinned down. That sweep has NOT been run. Section 26 is
+the reason to expect it to lose, since a larger z is a continuous version of the
+higher support floors that cost precision there, but the two differ: a floor removes
+rules from the pool and forces the fill deeper, whereas z only reorders and can still
+deploy a thin rule when nothing better competes.
+
+*Regenerating script: `methods/multiplicity_denominator_probe_v2.R` (reads the cached
+raw vocabulary, no mining, runs in seconds).*
 
 *Artifacts:
 `methods/state_similarity_v2/transfer_benchmark_train2223_test24/fdr05f_audition.csv`

@@ -815,9 +815,12 @@ floor acts, and it is why section 19 found the floor worth 0.335 against 0.284 w
 this section finds the rate worth nothing.
 
 Caveats: one era only (FY2022-2023 to FY2024), 18 states, exploratory rather than
-pre-registered, and only the 0.05 to 0.10 band was tested. If the multiplicity
-correction should count the searched space rather than the reported one, the
-equivalent rate is on the order of 0.001, far below anything measured here.
+pre-registered, and only the 0.05 to 0.10 band was tested by the scored arms. The
+multiplicity correction should arguably count the searched space rather than the
+reported one, and an addendum to the detailed record substitutes denominators up to
+100 million: the pool falls by 41% but 973 of the top 1,000 rules survive and all of
+the top 100 do, so no defensible denominator changes a delivered list either. Where
+the search size could still matter is the ordering, which has not been tested.
 
 *Detail and artifacts: [detailed record](modeling_findings_detailed.md), §25.*
 
