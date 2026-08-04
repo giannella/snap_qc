@@ -153,6 +153,10 @@ we learned is recoverable. Each points to its numbered section.
   137 and 283 rules delivered. Depth tracks rule width (-0.58), not weak fill
   (-0.31, -0.07). Lets evaluation run on a ranked window with a capacity
   certificate instead of the whole pool. No change to any delivered list.
+  Verified the same day: on all 49 delivered lists a 20,000-rule window left zero
+  slack and rebuilt every list identically to the shipped CSV (98 of 98), and on a
+  200,000-rule research pool the pruned evaluation reproduced the unpruned results
+  on all 70 comparisons while truncating every pool. 77 minutes to 1 per state.
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -1842,6 +1846,64 @@ for every state.
   certificate is checked at run time rather than assumed.
 - This is a statement about cost and about what a cap would do. It says nothing about
   whether the ranking itself is any good, which is section 28's question.
+
+### Addendum (2026-08-04): the certificate tested, on the delivered lists and on a research pool
+
+The section above argues that evaluation can run on a ranked window because the walk
+exhausts a fixed capacity in rank order. Two runs test that argument rather than
+resting on the rank counting.
+
+**On the 49 delivered lists.** The real fill was re-run for every state at both review
+budgets, restricted to the top 20,000 rules by the ranking statistic, and the result
+compared rule for rule and role for role against the committed CSV in
+`state_delivery_lists/`.
+
+| | result |
+|---|---|
+| state and budget combinations | 98 (49 states x 2 budgets) |
+| leftover capacity ("slack") zero | 98 of 98, maximum slack 0 |
+| rebuilt list identical to the shipped list | 98 of 98 |
+| pool size | median 39,807, maximum 45,374 |
+| rules delivered | median 137 at the 5% budget (max 202), 283 at the 10% (max 405) |
+
+So on the deliverable the window is not merely adequate, it is never even close to
+binding, and pruning changes nothing a state receives. That is the claim that matters
+for production: this is an evaluation optimisation, not a modelling change.
+
+**On a research pool five times larger.** The cross-fitted ranking study (section 28
+when it lands) blends five splits into pools of roughly 200,000 admitted rules per arm,
+which is where the saving is worth having. The pruned, single-pass evaluation was run
+against the unpruned version that had already been computed overnight for five states:
+
+| | result |
+|---|---|
+| rows compared | 70 (5 states x 7 arms x 2 budgets) |
+| identical admitted counts, deployed counts, workload, precision, dollar recall | 70 of 70 on every measure |
+| slack zero | 70 of 70 |
+| window actually used | 20,000 in every arm, i.e. the window truncated every admitted pool |
+
+The last row is what makes this a real test rather than a vacuous one. Every arm's
+admitted set exceeded 20,000 rules, so the window discarded rules in all 70 cases, and
+the results were still identical, because the fill finished inside it. Had the pools
+been smaller than the window, the check would have proved nothing.
+
+The cost difference on that pool: Massachusetts took 77 minutes to evaluate unpruned
+and about 1 minute pruned. Per state, flags are now built once over roughly 37,000
+pooled rules plus 20,000 baseline rules, instead of fourteen passes (seven arms, train
+and test) over 180,000 to 220,000.
+
+**What is still not established.** Both runs sample the same era and the same
+configuration. A window that suffices here need not suffice for a different budget, a
+larger buffer multiple, or a pool whose top-ranked rules are much narrower, which is why
+the slack certificate is evaluated at run time and a positive value triggers an
+unpruned re-run rather than a warning that can be ignored.
+
+*Artifacts: `methods/anyerror_blended_holdout_2024/certified_fill_check.csv` (98 rows:
+pool size, window, core and buffer counts, slack, and whether the rebuild matched the
+shipped list). Regenerating script: `methods/certified_fill_check_v2.R` (runner:
+`runners/run_certified_fill_check.R`), about 15 minutes, no mining. The research-pool
+comparison is `methods/crossfit_ranking_v2.R` run before and after the change; the
+unpruned figures come from the 2026-08-03 overnight log.*
 
 *Artifacts: `methods/anyerror_blended_holdout_2024/fill_scan_depth.csv` (one row per
 state and budget: pool size, rules delivered, rank reached for core and for core plus

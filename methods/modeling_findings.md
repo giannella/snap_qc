@@ -922,4 +922,13 @@ budget the median state needs rank 969 for its core alone, so a cap at 1,000 wou
 truncate real delivered rules for about half the states. Depth is a property of each
 state's caseload, and no single constant fits all of them.
 
+Both halves of that were then tested rather than argued. Re-running the real fill on a
+20,000-rule window for all 49 states at both budgets left zero leftover capacity in all
+98 cases and rebuilt every list identically to the committed one, rule for rule. On a
+research pool five times larger, where the saving actually matters, the pruned
+evaluation reproduced the unpruned results on all 70 comparisons (5 states, 7 ranking
+variants, 2 budgets) with the window truncating every pool, so the check was a real one
+rather than a pool that happened to fit. The state that took 77 minutes to evaluate
+unpruned took about 1 minute pruned.
+
 *Detail and artifacts: [detailed record](modeling_findings_detailed.md), §27.*
