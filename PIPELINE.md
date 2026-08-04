@@ -306,9 +306,12 @@ in rows. A floor scaled that way was tested and lost (findings 26). Cross-fittin
 more promising route precisely because it removes the inflation from both pools directly
 rather than trying to price it.
 
-This matters unevenly. Some states draw nearly all their rules from their own pool, others
-none at all, so a change made to the national pool does not reach the states most exposed
-to it.
+This matters unevenly, and the split is sharp. At the 5% budget, 26 of the 49 states take
+no core rules at all from their own pool, while three take more than half and the District
+of Columbia takes all of them. The distortion is concentrated in that second group, because
+locally mined rules are the inflated ones, and those are exactly the states that a change
+to the national pool cannot reach. Any global lever we pull misses the states that need it
+most.
 
 ---
 
