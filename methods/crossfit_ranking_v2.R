@@ -57,6 +57,7 @@ LCB_Z       <- 2.326
 FDR_ALPHA   <- 0.10
 SIGNIF_DIGITS <- 3
 if (!exists("REPS"))  REPS  <- 5
+if (!exists("TOPK"))  TOPK  <- 20000   # see the scan-depth note at the eval loop
 if (!exists("XGB")) XGB <- list(nrounds = 1000, max_depth = 4, eta = 0.02, subsample = 0.20)
 if (!exists("RF"))  RF  <- list(num_trees = 1000, max_depth = 4, mtry = 2, min_node_size = 20)
 
@@ -245,6 +246,14 @@ ARMS <- list(
 )
 
 ## the frozen walk, identical to the admission auditions
+#
+# `slack` is the pruning certificate. The walk consumes a fixed capacity
+# (BUFFER_MULT x budget x caseload) in rank order, so once that capacity is full
+# no lower-ranked rule can enter, whatever the pool holds below. When the caller
+# passes only the top K rules and the walk returns slack == 0, the result is
+# provably identical to walking the whole admitted pool: the first K steps are
+# the same in both, and after them nothing else fits. slack > 0 means the window
+# was too small to be sure, and the caller re-runs that arm unpruned.
 walk_eval <- function(stat, idx_tr, idx_te, n_tr, n_te, ie_te, ed_te, b) {
   cap <- floor(b * n_tr); cap_buf <- floor(BUFFER_MULT * b * n_tr)
   un <- rep(FALSE, n_tr); n_in <- 0L; frozen <- integer(0); buffer <- integer(0)
@@ -255,6 +264,7 @@ walk_eval <- function(stat, idx_tr, idx_te, n_tr, n_te, ie_te, ed_te, b) {
     if (n_in + add <= cap) { un[idx_tr[[i]]] <- TRUE; n_in <- n_in + add; frozen <- c(frozen, i) }
     else if (n_in + add <= cap_buf) { un[idx_tr[[i]]] <- TRUE; n_in <- n_in + add; buffer <- c(buffer, i) }
   }
+  slack <- cap_buf - n_in
   cap24 <- floor(b * n_te); un24 <- rep(FALSE, n_te); used <- 0L
   for (i in c(frozen, buffer)) {
     add <- sum(!un24[idx_te[[i]]])
@@ -263,7 +273,8 @@ walk_eval <- function(stat, idx_tr, idx_te, n_tr, n_te, ie_te, ed_te, b) {
   nb <- sum(un24)
   data.frame(n_deployed = used, workload = round(nb / n_te, 4),
              precision = round(ifelse(nb > 0, sum(ie_te[un24]) / nb, NA), 4),
-             dollar_recall = round(sum(ed_te[un24]) / sum(ed_te), 4))
+             dollar_recall = round(sum(ed_te[un24]) / sum(ed_te), 4),
+             n_core = length(frozen), n_buffer = length(buffer), slack = slack)
 }
 
 ## baseline: the shipped recipe from the cached full-data vocabulary
@@ -308,24 +319,61 @@ for (target in TARGETS) {
   bl <- bl %>% filter(keep) %>% arrange(desc(stat), hh, rule) %>%
     distinct(hh, rule, .keep_all = TRUE)
 
-  for (nm in c(names(ARMS), "baseline")) {
-    if (nm == "baseline") { p <- bl; stat <- p$stat }
-    else {
-      k <- ARMS[[nm]]$keep(pool)
-      p <- pool[k, , drop = FALSE]; stat <- ARMS[[nm]]$stat(p)
-    }
-    if (!nrow(p)) next
-    idx_tr <- flags_for_rules(p, tr, strata_tr, label = "")
-    idx_te <- flags_for_rules(p, te, strata_te, label = "")
+  # Each arm can only ever reach the top TOPK rules by its own statistic: the
+  # walk consumes capacity in rank order and stops when the 3x buffer cap is
+  # full. Measured over the 49 delivered lists, the deepest any state reached
+  # was rank 9,072 (Arkansas at the 10% budget), so TOPK carries better than 2x
+  # margin; walk_eval's slack certificate then proves exactness case by case.
+  # The windows are unioned so flags are built ONCE per state rather than once
+  # per arm, which is what made the first run take 75 minutes a state.
+  arm_defs <- c(lapply(names(ARMS), function(nm) {
+      k <- which(ARMS[[nm]]$keep(pool))
+      if (!length(k)) return(NULL)
+      s <- ARMS[[nm]]$stat(pool)[k]
+      list(nm = nm, src = "pool", rows = k[order(-s)][seq_len(min(TOPK, length(k)))],
+           n_admitted = length(k))
+    }),
+    list(if (nrow(bl)) list(nm = "baseline", src = "bl",
+                            rows = order(-bl$stat)[seq_len(min(TOPK, nrow(bl)))],
+                            n_admitted = nrow(bl)) else NULL))
+  arm_defs <- Filter(Negate(is.null), arm_defs)
+
+  u_pool <- sort(unique(unlist(lapply(Filter(function(a) a$src == "pool", arm_defs), `[[`, "rows"))))
+  u_bl   <- sort(unique(unlist(lapply(Filter(function(a) a$src == "bl",   arm_defs), `[[`, "rows"))))
+  idx <- list(pool = list(), bl = list())
+  if (length(u_pool)) {
+    sub <- pool[u_pool, , drop = FALSE]
+    idx$pool$tr <- flags_for_rules(sub, tr, strata_tr, label = "")
+    idx$pool$te <- flags_for_rules(sub, te, strata_te, label = "")
+    idx$pool$map <- setNames(seq_along(u_pool), u_pool)
+  }
+  if (length(u_bl)) {
+    sub <- bl[u_bl, , drop = FALSE]
+    idx$bl$tr <- flags_for_rules(sub, tr, strata_tr, label = "")
+    idx$bl$te <- flags_for_rules(sub, te, strata_te, label = "")
+    idx$bl$map <- setNames(seq_along(u_bl), u_bl)
+  }
+  stamp("  flags built once over %d pool rules + %d baseline rules for %d arms",
+        length(u_pool), length(u_bl), length(arm_defs))
+
+  for (a in arm_defs) {
+    src <- idx[[a$src]]
+    pos <- unname(src$map[as.character(a$rows)])
+    p    <- if (a$src == "pool") pool[a$rows, , drop = FALSE] else bl[a$rows, , drop = FALSE]
+    stat <- if (a$src == "pool") ARMS[[a$nm]]$stat(pool)[a$rows] else bl$stat[a$rows]
     for (b in BUDGETS) {
-      ev <- walk_eval(stat, idx_tr, idx_te, nrow(tr), nrow(te), ie_te, ed_te, b)
+      ev <- walk_eval(stat, src$tr[pos], src$te[pos], nrow(tr), nrow(te), ie_te, ed_te, b)
+      if (ev$slack > 0)
+        stamp("  WARNING %s %s budget %.2f: slack %d, top-%d window may have truncated the fill",
+              target, a$nm, b, ev$slack, TOPK)
       res[[length(res) + 1]] <- cbind(
-        data.frame(target = target, arm = nm, budget = b, n_admitted = nrow(p),
+        data.frame(target = target, arm = a$nm, budget = b, n_admitted = a$n_admitted,
+                   n_scanned = length(a$rows),
                    n_state_rules = sum(p$pool == "state"),
                    target_base_rate = round(mean(ie_te), 4)), ev)
     }
-    rm(idx_tr, idx_te); invisible(gc())
   }
+  rm(idx); invisible(gc())
   saveRDS(bind_rows(res), file.path(OUT_DIR, "crossfit_partial.rds"))
   stamp("  %s done (%d rows so far)", target, length(res))
 }

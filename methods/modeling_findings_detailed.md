@@ -148,6 +148,11 @@ we learned is recoverable. Each points to its numbered section.
   precision monotonically at the 5% budget (0.3345 to 0.3000, 0.2950, 0.2826) and
   dropping states to a flat 1% cost more (0.2558). Refutes the prediction that a
   larger search needs a larger floor. No pipeline change.
+- **08-04**: Measured how far down the ranked pool the fill actually reaches (#27):
+  median rank 1,544 at the 5% budget and 4,194 at the 10%, deepest 9,072, against
+  137 and 283 rules delivered. Depth tracks rule width (-0.58), not weak fill
+  (-0.31, -0.07). Lets evaluation run on a ranked window with a capacity
+  certificate instead of the whole pool. No change to any delivered list.
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -1727,3 +1732,119 @@ is `methods/fdr_admission_audition_v2.R` with the seven floor arms substituted f
 admission arms; it mines nothing and reads the cached raw vocabularies in
 `.../fdr_raw_vocab/`. The f30 arm is the shipped admission and reproduces the fdr10f
 figures recorded in section 25.*
+
+## 27. How deep the fill reaches, and why that makes evaluation cheap (2026-08-04)
+
+> **Takeaway: about our pipeline.** A delivered list holds about 137 rules at the 5%
+> review budget, but building it examines far more of the ranked pool than that:
+> a median of 1,544 rules at the 5% budget and 4,194 at the 10%, with the deepest state
+> reaching rank 9,072. Depth tracks how WIDE a state's top rules are (correlation -0.58
+> with cases flagged per rule), not whether the state struggles to fill its budget
+> (-0.31 and -0.07). This matters for cost rather than for quality: evaluating rules is
+> the expensive step, so a list can be built from a ranked window instead of the whole
+> admitted pool, and because the walk consumes a fixed capacity in rank order there is a
+> check that proves the window was big enough. A window of 20,000 covers the worst state
+> observed by better than twice over. A fixed cap chosen without that check would be a
+> mistake: at the 10% budget the median list needs rank 969 just for its core, so a cap
+> at 1,000 would start cutting into delivered rules, not spare ones.
+
+### Two different counts
+
+A delivered list is built by walking the ranked pool from the top and taking a rule
+whenever it flags cases that no higher-ranked rule already flagged. Rules that add
+nothing new are skipped and cost nothing. Filling continues until the review budget is
+full (those rules are the "core") and then out to three times that depth ("buffer"
+rules, substitutes a state can swap in when it rejects one on expert judgment).
+
+So there are two counts, and only the second one drives cost:
+
+- **rules delivered**, what the state receives, and
+- **rules examined**, how far down the ranking the walk had to look to find them.
+
+Measured over the 49 shipped any-error lists (2022-24 pools, median pool size 39,807
+rules after blending each state's own pool into the national one):
+
+| | 5% budget | 10% budget |
+|---|---|---|
+| rules delivered (core + buffer) | 137 | 283 |
+| of which core | 50 | 97 |
+| rank reached, core only | median 359, max 1,622 | median 969, max 2,613 |
+| rank reached, core + buffer | median 1,544, max 3,820 | median 4,194, max 9,072 |
+| deepest state as a share of its pool | 9.7% | 23.1% |
+| states past rank 1,000 | 35 of 49 | 46 of 49 |
+| states past rank 5,000 | 0 | 17 |
+| states past rank 20,000 | 0 | 0 |
+
+The deepest five at the 10% budget are Arkansas (9,072), West Virginia (7,858), Alabama
+(6,833), Tennessee (6,629) and Washington (6,292).
+
+### What makes a state go deep
+
+Rule width, and it is the stronger of the two candidate explanations by a wide margin.
+Across the 49 states, scan depth correlates -0.58 with the median number of cases a
+delivered rule flags, and -0.62 (5% budget) to -0.66 (10%) with the median number of
+NEW cases a rule contributes at its rank. A state whose top-ranked rules each flag
+twenty cases fills its budget in a few hundred rules; a state whose top rules flag two
+needs thousands of them, and has to look past many more that add nothing.
+
+The other candidate does not hold up. It would be natural to assume a deep scan is a
+symptom of a list that struggles to reach its budget, but the correlation between scan
+depth and the frozen-core fill ratio is only -0.31 at the 5% budget and -0.07 at the
+10%. Tennessee and Washington appear among the deepest states and are also among the
+weakest fillers, but that pairing does not generalise across the other 47.
+
+### Why this is worth knowing: evaluation is the expensive step
+
+Mining rules is not what costs the most in a study of this kind; scoring them is. In
+the first cross-fitted ranking run (section 28 when it lands), the per-state budget
+broke down as roughly 10 minutes of mining against 75 minutes of evaluation, because
+every candidate rule has to be matched against every case to learn which cases it
+flags. The national pool for that study reached 667,714 rules across five splits.
+
+Since the walk only ever looks at rules in rank order and stops when capacity is full,
+it never needs the bottom of the pool. Restricting evaluation to the top K rules by the
+SAME statistic the walk sorts by turns an O(pool) cost into an O(K) one. On the numbers
+above, K = 20,000 against a 39,807-rule pool is a 2x saving for the shipped lists and
+roughly a 10x saving for a 200,000-rule research pool, with no change to any output.
+
+### The check that makes it safe rather than merely convenient
+
+Pruning is only sound if the window is provably big enough, and there is a natural
+certificate. The walk consumes a fixed capacity, three times the review budget in
+cases. Once that capacity is exactly full, no rule below can enter, because any rule
+that adds cases would exceed it. So:
+
+1. evaluate the top K rules by the arm's own ranking statistic,
+2. run the walk and record the leftover capacity ("slack"),
+3. if slack is zero, the result is identical to walking the entire pool. The first K
+   steps are the same in both, and after them nothing else fits.
+
+If slack is above zero the window was too small to be sure, and that arm is re-run
+unpruned. The window must be ordered by the same statistic the walk uses, or it is not
+a prefix of the walk order and the argument fails.
+
+### What NOT to do
+
+Capping the pool at a fixed rank as a matter of policy, rather than as a certified
+optimisation, would change delivered lists. At the 10% budget the median state needs
+rank 969 for its core alone, so a cap at 1,000 would truncate the core of roughly half
+the states and the buffer of nearly all of them. Depth is a property of a state's
+caseload, through the width of its rules, so a single global constant cannot be right
+for every state.
+
+### Caveats
+
+- Measured on the shipped any-error lists built from the 2022-24 pools. Scan depth
+  depends on pool size, the review budget and the buffer multiple, so the specific
+  ranks do not transfer to a different configuration; the method of measuring does.
+- The 20,000 window is validated against these 49 states at these two budgets only.
+  Nothing guarantees a future pool behaves the same, which is exactly why the slack
+  certificate is checked at run time rather than assumed.
+- This is a statement about cost and about what a cap would do. It says nothing about
+  whether the ranking itself is any good, which is section 28's question.
+
+*Artifacts: `methods/anyerror_blended_holdout_2024/fill_scan_depth.csv` (one row per
+state and budget: pool size, rules delivered, rank reached for core and for core plus
+buffer, rule width). Regenerating script: `methods/fill_scan_depth_v2.R`, which reads
+the delivered lists and the pool caches, evaluates no rules and runs in about a minute.
+The timing figures come from `crossfit_ranking.log`.*

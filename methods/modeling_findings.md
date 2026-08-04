@@ -865,3 +865,61 @@ scorecard. A state running this on its own 40k to 100k internal cases would also
 much larger own pool, which no arm here simulates.
 
 *Detail and artifacts: [detailed record](modeling_findings_detailed.md), §26.*
+
+## 27. How deep the fill reaches, and why that makes evaluation cheap
+
+> **Takeaway: about our pipeline.** A delivered list holds about 137 rules at the 5%
+> review budget, but building it examines far more of the ranked pool than that:
+> a median of 1,544 rules at the 5% budget and 4,194 at the 10%, with the deepest state
+> reaching rank 9,072. Depth tracks how WIDE a state's top rules are (correlation -0.58
+> with cases flagged per rule), not whether the state struggles to fill its budget
+> (-0.31 and -0.07). This matters for cost rather than for quality: evaluating rules is
+> the expensive step, so a list can be built from a ranked window instead of the whole
+> admitted pool, and because the walk consumes a fixed capacity in rank order there is a
+> check that proves the window was big enough. A window of 20,000 covers the worst state
+> observed by better than twice over. A fixed cap chosen without that check would be a
+> mistake: at the 10% budget the median list needs rank 969 just for its core, so a cap
+> at 1,000 would start cutting into delivered rules, not spare ones.
+
+A list is built by reading down the ranked pool and keeping a rule whenever it flags
+cases that no better-ranked rule already flagged. Rules that add nothing new are passed
+over and cost nothing to skip. That means two counts differ: what the state receives,
+and how far down the ranking we had to read to assemble it.
+
+Across the 49 shipped lists, from pools of about 39,800 rules:
+
+| | 5% budget | 10% budget |
+|---|---|---|
+| rules delivered (core plus buffer) | 137 | 283 |
+| of which core | 50 | 97 |
+| rank reached for the core | 359 (max 1,622) | 969 (max 2,613) |
+| rank reached in total | 1,544 (max 3,820) | 4,194 (max 9,072) |
+| states past rank 1,000 | 35 of 49 | 46 of 49 |
+
+What sends a state deep is the width of its rules, not any weakness in its list: depth
+correlates -0.58 with how many cases a delivered rule flags, and -0.62 to -0.66 with
+how many new cases a rule adds at its rank. A state whose top rules each flag twenty
+cases finishes in a few hundred rules; one whose top rules flag two needs thousands.
+The intuitive alternative, that deep scans signal a list struggling to fill its budget,
+is not supported: that correlation is only -0.31 at the 5% budget and -0.07 at the 10%.
+
+The practical significance is cost. Scoring rules, not mining them, is the expensive
+step, because every candidate must be matched against every case: in the first
+cross-fitted ranking run, each state took roughly 10 minutes to mine and 75 to
+evaluate. Since the walk reads in rank order and stops once its capacity is full, the
+bottom of the pool is never needed, so evaluation can be restricted to a window at the
+top. That is a 2x saving on the shipped pools and roughly 10x on a large research pool,
+with identical output.
+
+Identical, not approximately identical, because there is a check. The walk can only
+consume a fixed capacity, three times the review budget measured in cases. If the walk
+over the window fills that capacity exactly, nothing below the window could have
+entered, so the answer is the same one the full pool would have given. When it does not
+fill, the window was too small and that case is redone unpruned.
+
+What would be a mistake is capping the pool at a fixed rank as policy. At the 10%
+budget the median state needs rank 969 for its core alone, so a cap at 1,000 would
+truncate real delivered rules for about half the states. Depth is a property of each
+state's caseload, and no single constant fits all of them.
+
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md), §27.*
