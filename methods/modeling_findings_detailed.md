@@ -567,8 +567,7 @@ state scale. The ladder-collapse post-filter matters more there.
 thresholds side by side; state_union_summary.csv; LCB-criterion run preserved
 in run1_lcb_criterion/).*
 
-## 10. Data visibility: how much of a state's error population the public
-## data can even show (2026-07-07)
+## 10. Data visibility: how much of a state's error population the public data can even show (2026-07-07)
 
 > **Takeaway: about the data (and it matters a lot).** The public QC file does not
 > show a state its whole error population: it excludes ineligible cases entirely, so

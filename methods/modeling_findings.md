@@ -83,7 +83,7 @@ notes the rest.
 
 The blow-by-blow chronology (every step in the order it happened, with breadcrumbs
 to each experiment) is kept in the companion
-[detailed record](modeling_findings_detailed.md) (§0). In brief: we started by
+[detailed record](modeling_findings_detailed.md#0-how-the-work-unfolded-chronology--breadcrumbs) (§0). In brief: we started by
 diagnosing the winner's curse and adopting the confidence-bound filter (sections 1
 and 5), built and tuned the v2 pipeline and its engines and strata (2-4, 11), then
 spent the deployment phase (9, 12, 14-22) working out what to actually hand a state,
@@ -123,7 +123,7 @@ junk, a floor written on *raw* precision still overpromises (a raw 0.40 floor
 delivered 0.33), while a floor written on the *bound itself* reads honestly (a 0.30
 bound-floor delivered 0.38). Set your floor on the bound.
 
-*Full numbers and the calibration figure: [detailed record](modeling_findings_detailed.md), §1.*
+*Full numbers and the calibration figure: [detailed record](modeling_findings_detailed.md#1-the-winners-curse-diagnosed-and-addressed), §1.*
 
 ## 2. Results of dropping {pre} r package in favor of rolling our own
 
@@ -154,7 +154,7 @@ engines directly (xgboost+ranger vs bagged trees + ranger vs single engines), th
 best pair only edged the alternatives by about a point of precision. The lesson: the
 engine is not where the leverage is; strict filtering and any-error scoring are.
 
-*Full engine sweep and numbers: [detailed record](modeling_findings_detailed.md), §2.*
+*Full engine sweep and numbers: [detailed record](modeling_findings_detailed.md#2-results-of-dropping-pre-r-package-in-favor-of-rolling-our-own), §2.*
 
 ## 3. Typed frames vs one any-error model (head-to-head)
 
@@ -196,7 +196,7 @@ at a fixed floor (the usual workflow) and roughly ties for one targeting a preci
 level. Both the ordering and the magnitudes reproduced on an independent test year
 (train 2022+2023, test 2024).
 
-*Full table, both ensemble sizes, and the replication: [detailed record](modeling_findings_detailed.md), §3.*
+*Full table, both ensemble sizes, and the replication: [detailed record](modeling_findings_detailed.md#3-typed-frames-vs-one-any-error-model-head-to-head), §3.*
 
 ## 4. Engine tuning: what matters and what doesn't
 
@@ -226,7 +226,7 @@ matched recall:
   often disagree: some settings yield more rules but a worse precision-recall
   frontier.
 
-*Full grid and figures: [detailed record](modeling_findings_detailed.md), §4.*
+*Full grid and figures: [detailed record](modeling_findings_detailed.md#4-engine-tuning-what-matters-and-what-doesnt), §4.*
 
 ## 5. "Mine big, filter stringently": the flexible LCB
 
@@ -253,7 +253,7 @@ Production settings: xgboost 1000 rounds (eta 0.02, subsample 0.20) + ranger 100
 trees (mtry 2), 99% bound. That keeps about 11,000 rules, with better median holdout
 quality per frame than the small-ensemble setup.
 
-*Full sweep and figure: [detailed record](modeling_findings_detailed.md), §5.*
+*Full sweep and figure: [detailed record](modeling_findings_detailed.md#5-mine-big-filter-stringently-the-flexible-lcb), §5.*
 
 ## 6. Frame-relative vs deployed (any-error) performance
 
@@ -269,7 +269,7 @@ not the *type* it was mined for. The ratio runs about 2-2.7x across frames. Ever
 output carries both numbers; the any-error one is what a reviewer actually
 experiences.
 
-*Detail: [detailed record](modeling_findings_detailed.md), §6.*
+*Detail: [detailed record](modeling_findings_detailed.md#6-frame-relative-vs-deployed-any-error-performance), §6.*
 
 ## 7. other_error: the largest, previously unmodeled category
 
@@ -287,7 +287,7 @@ holdout precision 0.25), so whatever heterogeneity it has, it is learnable. (Pro
 caveat, restated: many states treat these as small-dollar and low-priority, so this
 is completeness, not a headline.)
 
-*Detail: [detailed record](modeling_findings_detailed.md), §7.*
+*Detail: [detailed record](modeling_findings_detailed.md#7-other_error-the-largest-previously-unmodeled-category), §7.*
 
 ## 8. ESAP / elderly-disabled: feature suffices, and why
 
@@ -315,7 +315,7 @@ The numbers behind the takeaway:
 So there was nothing to gain from a separate elderly model. The real frontier is
 non-elderly working households with volatile earned income, still an open problem.
 
-*Detail: [detailed record](modeling_findings_detailed.md), §8.*
+*Detail: [detailed record](modeling_findings_detailed.md#8-esap--elderly-disabled-feature-suffices-and-why), §8.*
 
 ## 9. States: a clean two-regime deployment rule
 
@@ -355,7 +355,7 @@ true future-year test (section 14); adaptation helped only where the national li
 already underperformed.
 
 *The seven-state table, the three tuning criteria, neighbor-transfer, and
-single-state mining detail: [detailed record](modeling_findings_detailed.md), §9.*
+single-state mining detail: [detailed record](modeling_findings_detailed.md#9-states-a-clean-two-regime-deployment-rule), §9.*
 
 ## 10. Data visibility: how much of a state's error population the public data can even show
 
@@ -384,7 +384,7 @@ public file omits entirely and which are 100%-of-benefit errors: New Jersey sees
 only a supplement, and the state should mine its own internal data, which contains
 those ineligible determinations.
 
-*Per-state visibility table and rebuild effects: [detailed record](modeling_findings_detailed.md), §10.*
+*Per-state visibility table and rebuild effects: [detailed record](modeling_findings_detailed.md#10-data-visibility-how-much-of-a-states-error-population-the-public-data-can-even-show-2026-07-07), §10.*
 
 ## 11. Household-size stratification: split, but split coarsely
 
@@ -407,7 +407,7 @@ case cleaner still: on 2024 the split won precision outright (0.302 vs 0.262). A
 both years the split never loses, so it stays the default. The one claim that did
 *not* replicate: the 5-way split is not actively worse, just costlier for no gain.
 
-*Both studies and the year-swap: [detailed record](modeling_findings_detailed.md), §11.*
+*Both studies and the year-swap: [detailed record](modeling_findings_detailed.md#11-household-size-stratification-split-but-split-coarsely), §11.*
 
 ## 12. Cross-state transfer vs honest national baselines
 
@@ -433,7 +433,7 @@ precision floors. Several states that looked like total failures at fixed floors
 fine under a budget; the failure was a floor artifact.
 
 *Full similarity definitions, the 12-state tables, and the honest-baseline
-discussion: [detailed record](modeling_findings_detailed.md), §12.*
+discussion: [detailed record](modeling_findings_detailed.md#12-cross-state-transfer-vs-honest-national-baselines-2026-07-09), §12.*
 
 ## 13. Pre-registered year-swap replication of the model-selection studies
 
@@ -464,7 +464,7 @@ Three of four held, and the procedure produced one honest retraction. That is th
 point: pre-committing to predictions is what separates a real effect from a lucky
 one. No production settings changed.
 
-*The pre-registration and full numbers: [detailed record](modeling_findings_detailed.md), §13.*
+*The pre-registration and full numbers: [detailed record](modeling_findings_detailed.md#13-pre-registered-year-swap-replication-of-the-model-selection-studies-2026-07-09), §13.*
 
 ## 14. Time-shifted deployment benchmark: own-state vs transfer vs national on 2024
 
@@ -505,7 +505,7 @@ including a state's own rows in the national pool neither flatters nor hurts it.
   outright.
 - Section 12's 10%-budget transfer advantage flipped here, hence its retirement.
 
-*Per-state detail and charts: [detailed record](modeling_findings_detailed.md), §14.*
+*Per-state detail and charts: [detailed record](modeling_findings_detailed.md#14-time-shifted-deployment-benchmark-own-state-vs-nb-transfer-vs-national-on-2024-2026-07-10), §14.*
 
 ## 15. Frozen per-state lists: the handable deliverable, priced
 
@@ -529,7 +529,7 @@ within a point of precision of an idealized after-the-fact list (0.294 vs 0.301 
 size is 23 rules at 5%, 42 at 10%. And the lists individualize themselves: about a
 third of each state's list is unique to it, and only 8 rules serve 10 or more states.
 
-*List-construction detail and overlap analysis: [detailed record](modeling_findings_detailed.md), §15.*
+*List-construction detail and overlap analysis: [detailed record](modeling_findings_detailed.md#15-frozen-per-state-lists-the-handable-deliverable-priced-2026-07-10), §15.*
 
 ## 16. Blending state and national rules on one confidence scale
 
@@ -561,7 +561,7 @@ state's own rules never clear the bar against tens of thousands of tight nationa
 bounds, and the blend under-delivers (0.161 vs 0.230 for NJ's own list). That is why
 the own-pool list stays as a fallback, chosen by the state's internal validation.
 
-*Full numbers: [detailed record](modeling_findings_detailed.md), §16.*
+*Full numbers: [detailed record](modeling_findings_detailed.md#16-blending-state-and-national-rules-on-one-confidence-scale-2026-07-10), §16.*
 
 ## 17. Typed-frame delivery vocabulary: retired after three rescue attempts
 
@@ -584,7 +584,7 @@ of the list, exactly where a tight budget lives. The floor-level advantage of
 pooling (section 3) is real but does not survive capacity-constrained selection. Ten
 typed-frame lists were briefly shipped and then withdrawn.
 
-*The sweeps and autopsy: [detailed record](modeling_findings_detailed.md), §17.*
+*The sweeps and autopsy: [detailed record](modeling_findings_detailed.md#17-typed-frame-delivery-vocabulary-retired-after-three-rescue-attempts-2026-07-1516), §17.*
 
 ## 18. Shrinkage (empirical-Bayes) ranking: refuted on two eras
 
@@ -603,7 +603,7 @@ of the list, and a posterior mean rewards large-support, only-slightly-above-ave
 rules (flooding the top), while a lower bound penalizes the small-sample noise that
 piles up there.
 
-*Detail: [detailed record](modeling_findings_detailed.md), §18.*
+*Detail: [detailed record](modeling_findings_detailed.md#18-shrinkage-empirical-bayes-ranking-refuted-on-two-eras-2026-07-1617), §18.*
 
 ## 19. Which rules to keep: a false-discovery-rate test plus a minimum-support floor
 
@@ -637,7 +637,7 @@ is a reliability failure, the same winner's curse as sections 13, 17, and 22.
 The test also sizes itself to the data: it kept 54k of 145k candidate rules
 nationally but only a few hundred for a small state, with no hand-set cutoff.
 
-*Detail: [detailed record](modeling_findings_detailed.md), §19.*
+*Detail: [detailed record](modeling_findings_detailed.md#19-which-rules-to-keep-a-false-discovery-rate-test-plus-a-minimum-support-floor-2026-07-1617), §19.*
 
 ## 20. Ordering stringency: z = 2.326 vindicated across eras; the 2024 bump did not replicate
 
@@ -653,7 +653,7 @@ on the separate 2017-19 era, and the direction did not replicate (there, 2.576 r
 a caseload-scaled formula only matched it. So 2.326 stays; the 2024 "under-stringent"
 signal was era noise.
 
-*Detail: [detailed record](modeling_findings_detailed.md), §20.*
+*Detail: [detailed record](modeling_findings_detailed.md#20-ordering-stringency-z--2326-vindicated-across-eras-the-2024-bump-did-not-replicate-2026-07-17), §20.*
 
 ## 21. Dollar-yield ranking: direction consistent, magnitude era-unstable; not adopted
 
@@ -674,7 +674,7 @@ budget on 2024 (+3.5pp), but the gain shrank to +1.0pp on the 2017-19 replicatio
 missed our pre-set 2pp bar. A real direction with an unstable magnitude: not
 adopted, but flagged for a future, more structure-anchored dollar statistic.
 
-*Detail: [detailed record](modeling_findings_detailed.md), §21.*
+*Detail: [detailed record](modeling_findings_detailed.md#21-dollar-yield-ranking-direction-consistent-magnitude-era-unstable-not-adopted-2026-07-1617), §21.*
 
 ## 22. The winner's curse at the top, demonstrated directly
 
@@ -694,7 +694,7 @@ of precision at a 5% budget on 2019 (0.216 vs 0.200), and the gap vanished at a 
 budget. The curse lives in the extreme top of the list, exactly where a tight review
 budget operates.
 
-*Detail: [detailed record](modeling_findings_detailed.md), §22.*
+*Detail: [detailed record](modeling_findings_detailed.md#22-the-winners-curse-at-the-top-demonstrated-directly-2026-07-17), §22.*
 
 ## 23. Exclusion rules: cutting a review pile safely
 
@@ -724,7 +724,7 @@ Per-state adaptation exists (`EXCL_optimize_single_`, `EXCL_optimize_set_`), par
 to the inclusion gridsearch, but has not been through the future-year, 18-state
 validation the inclusion blended list has (sections 14-16, 20).
 
-*Detail and artifacts: [detailed record](modeling_findings_detailed.md), §23.*
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md#23-exclusion-rules-cutting-a-review-pile-safely), §23.*
 
 ## 24. Munging row exclusions: tested by relaxing them, and kept
 
@@ -779,7 +779,7 @@ No pipeline change came out of this. Each exclusion is a validity guard rather t
 conservatism.
 
 *Full tables, the FY2021 diagnosis, caveats and artifacts:
-[detailed record](modeling_findings_detailed.md), §24.*
+[detailed record](modeling_findings_detailed.md#24-munging-row-exclusions-tested-by-relaxing-them-and-kept-2026-07-29), §24.*
 
 ## 25. Admission stringency: tightening the false-discovery rate from 10% to 5% changes nothing
 
@@ -822,7 +822,7 @@ reported one, and an addendum to the detailed record substitutes denominators up
 the top 100 do, so no defensible denominator changes a delivered list either. Where
 the search size could still matter is the ordering, which has not been tested.
 
-*Detail and artifacts: [detailed record](modeling_findings_detailed.md), §25.*
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md#25-admission-stringency-tightening-the-false-discovery-rate-from-10-to-5-changes-nothing-2026-08-03), §25.*
 
 ## 26. The support floor: raising it costs precision, and n >= 30 is near optimal from both directions
 
@@ -864,7 +864,7 @@ these numbers compare to each other and to section 25 but not to the frozen-list
 scorecard. A state running this on its own 40k to 100k internal cases would also have a
 much larger own pool, which no arm here simulates.
 
-*Detail and artifacts: [detailed record](modeling_findings_detailed.md), §26.*
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md#26-the-support-floor-raising-it-costs-precision-and-n--30-is-near-optimal-from-both-directions-2026-08-03), §26.*
 
 ## 27. How deep the fill reaches, and why that makes evaluation cheap
 
@@ -931,4 +931,4 @@ variants, 2 budgets) with the window truncating every pool, so the check was a r
 rather than a pool that happened to fit. The state that took 77 minutes to evaluate
 unpruned took about 1 minute pruned.
 
-*Detail and artifacts: [detailed record](modeling_findings_detailed.md), §27.*
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md#27-how-deep-the-fill-reaches-and-why-that-makes-evaluation-cheap-2026-08-04), §27.*
