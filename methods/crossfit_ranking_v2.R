@@ -291,8 +291,15 @@ load_baseline <- function(key) {
 stamp("=== national pool ===")
 natl_rows <- which(in_tr)
 natl <- build_pool(natl_rows, "national")
-stamp("national: %d unique rules over %d reps | freq table: %s", nrow(natl), REPS,
-      paste(sprintf("%d:%d", seq_len(REPS), tabulate(natl$freq, REPS)), collapse = " "))
+stamp("national: %d unique rules over %d reps", nrow(natl), REPS)
+# both frequency tables, because the stability arms turn on the second one:
+# exact rule text almost never repeats across splits (thresholds are canonicalised
+# to three significant digits and move with the split), whereas the signature,
+# the sorted set of variable and direction pairs, does.
+stamp("  discovery by rule text : %s",
+      paste(sprintf("%dx:%d", seq_len(REPS), tabulate(natl$freq, REPS)), collapse = " "))
+stamp("  discovery by signature : %s",
+      paste(sprintf("%dx:%d", seq_len(REPS), tabulate(natl$freq_sig, REPS)), collapse = " "))
 natl_base <- load_baseline("national")
 
 res <- list()
