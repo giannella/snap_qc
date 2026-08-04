@@ -20,9 +20,9 @@ cd "$(dirname "$0")/.." || exit 2   # repo root
 fail=0
 
 # Reader-facing docs that must contain no em-dashes.
-READER_DOCS=(README.md GUIDANCE.md methods/modeling_findings.md methods/modeling_findings_detailed.md)
+READER_DOCS=(README.md GUIDANCE.md PIPELINE.md methods/modeling_findings.md methods/modeling_findings_detailed.md)
 # Derived docs that only CITE the findings; they must not assert a retired claim.
-DERIVED_DOCS=(README.md GUIDANCE.md)
+DERIVED_DOCS=(README.md GUIDANCE.md PIPELINE.md)
 
 echo "== 1. em-dash check (docs must contain none) =="
 for f in "${READER_DOCS[@]}"; do

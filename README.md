@@ -55,6 +55,8 @@ Tested a full year ahead of the training data (mined on 2022-23, scored on each 
 
 ![The delivery-list build: mine rule pools, rank them on one confidence scale, fill to the review budget](presentation_figures/pipeline_option_B.png)
 
+That figure collapses each filter into "passed the filter". [`PIPELINE.md`](PIPELINE.md) is the expanded read: every gate in the order it is applied, the counts entering and leaving each one, what has since been settled by measurement, and what is still open.
+
 A state can also run the same script as a hybrid. It mines its own pool from internal case files (which include the ineligible determinations the public files leave out) and blends that with the pool mined from other states' public QC data. The confidence-bound scale is what makes rules from the two sources directly comparable, so nothing else in the recipe changes.
 
 Two alternate routes, depending on your use case:
