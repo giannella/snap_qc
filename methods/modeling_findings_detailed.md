@@ -2257,6 +2257,31 @@ earned-income share runs 0.03 to 0.43 between the 10th and 90th percentiles, and
 A case trips several rules, so the units are (rule, variance) pairs rather than a
 partition; the null has the same structure, so the comparison holds.
 
+### A rule's profile is only as distinctive as the rule is narrow
+
+The characterization is least useful exactly where a state's list leans hardest.
+Measuring each rule's element mix against the national mix as a total variation
+distance, where 0 means identical:
+
+| rule support | rules | median distance from the national mix |
+|---|---|---|
+| under 50 error cases | 125 | 0.264 |
+| 50 to 200 | 189 | 0.235 |
+| 200 to 1,000 | 194 | 0.115 |
+| over 1,000 | 35 | 0.057 |
+
+Support and distance correlate -0.446. This is structural rather than a defect: a rule
+flagging 2,000 error cases covers a large slice of the caseload, so its error mix has to
+approach the caseload's. The three highest-support rules in the sheet read almost
+identically, at earned income 0.33, 0.35 and 0.34 with shelter deduction 0.23, 0.21 and
+0.23.
+
+So the rules whose profile actually distinguishes them are the narrow ones, which are
+also the ones with the widest intervals. That is the concrete form of the mutual
+information result above: the columns should be read next to `n_error_cases`. A state
+should not expect the high-volume core of its list to differentiate on these fields, and
+should treat a distinctive-looking narrow rule with the caution its interval implies.
+
 ### Caveats
 
 Per-rule counts double-count cases that trip several rules and are not a partition of

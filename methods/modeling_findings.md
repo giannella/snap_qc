@@ -269,6 +269,14 @@ not the *type* it was mined for. The ratio runs about 2-2.7x across frames. Ever
 output carries both numbers; the any-error one is what a reviewer actually
 experiences.
 
+**One limit on how far this can be used.** A rule's profile is only as distinctive as
+the rule is narrow. Measured as the distance between a rule's element mix and the
+national mix, rules under 50 error cases sit a median 0.264 away, rules over 1,000 only
+0.057, and support correlates -0.446 with distance. A rule covering a large slice of the
+caseload must look like the caseload. So the high-volume core of a state's list will not
+differentiate on these fields, and the rules that do differentiate are the ones with the
+widest intervals. Read the columns next to the rule's error-case count.
+
 *Detail: [detailed record](modeling_findings_detailed.md#6-frame-relative-vs-deployed-any-error-performance), §6.*
 
 ## 7. other_error: the largest, previously unmodeled category
