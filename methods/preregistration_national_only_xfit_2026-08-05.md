@@ -1,9 +1,9 @@
 # Pre-registration: national-only cross-fit ordering, and partition stability
 
-**Written 2026-08-05 while the first run is in flight and before any result
-exists.** Noting the deviation plainly: the practice adopted this morning is
-note-then-run, and this is note-during-run. No output file had been produced and
-none has been inspected. Everything below is a commitment, not a description.
+**Written 2026-08-05, before any result existed.** The first run had been
+launched shortly beforehand and had written no output file; the second had not
+started. Nothing below was informed by a result, and no result has been
+inspected. Everything here is a commitment, not a description.
 
 ## Why this exists
 
