@@ -157,6 +157,13 @@ we learned is recoverable. Each points to its numbered section.
   slack and rebuilt every list identically to the shipped CSV (98 of 98), and on a
   200,000-rule research pool the pruned evaluation reproduced the unpruned results
   on all 70 comparisons while truncating every pool. 77 minutes to 1 per state.
+- **08-04**: Measured the delivered exposure to a benefit-reconstruction artifact
+  near the maximum benefit (#28, issue #1): 96.06% of truly-at-max households land
+  on a ratio of exactly 1 but 2.39% land in [0.987, 1), and 1,134 of 19,316
+  delivered rule instances (5.9%) draw at least half their flags from those
+  mis-recreated rows, a median 6.3% of delivered cases at the 5% budget. Reading
+  exposure off the rule text overstates it fivefold. Diagnostic only; no rule,
+  feature or list changed.
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -1909,3 +1916,121 @@ state and budget: pool size, rules delivered, rank reached for core and for core
 buffer, rule width). Regenerating script: `methods/fill_scan_depth_v2.R`, which reads
 the delivered lists and the pool caches, evaluates no rules and runs in about a minute.
 The timing figures come from `crossfit_ranking.log`.*
+
+## 28. Rules that key on a benefit-reconstruction artifact near the maximum benefit (2026-08-04)
+
+> **Takeaway: about the data.** Our reconstruction puts 96.06% of truly-at-max
+> households on `rawben_rel_max` exactly 1, but 2.39% land just below it in [0.987, 1).
+> A rule whose clauses confine the ratio to just below 1 therefore selects a
+> reconstruction artifact, and in a state file where those households sit at exactly 1
+> it would flag far fewer cases. The exposure is real and narrow: 1,134 of 19,316
+> delivered rule instances (5.9%) draw at least half their flags from those
+> mis-recreated households, and they account for a median 6.3% of the cases a state's
+> 5% list actually delivers (16.3% at the worst state). Reading exposure off the rule
+> text badly overstates it: 7,748 instances bound the ratio below 1, but 1,940 of the
+> 2,028 distinct exposed rules take only 1.35% of their flags from artifact rows.
+
+Raised by Ben Molin as issue #1 on the Alabama 5% list. This entry is the diagnostic
+half only. It changes no feature definition and no rule.
+
+### What the ratio does in our frame
+
+`rawben_rel_max` is the reconstructed benefit over the maximum benefit for the
+household size. Measured on the FY2022-24 modelling frame, 118,263 rows, the same
+frame the mining runs report:
+
+| quantity | value |
+|---|---|
+| rows with `rawben_rel_max` exactly 1 | 37.02% |
+| rows truly at max (`rawben == benmax`) | 37.37% |
+| rows truly at max but with ratio below 1 ("artifact rows") | 1,724 (1.46% of rows) |
+| of truly-at-max households, share landing on exactly 1 | 96.06% |
+| of truly-at-max households, share landing in [0.987, 1) | 2.39% |
+| of truly-at-max households, share with `unc_rawben_rel_max > 1` | 95.72% |
+
+The last row is a second, separate mechanism. Because 95.72% of truly-at-max
+households have an uncapped ratio above 1, a clause such as
+`unc_rawben_rel_max <= 0.997` also excludes at-max households rather than selecting
+them.
+
+### How the rules were classified
+
+Rules are conjunctions of numeric comparisons, so the clauses on one feature imply an
+interval. Terms, defined once:
+
+- **excludes exact-1**: the implied interval for `rawben_rel_max` is bounded strictly
+  below 1, so the rule can never flag a household whose ratio is exactly 1.
+- **band-confined**: excludes exact-1 and the implied lower bound is at least 0.987, so
+  among at-max households the rule can only ever match artifact rows.
+- **unc-capped**: `unc_rawben_rel_max` bounded above by something below 1.
+- **artifact-dependent**: measured rather than read off the rule text. At least half of
+  what the rule flags in the frame is an artifact row.
+
+### Exposure across the 98 delivered lists
+
+19,316 rule instances, 2,028 distinct stratum-and-rule pairs once repeats across states
+and budgets are removed.
+
+| class | rule instances | share |
+|---|---|---|
+| mention `rel_max` at all | 15,398 | 79.7% |
+| exclude exact-1 | 7,748 | 40.1% |
+| unc-capped | 3,155 | 16.3% |
+| band-confined | 625 | 3.2% |
+| artifact-dependent (measured) | 1,134 | 5.9% |
+
+The text-based and measured classes disagree, which is the reason to measure. Of the
+2,028 distinct exposed rules, 1,940 draw only 1.35% of their flags from artifact rows;
+they bound the ratio below 1 somewhere far from the band and are not touching this.
+The concentration is in **88 distinct rules** that draw **76.7% of their flags (17,765
+of 23,160) from artifact rows**. All 625 band-confined instances fall in that group.
+
+Those 88 are not weak rules. On the frame they run at precision 0.3612 (8,366 errors on
+23,160 flags), against 0.2339 for the other 1,940 exposed rules. They earned their rank
+on flags that a state's own file may not contain.
+
+### What reaches a delivered list
+
+`n_new_at_rank` is the marginal new cases a rule contributed at its rank in the walk, so
+summing it over a list partitions the list's cases (unlike per-rule flag counts, which
+double-count cases that trip several rules).
+
+| budget | median share of delivered cases from artifact-dependent rules | 90th pct | max |
+|---|---|---|---|
+| 5% | 6.3% | 11.0% | 16.3% (Massachusetts) |
+| 10% | 4.1% | 8.2% | 9.0% (Massachusetts) |
+
+Most exposed at 5%: Massachusetts 16.3%, Vermont 14.7%, Pennsylvania 14.3%, Rhode
+Island 13.0%, Michigan 11.4%. Of the 1,134 artifact-dependent instances, 724 sit in the
+core and 410 in the buffer.
+
+This is an upper bound on the damage, not an estimate of it. It is the share of
+delivered cases contributed by rules that mostly flag artifact rows. Whether those
+cases disappear in a state's own file depends on that state's reconstruction, which
+this repo cannot observe.
+
+### The three rules from the issue
+
+Frame counts are FY2022-24 within the rule's own household-size stratum.
+
+| rule (abbreviated) | stratum | list rows | frame flags | errors | artifact rows | share artifact |
+|---|---|---|---|---|---|---|
+| `elderly_disabled_i > 0.5 & rawben_rel_max > 0.993 & total_deductions_by_hh_size > 348 & unc_rawben_rel_max <= 0.997` | 2-3 | 28 | 54 | 35 | 45 | 83% |
+| `rawben_rel_max >= 0.987 & < 0.997 & shelter_expenses_by_hh_size >= 850 & utilities < 576` | 1 | 67 | 353 | 165 | 277 | 78% |
+| `rawben_rel_max >= 0.987 & < 0.991 & total_deductions_by_hh_size >= 276 & utilities < 578` | 1 | 63 | 382 | 177 | 341 | 89% |
+
+The first is the `unc_` mechanism: it puts no upper bound on `rawben_rel_max` at all, so
+a text scan for a bound below 1 misses it. The other two are band-confined.
+
+### What is not settled
+
+Whether an `at_max_benefit` feature repairs this is untested. Adding a feature changes
+the mining vocabulary and requires a full re-mine. Whether smoothing
+`unc_rawben_rel_max` to exactly 1 is the right fix is also open, and it would be a
+change to the reconstruction rather than to the pipeline.
+
+*Artifacts: `methods/at_max_benefit_diagnostic/` (README.md with the full tables,
+`rule_classification.csv` for all 19,316 instances, `affected_rule_eval.csv` for the
+2,028 distinct exposed rules, `delivered_footprint.csv` per state and budget,
+`ben_examples.csv`, `summary.json`). Regenerated by
+`python runners/run_at_max_benefit_diagnostic.py`.*

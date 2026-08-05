@@ -932,3 +932,49 @@ rather than a pool that happened to fit. The state that took 77 minutes to evalu
 unpruned took about 1 minute pruned.
 
 *Detail and artifacts: [detailed record](modeling_findings_detailed.md#27-how-deep-the-fill-reaches-and-why-that-makes-evaluation-cheap-2026-08-04), §27.*
+
+## 28. Rules that key on a benefit-reconstruction artifact near the maximum benefit
+
+> **Takeaway: about the data.** Our reconstruction puts 96.06% of truly-at-max
+> households on `rawben_rel_max` exactly 1, but 2.39% land just below it in [0.987, 1).
+> A rule whose clauses confine the ratio to just below 1 therefore selects a
+> reconstruction artifact, and in a state file where those households sit at exactly 1
+> it would flag far fewer cases. The exposure is real and narrow: 1,134 of 19,316
+> delivered rule instances (5.9%) draw at least half their flags from those
+> mis-recreated households, and they account for a median 6.3% of the cases a state's
+> 5% list actually delivers (16.3% at the worst state). Reading exposure off the rule
+> text badly overstates it: 7,748 instances bound the ratio below 1, but 1,940 of the
+> 2,028 distinct exposed rules take only 1.35% of their flags from artifact rows.
+
+`rawben_rel_max` is the reconstructed benefit divided by the maximum benefit for the
+household size. A household at the maximum should show 1. In our frame 37.37% of rows
+are truly at the maximum (`rawben == benmax`), and 96.06% of them do show exactly 1.
+The remaining 3.9% fall short, most of them into [0.987, 1). Those 1,724 rows are the
+artifact. A separate clause has the same effect from the other side: 95.72% of
+truly-at-max households have `unc_rawben_rel_max` above 1, so a cap like
+`unc_rawben_rel_max <= 0.997` excludes at-max households instead of selecting them.
+
+Whether a rule is exposed has to be measured, not read off its text. Of the 2,028
+distinct rules in the delivered lists that exclude a ratio of exactly 1 by either
+mechanism, 1,940 take just 1.35% of their flags from artifact rows; they bound the
+ratio somewhere far from the band and are unaffected. The problem sits in 88 rules
+that take 76.7% of their flags from artifact rows. Those 88 are above-average
+performers on our frame, at precision 0.3612 against 0.2339 for the rest, which is the
+uncomfortable part: they earned their rank on flags a state's own file may not have.
+
+What that costs a delivered list:
+
+| | 5% budget | 10% budget |
+|---|---|---|
+| median share of delivered cases from artifact-dependent rules | 6.3% | 4.1% |
+| 90th percentile | 11.0% | 8.2% |
+| most exposed state | 16.3% (Massachusetts) | 9.0% (Massachusetts) |
+
+Read that as an upper bound on the damage rather than an estimate of it. It counts the
+cases contributed by rules that mostly flag artifact rows; whether those cases vanish
+in a state's own file depends on that state's reconstruction, which we cannot observe.
+
+This is the diagnostic only. Whether an `at_max_benefit` feature repairs it is untested,
+and adding a feature changes the mining vocabulary and needs a full re-mine.
+
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md#28-rules-that-key-on-a-benefit-reconstruction-artifact-near-the-maximum-benefit-2026-08-04), §28.*

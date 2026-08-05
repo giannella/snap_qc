@@ -1,0 +1,21 @@
+{
+  "frame": {
+    "rows": 118263,
+    "exact1_share": 0.3701749490542266,
+    "truly_at_max_share": 0.37370098847483996,
+    "artifact_share": 0.014577678563878812,
+    "artifact_rows": 1724,
+    "band_share": 0.014087246222402611,
+    "at_max_on_exact1": 0.9605611494512954,
+    "at_max_below1": 0.03900893766263152,
+    "at_max_in_band": 0.023894105668061997,
+    "at_max_unc_above1": 0.95723498133273
+  },
+  "lists": 98,
+  "rule_instances": 19316,
+  "mentions_rel_max": 15398,
+  "excludes_exact1": 7748,
+  "band_confined": 625,
+  "unc_capped": 3155,
+  "unique_affected": 2028
+}
