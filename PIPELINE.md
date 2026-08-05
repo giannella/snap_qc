@@ -230,7 +230,7 @@ constants where they are.
 ### No effect: making the false-discovery test twice as strict changes nothing
 
 Tightening the rate from 10% to 5%, with the support floor held, left 16 of 18 states
-delivering a bit-identical list at both budgets; the paired median difference in precision
+delivering a bit-identical list at both budgets; the median within-state difference in precision
 was 0.000. The reason is positional. The stricter rate removes 3,734 of 50,697 national
 rules, but the highest-ranked rule it removes sits at position **14,449**, and a review
 budget deploys the top 16 to 27. Those rules are not less precise, only less well

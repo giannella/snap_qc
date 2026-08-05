@@ -795,7 +795,7 @@ conservatism.
 > they can enter a list. Making that test twice as strict (10% to 5%, with the n >= 30
 > support floor left in place) changed nothing: 17 of 18 states delivered a
 > bit-identical list at the 5% review budget and 16 of 18 at the 10% budget, and the
-> paired median difference in precision was 0.000 at both. The reason is positional.
+> median within-state difference in precision was 0.000 at both. The reason is positional.
 > Tightening the rate removes rules from the middle and bottom of the ranking, and the
 > highest-ranked rule it removed sat at position 14,449 of 50,697, while a review
 > budget deploys the top 16 to 27 rules. The support floor is the guard that reaches
@@ -807,7 +807,7 @@ differ only in the false-discovery rate. The shipped setting, 10%, admitted 50,6
 144,533 national candidates and delivered median holdout precision 0.3345 at the 5%
 budget and 0.2753 at 10%, against a median base error rate of 0.1253, so lift of 2.48x
 and 2.15x. The 5% setting admitted 46,963, which is 92.6% as many, and delivered
-0.3471 and 0.2770. Those medians land on different states; the paired per-state
+0.3471 and 0.2770. Those medians land on different states; the within-state
 difference has a median of exactly 0.000 at both budgets, on precision and on dollar
 recall alike, and the 5% rate was better in 1 state of 18 and worse in 1.
 
@@ -852,8 +852,8 @@ state at 30 and changes the national pool alone, which makes the comparison clea
 At the 5% review budget, against a median base error rate of 0.1253: floor 30 gave
 0.3345 precision (2.48x lift), 66 gave 0.3000, 195 gave 0.2950, 778 gave 0.2826, and
 dropping states to a flat 1% of their caseload (about 15 cases) gave 0.2558 (1.93x).
-At the 10% budget floors up to about 200 are a wash, with paired median differences of
-exactly 0.000; only the 778-case floors lose.
+At the 10% budget floors up to about 200 are a wash, with median within-state differences
+of exactly 0.000; only the 778-case floors lose.
 
 The mechanism is that a higher floor admits only broader rules, and broader rules are
 less precise: median raw training precision runs 0.344 for rules flagging 30 to 50

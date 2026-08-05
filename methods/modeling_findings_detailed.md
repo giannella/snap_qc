@@ -140,7 +140,7 @@ we learned is recoverable. Each points to its numbered section.
   decision; the max-allotment filter removes only FY2021. No pipeline change.
 - **08-03**: Tightened the admission false-discovery rate from 10% to 5%, floor held
   at n >= 30 (#25): no effect. 16 of 18 states identical at both review budgets,
-  paired median difference 0.000, because the highest-ranked rule the stricter rate
+  median within-state difference 0.000, because the highest-ranked rule the stricter rate
   removes sits at position 14,449 of 50,697 and a budget deploys the top 16 to 27.
   No pipeline change.
 - **08-03**: Swept the support floor over seven shapes, flat and scaled to pool size
@@ -1400,7 +1400,7 @@ writes `reg_model_data_minexcl.rds`, ~60 MB, not committed),
 > they can enter a list. Making that test twice as strict (10% to 5%, with the n >= 30
 > support floor left in place) changed nothing: 17 of 18 states delivered a
 > bit-identical list at the 5% review budget and 16 of 18 at the 10% budget, and the
-> paired median difference in precision was 0.000 at both. The reason is positional.
+> median within-state difference in precision was 0.000 at both. The reason is positional.
 > Tightening the rate removes rules from the middle and bottom of the ranking, and the
 > highest-ranked rule it removed sat at position 14,449 of 50,697, while a review
 > budget deploys the top 16 to 27 rules. The support floor is the guard that reaches
@@ -1454,8 +1454,8 @@ The median precision row moves from 0.3345 to 0.3471 at the 5% budget, and that
 apparent gain is an artifact of the median landing on a different state. The lift row
 shows the same trap from the other side: at the 10% budget the 5% rate has the higher
 median precision (0.2770 against 0.2753) but the lower median lift (2.09x against
-2.15x), because a median of ratios is not the ratio of medians. The paired
-per-state difference is the honest statistic, and **its median is exactly 0.0000 at
+2.15x), because a median of ratios is not the ratio of medians. The within-state
+difference is the honest statistic, and **its median is exactly 0.0000 at
 both budgets**, for precision and for dollar recall alike. At the 5% budget fdr05f
 was better in 1 state and worse in 0; at the 10% budget better in 1 and worse in 1.
 
@@ -1655,13 +1655,14 @@ floor of 43, that is, nearly the flat floor we already use.
 
 ### Result: 18 states, both review budgets
 
-Medians across the 18 states. "paired median delta" is the median of the per-state
-difference against f30, which is the honest statistic; the median precision column can
+Medians across the 18 states. "median within-state difference" is computed by taking
+each state's own difference against f30 and then the median of those 18 numbers, which
+is the honest statistic because every state is compared only against itself; the median precision column can
 move on which state lands in the middle.
 
 Budget 5%:
 
-| arm | admitted (blended) | rules deployed | precision | dollar recall | paired median delta | beats f30 | loses | ties |
+| arm | admitted (blended) | rules deployed | precision | dollar recall | median within-state difference | beats f30 | loses | ties |
 |---|---|---|---|---|---|---|---|---|
 | f30 | 54,260 | 16.5 | 0.3345 | 0.1461 | 0.0000 | - | - | - |
 | logeq | 52,914 | 13.0 | 0.3119 | 0.1484 | 0.0000 | 4 | 7 | 7 |
@@ -1673,7 +1674,7 @@ Budget 5%:
 
 Budget 10%:
 
-| arm | admitted (blended) | rules deployed | precision | dollar recall | paired median delta | beats f30 | loses | ties |
+| arm | admitted (blended) | rules deployed | precision | dollar recall | median within-state difference | beats f30 | loses | ties |
 |---|---|---|---|---|---|---|---|---|
 | logeq | 52,914 | 26.5 | 0.2770 | 0.2510 | 0.0000 | 6 | 6 | 6 |
 | f30 | 54,260 | 27.0 | 0.2754 | 0.2484 | 0.0000 | - | - | - |
@@ -1694,8 +1695,8 @@ Two isolations are worth naming:
   only in whether states keep the 30-case backstop: 0.2826 with it, 0.2558 without.
   Lowering the state floor to roughly 15 costs 0.027.
 
-At the 10% budget the picture is flatter. logeq, p085, log25 and p25 all have a paired
-median delta of exactly 0.0000 against f30, so floors up to about 200 nationally are a
+At the 10% budget the picture is flatter. logeq, p085, log25 and p25 all have a median
+within-state difference of exactly 0.0000 against f30, so floors up to about 200 nationally are a
 wash there; only the 778-case floors lose (-0.0155 and -0.0113). The 5% budget is where
 the floor matters, which is consistent with section 22: the top of the list is where
 these effects live.
