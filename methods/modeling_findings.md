@@ -1085,4 +1085,4 @@ Coverage on error-case variances is near total: NATURE 1.000, AGENCY 1.000, DISC
 0.992, TIMEPER 0.990, no state below 0.938. The cause split is agency 54.7% to client
 41.9%.
 
-*Detail and artifacts: [detailed record](modeling_findings_detailed.md#29-characterizing-what-each-delivered-rule-finds-so-a-state-can-choose-its-own-rules-2026-08-04), §29.*
+*Detail: [detailed record](modeling_findings_detailed.md#29-characterizing-what-each-delivered-rule-finds-so-a-state-can-choose-its-own-rules-2026-08-04), §29. Artifacts, including the characterization sheet itself: [`methods/rule_error_profiles/`](https://github.com/giannella/snap_qc/tree/main/methods/rule_error_profiles).*
