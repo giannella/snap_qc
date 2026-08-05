@@ -2100,7 +2100,7 @@ each pooled over FY2022-24:
 | shelter deduction | 0.182 | 0.92 | 0.030 | 0.038 | 0.79 |
 | wrong amount, known item | 0.298 | 0.75 | 0.041 | 0.039 | 1.04 |
 | wrong include/exclude decision | 0.287 | 0.93 | 0.039 | 0.046 | 0.86 |
-| arose at the agency's action | 0.604 | 0.85 | 0.057 | 0.046 | 1.23 |
+| arose at certification | 0.604 | 0.85 | 0.057 | 0.046 | 1.23 |
 | coded agency-caused | 0.566 | 0.72 | 0.062 | 0.047 | 1.32 |
 | surfaced from the case record | 0.409 | 0.75 | 0.061 | 0.045 | 1.35 |
 
@@ -2172,12 +2172,13 @@ which is why the fields ship with intervals and the evidence is reported at fiel
 | unreported source of income | 0.104 | 0.039-0.153 | 0.70 | 0.026 | 0.025 | 1.05 |
 | household composition | 0.059 | 0.000-0.102 | 0.79 | 0.012 | 0.016 | 0.79 |
 | change in circumstances | 0.078 | 0.026-0.120 | 0.63 | 0.025 | 0.023 | 1.11 |
-| arose at the agency's action | 0.604 | 0.418-0.680 | 0.85 | 0.057 | 0.046 | 1.23 |
-| arose after the agency's action | 0.298 | 0.208-0.480 | 0.88 | 0.058 | 0.044 | 1.33 |
+| arose at certification | 0.604 | 0.418-0.680 | 0.85 | 0.057 | 0.046 | 1.23 |
+| arose after certification | 0.298 | 0.208-0.480 | 0.88 | 0.058 | 0.044 | 1.33 |
 | coded agency-caused | 0.566 | 0.471-0.676 | 0.72 | 0.062 | 0.047 | 1.32 |
 | coded client-caused | 0.395 | 0.277-0.493 | 0.75 | 0.061 | 0.047 | 1.30 |
 | surfaced from the case record | 0.409 | 0.292-0.510 | 0.75 | 0.061 | 0.045 | 1.35 |
-| overissuance (case level) | 0.437 | 0.141-0.898 | 0.96 | | | |
+| overissuance, of directional error cases | 0.746 | 0.606-0.999 | 0.95 | | |
+| error_status is other_error | 0.269 | 0.077-0.454 | 0.90 | | | |
 
 Split-half uses 40 random halves of the 49 states, requiring 20 variances on each side.
 
@@ -2187,15 +2188,16 @@ Split-half uses 40 random halves of the 49 states, requiring 20 variances on eac
 |---|---|---|---|
 | wrong amount, known item | 0.138 | 0.038 | 3.60 |
 | wrong include/exclude decision | 0.070 | 0.042 | 1.68 |
-| arose after the agency's action | 0.053 | 0.041 | 1.28 |
+| arose after certification | 0.053 | 0.041 | 1.28 |
 | unearned income | 0.036 | 0.031 | 1.16 |
-| arose at the agency's action | 0.051 | 0.044 | 1.15 |
+| arose at certification | 0.051 | 0.044 | 1.15 |
 | surfaced from the case record | 0.047 | 0.043 | 1.10 |
 | coded client-caused | 0.045 | 0.045 | 1.00 |
 | unreported source of income | 0.023 | 0.024 | 0.98 |
 | earned income | 0.029 | 0.033 | 0.90 |
 | coded agency-caused | 0.041 | 0.045 | 0.91 |
-| overissuance | 0.035 | 0.039 | 0.90 |
+| overissuance, of directional error cases | 0.032 | 0.033 | 0.96 |
+| error_status is other_error | 0.016 | 0.036 | 0.44 |
 | change in circumstances | 0.021 | 0.023 | 0.89 |
 | dep care or child support deduction | 0.012 | 0.014 | 0.89 |
 | utility allowance | 0.015 | 0.019 | 0.80 |
@@ -2236,9 +2238,18 @@ partition; the null has the same structure, so the comparison holds.
 ### Caveats
 
 Per-rule counts double-count cases that trip several rules and are not a partition of
-the flagged total. Direction (over versus under) is case-level from the frame's
-`error_status` rather than from `E_FINDG`, which is populated for 57% of variances and
-which three states do not report at all. VERIF is excluded from every construct: it
+the flagged total.
+
+Direction (over versus under) is case-level and comes from the frame's `status` field
+(2 overissuance, 3 underissuance), which is populated for every one of the 13,288 FY2022-24
+error cases. It does NOT come from `E_FINDG`, which is populated for 57% of variances and
+which three states do not report at all, and it does not come from `error_status`. An
+earlier version of this section used `error_status` and put its `other_error` category in
+the denominator, which was wrong twice over: `other_error` is a residual error TYPE that
+carries both directions (3,830 overissuance and 2,209 underissuance cases), so the
+resulting field correlated -0.90 with how little other_error a rule caught and only 0.21
+with the actual direction split. It read 0.437 at the median where the directional split
+reads 0.746. The other_error share is now reported as its own field. VERIF is excluded from every construct: it
 records the evidence a QC reviewer needed to substantiate a finding after the fact,
 which is QC's evidentiary burden rather than what a caseworker could resolve from the
 file.

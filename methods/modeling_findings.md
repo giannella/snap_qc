@@ -1036,7 +1036,7 @@ each pooled over FY2022-24:
 | shelter deduction | 0.182 | 0.92 | 0.030 | 0.038 | 0.79 |
 | wrong amount, known item | 0.298 | 0.75 | 0.041 | 0.039 | 1.04 |
 | wrong include/exclude decision | 0.287 | 0.93 | 0.039 | 0.046 | 0.86 |
-| arose at the agency's action | 0.604 | 0.85 | 0.057 | 0.046 | 1.23 |
+| arose at certification | 0.604 | 0.85 | 0.057 | 0.046 | 1.23 |
 | coded agency-caused | 0.566 | 0.72 | 0.062 | 0.047 | 1.32 |
 | surfaced from the case record | 0.409 | 0.75 | 0.061 | 0.045 | 1.35 |
 

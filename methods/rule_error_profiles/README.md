@@ -75,7 +75,7 @@ cases, and does not describe the population characterized here.
 
 National mix on FY2024 error-case variances, so a rule's share reads as lift:
 cause is agency 54.7%, client 41.9%, other 1.6%, no-fault 1.4%, third party 0.3%;
-of variances reporting a timing, 61.3% arose at the agency's action.
+of variances reporting a timing, 61.3% arose at certification.
 
 543 distinct rules, median 203 variances and 126 error cases each pooled over
 FY2022-24. All 543 clear 20 variances.
@@ -112,12 +112,13 @@ of noise.
 | unreported source of income | 0.104 | 0.70 | 0.026 | 0.025 | 1.05 |
 | household composition | 0.059 | 0.79 | 0.012 | 0.016 | 0.79 |
 | change in circumstances | 0.078 | 0.63 | 0.025 | 0.023 | 1.11 |
-| arose at the agency's action | 0.604 | 0.85 | 0.057 | 0.046 | 1.23 |
-| arose after the agency's action | 0.298 | 0.88 | 0.058 | 0.044 | 1.33 |
+| arose at certification | 0.604 | 0.85 | 0.057 | 0.046 | 1.23 |
+| arose after certification | 0.298 | 0.88 | 0.058 | 0.044 | 1.33 |
 | coded agency-caused | 0.566 | 0.72 | 0.062 | 0.047 | 1.32 |
 | coded client-caused | 0.395 | 0.75 | 0.061 | 0.047 | 1.30 |
 | surfaced from the case record | 0.409 | 0.75 | 0.061 | 0.045 | 1.35 |
-| overissuance (case level) | 0.437 | 0.96 | | | |
+| overissuance, of directional error cases | 0.746 | 0.95 | | |
+| error_status is other_error | 0.269 | 0.90 | | | |
 
 Two readings, and they differ by field type:
 
@@ -129,15 +130,28 @@ Two readings, and they differ by field type:
   are informative but a national number will be somewhat off for any one state,
   which is a fact about state coding and process rather than about the rule.
 
+## Direction: over versus under
+
+`status` (2 overissuance, 3 underissuance) is populated for every error case, so the
+direction field uses it. The median rule is **0.746 overissuance** of its directional
+error cases, 10th to 90th percentile 0.606 to 0.999, reliability 0.95.
+
+It deliberately does not use `error_status`. That field's `other_error` category is a
+residual error *type* carrying both directions (3,830 overissuance and 2,209
+underissuance cases in FY2022-24), so including it in the denominator produces a field
+that correlates -0.90 with how little other_error a rule catches and only 0.21 with
+direction. The share of a rule's error cases whose `error_status` is `other_error` is
+reported separately, median 0.269.
+
 ## Era drift, and one codebook change
 
 | field | median abs difference | sampling floor | ratio |
 |---|---|---|---|
 | wrong amount, known item | 0.138 | 0.038 | **3.60** |
 | wrong include/exclude decision | 0.070 | 0.042 | **1.68** |
-| arose after the agency's action | 0.053 | 0.041 | 1.28 |
+| arose after certification | 0.053 | 0.041 | 1.28 |
 | unearned income | 0.036 | 0.031 | 1.16 |
-| arose at the agency's action | 0.051 | 0.044 | 1.15 |
+| arose at certification | 0.051 | 0.044 | 1.15 |
 | surfaced from the case record | 0.047 | 0.043 | 1.10 |
 | coded client-caused | 0.045 | 0.045 | 1.00 |
 | all remaining fields | | | 0.75 to 0.98 |

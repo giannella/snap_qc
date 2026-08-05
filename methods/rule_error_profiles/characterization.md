@@ -60,12 +60,13 @@ the field is as stable as its support allows.
 | unreported source of income | 0.104 | 0.039-0.153 | 0.70 | 0.026 | 0.025 | 1.05 |
 | household composition | 0.059 | 0.000-0.102 | 0.79 | 0.012 | 0.016 | 0.79 |
 | change in circumstances | 0.078 | 0.026-0.120 | 0.63 | 0.025 | 0.023 | 1.11 |
-| arose at the agency's action | 0.604 | 0.418-0.680 | 0.85 | 0.057 | 0.046 | 1.23 |
-| arose after the agency's action | 0.298 | 0.208-0.480 | 0.88 | 0.058 | 0.044 | 1.33 |
+| arose at certification | 0.604 | 0.418-0.680 | 0.85 | 0.057 | 0.046 | 1.23 |
+| arose after certification | 0.298 | 0.208-0.480 | 0.88 | 0.058 | 0.044 | 1.33 |
 | coded agency-caused | 0.566 | 0.471-0.676 | 0.72 | 0.062 | 0.047 | 1.32 |
 | coded client-caused | 0.395 | 0.277-0.493 | 0.75 | 0.061 | 0.047 | 1.30 |
 | surfaced from the case record | 0.409 | 0.292-0.510 | 0.75 | 0.061 | 0.045 | 1.35 |
-| overissuance (case level) | 0.437 | 0.141-0.898 | 0.96 | n/a | n/a | n/a |
+| overissuance, of directional error cases | 0.746 | 0.606-0.999 | 0.95 | n/a | n/a | n/a |
+| error_status is other_error | 0.269 | 0.077-0.454 | 0.90 | n/a | n/a | n/a |
 
 ## Era drift, FY2022-23 against FY2024
 
@@ -82,12 +83,13 @@ the field is as stable as its support allows.
 | unreported source of income | 0.023 | 0.024 | 0.98 |
 | household composition | 0.011 | 0.015 | 0.75 |
 | change in circumstances | 0.021 | 0.023 | 0.89 |
-| arose at the agency's action | 0.051 | 0.044 | 1.15 |
-| arose after the agency's action | 0.053 | 0.041 | 1.28 |
+| arose at certification | 0.051 | 0.044 | 1.15 |
+| arose after certification | 0.053 | 0.041 | 1.28 |
 | coded agency-caused | 0.041 | 0.045 | 0.91 |
 | coded client-caused | 0.045 | 0.045 | 1.00 |
 | surfaced from the case record | 0.047 | 0.043 | 1.10 |
-| overissuance (case level) | 0.035 | 0.039 | 0.90 |
+| overissuance, of directional error cases | 0.032 | 0.033 | 0.96 |
+| error_status is other_error | 0.016 | 0.036 | 0.44 |
 
 ## Does knowing the rule tell you anything about the error?
 
@@ -103,4 +105,4 @@ structure, so the comparison holds.)
 - median variances per rule, FY2022-24 pooled: 203
 - rules with at least 20 variances: 543 of 543
 - median error cases per rule: 126
-- direction, case level: 73093 overissuance, 29104 underissuance, 67009 other_error
+- direction, case level: 118920 overissuance, 50286 underissuance, 67009 other_error

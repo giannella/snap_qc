@@ -69,7 +69,7 @@ FEATURES = [
 ]
 KEYS = ["state", "state_name", "yrmonth", "hhldno", "fiscal_year",
         "over_threshold", "total_error_amount", "cert_HH_size_FS_n",
-        "error_status"]
+        "error_status", "status"]
 
 HH_LEVELS = ("1", "2-3", "4+")
 
@@ -387,9 +387,11 @@ def characterize(hh, rule, era, rows, gather, v, n_flagged, over, under, other):
     for g in NATURE_GROUPS:
         share(sub["nature_group"] == g, name="nat_" + g.split(",")[0].replace(" ", "_"))
     kt = sub["timeper_b"] != "unpopulated"
-    for code, nm in (("at_action", "at_agency_action"),
-                     ("before_action", "before_agency_action"),
-                     ("after_action", "after_agency_action")):
+    # TIMEPER is coded against the agency's most recent action, which is the
+    # certification or recertification action for most cases.
+    for code, nm in (("at_action", "at_certification"),
+                     ("before_action", "before_certification"),
+                     ("after_action", "after_certification")):
         share(sub["timeper_b"] == code, kt, "timing_" + nm)
     kc = sub["cause"] != "unpopulated"
     for c in CAUSES:
@@ -405,13 +407,20 @@ def characterize(hh, rule, era, rows, gather, v, n_flagged, over, under, other):
     tot = over + under + other
     r["n_cases_overissuance"], r["n_cases_underissuance"] = over, under
     r["n_cases_other_error"] = other
-    # direction is case-level, so its denominator is cases with a directional
-    # status, not variances; named the same way so the field-level code is uniform
-    r["denom_share_overissuance"] = tot
-    r["share_overissuance"] = over / tot if tot else np.nan
-    lo, hi = wilson(over, tot)
+    # Direction is case-level and comes from `status` (2 overissuance,
+    # 3 underissuance), which is populated for every error case. NOT from
+    # error_status: its "other_error" category is a residual error TYPE carrying
+    # both directions, so putting it in the denominator would make the field a
+    # measure of how little other_error a rule catches rather than of direction.
+    r["denom_share_overissuance"] = over + under
+    r["share_overissuance"] = over / (over + under) if (over + under) else np.nan
+    lo, hi = wilson(over, over + under)
     r["share_overissuance_lo"], r["share_overissuance_hi"] = lo, hi
-    r["share_underissuance"] = under / tot if tot else np.nan
+    r["share_underissuance"] = under / (over + under) if (over + under) else np.nan
+    # kept as a separate descriptive field, not folded into the direction one
+    r["n_cases_other_error_type"] = other
+    r["share_other_error_type"] = other / tot if tot else np.nan
+    r["denom_share_other_error_type"] = tot
     r["amterr_total"] = float(sub["AMTERR"].fillna(0).sum())
     return r
 
@@ -419,12 +428,13 @@ def characterize(hh, rule, era, rows, gather, v, n_flagged, over, under, other):
 # fields carried into the field-level evidence
 EVID = ([("elem_" + g.replace(" ", "_"), g) for g in ELEMENT_GROUPS[:6]] +
         [("nat_" + g.split(",")[0].replace(" ", "_"), g) for g in NATURE_GROUPS[:5]] +
-        [("timing_at_agency_action", "arose at the agency's action"),
-         ("timing_after_agency_action", "arose after the agency's action"),
+        [("timing_at_certification", "arose at certification"),
+         ("timing_after_certification", "arose after certification"),
          ("cause_agency", "coded agency-caused"),
          ("cause_client", "coded client-caused"),
          ("found_in_case_record", "surfaced from the case record"),
-         ("share_overissuance", "overissuance (case level)")])
+         ("share_overissuance", "overissuance, of directional error cases"),
+         ("share_other_error_type", "error_status is other_error")])
 
 
 def reliability(df, col, minn=20):
@@ -526,8 +536,8 @@ def field_evidence(prof, v, rules_vi, state_of_var, path, dep, reps=40, seed=11)
                  if x.split(",")[0].replace(" ", "_") == c[4:]][0]
             masks[c] = ((v["nature_group"] == g).to_numpy(), np.ones(len(v), bool))
         elif c.startswith("timing_"):
-            code = {"timing_at_agency_action": "at_action",
-                    "timing_after_agency_action": "after_action"}[c]
+            code = {"timing_at_certification": "at_action",
+                    "timing_after_certification": "after_action"}[c]
             d = (v["timeper_b"] != "unpopulated").to_numpy()
             masks[c] = ((v["timeper_b"] == code).to_numpy(), d)
         elif c.startswith("cause_"):
@@ -704,7 +714,7 @@ def main():
     rules = dep[["hh", "rule"]].drop_duplicates().reset_index(drop=True)
     is_err = df["is_error"].to_numpy()
     status = df["error_status"].to_numpy()
-    OVER = ("earned_overissuance", "unearned_overissuance")
+    direction_code = pd.to_numeric(df["status"], errors="coerce").to_numpy()
     fy = df["fiscal_year"].to_numpy()
     hh_all = df["hh"].to_numpy()
     eras = {"all_2022_24": np.ones(len(df), bool),
@@ -718,10 +728,9 @@ def main():
         flag = np.asarray(df[FEATURES].eval(rule), dtype=bool) & (hh_all == hh)
         for era, m in eras.items():
             rows = np.flatnonzero(flag & m & is_err)
-            st = status[rows]
-            o = int(np.isin(st, OVER).sum())
-            u = int((st == "underissuance").sum())
-            ot = int((st == "other_error").sum())
+            o = int((direction_code[rows] == 2).sum())
+            u = int((direction_code[rows] == 3).sum())
+            ot = int((status[rows] == "other_error").sum())
             rec = characterize(hh, rule, era, rows, gather, v,
                                int((flag & m).sum()), o, u, ot)
             out.append(rec)
