@@ -1656,9 +1656,9 @@ floor of 43, that is, nearly the flat floor we already use.
 ### Result: 18 states, both review budgets
 
 Medians across the 18 states. "median within-state difference" is computed by taking
-each state's own difference against f30 and then the median of those 18 numbers, which
-is the honest statistic because every state is compared only against itself; the median precision column can
-move on which state lands in the middle.
+each state's own difference against f30 and then the median of those 18 numbers
+(i.e., each state's performance is compared to itself); the median precision
+column can move on which state lands in the middle.
 
 Budget 5%:
 
