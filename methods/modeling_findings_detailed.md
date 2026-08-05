@@ -1919,6 +1919,27 @@ shipped list). Regenerating script: `methods/certified_fill_check_v2.R` (runner:
 comparison is `methods/crossfit_ranking_v2.R` run before and after the change; the
 unpruned figures come from the 2026-08-03 overnight log.*
 
+### Addendum (2026-08-05): the certificate over the completed cross-fit study
+
+The full cross-fitted ranking run finished 2026-08-05 at 00:31 and gives the strongest
+version of this check so far, because the window bound in every single case rather than
+in some of them.
+
+All **252 rows** (18 states, 7 arms, 2 budgets) came back with **slack zero**, and all
+252 had their pool truncated by the window: the median admitted pool was **182,964
+rules** against a 20,000-rule window, and the largest was 228,403. So there is no row
+where the window happened to be larger than the pool and the certificate was trivially
+satisfied. Pruning was real in 252 of 252 and provably exact in 252 of 252.
+
+That answers the question left open when the window was chosen: no state needed more
+than 20,000 rules, and we know it rather than assume it. The baseline arm, which reads
+the shipped full-data vocabulary, ran on pools with a median of 54,260 rules and a
+maximum of 59,477, also fully truncated and also slack zero.
+
+*Artifacts: `methods/state_similarity_v2/crossfit_ranking_train2223_test24/crossfit_ranking.csv`
+(252 rows, `slack` column). Regenerating script: `methods/crossfit_ranking_v2.R` via
+`runners/run_crossfit_ranking.R`, about 2.5 hours when the national mines are cached.*
+
 *Artifacts: `methods/anyerror_blended_holdout_2024/fill_scan_depth.csv` (one row per
 state and budget: pool size, rules delivered, rank reached for core and for core plus
 buffer, rule width). Regenerating script: `methods/fill_scan_depth_v2.R`, which reads
