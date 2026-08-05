@@ -1020,11 +1020,33 @@ as "agency-caused AND resolvable at the desk"; combining fields is the state's
 judgement. Every share ships with a Wilson interval, because a share on 20 variances and
 a share on 400 are different objects.
 
-An earlier version of this section applied three pass-or-fail criteria to a single
-"mode element" label and concluded it should not ship. That framing was wrong in two
-ways, and both are corrected here. It judged a label instead of characterizing a rule,
-and it scored concentration against 49 raw element codes rather than the groups a state
-reasons about.
+**What we tried first, and why it was dropped.** Issue #2 asked for the modal
+`ELEMENT1` next to each rule plus the share of that rule's errors carrying it, so we
+built exactly that before building the sheet described here. Three things came out of it,
+and only the third is a reason to drop the mode.
+
+It was **not unstable across years**, which is worth stating plainly because it is the
+opposite of what a summary of this history might suggest: a rule's modal element agreed
+between FY2022-23 and FY2024 for 463 of 529 rules, 87.5% against 41.6% chance agreement.
+
+It was **uninformative**. The modal element accounted for a median 34.9% of what a rule
+caught on FY2024 and 32.7% on FY2022-23, only 9.6% of rules had a modal element above
+half their errors, and 320 of the 529 rules carried the same one, wages and salaries. A
+state told "this rule finds wages and salaries errors" would have been right about a
+third of the time, and would have read the same sentence against three rules in five.
+
+And a mode is a **fragile way to summarise a flat distribution**. Measured on the coarser
+7-group scale used here, which is the most favourable case for it, the top group flips
+between two random halves of the 49 states in **11.2% of 19,061 comparisons**, because
+the top group leads the runner-up by a median of only 0.179 and by under 0.10 for 22.7%
+of rules. The underlying shares are stable at the sampling floor over the same splits;
+it is the act of collapsing them to a winner that is not.
+
+So the mode is not reported. The full set of group shares with intervals carries the same
+information without the knife edge, and a state that wants a headline can read the top
+line of `element_groups_to_75`. The earlier framing also judged that label against
+pass-or-fail criteria rather than characterizing the rule, and scored concentration
+against 49 raw element codes rather than the groups a state reasons about.
 
 **What the fields say.** Across 543 rules, median 203 variances and 126 error cases
 each pooled over FY2022-24:

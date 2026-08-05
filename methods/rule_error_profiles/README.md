@@ -80,6 +80,19 @@ of variances reporting a timing, 61.3% arose at certification.
 543 distinct rules, median 203 variances and 126 error cases each pooled over
 FY2022-24. All 543 clear 20 variances.
 
+## Why there is no "mode element" column
+
+Issue #2 asked for the modal element and its share. That was built first. It was
+not unstable across years: the modal element agreed between FY2022-23 and FY2024
+for 463 of 529 rules, 87.5% against 41.6% chance. It was uninformative, at a median
+34.9% of a rule's errors with 320 of 529 rules sharing wages and salaries. And a
+mode is a fragile summary of a flat distribution: even on the 7-group scale the top
+group flips between two random halves of the 49 states in 11.2% of 19,061
+comparisons, because it leads the runner-up by a median 0.179 and by under 0.10 for
+22.7% of rules. The shares themselves are stable at the sampling floor over the same
+splits; collapsing them to a winner is what is not. `element_groups_to_75` gives the
+ordered list for anyone who wants a headline.
+
 ## Does each field carry signal?
 
 Three terms, defined once.
