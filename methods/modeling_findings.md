@@ -979,55 +979,68 @@ and adding a feature changes the mining vocabulary and needs a full re-mine.
 
 *Detail and artifacts: [detailed record](modeling_findings_detailed.md#28-rules-that-key-on-a-benefit-reconstruction-artifact-near-the-maximum-benefit-2026-08-04), §28.*
 
-## 29. Per-rule error profiles: era-stable, but not concentrated and not discriminating
+## 29. Characterizing what each delivered rule finds, so a state can choose its own rules
 
-> **Takeaway: about the data.** Labelling each delivered rule with the kind of error it
-> finds passes the test we expected it to fail and fails the two we expected it to pass.
-> A rule's modal error element agrees between FY2022-23 and FY2024 for 463 of 529 rules
-> (87.5%, against 41.6% chance agreement), so the label is era-stable. But the modal
-> element describes only a median 34.9% of what a rule catches, and 320 of the 529 rules
-> carry the same one, "wages and salaries". A review-mode indicator built from cause,
-> discoverability and timing separates even less: 494 of 529 rules land in
-> post-authorization. Not promoted to the delivered lists.
+> **Takeaway: about the data.** Each delivered rule can be described by what its errors
+> are about and how they happened, well enough for a state to judge which rules suit
+> what it can catch and fix. The fields describing WHAT the error is about travel: a
+> rule's earned-income share has reliability 0.94, and computing it on two random halves
+> of the 49 states differs by 0.034 against a sampling floor of 0.032, a ratio of 1.06.
+> The fields describing WHO was coded as the cause, WHEN it arose and HOW it surfaced
+> carry real state-to-state variation on top of sampling (ratios 1.23 to 1.35), so a
+> national number is indicative rather than exact for any one state. Knowing which rule
+> flagged a case shifts the distribution of error types decisively against chance (985 sd
+> for element group) without determining it (NMI 0.044).
 
-Ben asked (issue #2) for the modal `ELEMENT1` next to each rule in a state's delivery
-list, so a state can see what kind of error a rule tends to find. Three criteria were
-set in advance for whether that column ships: it has to be concentrated (the modal
-element should dominate the rule's errors), era-stable (a profile computed on the
-training years should still describe the test year), and discriminating (it has to vary
-across rules enough to sort them).
+The point is not to label a rule for its own sake. A state deciding whether a rule is
+worth using as a flagging criterion needs to know what it tends to surface, so it can
+weigh that against what it can actually catch and fix. So this produces descriptive
+fields and stops. It assigns no rule to a category, and it reports no conjunctions such
+as "agency-caused AND resolvable at the desk"; combining fields is the state's
+judgement. Every share ships with a Wilson interval, because a share on 20 variances and
+a share on 400 are different objects.
 
-The cases profiled are the ones the lists actually pull, the refill walk against the
-FY2024 caseload. All 98 state-and-budget combinations reproduce the shipped scorecard
-exactly, so this describes the delivered lists and not an approximation of them.
+An earlier version of this section applied three pass-or-fail criteria to a single
+"mode element" label and concluded it should not ship. That framing was wrong in two
+ways, and both are corrected here. It judged a label instead of characterizing a rule,
+and it scored concentration against 49 raw element codes rather than the groups a state
+reasons about.
 
-**Concentration fails.** Median modal-element share 0.349 on FY2024 and 0.327 on
-FY2022-23; only 9.6% of rules have a modal element above half their errors. A state
-told "this rule finds wages and salaries errors" would be right about a third of the
-time.
+**What the fields say.** Across 543 rules, median 203 variances and 126 error cases
+each pooled over FY2022-24:
 
-**Era-stability passes**, and it was the criterion most likely to sink this. The modal
-element agrees across eras for 87.5% of rules where chance agreement is 41.6%. The
-continuous axes carry over more weakly: catchable-at-action correlates 0.580 across
-eras, desk-closable 0.500, agency-caused 0.411.
+| field | median share | reliability | split-half over states | sampling floor | ratio |
+|---|---|---|---|---|---|
+| earned income | 0.330 | 0.94 | 0.034 | 0.032 | 1.06 |
+| unearned income | 0.188 | 0.94 | 0.030 | 0.031 | 0.96 |
+| shelter deduction | 0.182 | 0.92 | 0.030 | 0.038 | 0.79 |
+| wrong amount, known item | 0.298 | 0.75 | 0.041 | 0.039 | 1.04 |
+| wrong include/exclude decision | 0.287 | 0.93 | 0.039 | 0.046 | 0.86 |
+| arose at the agency's action | 0.604 | 0.85 | 0.057 | 0.046 | 1.23 |
+| coded agency-caused | 0.566 | 0.72 | 0.062 | 0.047 | 1.32 |
+| surfaced from the case record | 0.409 | 0.75 | 0.061 | 0.045 | 1.35 |
 
-**Discrimination fails.** Eleven distinct modal elements appear, but 60% of rules share
-"wages and salaries", 18% "shelter deduction". The review-mode indicator, which asks
-whether a rule's errors could be caught by a pre-authorization desk review (present at
-or before the agency's action, closable from the case record, and agency-caused), puts
-494 of 529 rules in post-authorization and 2 in pre-authorization. That is a fact about
-SNAP QC variances rather than about our rules: only 24.6% of variances nationally are
-both discovered and verified from the case record.
+Reliability is the share of the spread across rules that is real between-rule difference
+rather than sampling error. The split-half test computes each rule on two random halves
+of the 49 states and compares the observed difference to what sampling alone would give.
 
-On Ben's over-versus-under follow-up, the deployed lists catch 2,727 overissuance
-variances against 966 underissuance and 2 ineligible, 73.8% to 26.1%. One caveat
-matters: `E_FINDG` is populated for 13,532 of the 20,769 FY2024 variance records that
-carry a cause code, three states populate none of it, and Michigan populates 2. The
-frame's own `error_status` is the better source for over versus under if this ever
-becomes a delivered column.
+**Why states, not years, are the primary test.** The temporal axis gives one comparison;
+splitting states gives as many draws as you care to take. It also turned out to be the
+only clean one. Two nature groups drift far above their sampling floor between eras
+(wrong-amount 3.60x, wrong-include/exclude 1.68x) because **nature codes 56, 57, 33 and
+58 are 0.00% of variances in FY2022 and FY2023 and appear only in FY2024**. Deduction
+errors formerly coded 52 or 53 are now split into 56 and 57, moving wrong-amount from
+14.3% to 23.3% and pulling wrong-include/exclude from 21.6% to 17.3%. The same two
+fields score 1.04 and 0.86 on the state split-half, so they are stable; the era test was
+measuring a codebook revision.
 
-Every cause figure above is bounded by a data limit worth stating plainly: `AGENCY`
-codes 22 to 26 are defined in no technical documentation through FY2023, and code 26
-alone carries 5,669 of the 20,769 populated FY2024 cause values (27.3%).
+**Two data corrections this work forced.** The FY2024 technical documentation, in
+`additional_data/`, defines every code the FY2023 one leaves undefined. `AGENCY` 26 is
+not a fault code but "change was not required to be reported by the client or acted upon
+by the State", and on error-case variances it is 1.4%, not the 27.3% an earlier note
+reported from a population that included sub-threshold variances on non-error cases.
+Coverage on error-case variances is near total: NATURE 1.000, AGENCY 1.000, DISCOV
+0.992, TIMEPER 0.990, no state below 0.938. The cause split is agency 54.7% to client
+41.9%.
 
-*Detail and artifacts: [detailed record](modeling_findings_detailed.md#29-per-rule-error-profiles-era-stable-but-not-concentrated-and-not-discriminating-2026-08-04), §29.*
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md#29-characterizing-what-each-delivered-rule-finds-so-a-state-can-choose-its-own-rules-2026-08-04), §29.*

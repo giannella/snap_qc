@@ -1,164 +1,177 @@
-# Per-rule error profiles: what each delivered rule actually catches
+# Per-rule characterization: what each delivered rule finds
 
-Issue #2 (mode `ELEMENT1` per rule), Ben's over/under follow-up, and the
-review-mode extension. Built 2026-08-04 by `methods/rule_error_profiles.py`
-(entry point `runners/run_rule_error_profiles.py`), nationally across the 49
-states in the any-error scorecard. Mines nothing and changes no delivered list.
+Built 2026-08-04 by `methods/rule_error_profiles.py` (entry point
+`runners/run_rule_error_profiles.py`). Mines nothing and changes no delivered list.
 
-**Headline: two of the three promotion criteria fail.** The profile is
-era-stable, which was the test we expected to be hardest. It is not
-concentrated (the mode element describes about a third of a rule's errors) and
-it barely discriminates (60% of rules carry the same mode element, and 93% of
-the ones that can be characterised land in the same review mode). Shipping a
-mode-element column would put "wages and salaries" next to most rules in the
-list, describing a minority of what each one catches.
+## What this is for
 
-## How the flagged set is defined
+A state deciding whether a rule is worth using as a flagging criterion needs to
+know what that rule tends to surface, so it can weigh that against what it can
+actually catch and fix. This produces descriptive fields for each rule and stops
+there. It does not sort rules into suitable and unsuitable, and it reports no
+conjunctions such as "agency-caused AND catchable at the desk"; combining the
+fields is the state's judgement, not ours.
 
-The cases profiled are the ones a delivered list actually pulls: the refill walk
-from `methods/add_refill_metrics_v2.R`, core then buffer in rank order, taking a
-rule when it adds unflagged cases and the running total still fits
-`floor(budget * n_rows)`, run against the FY2024 caseload.
+`rule_characterization.csv` is the sheet: one row per (stratum, rule), joinable
+onto any state's delivery list. Every share carries a Wilson interval, because a
+share computed on 20 variances and one computed on 400 are different objects.
 
-**All 98 state-and-budget combinations reproduce
-`methods/anyerror_blended_holdout_2024/holdout_metrics.json`** on rules
-deployed, rules available, cases flagged, errors caught and precision. The
-script asserts this and stops if it drifts. Michigan at the 10% budget comes out
-at 19 rules deployed of 194, 86 cases flagged, 24 errors, precision 0.2791, as
-it must.
+## Where the codes come from
 
-2,390 deployed rule instances across the 98 lists, 543 distinct
-stratum-and-rule pairs, 12,869 flagged case rows.
+All definitions are read from **`additional_data/FY-2024-Tech-Doc.pdf`** and the
+element/nature nesting in **`additional_data/FNS380-1WithInstructions.pdf`**.
+Nothing is inferred from the data, and the `.sav` files carry no value labels for
+these variables.
 
-## The join and its levels
+The FY2023 tech doc is superseded and should not be used: it defines neither
+`AGENCY` 22-26 nor `NATURE` 33, 56, 57, 58, all of which appear in FY2024 data.
+Two consequences that changed the results:
 
-`reg_model_data.csv` joins to `qc_data/qc_pub_fy{2022,2023,2024}.sav` on
-(FIPS, `YRMONTH`, `HHLDNO`) within fiscal year. The frame's `state` column holds
-the state **name**, not FIPS; `additional_data/state_data.csv` is the lookup.
-60,055 variance records match a frame row, covering **13,283 of the 13,288 error
-cases** in the frame.
+- **`AGENCY` 26 is not a fault code.** It is "change was not required to be
+  reported by the client or acted upon by the State." On error-case variances it
+  is 1.4%.
+- **`NATURE` 56 and 57** ("incorrect deduction amount included, budgeted too
+  much / too little") are new in FY2024. See the era-drift section.
 
-`AGENCY`, `DISCOV`, `VERIF`, `TIMEPER` and `ELEMENT` are recorded **per
-variance**, and a case carries up to nine, so every figure here is
-variance-level unless it says cases. A case also trips several rules, so
-per-rule counts sum to more than the flagged total and are not a partition.
+Element groups follow the munging script's own reconstruction groups
+(`1_data_munging...`, lines 603-627) so the characterization and the modelling
+frame agree on what an earned-income error is. Earned income deductions (321) sit
+with earned income.
 
-Code definitions come from the FY2023 SNAP QC Technical Documentation
-(Mathematica), Chapter V detailed codebook. The `.sav` files carry no value
-labels for these variables, so nothing here is inferred from the data.
+Nature groups are element-independent. FNS-380-1 nests natures under elements only
+to say which are *permitted* where; a nature code carries the same meaning
+wherever it appears, verified across every element page. The grouping therefore
+describes **how the error happened** rather than what it was about.
 
-## Two bases, deliberately
+| nature group | codes |
+|---|---|
+| wrong amount, known item | 38, 44, 56, 57, 54 |
+| wrong include/exclude decision | 52, 53, 37, 58, 32, 33, 24, 30, 51 |
+| unreported source of income | 35 |
+| household composition | 6, 7, 12-16, 200, 201 |
+| change in circumstances | 39, 40, 41, 64, 65 |
+| method or computation | 36, 42, 43, 45, 46, 75, 79, 80, 98, 123 |
+| reporting system or process | 77, 97, 120, 124, 301-314 |
+| limits and thresholds | 20, 28, 29 |
+| child support handling | 111, 112, 127 |
+| other | 99 |
 
-- **national**: the rule evaluated against every national row of the era within
-  its household-size stratum. Both eras are computed the same way, which is what
-  makes them comparable. Used for all three promotion criteria.
-- **deployed**: the FY2024 cases the delivered lists actually pull through that
-  rule. Used for the decision-support numbers. Cells are much thinner here:
-  median 4 error cases and 5 variances per deployed rule, and 80 of 543 rules
-  catch no error at all in their deployed cases.
+Every variance maps; there is no residual bucket.
 
-## Criterion 1: concentration. Fails.
+## The flagged set, and coverage
 
-Does the mode element dominate a rule's errors?
+The cases characterized are the ones the lists actually pull: the refill walk from
+`methods/add_refill_metrics_v2.R` against the FY2024 caseload. **All 98
+state-and-budget combinations reproduce
+`methods/anyerror_blended_holdout_2024/holdout_metrics.json`** on rules deployed,
+rules available, cases flagged, errors and precision; the script asserts it and
+stops on drift.
 
-| basis | median top-element share | quartiles | rules above 0.50 |
+Coverage on FY2024 **error-case** variances is near total: NATURE 1.000, AGENCY
+1.000, DISCOV 0.992, TIMEPER 0.990, with no state below 0.938 on timing. An
+earlier version of this note reported 70% timing coverage; that figure was
+computed over all variance records including sub-threshold variances on non-error
+cases, and does not describe the population characterized here.
+
+National mix on FY2024 error-case variances, so a rule's share reads as lift:
+cause is agency 54.7%, client 41.9%, other 1.6%, no-fault 1.4%, third party 0.3%;
+of variances reporting a timing, 61.3% arose at the agency's action.
+
+543 distinct rules, median 203 variances and 126 error cases each pooled over
+FY2022-24. All 543 clear 20 variances.
+
+## Does each field carry signal?
+
+**Reliability** is the share of the spread across rules that is real between-rule
+difference rather than sampling error, which is the question a state has: does
+this number describe *this rule*, or is it noise? **Split-half over states**
+computes the same rule on two random halves of the 49 states and compares the
+observed difference to the difference sampling alone would produce; a ratio near 1
+means the field is as stable as its support allows.
+
+| field | median share | reliability | split-half obs | floor | ratio |
+|---|---|---|---|---|---|
+| earned income | 0.330 | 0.94 | 0.034 | 0.032 | 1.06 |
+| unearned income | 0.188 | 0.94 | 0.030 | 0.031 | 0.96 |
+| shelter deduction | 0.182 | 0.92 | 0.030 | 0.038 | 0.79 |
+| utility allowance | 0.050 | 0.90 | 0.018 | 0.019 | 0.92 |
+| medical deduction | 0.013 | 0.98 | 0.008 | 0.012 | 0.73 |
+| dep care or child support deduction | 0.043 | 0.92 | 0.013 | 0.014 | 0.97 |
+| wrong amount, known item | 0.298 | 0.75 | 0.041 | 0.039 | 1.04 |
+| wrong include/exclude decision | 0.287 | 0.93 | 0.039 | 0.046 | 0.86 |
+| unreported source of income | 0.104 | 0.70 | 0.026 | 0.025 | 1.05 |
+| household composition | 0.059 | 0.79 | 0.012 | 0.016 | 0.79 |
+| change in circumstances | 0.078 | 0.63 | 0.025 | 0.023 | 1.11 |
+| arose at the agency's action | 0.604 | 0.85 | 0.057 | 0.046 | 1.23 |
+| arose after the agency's action | 0.298 | 0.88 | 0.058 | 0.044 | 1.33 |
+| coded agency-caused | 0.566 | 0.72 | 0.062 | 0.047 | 1.32 |
+| coded client-caused | 0.395 | 0.75 | 0.061 | 0.047 | 1.30 |
+| surfaced from the case record | 0.409 | 0.75 | 0.061 | 0.045 | 1.35 |
+| overissuance (case level) | 0.437 | 0.96 | | | |
+
+Two readings, and they differ by field type:
+
+- **What the error is about** (element and nature groups) travels. Reliability
+  0.63 to 0.98, and split-half ratios of 0.73 to 1.11, meaning the difference
+  between two halves of the country is what sampling alone would give.
+- **Who was coded as the cause, when it arose, and how it surfaced** carry real
+  state-to-state variation on top of sampling: ratios 1.23 to 1.35. These fields
+  are informative but a national number will be somewhat off for any one state,
+  which is a fact about state coding and process rather than about the rule.
+
+## Era drift, and one codebook change
+
+| field | median abs difference | sampling floor | ratio |
 |---|---|---|---|
-| national, FY2024 | 0.349 | 0.308 / 0.401 | 9.6% |
-| national, FY2022-23 | 0.327 | 0.295 / 0.379 | 11.7% |
-| deployed, FY2024 (n >= 5) | 0.412 | | |
+| wrong amount, known item | 0.138 | 0.038 | **3.60** |
+| wrong include/exclude decision | 0.070 | 0.042 | **1.68** |
+| arose after the agency's action | 0.053 | 0.041 | 1.28 |
+| unearned income | 0.036 | 0.031 | 1.16 |
+| arose at the agency's action | 0.051 | 0.044 | 1.15 |
+| surfaced from the case record | 0.047 | 0.043 | 1.10 |
+| coded client-caused | 0.045 | 0.045 | 1.00 |
+| all remaining fields | | | 0.75 to 0.98 |
 
-The bar was that a top element near 20% makes the column noise. At 35% it is
-better than that, but for nine rules in ten the modal element is a minority of
-what the rule catches. A state reading "this rule finds wages and salaries
-errors" would be right about a third of the time.
+Everything sits at or near its sampling floor except the two largest nature
+groups, and that is a coding change rather than instability. **Nature codes 56,
+57, 33 and 58 are 0.00% of variances in FY2022 and FY2023 and appear only in
+FY2024.** Deduction errors previously coded 52 or 53 are now split into 56 and 57,
+which moves "wrong amount, known item" from 14.3% to 23.3% and pulls "wrong
+include/exclude decision" from 21.6% to 17.3%.
 
-## Criterion 2: era-stability. Passes.
+The same two fields score 1.04 and 0.86 on the split-half-over-states test, which
+is why that was the primary test: the geographic axis gives many draws and is not
+contaminated by a mid-window codebook revision, while the temporal axis gives one
+draw and was.
 
-Does a profile computed on FY2022-23 still describe FY2024? This was the real
-test, and it is the one the profile clears.
+## Does knowing the rule tell you anything at all?
 
-- mode element agrees across eras for **463 of 529 rules (87.5%)**
-- chance agreement, if the mode were drawn from the FY2024 marginal, is 41.6%
-- so agreement above chance is 0.786 on a kappa scale
+Mutual information between rule identity and the error's group, against a
+permutation null over 60 shuffles:
 
-The continuous shares are weaker but positive across eras: catchable-at-action
-0.580, desk-closable 0.500, agency-caused 0.411, pre-authorization 0.283.
+| pairing | MI (nats) | NMI | null | distance above chance |
+|---|---|---|---|---|
+| rule and element group | 0.1360 | 0.0435 | 0.0064 | 985 sd |
+| rule and nature group | 0.0510 | 0.0159 | 0.0096 | 233 sd |
 
-## Criterion 3: discrimination. Fails for the review mode.
+Knowing which rule flagged a case does tell you something about what the error is,
+decisively so against chance. The NMI is small in absolute terms, which is the
+honest reading: a rule shifts the distribution of error types, it does not
+determine it.
 
-Does the profile vary across rules enough to sort them?
-
-Mode element across the 529 characterisable rules on FY2024:
-
-| element | rules | median share |
-|---|---|---|
-| 311 wages and salaries | 320 | 0.336 |
-| 363 shelter deduction | 98 | 0.405 |
-| 365 medical expense deductions | 52 | 0.473 |
-| 331 RSDI benefits | 40 | 0.357 |
-| 323 dependent care deduction | 9 | 0.333 |
-| seven further elements | 10 | |
-
-Eleven distinct elements, but 60% of rules share one. The continuous axes spread
-more, though not by much:
-
-| axis (FY2024, national) | median | 10th to 90th | sd |
-|---|---|---|---|
-| agency-caused share | 0.504 | 0.388 to 0.650 | 0.109 |
-| catchable at the agency's action | 0.687 | 0.471 to 0.818 | 0.142 |
-| desk-closable (found AND verified in the record) | 0.246 | 0.145 to 0.364 | 0.101 |
-| pre-authorization share | 0.134 | 0.052 to 0.217 | 0.073 |
-
-The review-mode indicator is defined as: a variance is pre-authorization work
-when it was catchable at or before the agency's action **and** closable from the
-case record **and** agency-caused. A rule is `pre_authorization` when at least
-half its variances qualify, `post_authorization` below a quarter, `mixed`
-between, `insufficient` under 5 variances.
-
-| review mode | national basis | deployed basis |
-|---|---|---|
-| pre_authorization | 2 | 10 |
-| mixed | 33 | 46 |
-| post_authorization | 494 | 243 |
-| insufficient | | 244 |
-
-That is not a sorting variable. Almost everything is post-authorization work,
-which is a fact about SNAP QC variances rather than about our rules: the
-desk-closable share is only 0.246 nationally, so most errors need an outside
-contact to verify no matter which rule surfaced them.
-
-## Ben's over/under question
-
-`E_FINDG` on the deployed basis, variance-level: **2,727 overissuance (73.8%),
-966 underissuance (26.1%), 2 ineligible**.
-
-One caveat matters here. `E_FINDG` is populated for 13,532 of the 20,769
-variance records that carry an `AGENCY` code in FY2024, and three states
-populate none of it. **Michigan populates it for 2 variances**, so this question
-cannot be answered for Michigan from `E_FINDG` at all. The frame's own
-`error_status` field carries over/under at the case level for every state and is
-the better source if this becomes a delivered column.
-
-## Limits that bound every cause figure above
-
-**Undocumented cause codes.** `AGENCY` codes 22 to 26 appear in FY2023 and
-FY2024 data and are defined in no technical documentation through FY2023. They
-are bucketed `UNDOCUMENTED` rather than guessed at. Code 26 alone carries 5,669
-of the 20,769 populated FY2024 `AGENCY` values, 27.3%. Every agency-versus-client
-figure here is computed over the documented remainder.
-
-**Thin cells on the deployed basis.** Median 5 variances per deployed rule, and
-244 of 543 rules fall under the 5-variance bar. Pooling 49 states is what makes
-the national basis usable; single-state characterisation does not work, which
-the Michigan one-off already showed.
-
-**Not a partition.** Per-rule counts double-count cases that trip several rules.
+A case trips several rules, so the units here are (rule, variance) pairs rather
+than a partition. The permutation null has the same structure, so the comparison
+holds.
 
 ## Files
 
 | file | contents |
 |---|---|
+| `rule_characterization.csv` | the sheet: one row per rule, FY2022-24 pooled, every share with its Wilson interval |
+| `rule_profiles.csv` | the same fields for each era separately, which is what the drift table is computed from |
+| `deployed_rules.csv` | 2,390 deployed rule instances by state and budget |
 | `stage1_checks.csv` | the 98 reproduction checks against the shipped scorecard |
-| `deployed_rules.csv` | 2,390 deployed rule instances, per state and budget |
-| `rule_profiles.csv` | 1,629 profile rows: 543 rules x 2 eras on the national basis, plus the deployed basis |
-| `promotion_criteria.md` | the three criteria, generated |
+| `characterization.md` | the generated evidence tables above |
+
+Per-rule counts double-count cases that trip several rules, so they are not a
+partition of the flagged total.

@@ -36,6 +36,7 @@ than the flagged total; they are not a partition.
 
 import argparse
 import json
+import math
 import os
 import re
 import sys
@@ -67,7 +68,8 @@ FEATURES = [
     "count_divisible_by_100",
 ]
 KEYS = ["state", "state_name", "yrmonth", "hhldno", "fiscal_year",
-        "over_threshold", "total_error_amount", "cert_HH_size_FS_n"]
+        "over_threshold", "total_error_amount", "cert_HH_size_FS_n",
+        "error_status"]
 
 HH_LEVELS = ("1", "2-3", "4+")
 
@@ -115,16 +117,16 @@ DISCOV_BUCKET = {1: "case_record", 2: "case_record",
                  3: "outside_contact", 4: "outside_contact", 5: "outside_contact",
                  6: "outside_contact", 7: "outside_contact",
                  8: "external_match", 9: "other"}
-# VERIF, how it was verified. Same logic: 1 and 2 from the case record, 3 is
-# information provided by the recipient, 8 is an automated government match.
-VERIF_BUCKET = {1: "case_record", 2: "case_record",
-                3: "outside_contact", 4: "outside_contact", 5: "outside_contact",
-                6: "outside_contact", 7: "outside_contact",
-                8: "external_match", 9: "other"}
+# VERIF is deliberately NOT used to decide anything. It records the evidence the
+# QC reviewer needed to substantiate a finding after the fact, which is QC's
+# evidentiary burden rather than a statement about what a caseworker could resolve
+# from the file at certification.
 # TIMEPER, when the variance occurred relative to the agency's most recent action.
 TIMEPER_BUCKET = {1: "before_action", 2: "at_action", 3: "after_action",
                   9: "undetermined"}
-FINDG_BUCKET = {2: "overissuance", 3: "underissuance", 4: "ineligible"}
+# Direction (over vs under) comes from the frame's error_status at case level,
+# not from E_FINDG: E_FINDG is populated for 57% of variances and three states
+# report none of it.
 
 
 def bucket(series, mapping, unknown="unknown"):
@@ -229,188 +231,433 @@ def report_checks(chk):
 
 
 # ------------------------------------------------------------------ stage 2
+# All code definitions come from the FY2024 SNAP QC Technical Documentation
+# (additional_data/FY-2024-Tech-Doc.pdf) and the element/nature nesting in
+# additional_data/FNS380-1WithInstructions.pdf. Nothing here is inferred from the
+# data. The FY2023 doc is superseded: it defines neither AGENCY 22-26 nor NATURE
+# 33, 56, 57, 58, all of which appear in FY2024 data.
+
+# Element groups, taken from the munging script's own reconstruction groups
+# (1_data_munging..., lines 603-627) so the characterization and the frame agree
+# on what an "earned income error" is. 321 sits with earned income.
+ELEMENT_GROUP = {}
+for c in (311, 312, 314, 321):
+    ELEMENT_GROUP[c] = "earned income"
+for c in (331, 332, 333, 334, 335, 336, 342, 343, 344, 345, 346, 350):
+    ELEMENT_GROUP[c] = "unearned income"
+ELEMENT_GROUP[363] = "shelter deduction"
+ELEMENT_GROUP[364] = "utility allowance"
+ELEMENT_GROUP[365] = "medical deduction"
+for c in (323, 366):
+    ELEMENT_GROUP[c] = "dep care or child support deduction"
+ELEMENT_GROUPS = ["earned income", "unearned income", "shelter deduction",
+                  "utility allowance", "medical deduction",
+                  "dep care or child support deduction", "other element"]
+
+# Nature groups. The tech doc lists natures flat, and FNS-380-1 nests them under
+# elements only to say which are PERMITTED where: a nature code carries the same
+# meaning wherever it appears (52/53/56/57 mean the same under earned income
+# deductions, dependent care, shelter, medical and child support; 35/37/38/44 mean
+# the same under every income element). So the grouping is element-independent and
+# describes how the error happened.
+NATURE_GROUP = {}
+for c in (38, 44, 56, 57, 54):
+    # right item, wrong figure
+    NATURE_GROUP[c] = "wrong amount, known item"
+for c in (52, 53, 37, 58, 32, 33, 24, 30, 51):
+    # the information was in hand; it was counted when it should not have been, or
+    # not counted when it should have been
+    NATURE_GROUP[c] = "wrong include/exclude decision"
+NATURE_GROUP[35] = "unreported source of income"
+for c in (39, 40, 41, 64, 65):
+    # coded as arising FROM a change in employment, residence or household size
+    NATURE_GROUP[c] = "change in circumstances"
+for c in (6, 7, 12, 13, 14, 15, 16, 200, 201):
+    NATURE_GROUP[c] = "household composition"
+for c in (36, 42, 43, 45, 46, 75, 79, 80, 98, 123):
+    NATURE_GROUP[c] = "method or computation"
+for c in (20, 28, 29):
+    NATURE_GROUP[c] = "limits and thresholds"
+for c in (111, 112, 127):
+    NATURE_GROUP[c] = "child support handling"
+for c in (77, 97, 120, 124, 301, 302, 303, 304, 305, 306, 307, 308, 309,
+          310, 311, 312, 313, 314):
+    NATURE_GROUP[c] = "reporting system or process"
+NATURE_GROUP[99] = "other"
+NATURE_GROUPS = ["wrong amount, known item", "wrong include/exclude decision",
+                 "unreported source of income", "household composition",
+                 "change in circumstances", "method or computation",
+                 "reporting system or process", "limits and thresholds",
+                 "child support handling", "other"]
+
+# AGENCY, FY2024 definitions. 26 is not a fault code: "change was not required to
+# be reported by the client or acted upon by the State".
+AGENCY_BUCKET_2024 = {1: "client", 2: "client", 3: "client", 4: "client",
+                      7: "third_party", 8: "third_party", 26: "no_fault",
+                      99: "other"}
+for c in (10, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25):
+    AGENCY_BUCKET_2024[c] = "agency"
+CAUSES = ["agency", "client", "third_party", "no_fault", "other"]
+
+DISCOV_2024 = {1: "case_record", 2: "case_record", 3: "outside_contact",
+               4: "outside_contact", 5: "outside_contact", 6: "outside_contact",
+               7: "outside_contact", 8: "external_match", 9: "other"}
+TIMEPER_2024 = {1: "before_action", 2: "at_action", 3: "after_action",
+                9: "undetermined"}
+
+
+def wilson(k, n, z=1.96):
+    """Two-sided Wilson interval. Shipped next to every share, because a share on
+    20 variances and a share on 400 are different objects."""
+    if not n:
+        return (np.nan, np.nan)
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    return (max(0.0, c - h), min(1.0, c + h))
+
+
 def load_variances(years):
-    """One row per (case, variance slot) with the coded fields, for the given
-    fiscal years. Keyed by (STATE fips, YRMONTH, HHLDNO)."""
+    """One row per (case, variance slot). A slot is a variance when ELEMENT is
+    populated; every such slot also carries a NATURE."""
     frames = []
     for y in years:
         path = os.path.join(QCDIR, "qc_pub_fy%s.sav" % y)
-        cols = (["STATE", "YRMONTH", "HHLDNO", "AMTERR", "FYWGT"] +
+        cols = (["STATE", "YRMONTH", "HHLDNO", "AMTERR"] +
                 ["%s%d" % (p, i) for p in
-                 ("ELEMENT", "NATURE", "AGENCY", "DISCOV", "VERIF", "TIMEPER",
-                  "E_FINDG", "AMOUNT") for i in VAR_SLOTS])
+                 ("ELEMENT", "NATURE", "AGENCY", "DISCOV", "TIMEPER")
+                 for i in VAR_SLOTS])
         raw, _ = pyreadstat.read_sav(path, usecols=cols)
         long = []
         for i in VAR_SLOTS:
             sub = raw[["STATE", "YRMONTH", "HHLDNO", "AMTERR"]].copy()
-            for p in ("ELEMENT", "NATURE", "AGENCY", "DISCOV", "VERIF",
-                      "TIMEPER", "E_FINDG", "AMOUNT"):
+            for p in ("ELEMENT", "NATURE", "AGENCY", "DISCOV", "TIMEPER"):
                 sub[p] = raw["%s%d" % (p, i)]
-            sub["slot"] = i
             long.append(sub)
         long = pd.concat(long, ignore_index=True)
-        # a slot is populated when it carries an element or a finding
-        long = long[long["ELEMENT"].notna() | long["E_FINDG"].notna()].copy()
+        long = long[long["ELEMENT"].notna()].copy()
         long["fiscal_year"] = y
         frames.append(long)
     v = pd.concat(frames, ignore_index=True)
-    v["agency_b"] = bucket(v["AGENCY"], AGENCY_BUCKET)
-    v["discov_b"] = bucket(v["DISCOV"], DISCOV_BUCKET)
-    v["verif_b"] = bucket(v["VERIF"], VERIF_BUCKET)
-    v["timeper_b"] = bucket(v["TIMEPER"], TIMEPER_BUCKET)
-    v["findg_b"] = bucket(v["E_FINDG"], FINDG_BUCKET)
-    v["desk_closable"] = (v["discov_b"] == "case_record") & (v["verif_b"] == "case_record")
-    v["catchable_at_action"] = v["timeper_b"].isin(["before_action", "at_action"])
+    v["element_group"] = v["ELEMENT"].map(ELEMENT_GROUP).fillna("other element")
+    v["nature_group"] = v["NATURE"].map(NATURE_GROUP).fillna("UNMAPPED")
+    v["cause"] = v["AGENCY"].map(AGENCY_BUCKET_2024).fillna("unpopulated")
+    v["discov_b"] = v["DISCOV"].map(DISCOV_2024).fillna("unpopulated")
+    v["timeper_b"] = v["TIMEPER"].map(TIMEPER_2024).fillna("unpopulated")
     return v
 
 
-def _mode(series):
-    """Modal value and its share. Returns (value, share, n)."""
+def _to_75(series):
     s = series.dropna()
     if not len(s):
-        return (None, np.nan, 0)
-    c = Counter(s)
-    val, k = c.most_common(1)[0]
-    return (val, k / len(s), len(s))
+        return "", 0
+    vc = s.value_counts(normalize=True)
+    keep, run = [], 0.0
+    for val, sh in vc.items():
+        keep.append((val, sh))
+        run += sh
+        if run >= 0.75:
+            break
+    numeric = pd.api.types.is_numeric_dtype(s)
+    fmt = (lambda x: "%d" % x) if numeric else str
+    return "; ".join("%s %.2f" % (fmt(a), b) for a, b in keep), len(keep)
 
 
-def profile(hh, rule, era, basis, error_rows, gather, v, n_cases_flagged):
-    """One profile row: what the errors this rule catches are about, who caused
-    them, whether they close at the desk, and whether a pre-authorization review
-    could reach them. All shares are variance-level except n_error_cases."""
-    vi = gather(error_rows)
-    sub = v.iloc[vi]
-    el, el_share, n_var = _mode(sub["ELEMENT"])
-    nat, nat_share, _ = _mode(sub["NATURE"])
-    n = max(n_var, 1)
-    row = dict(hh=hh, rule=rule, era=era, basis=basis,
-               n_cases_flagged=n_cases_flagged,
-               n_error_cases=int(len(error_rows)), n_variances=n_var,
-               mode_element=el, mode_element_share=el_share,
-               mode_nature=nat, mode_nature_share=nat_share)
-    for col, vals in (("agency_b", ("agency", "client", "third_party",
-                                    "other", "UNDOCUMENTED", "unknown")),
-                      ("timeper_b", ("before_action", "at_action", "after_action",
-                                     "undetermined")),
-                      ("findg_b", ("overissuance", "underissuance", "ineligible"))):
-        cnt = sub[col].value_counts()
-        for val in vals:
-            row["%s_%s" % (col[:-2], val)] = int(cnt.get(val, 0))
-    row["n_desk_closable"] = int(sub["desk_closable"].sum()) if n_var else 0
-    row["n_catchable_at_action"] = int(sub["catchable_at_action"].sum()) if n_var else 0
-    row["share_agency"] = row["agency_agency"] / n
-    row["share_desk_closable"] = row["n_desk_closable"] / n
-    row["share_catchable_at_action"] = row["n_catchable_at_action"] / n
-    row["amterr_total"] = float(sub["AMTERR"].fillna(0).sum())
-    row["amount_total"] = float(sub["AMOUNT"].fillna(0).sum())
-    # Review mode. Pre-authorization work needs all three: the error existed at
-    # or before the agency's action, the evidence is in the case record, and the
-    # agency caused it. Anything else is post-authorization fieldwork.
-    pre = (sub["catchable_at_action"] & sub["desk_closable"] &
-           (sub["agency_b"] == "agency")).sum() if n_var else 0
-    row["n_pre_auth"] = int(pre)
-    row["share_pre_auth"] = pre / n
-    row["review_mode"] = ("insufficient" if n_var < 5 else
-                          "pre_authorization" if pre / n >= 0.5 else
-                          "post_authorization" if pre / n < 0.25 else "mixed")
-    return row
+def characterize(hh, rule, era, rows, gather, v, n_flagged, over, under, other):
+    """Descriptive fields for one rule, each share with its Wilson interval.
+    No categories, no verdicts: the state decides which rules suit it."""
+    sub = v.iloc[gather(rows)]
+    n = len(sub)
+    r = dict(hh=hh, rule=rule, era=era, n_cases_flagged=n_flagged,
+             n_error_cases=int(len(rows)), n_variances=n)
+
+    def share(mask, denom_mask=None, name=None):
+        d = sub if denom_mask is None else sub[denom_mask]
+        nd = len(d)
+        k = int(mask[d.index].sum()) if nd else 0
+        lo, hi = wilson(k, nd)
+        r["n_" + name] = k
+        r["denom_" + name] = nd
+        r[name] = k / nd if nd else np.nan
+        r[name + "_lo"], r[name + "_hi"] = lo, hi
+
+    for g in ELEMENT_GROUPS:
+        share(sub["element_group"] == g, name="elem_" + g.replace(" ", "_"))
+    for g in NATURE_GROUPS:
+        share(sub["nature_group"] == g, name="nat_" + g.split(",")[0].replace(" ", "_"))
+    kt = sub["timeper_b"] != "unpopulated"
+    for code, nm in (("at_action", "at_agency_action"),
+                     ("before_action", "before_agency_action"),
+                     ("after_action", "after_agency_action")):
+        share(sub["timeper_b"] == code, kt, "timing_" + nm)
+    kc = sub["cause"] != "unpopulated"
+    for c in CAUSES:
+        share(sub["cause"] == c, kc, "cause_" + c)
+    kd = sub["discov_b"] != "unpopulated"
+    share(sub["discov_b"] == "case_record", kd, "found_in_case_record")
+
+    r["elements_to_75"], r["n_elements_to_75"] = _to_75(sub["ELEMENT"])
+    r["natures_to_75"], r["n_natures_to_75"] = _to_75(sub["NATURE"])
+    r["element_groups_to_75"], _ = _to_75(sub["element_group"])
+    r["nature_groups_to_75"], _ = _to_75(sub["nature_group"])
+
+    tot = over + under + other
+    r["n_cases_overissuance"], r["n_cases_underissuance"] = over, under
+    r["n_cases_other_error"] = other
+    # direction is case-level, so its denominator is cases with a directional
+    # status, not variances; named the same way so the field-level code is uniform
+    r["denom_share_overissuance"] = tot
+    r["share_overissuance"] = over / tot if tot else np.nan
+    lo, hi = wilson(over, tot)
+    r["share_overissuance_lo"], r["share_overissuance_hi"] = lo, hi
+    r["share_underissuance"] = under / tot if tot else np.nan
+    r["amterr_total"] = float(sub["AMTERR"].fillna(0).sum())
+    return r
 
 
-def promotion_report(prof, dep, path):
-    """The three criteria Eric set: concentration, era-stability, discrimination."""
-    nat = prof[prof.basis == "national"]
-    tr = nat[nat.era == "train_2022_23"].set_index(["hh", "rule"])
-    te = nat[nat.era == "test_2024"].set_index(["hh", "rule"])
+# fields carried into the field-level evidence
+EVID = ([("elem_" + g.replace(" ", "_"), g) for g in ELEMENT_GROUPS[:6]] +
+        [("nat_" + g.split(",")[0].replace(" ", "_"), g) for g in NATURE_GROUPS[:5]] +
+        [("timing_at_agency_action", "arose at the agency's action"),
+         ("timing_after_agency_action", "arose after the agency's action"),
+         ("cause_agency", "coded agency-caused"),
+         ("cause_client", "coded client-caused"),
+         ("found_in_case_record", "surfaced from the case record"),
+         ("share_overissuance", "overissuance (case level)")])
+
+
+def reliability(df, col, minn=20):
+    """Share of the spread across rules that is real between-rule difference
+    rather than sampling error. This is the question a state has: does this number
+    tell me something about THIS rule, or is it noise?"""
+    d = df[(df["denom_" + col] >= minn)] if ("denom_" + col) in df else df
+    p = d[col].dropna()
+    if len(p) < 10:
+        return np.nan, len(p)
+    nn = d.loc[p.index, "denom_" + col] if ("denom_" + col) in d else np.nan
+    v_obs = p.var(ddof=1)
+    v_samp = float((p * (1 - p) / nn).mean())
+    return (max(0.0, v_obs - v_samp) / v_obs if v_obs > 0 else np.nan), len(p)
+
+
+def mutual_info(rule_id, lab, n_rules, n_lab):
+    c = np.bincount(rule_id * n_lab + lab, minlength=n_rules * n_lab
+                    ).reshape(n_rules, n_lab).astype(float)
+    N = c.sum()
+    if N == 0:
+        return 0.0
+    a, b = c.sum(1, keepdims=True), c.sum(0, keepdims=True)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        t = c / N * np.log((c * N) / (a * b))
+    return float(np.nansum(t))
+
+
+def entropy(counts):
+    p = counts / counts.sum()
+    p = p[p > 0]
+    return float(-(p * np.log(p)).sum())
+
+
+def field_evidence(prof, v, rules_vi, state_of_var, path, dep, reps=40, seed=11):
+    """Evidence about the FIELDS, not verdicts about individual rules.
+
+    Three things a state's analyst should be able to check before trusting a
+    column: does it carry rule-level signal (reliability), does the same story
+    appear in a different set of states (split-half over states, against the
+    sampling floor), and does knowing the rule tell you anything about the error
+    at all (mutual information against a permutation null)."""
+    rng = np.random.default_rng(seed)
+    allp = prof[prof.era == "all_2022_24"].reset_index(drop=True)
+    tr = prof[prof.era == "train_2022_23"].set_index(["hh", "rule"])
+    te = prof[prof.era == "test_2024"].set_index(["hh", "rule"])
+    L = []
+
+    def add(*x):
+        L.extend(x)
+
+    add("# Which characterization fields carry signal", "",
+        "Fields describing what each rule finds, so a state can judge for itself",
+        "whether a rule is worth using given what it can catch and fix. Nothing",
+        "here sorts rules into categories; that judgement belongs to the state.",
+        "", "Every share is reported with a Wilson interval in",
+        "`rule_characterization.csv`. A share on 20 variances and a share on 400",
+        "are different objects and the interval is what says so.", "",
+        "Rules characterized: %d, over %d deployed instances in %d lists."
+        % (len(allp), len(dep), dep.groupby(["state", "budget"]).ngroups), "")
+
+    add("## Code coverage on error-case variances (FY2024)", "")
+    t = v[v.fiscal_year == TEST_YEAR]
+    for col, lab in (("nature_group", "NATURE"), ("cause", "AGENCY"),
+                     ("timeper_b", "TIMEPER"), ("discov_b", "DISCOV")):
+        bad = t[col].isin(["unpopulated", "UNMAPPED"]).mean()
+        add("- %-8s populated and mapped: %.3f" % (lab, 1 - bad))
+    add("", "National mix on FY2024 error-case variances, so a rule's share reads "
+        "as lift:", "")
+    for col, groups in (("element_group", ELEMENT_GROUPS),
+                        ("nature_group", NATURE_GROUPS)):
+        m = t[col].value_counts(normalize=True)
+        for g in groups:
+            if g in m and m[g] >= 0.004:
+                add("- %-36s %.3f" % (g, m[g]))
+        add("")
+    kt = t[t.timeper_b != "unpopulated"]
+    add("- of variances reporting a timing: %.3f at the agency's action, %.3f "
+        "before, %.3f after"
+        % ((kt.timeper_b == "at_action").mean(), (kt.timeper_b == "before_action").mean(),
+           (kt.timeper_b == "after_action").mean()),
+        "- cause: %s"
+        % ", ".join("%s %.3f" % (c, (t.cause == c).mean()) for c in CAUSES), "")
+
+    # ---- split-half over states, against the sampling floor
+    states = np.unique(state_of_var[~np.isnan(state_of_var)])
+    obs = {c: [] for c, _ in EVID}
+    exp = {c: [] for c, _ in EVID}
+    num = {c: None for c, _ in EVID}
+    # numerator masks over the variance table, once
+    masks = {}
+    for c, _ in EVID:
+        if c.startswith("elem_"):
+            g = c[5:].replace("_", " ")
+            masks[c] = ((v["element_group"] == g).to_numpy(),
+                        np.ones(len(v), bool))
+        elif c.startswith("nat_"):
+            g = [x for x in NATURE_GROUPS
+                 if x.split(",")[0].replace(" ", "_") == c[4:]][0]
+            masks[c] = ((v["nature_group"] == g).to_numpy(), np.ones(len(v), bool))
+        elif c.startswith("timing_"):
+            code = {"timing_at_agency_action": "at_action",
+                    "timing_after_agency_action": "after_action"}[c]
+            d = (v["timeper_b"] != "unpopulated").to_numpy()
+            masks[c] = ((v["timeper_b"] == code).to_numpy(), d)
+        elif c.startswith("cause_"):
+            d = (v["cause"] != "unpopulated").to_numpy()
+            masks[c] = ((v["cause"] == c[6:]).to_numpy(), d)
+        elif c == "found_in_case_record":
+            d = (v["discov_b"] != "unpopulated").to_numpy()
+            masks[c] = ((v["discov_b"] == "case_record").to_numpy(), d)
+        else:
+            masks[c] = (None, None)
+
+    MINH = 20
+    for rep in range(reps):
+        half = set(rng.choice(states, size=len(states) // 2, replace=False).tolist())
+        inA = np.isin(state_of_var, list(half))
+        for c, _ in EVID:
+            nm, dm = masks[c]
+            if nm is None:
+                continue
+            for vi in rules_vi:
+                if vi.size < 2 * MINH:
+                    continue
+                a = vi[inA[vi]]
+                b = vi[~inA[vi]]
+                da, db = int(dm[a].sum()), int(dm[b].sum())
+                if da < MINH or db < MINH:
+                    continue
+                ka, kb = int(nm[a].sum()), int(nm[b].sum())
+                pa, pb = ka / da, kb / db
+                pp = (ka + kb) / (da + db)
+                obs[c].append(abs(pa - pb))
+                exp[c].append(math.sqrt(2 / math.pi) *
+                              math.sqrt(max(pp * (1 - pp), 0) * (1 / da + 1 / db)))
+
+    add("## Per field: does it carry rule-level signal, and does it travel?", "",
+        "Reliability is the share of the spread across rules that is real",
+        "between-rule difference rather than sampling error. The split-half columns",
+        "compare the same rule computed on two random halves of the 49 states",
+        "against the difference sampling alone would produce; a ratio near 1 means",
+        "the field is as stable as its support allows.", "",
+        "| field | median share | 10th-90th | reliability | split-half obs | floor | ratio |",
+        "|---|---|---|---|---|---|---|")
+    for c, lab in EVID:
+        if c not in allp:
+            continue
+        s = allp[c].dropna()
+        if not len(s):
+            continue
+        rel, nrel = reliability(allp, c)
+        o = np.median(obs[c]) if obs[c] else np.nan
+        e = np.median(exp[c]) if exp[c] else np.nan
+        add("| %s | %.3f | %.3f-%.3f | %s | %s | %s | %s |"
+            % (lab, s.median(), s.quantile(.1), s.quantile(.9),
+               "%.2f" % rel if rel == rel else "n/a",
+               "%.3f" % o if o == o else "n/a",
+               "%.3f" % e if e == e else "n/a",
+               "%.2f" % (o / e) if (o == o and e == e and e > 0) else "n/a"))
+    add("")
+
+    # ---- era drift, same floor logic
     both = tr.join(te, lsuffix="_tr", rsuffix="_te", how="inner")
-    MIN = 5   # a rule characterised off fewer variances than this is not characterised
-    ok = both[(both.n_variances_tr >= MIN) & (both.n_variances_te >= MIN)]
+    add("## Era drift, FY2022-23 against FY2024", "",
+        "| field | median abs difference | sampling floor | ratio |",
+        "|---|---|---|---|")
+    for c, lab in EVID:
+        if (c + "_tr") not in both or ("denom_" + c + "_tr") not in both:
+            continue
+        d = both[[c + "_tr", c + "_te", "denom_" + c + "_tr", "denom_" + c + "_te"]].dropna()
+        d = d[(d["denom_" + c + "_tr"] >= MINH) & (d["denom_" + c + "_te"] >= MINH)]
+        if len(d) < 10:
+            continue
+        o = float((d[c + "_tr"] - d[c + "_te"]).abs().median())
+        pp = ((d[c + "_tr"] * d["denom_" + c + "_tr"] + d[c + "_te"] * d["denom_" + c + "_te"]) /
+              (d["denom_" + c + "_tr"] + d["denom_" + c + "_te"]))
+        e = float((np.sqrt(2 / np.pi) * np.sqrt(pp * (1 - pp) *
+                   (1 / d["denom_" + c + "_tr"] + 1 / d["denom_" + c + "_te"]))).median())
+        add("| %s | %.3f | %.3f | %.2f |" % (lab, o, e, o / e if e > 0 else np.nan))
+    add("")
 
-    lines = ["# Per-rule error profiles: do they clear the promotion bar?", "",
-             "Generated by `methods/rule_error_profiles.py`. Every tabulation is",
-             "variance-level: a case carries up to nine variances, and a case also",
-             "trips several rules, so per-rule counts are not a partition of the",
-             "flagged total.", "",
-             "Rules profiled: %d. Both eras with at least %d variances: %d."
-             % (len(both), MIN, len(ok)), ""]
+    # ---- does the rule tell you anything at all
+    add("## Does knowing the rule tell you anything about the error?", "")
+    for col, groups, lab in (("element_group", ELEMENT_GROUPS, "element group"),
+                             ("nature_group", NATURE_GROUPS, "nature group")):
+        codes = {g: i for i, g in enumerate(groups)}
+        lab_arr = v[col].map(codes).fillna(len(groups)).astype(int).to_numpy()
+        G = len(groups) + 1
+        rid, idx = [], []
+        for i, vi in enumerate(rules_vi):
+            if vi.size:
+                rid.append(np.full(vi.size, i))
+                idx.append(vi)
+        rid = np.concatenate(rid)
+        idx = np.concatenate(idx)
+        lab_r = lab_arr[idx]
+        mi = mutual_info(rid, lab_r, len(rules_vi), G)
+        hu = entropy(np.bincount(rid, minlength=len(rules_vi)).astype(float))
+        hv = entropy(np.bincount(lab_r, minlength=G).astype(float))
+        nmi = mi / math.sqrt(hu * hv) if hu > 0 and hv > 0 else np.nan
+        null = []
+        for _ in range(60):
+            null.append(mutual_info(rid, rng.permutation(lab_r), len(rules_vi), G))
+        null = np.array(null)
+        add("- %s: MI %.4f nats, NMI %.4f; permutation null %.4f +/- %.4f, "
+            "so observed is %.1f sd above chance"
+            % (lab, mi, nmi, null.mean(), null.std(),
+               (mi - null.mean()) / null.std() if null.std() > 0 else np.nan))
+    add("", "(A case can trip several rules, so the units here are (rule, variance)",
+        "pairs rather than a partition. The permutation null has the same",
+        "structure, so the comparison holds.)", "")
 
-    # 1. concentration
-    lines += ["## 1. Concentration: does the mode element dominate a rule's errors?", ""]
-    for era, lab in (("_te", "FY2024"), ("_tr", "FY2022-23")):
-        s = ok["mode_element_share" + era]
-        lines.append("- %s: median top-element share %.3f, quartiles %.3f / %.3f, "
-                     "share of rules above 0.50: %.3f"
-                     % (lab, s.median(), s.quantile(.25), s.quantile(.75),
-                        (s > 0.5).mean()))
-    lines.append("")
-
-    # 2. era-stability
-    agree = (ok["mode_element_tr"] == ok["mode_element_te"])
-    lines += ["## 2. Era-stability: does the FY2022-23 profile describe FY2024?", "",
-              "This is the real test. If a rule's mode element flips between eras,",
-              "the column is a training-set artifact and shipping it would mislead.", "",
-              "- mode element agrees across eras: %d of %d rules (%.3f)"
-              % (agree.sum(), len(ok), agree.mean())]
-    if len(ok):
-        base = ok["mode_element_te"].value_counts(normalize=True)
-        lines.append("- chance agreement if the mode were drawn from the FY2024 "
-                     "marginal: %.3f" % (base ** 2).sum())
-        for col, lab in (("share_agency", "agency-caused share"),
-                         ("share_desk_closable", "desk-closable share"),
-                         ("share_catchable_at_action", "catchable-at-action share"),
-                         ("share_pre_auth", "pre-authorization share")):
-            r = ok[col + "_tr"].corr(ok[col + "_te"])
-            lines.append("- %s, correlation across eras: %.3f" % (lab, r))
-    lines.append("")
-
-    # 3. discrimination
-    lines += ["## 3. Discrimination: does the profile vary enough across rules?", ""]
-    for col, lab in (("share_agency", "agency-caused share"),
-                     ("share_desk_closable", "desk-closable share"),
-                     ("share_catchable_at_action", "catchable-at-action share"),
-                     ("share_pre_auth", "pre-authorization share")):
-        s = ok[col + "_te"]
-        lines.append("- %s on FY2024: median %.3f, 10th-90th %.3f to %.3f, sd %.3f"
-                     % (lab, s.median(), s.quantile(.1), s.quantile(.9), s.std()))
-    if len(ok):
-        lines.append("")
-        lines.append("Review-mode assignment on FY2024 (national basis):")
-        for k, n in ok["review_mode_te"].value_counts().items():
-            lines.append("- %s: %d rules" % (k, n))
-        lines.append("")
-        lines.append("Distinct mode elements across rules: %d"
-                     % ok["mode_element_te"].nunique())
-    lines.append("")
-
-    dep_prof = prof[prof.basis == "deployed"]
-    lines += ["## Deployed basis (what the lists actually pull on FY2024)", "",
-              "- deployed rule instances: %d across %d state-and-budget lists"
-              % (len(dep), dep.groupby(["state", "budget"]).ngroups),
-              "- distinct rules: %d" % len(dep_prof),
-              "- rules with at least %d variances: %d"
-              % (MIN, int((dep_prof.n_variances >= MIN).sum())),
-              "- median variances per deployed rule: %.1f"
-              % dep_prof.n_variances.median(),
-              "- over/under on the deployed basis: %d overissuance, %d "
-              "underissuance, %d ineligible variances"
-              % (dep_prof.findg_overissuance.sum(),
-                 dep_prof.findg_underissuance.sum(),
-                 dep_prof.findg_ineligible.sum())]
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write("\n".join(lines) + "\n")
-    print("\n".join(lines))
+    add("## Support", "",
+        "- median variances per rule, FY2022-24 pooled: %.0f" % allp.n_variances.median(),
+        "- rules with at least 20 variances: %d of %d"
+        % (int((allp.n_variances >= 20).sum()), len(allp)),
+        "- median error cases per rule: %.0f" % allp.n_error_cases.median(),
+        "- direction, case level: %d overissuance, %d underissuance, %d other_error"
+        % (allp.n_cases_overissuance.sum(), allp.n_cases_underissuance.sum(),
+           allp.n_cases_other_error.sum()))
+    open(path, "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
+    print("\n".join(L))
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", type=int, default=3,
-                    help="run stages 1..N (default 3, the whole build)")
-    ap.add_argument("--states", default="",
-                    help="comma-separated state names; default all in the scorecard")
+    ap.add_argument("--stage", type=int, default=3)
+    ap.add_argument("--states", default="")
     args = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
 
-    meta = json.load(open(os.path.join(BENCH, "holdout_metrics.json"),
-                          encoding="utf-8"))
+    meta = json.load(open(os.path.join(BENCH, "holdout_metrics.json"), encoding="utf-8"))
     expect = {(r["state"], int(r["budget_pct"])): r for r in meta["records"]}
     states = ([s.strip() for s in args.states.split(",") if s.strip()]
               or sorted({s for s, _ in expect}))
@@ -421,90 +668,74 @@ def main():
     report_checks(chk)
     chk.to_csv(os.path.join(OUT, "stage1_checks.csv"), index=False)
     dep.to_csv(os.path.join(OUT, "deployed_rules.csv"), index=False)
-    print("deployed rule instances: %d | distinct (stratum, rule): %d | flagged case rows: %d"
-          % (len(dep), dep.groupby(["hh", "rule"]).ngroups, len(flg)))
     if args.stage < 2:
         return
 
-    # -------------------------------------------------------------- stage 2
     v = load_variances(TRAIN_YEARS + [TEST_YEAR])
-    print("variance records loaded: %d (%s)"
-          % (len(v), ", ".join("%s: %d" % (y, int((v.fiscal_year == y).sum()))
-                               for y in TRAIN_YEARS + [TEST_YEAR])))
+    unmapped = v[v.nature_group == "UNMAPPED"]["NATURE"].unique()
+    print("variance records: %d | unmapped natures: %s"
+          % (len(v), sorted(int(x) for x in unmapped) or "none"))
 
-    # The frame's `state` column holds the state NAME; the QC files key on FIPS.
-    # additional_data/state_data.csv is the lookup (it carries a UTF-8 BOM).
     fips = pd.read_csv(os.path.join(ROOT, "additional_data", "state_data.csv"),
                        encoding="utf-8-sig")
     name2fips = dict(zip(fips["state"], fips["fips"].astype(float)))
     key = ["fips", "yrmonth", "hhldno"]
     dfk = df[["state_name", "yrmonth", "hhldno"]].copy()
     dfk["fips"] = dfk["state_name"].map(name2fips)
-    assert dfk["fips"].notna().all(), "unmapped state names: %s" % sorted(
-        set(dfk.loc[dfk["fips"].isna(), "state_name"]))
+    assert dfk["fips"].notna().all()
     dfk["frame_row"] = np.arange(len(df))
-    v = v.rename(columns={"STATE": "fips", "YRMONTH": "yrmonth",
-                          "HHLDNO": "hhldno"})
+    dfk["fiscal_year"] = df["fiscal_year"].values
+    v = v.rename(columns={"STATE": "fips", "YRMONTH": "yrmonth", "HHLDNO": "hhldno"})
     for c in key:
         dfk[c] = pd.to_numeric(dfk[c], errors="coerce")
         v[c] = pd.to_numeric(v[c], errors="coerce")
-    # only match within the same fiscal year, so a repeated household number in
-    # a later year cannot bind to an earlier frame row
-    dfk["fiscal_year"] = df["fiscal_year"].values
     v = v.merge(dfk[key + ["fiscal_year", "frame_row"]],
                 on=key + ["fiscal_year"], how="inner")
-    print("variance records matched to a frame row: %d" % len(v))
-    matched_cases = df.index.isin(v["frame_row"].unique())
-    err_rows = df["is_error"].to_numpy()
-    print("error cases in the frame with at least one matched variance: %d of %d"
-          % (int((matched_cases & err_rows).sum()), int(err_rows.sum())))
     v = v.sort_values("frame_row").reset_index(drop=True)
-    # start/stop offsets so a rule's variance rows are gathered without merging
+    print("variance records matched to a frame row: %d" % len(v))
     vrow = v["frame_row"].to_numpy()
     starts = np.searchsorted(vrow, np.arange(len(df)), side="left")
     stops = np.searchsorted(vrow, np.arange(len(df)), side="right")
 
-    def gather(frame_rows):
-        parts = [np.arange(starts[r], stops[r]) for r in frame_rows
-                 if stops[r] > starts[r]]
+    def gather(rows):
+        parts = [np.arange(starts[r], stops[r]) for r in rows if stops[r] > starts[r]]
         return np.concatenate(parts) if parts else np.empty(0, dtype=int)
 
-    # the distinct rules to profile, and the cases each one deploys against
     rules = dep[["hh", "rule"]].drop_duplicates().reset_index(drop=True)
-    deployed_rows = (flg.groupby(["hh", "rule"])["frame_row"]
-                     .apply(lambda s: np.unique(s.to_numpy())).to_dict())
-
     is_err = df["is_error"].to_numpy()
+    status = df["error_status"].to_numpy()
+    OVER = ("earned_overissuance", "unearned_overissuance")
     fy = df["fiscal_year"].to_numpy()
     hh_all = df["hh"].to_numpy()
-    era_mask = {"train_2022_23": np.isin(fy, TRAIN_YEARS),
-                "test_2024": fy == TEST_YEAR}
+    eras = {"all_2022_24": np.ones(len(df), bool),
+            "train_2022_23": np.isin(fy, TRAIN_YEARS),
+            "test_2024": fy == TEST_YEAR}
 
-    prof_rows = []
+    out, rules_vi = [], []
     for i, (hh, rule) in enumerate(rules.itertuples(index=False, name=None), 1):
         if i % 200 == 0:
-            print("  profiled %d / %d" % (i, len(rules)), flush=True)
+            print("  characterized %d / %d" % (i, len(rules)), flush=True)
         flag = np.asarray(df[FEATURES].eval(rule), dtype=bool) & (hh_all == hh)
-        # basis "national": the same rule on every national row of the era, so the
-        # two eras are computed the same way and are comparable
-        for era, m in era_mask.items():
+        for era, m in eras.items():
             rows = np.flatnonzero(flag & m & is_err)
-            prof_rows.append(profile(hh, rule, era, "national", rows, gather, v,
-                                     n_cases_flagged=int((flag & m).sum())))
-        # basis "deployed": the FY2024 cases the delivered lists actually pull
-        drows = deployed_rows.get((hh, rule), np.empty(0, dtype=int))
-        derr = drows[is_err[drows]] if drows.size else drows
-        prof_rows.append(profile(hh, rule, "test_2024", "deployed", derr, gather,
-                                 v, n_cases_flagged=int(drows.size)))
-    prof = pd.DataFrame(prof_rows)
+            st = status[rows]
+            o = int(np.isin(st, OVER).sum())
+            u = int((st == "underissuance").sum())
+            ot = int((st == "other_error").sum())
+            rec = characterize(hh, rule, era, rows, gather, v,
+                               int((flag & m).sum()), o, u, ot)
+            out.append(rec)
+            if era == "all_2022_24":
+                rules_vi.append(gather(rows))
+    prof = pd.DataFrame(out)
     prof.to_csv(os.path.join(OUT, "rule_profiles.csv"), index=False)
-    print("wrote %d profile rows (%d rules x 2 eras + deployed basis)"
-          % (len(prof), len(rules)))
+    ship = prof[prof.era == "all_2022_24"].drop(columns=["era"])
+    ship.to_csv(os.path.join(OUT, "rule_characterization.csv"), index=False)
+    print("characterization sheet: %d rules, %d columns" % (len(ship), ship.shape[1]))
     if args.stage < 3:
         return
-
-    # -------------------------------------------------------------- stage 3
-    promotion_report(prof, dep, os.path.join(OUT, "promotion_criteria.md"))
+    field_evidence(prof, v, rules_vi, v["fips"].to_numpy(),
+                   os.path.join(OUT, "characterization.md"), dep)
 
 
 if __name__ == "__main__":
