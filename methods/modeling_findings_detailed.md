@@ -107,12 +107,12 @@ we learned is recoverable. Each points to its numbered section.
   cut grid-search waste; lessons deck started.
 - **07-09**: State-similarity program (fire-rate / IDF / policy / blended /
   NB definitions, per era) and the same-era transfer benchmark with the
-  honest LOO baseline (#12). Review-budget evaluation replaced floor-only
+  leave-one-out baseline (#12). Review-budget evaluation replaced floor-only
   reporting (#12). Senior-statistician critique (pipeline_critique_
   2026-07-09.md) prompted the pre-registered year-swap replication: 3 of 4
   selection claims replicated, subsample claim retired (#13).
 - **07-10**: Deployment-grade benchmark (train 2022-23, test 2024):
-  national_all is the honest default; same-era transfer advantage did not
+  national_all is the default; same-era transfer advantage did not
   survive; own-state mining is high-variance (#14). Four state-adaptation
   schemes tested. None beat the national ordering on the median (#9 note,
   #14). Contributing-rules analysis: unions are built by dozens of rules,
@@ -186,7 +186,7 @@ silent rewrites.
 > reward luck: rules that looked ~20% accurate came in around ~10% on fresh data.
 > The cure is to rank and filter on a cautious *lower* bound of each rule's precision
 > (the Wilson bound) instead of the raw number. That one change made our training
-> estimates roughly honest about held-out performance, and it will do the same for
+> estimates that track held-out performance, and it will do the same for
 > anyone mining rules this way.
 
 Thresholding thousands of mined rules on raw train precision selects for lucky
@@ -244,7 +244,7 @@ pre() could not run:
 - **Unlocked**: the any-error single model (pre's lasso matrix would be
   ~100+ GB), the other_error frame, 853k-rule head-to-heads, coverage-based +
   dominance dedup, checkpointed vocabularies, a 15-check regression test.
-- What it did NOT buy: more signal. Best honest per-rule hold-out precision by
+- What it did NOT buy: more signal. Best out-of-sample per-rule hold-out precision by
   frame: earned 0.31, underissuance 0.29, other_error 0.40, unearned 0.48.
 - **Engine head-to-head (2026-07-05/06, identical pipeline, 1000 trees/rounds
   each, any-error frame)**: xgboost + ranger is the best pair: mean precision
@@ -302,7 +302,7 @@ and selection:
   | 0.30 | 22.0% | 21.4% | 27.6% |
   | 0.35 | 10.9% | 12.9% | 15.4% |
 
-  Precision cost at the same floors: ~0.7-2pp. HONEST CAVEAT: at MATCHED
+  Precision cost at the same floors: ~0.7-2pp. CAVEAT: at MATCHED
   RECALL combined runs ~0.5-1pp below typed-only in both runs (at/near the
   noise band). So "combine" wins for a state operating at a fixed filter
   floor (the standard workflow) and roughly ties for a state targeting a
@@ -379,7 +379,7 @@ the dilution is mostly CORRECTABLE in order to keep the potential for greater re
   signature.
 - **1000 rounds @ z=2.33 lands on the same 0.20-floor operating point as 100
   rounds @ z=1.28 (55% recall @ 17% precision), with 2,026 vs 789 filtered
-  rules behind it.** Honest framing: the two recipes trace the same union
+  rules behind it.** Framing: the two recipes trace the same union
   frontier. The big pool's gain is rule inventory (substitutes for
   expert-driven removal) and per-rule guarantee stringency, not portfolio
   precision or reach. (Figure: presentation_figures/
@@ -549,7 +549,7 @@ recall by a wide margin at moderate precision (AZ: 86% of error dollars at
 it collapses to a handful of rules (LA and WA: 8 rules each). IMPORTANT
 CAVEAT: the 2023 test year sits BETWEEN the training years. Temporal
 interpolation flatters all options and own-mining most; the year-split
-extrapolation checks (below) are the honest forward-deployment expectation.
+extrapolation checks (below) are the forward-deployment expectation.
 Artifacts: methods/compare_state_options_v2/.
 
 **Same-era NEIGHBOR TRANSFER, the thin-state recipe (2026-07-06, Louisiana):**
@@ -667,7 +667,7 @@ the coarse split never loses, so it stays the default. NOT replicated:
 *Artifacts: methods/compare_hh_strata_v2/yearswap_train2223_test24/
 (strata_summary.csv, strata_sweeps.png; methods/run_strata_yearswap.R).*
 
-## 12. Cross-state transfer vs honest national baselines (2026-07-09)
+## 12. Cross-state transfer vs like-for-like national baselines (2026-07-09)
 
 > **Takeaway: about our pipeline (now superseded).** In a same-year test, pools of a
 > few "similar" states looked competitive with the full national pool at moderate
@@ -683,7 +683,7 @@ descending train-LCB order until the budget fills). Donor pools: top-5
 neighbors under four similarity definitions: fire-rate cosine (sqrt),
 inverse-frequency-weighted cosine (IDF), naive-Bayes/KL over rule-firing
 profiles (NB), QC-derived policy vectors, plus a leave-one-state-out
-NATIONAL pool (all 48 other states, same any-error recipe: the honest
+NATIONAL pool (all 48 other states, same any-error recipe: the like-for-like
 version of the national baseline).
 
 Median delivered precision / share of error dollars across the 12 states:
@@ -729,10 +729,10 @@ survive. The national pool leads at both budgets on 2024, and with an
 unseen test year the in-sample-flattering concern also dissolves. Kept as
 originally written for the record)*: the production national shortlist
 remains the best single list at small budgets, but numbers quoted to a
-state from in-sample national training overstate honest performance by up
+state from in-sample national training overstate held-out performance by up
 to the as-is-vs-LOO gap; at moderate budgets (~10%), similarity-picked
 donor pools (fire or NB) are competitive with any national option and are
-the honest choice where a state's own data must stay out of training.
+the right choice where a state's own data must stay out of training.
 
 *Artifacts: methods/state_similarity_v2/transfer_benchmark/ (benchmark +
 budgeted_menu_results.csv); methods/state_similarity_v2/similarity_*_2022_2024.csv
@@ -741,7 +741,7 @@ methods/budgeted_transfer_menu_v2.R; overnight_nb_loo_run.log.*
 
 ## 13. Pre-registered year-swap replication of the model-selection studies (2026-07-09)
 
-> **Takeaway: about our pipeline (and our honesty check on it).** Every modeling
+> **Takeaway: about our pipeline (and the check we ran on it).** Every modeling
 > choice above had been judged on one test year (2023). We wrote our predictions down
 > in advance and re-ran the four big ones on a fresh year (2024): three held up, and
 > one ("low subsampling helps") did not and was retired. The value here is the
@@ -802,7 +802,7 @@ the big pool's precision deficit at matched stringency only 0.020-0.022 and
 +7pp recall at the floor.
 
 Net: three of the four selection findings replicate on a year that never
-judged any design decision, and the procedure produced one honest
+judged any design decision, and the procedure produced one
 retraction (Claim 2): evidence the selection methodology was not
 2023-luck, and that the pre-registration has teeth. No production setting
 changes.
@@ -833,7 +833,7 @@ filled in descending train-LCB order. Approaches: the target's OWN 2022-23
 data (own_state), a 5-neighbor donor pool picked by 2022-23 NB/KL
 similarity (transfer_nb), the 48-other-state national pool
 (national_loo), and the ALL-state national pool including the target
-(national_all, honest here because the test year is unseen, and the
+(national_all, usable here because the test year is unseen, and the
 list a state deploying "national rules" actually receives). Any-error
 recipe throughout; 12 target states.
 
@@ -879,7 +879,7 @@ Median delivered precision / share of the state's 2024 error dollars:
   everywhere else it is second or third.
 
 Deployment guidance: quote states the national_all numbers (national list,
-time-shifted test) as the honest default; offer own-state mining only where
+time-shifted test) as the default; offer own-state mining only where
 the state's own held-out year confirms it (it cannot be assumed: a
 mid-size state like Washington can fail below base rate); keep NB transfer
 as the fallback for states whose own mining fails and who want a smaller,
@@ -952,7 +952,7 @@ methods/count_contributing_rules_v2.R -> contributing_rules_summary.csv.*
 ## 16. Blending state and national rules on one confidence scale (2026-07-10)
 
 > **Takeaway: about our pipeline (the current default deliverable).** Put each
-> state's own mined rules and the national rules on one honest confidence scale (the
+> state's own mined rules and the national rules on one comparable confidence scale (the
 > 99% bound) and let them interleave. This "blend" is the recipe we now ship: better
 > at a 5% budget, about even at 10% (0.262 vs 0.270 precision), and no case-by-case
 > decision to defend. Its one blind spot (a national rule's bound says nothing about
@@ -981,7 +981,7 @@ selects its winner ON the test year; the blend needs no pick.
   deploy at least one state rule at 10%.
 - **The blind spot is transfer asymmetry**: a national rule's LCB is a
   tight bound on its precision in the NATIONAL mix and says nothing
-  about transfer to this state; the state rule's LCB honestly prices its
+  about transfer to this state; the state rule's LCB prices its
   noise. The scale therefore over-trusts national rules exactly where
   the national mix fits worst: New Jersey's own rules never enter (their
   small-sample bounds cannot beat 45k tight national bounds) and the
@@ -992,7 +992,7 @@ Deployment guidance: the BLEND is the default shipped recipe (better at
 5%, no worse at 10%, no regime decision to defend); the own-pool list is
 kept as a FALLBACK, activated only where the state's own internal
 validation shows the blend under-performing. In low-visibility states
-this is the only honest arbiter. New Jersey's public files show 43% of
+this is the only arbiter that settles it. New Jersey's public files show 43% of
 its error cases (section 10), so the public data cannot establish which
 option truly performs better there; the state's internal check decides.
 
@@ -1007,7 +1007,7 @@ frozen_list_results.csv, frozen_own_list_results.csv.*
 > pool tripled the candidate rules but *lowered* delivered precision, and three
 > attempts to rescue it failed. The reason is general enough to remember: when you must
 > pick only 20-50 rules to fit a review budget, a bigger pool mostly adds small-sample,
-> lucky-looking rules that crowd out the honest ones. The filter-floor advantage of
+> lucky-looking rules that crowd out the genuinely precise ones. The filter-floor advantage of
 > pooling (section 3) is real but does not survive a tight budget.
 
 Mining the delivery pools on the five frames (four typed + any_error) tripled
@@ -1031,7 +1031,7 @@ failed to put it at-or-above the any-error baseline at the 5% budget:
 The typed+pooled union's filter-floor advantage (section 3) is real but does
 not survive capacity-constrained selection: forced to CHOOSE ~20-50 rules on
 a noisy statistic, the enlarged pool's extra small-support, high-raw-
-precision candidates displace honest rules at the top. Ten five-frame lists
+precision candidates displace genuinely precise rules at the top. Ten five-frame lists
 were briefly published (2.1.x) and replaced in v2.2.0.
 
 *Artifacts: methods/state_similarity_v2/transfer_benchmark_train2223_test24/
@@ -1454,7 +1454,7 @@ The median precision row moves from 0.3345 to 0.3471 at the 5% budget, and that
 apparent gain is an artifact of the median landing on a different state. The lift row
 shows the same trap from the other side: at the 10% budget the 5% rate has the higher
 median precision (0.2770 against 0.2753) but the lower median lift (2.09x against
-2.15x). The within-state difference is the honest statistic, and **its median is
+2.15x). The within-state difference is the statistic that settles it, and **its median is
 exactly 0.0000 at both budgets**, for precision and for dollar recall alike. At the 5% budget fdr05f
 was better in 1 state and worse in 0; at the 10% budget better in 1 and worse in 1.
 

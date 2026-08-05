@@ -87,7 +87,7 @@ to each experiment) is kept in the companion
 diagnosing the winner's curse and adopting the confidence-bound filter (sections 1
 and 5), built and tuned the v2 pipeline and its engines and strata (2-4, 11), then
 spent the deployment phase (9, 12, 14-22) working out what to actually hand a state,
-pre-registering replications along the way to keep ourselves honest.
+pre-registering replications along the way.
 
 ## 1. The winner's curse, diagnosed and addressed
 
@@ -96,7 +96,7 @@ pre-registering replications along the way to keep ourselves honest.
 > reward luck: rules that looked ~20% accurate came in around ~10% on fresh data.
 > The cure is to rank and filter on a cautious *lower* bound of each rule's precision
 > (the Wilson bound) instead of the raw number. That one change made our training
-> estimates roughly honest about held-out performance, and it will do the same for
+> estimates that track held-out performance, and it will do the same for
 > anyone mining rules this way.
 
 Here is the evidence. Take the rules whose training precision was at least 0.20 and
@@ -105,7 +105,8 @@ what the training number promised. We then checked *why*, and it is almost entir
 selection luck, not the model overfitting or the world changing:
 
 - Rules examined *without* any precision filter show almost no train-to-holdout gap
-  (median gap -0.003, correlation 0.83). The training estimate is honest until you
+  (median gap -0.003, correlation 0.83). The training estimate tracks held-out
+performance until you
   start selecting on it.
 - Select on the *holdout* instead, and the bias flips: those rules have median
   *training* precision 0.116. That symmetry is textbook regression to the mean.
@@ -115,12 +116,13 @@ selection luck, not the model overfitting or the world changing:
 The fix is to rank and filter on the one-sided Wilson lower confidence bound of a
 rule's training precision (a cautious "at least this good" figure) rather than the
 raw estimate. At matched deployed precision (~0.20) that catches 12.8% of all errors
-versus 8.2% for a raw threshold, and it makes the training number roughly honest
+versus 8.2% for a raw threshold, and it brings the training number close to what
+held-out data shows
 about what the holdout will show.
 
 One practical corollary for setting a cutoff: even after the bound weeds out the
 junk, a floor written on *raw* precision still overpromises (a raw 0.40 floor
-delivered 0.33), while a floor written on the *bound itself* reads honestly (a 0.30
+delivered 0.33), while a floor written on the *bound itself* delivers what it says (a 0.30
 bound-floor delivered 0.38). Set your floor on the bound.
 
 *Full numbers and the calibration figure: [detailed record](modeling_findings_detailed.md#1-the-winners-curse-diagnosed-and-addressed), §1.*
@@ -148,7 +150,7 @@ The head-to-head, everything else held equal:
   `other_error` frame, 853k-rule comparisons, coverage-and-dominance de-duplication,
   and a regression test.
 
-What the switch did *not* buy is more signal: the best honest per-rule holdout
+What the switch did *not* buy is more signal: the best out-of-sample per-rule holdout
 precision by frame still tops out around 0.31-0.48. And when we later raced the tree
 engines directly (xgboost+ranger vs bagged trees + ranger vs single engines), the
 best pair only edged the alternatives by about a point of precision. The lesson: the
@@ -189,7 +191,7 @@ Scored against *all* 2023 errors, with identical machinery:
 
   (dollar recall at the 0.20 floor: 71.2% / 69.7% / 75.3%.)
 
-The honest caveat: that floor-level gain is almost mechanical (adding rules can only
+One caveat: that floor-level gain is almost mechanical (adding rules can only
 grow the union), and at *matched recall* the combined set runs about half a point
 *below* typed-only, inside the noise. So combining clearly wins for a state working
 at a fixed floor (the usual workflow) and roughly ties for one targeting a precision
@@ -214,7 +216,7 @@ matched recall:
 - **Slow learning, low row-sampling.** A slow learning rate helped (eta 0.02 gave
   0.217 precision vs 0.212 at eta 0.1), and a low row-sample beat a high one
   (subsample 0.20 gave 0.218 vs 0.208 at 0.75); within 0.15-0.30 the choice does not
-  matter, so production uses 0.20. (Honest footnote: the "low beats high" edge did
+  matter, so production uses 0.20. (Footnote: the "low beats high" edge did
   *not* replicate on a later test year, see section 13, so treat 0.20 as "as good as
   anything," not proven best.)
 - **Deeper trees help the forest, not the booster.** Depth 5 beat depth 3 clearly for
@@ -417,7 +419,7 @@ both years the split never loses, so it stays the default. The one claim that di
 
 *Both studies and the year-swap: [detailed record](modeling_findings_detailed.md#11-household-size-stratification-split-but-split-coarsely), §11.*
 
-## 12. Cross-state transfer vs honest national baselines
+## 12. Cross-state transfer vs like-for-like national baselines
 
 > **Takeaway: about our pipeline (now superseded).** In a same-year test, pools of a
 > few "similar" states looked competitive with the full national pool at moderate
@@ -440,12 +442,12 @@ evaluate deployment at realistic review budgets (5-10% of caseload), not at abst
 precision floors. Several states that looked like total failures at fixed floors were
 fine under a budget; the failure was a floor artifact.
 
-*Full similarity definitions, the 12-state tables, and the honest-baseline
-discussion: [detailed record](modeling_findings_detailed.md#12-cross-state-transfer-vs-honest-national-baselines-2026-07-09), §12.*
+*Full similarity definitions, the 12-state tables, and the baseline
+discussion: [detailed record](modeling_findings_detailed.md#12-cross-state-transfer-vs-like-for-like-national-baselines-2026-07-09), §12.*
 
 ## 13. Pre-registered year-swap replication of the model-selection studies
 
-> **Takeaway: about our pipeline (and our honesty check on it).** Every modeling
+> **Takeaway: about our pipeline (and the check we ran on it).** Every modeling
 > choice above had been judged on one test year (2023). We wrote our predictions down
 > in advance and re-ran the four big ones on a fresh year (2024): three held up, and
 > one ("low subsampling helps") did not and was retired. The value here is the
@@ -468,7 +470,7 @@ choice:
 - **Big ensembles widen the menu, not the frontier:** replicated, with ~7x more rules
   at a nearly identical frontier.
 
-Three of four held, and the procedure produced one honest retraction. That is the
+Three of four held, and the procedure produced one retraction. That is the
 point: pre-committing to predictions is what separates a real effect from a lucky
 one. No production settings changed.
 
@@ -542,7 +544,7 @@ third of each state's list is unique to it, and only 8 rules serve 10 or more st
 ## 16. Blending state and national rules on one confidence scale
 
 > **Takeaway: about our pipeline (the current default deliverable).** Put each
-> state's own mined rules and the national rules on one honest confidence scale (the
+> state's own mined rules and the national rules on one comparable confidence scale (the
 > 99% bound) and let them interleave. This "blend" is the recipe we now ship: better
 > at a 5% budget, about even at 10% (0.262 vs 0.270 precision), and no case-by-case
 > decision to defend. Its one blind spot (a national rule's bound says nothing about
@@ -577,7 +579,7 @@ the own-pool list stays as a fallback, chosen by the state's internal validation
 > pool tripled the candidate rules but *lowered* delivered precision, and three
 > attempts to rescue it failed. The reason is general enough to remember: when you must
 > pick only 20-50 rules to fit a review budget, a bigger pool mostly adds small-sample,
-> lucky-looking rules that crowd out the honest ones. The filter-floor advantage of
+> lucky-looking rules that crowd out the genuinely precise ones. The filter-floor advantage of
 > pooling (section 3) is real but does not survive a tight budget.
 
 Adding the four typed frames to the delivery pool tripled the candidate rules
@@ -587,7 +589,7 @@ stringency closed the gap; collapsing near-duplicate rules helped but not enough
 shrinkage ranking of section 18 did not help either.
 
 An autopsy of the deployed rules showed the mechanism directly: the enlarged pool's
-extra small-support, high-raw-precision rules crowd out honest ones at the very top
+extra small-support, high-raw-precision rules crowd out genuinely precise ones at the very top
 of the list, exactly where a tight budget lives. The floor-level advantage of
 pooling (section 3) is real but does not survive capacity-constrained selection. Ten
 typed-frame lists were briefly shipped and then withdrawn.

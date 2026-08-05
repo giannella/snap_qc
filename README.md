@@ -91,7 +91,7 @@ The approach to ensemble size: mine a large candidate pool, then filter it stric
 
 ## Statistics and goal metrics
 
-The five-stage machinery is general purpose: for every rule it produces honest evidence, namely support, precision, confidence bounds, and provenance. What to *optimize* is a separate, user-chosen module: a **ranking statistic** paired with the **goal metric** it is judged by. Different goals need different statistics (a statistic that wins at one goal can lose at another, and we measured exactly that), so delivered files carry their pairing in the filename, and a new pairing is adopted only after it passes the same held-out-year validation as everything else.
+The five-stage machinery is general purpose: for every rule it produces the same evidence, namely support, precision, confidence bounds, and provenance. What to *optimize* is a separate, user-chosen module: a **ranking statistic** paired with the **goal metric** it is judged by. Different goals need different statistics (a statistic that wins at one goal can lose at another, and we measured exactly that), so delivered files carry their pairing in the filename, and a new pairing is adopted only after it passes the same held-out-year validation as everything else.
 
 | your goal | statistic | script | status |
 |---|---|:-:|---|
