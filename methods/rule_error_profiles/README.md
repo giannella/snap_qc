@@ -82,12 +82,22 @@ FY2022-24. All 543 clear 20 variances.
 
 ## Does each field carry signal?
 
-**Reliability** is the share of the spread across rules that is real between-rule
-difference rather than sampling error, which is the question a state has: does
-this number describe *this rule*, or is it noise? **Split-half over states**
-computes the same rule on two random halves of the 49 states and compares the
-observed difference to the difference sampling alone would produce; a ratio near 1
-means the field is as stable as its support allows.
+Three terms, defined once.
+
+- **Reliability**: the share of the spread across rules that is real difference
+  between rules rather than sampling error. 0 means the apparent differences are
+  entirely noise, 1 means entirely real. It answers "does this number describe
+  *this* rule?"
+- **Split-half over states**: split the 49 states at random into two halves,
+  compute the same rule's share on each, record the absolute gap, repeat over 40
+  splits. It answers "would a different set of states have told the same story?"
+- **Sampling floor**: the gap you would expect from that split if the rule's true
+  share were identical in both halves and only sampling differed. It is not zero.
+
+The **ratio** of observed gap to floor is what carries the meaning. Near 1, the
+field differs across halves of the country by exactly what noise predicts, so
+there is nothing to explain. Above 1, there is real between-state variation on top
+of noise.
 
 | field | median share | reliability | split-half obs | floor | ratio |
 |---|---|---|---|---|---|
@@ -146,18 +156,25 @@ draw and was.
 
 ## Does knowing the rule tell you anything at all?
 
-Mutual information between rule identity and the error's group, against a
-permutation null over 60 shuffles:
+Normalized mutual information runs from 0, when knowing the rule tells you nothing
+about the error's group, to 1, when it tells you everything. The null is what NMI
+would be if the two were unrelated, obtained by shuffling group labels across
+variances 60 times.
 
-| pairing | MI (nats) | NMI | null | distance above chance |
+| pairing | groups | NMI observed | NMI under the null | distance above null |
 |---|---|---|---|---|
-| rule and element group | 0.1360 | 0.0435 | 0.0064 | 985 sd |
-| rule and nature group | 0.0510 | 0.0159 | 0.0096 | 233 sd |
+| rule and element group | 7 | 0.0435 | 0.0020 | 985 sd |
+| rule and nature group | 10 | 0.0159 | 0.0096 | 233 sd |
 
-Knowing which rule flagged a case does tell you something about what the error is,
-decisively so against chance. The NMI is small in absolute terms, which is the
-honest reading: a rule shifts the distribution of error types, it does not
-determine it.
+The two right-hand columns answer different questions. The distance says the
+association is not chance, and it is large only because the null is tight: 259,958
+(rule, variance) pairs sit behind it, so a small association is easy to detect.
+**It is not an effect size.** The effect size is NMI, and 0.0435 on a 0-to-1 scale
+says a rule shifts the mix of error types well short of determining it.
+
+The magnitude a state actually uses is the spread across rules: earned-income
+share runs 0.03 to 0.43 between the 10th and 90th percentiles, and 0.00 to 0.70
+end to end, against a national mix of 0.33.
 
 A case trips several rules, so the units here are (rule, variance) pairs rather
 than a partition. The permutation null has the same structure, so the comparison

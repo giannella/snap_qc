@@ -2046,15 +2046,35 @@ change to the reconstruction rather than to the pipeline.
 ## 29. Characterizing what each delivered rule finds, so a state can choose its own rules (2026-08-04)
 
 > **Takeaway: about the data.** Each delivered rule can be described by what its errors
-> are about and how they happened, well enough for a state to judge which rules suit
-> what it can catch and fix. The fields describing WHAT the error is about travel: a
-> rule's earned-income share has reliability 0.94, and computing it on two random halves
-> of the 49 states differs by 0.034 against a sampling floor of 0.032, a ratio of 1.06.
-> The fields describing WHO was coded as the cause, WHEN it arose and HOW it surfaced
-> carry real state-to-state variation on top of sampling (ratios 1.23 to 1.35), so a
-> national number is indicative rather than exact for any one state. Knowing which rule
-> flagged a case shifts the distribution of error types decisively against chance (985 sd
-> for element group) without determining it (NMI 0.044).
+> are about and how they happened, well enough for a state to judge which rules suit what
+> it can catch and fix. The description carries real spread: across 543 rules sorted into
+> 7 element groups, a rule's earned-income share runs from 0.03 at the 10th percentile to
+> 0.43 at the 90th, against a national mix of 0.33. Fields saying WHAT the error is about
+> differ across halves of the country by no more than sampling alone would produce
+> (earned income: gap 0.034 against a 0.032 floor). Fields saying WHO was coded as the
+> cause, WHEN it arose and HOW it surfaced differ by 1.23 to 1.35 times what sampling
+> explains, so a national figure on those three is indicative rather than exact for any
+> one state.
+
+**How to read the numbers below.** Three terms, used throughout.
+
+- **Reliability** is the share of the spread across rules that is real difference between
+  rules rather than sampling error. 0 means the apparent differences between rules are
+  entirely noise; 1 means they are entirely real. It answers "does this number describe
+  THIS rule?"
+- **Split-half over states** takes the 49 states, splits them at random into two halves,
+  computes the same rule's share on each half, and records the absolute gap. Repeated
+  over 40 random splits. It answers "would a different set of states have told the same
+  story?"
+- The **sampling floor** is the gap you would expect from that same split if the rule's
+  true share were *identical* in both halves and only sampling differed. It is not zero:
+  at these counts, two draws from the same distribution differ by a few points. Formally
+  the expected absolute difference of two binomial estimates.
+
+The **ratio** of the observed gap to the floor is what carries meaning. A ratio near 1
+means the field differs across halves of the country by exactly what noise predicts, so
+there is nothing to explain. Above 1 means there is genuine variation between states on
+top of noise. Below 1 is also noise, arriving slightly under expectation.
 
 The point is not to label a rule for its own sake. A state deciding whether a rule is
 worth using as a flagging criterion needs to know what it tends to surface, so it can
@@ -2189,13 +2209,29 @@ Codes 33 and 58 behave the same way.
 
 ### Mutual information against a permutation null
 
-| pairing | MI (nats) | NMI | permutation null | distance |
-|---|---|---|---|---|
-| rule and element group | 0.1360 | 0.0435 | 0.0064 +/- 0.0001 | 985 sd |
-| rule and nature group | 0.0510 | 0.0159 | 0.0096 +/- 0.0002 | 233 sd |
+Normalized mutual information (NMI) runs 0 when knowing the rule tells you nothing about
+the error's group to 1 when it tells you everything. The permutation null is what NMI
+would be if rule and group were unrelated: the group labels are shuffled across variances
+and the statistic recomputed, 60 times.
 
-60 shuffles. A case trips several rules, so the units are (rule, variance) pairs rather
-than a partition; the null has the same structure.
+| pairing | groups | NMI observed | NMI under the null | distance above null |
+|---|---|---|---|---|
+| rule and element group | 7 | 0.0435 | 0.0020 | 985 sd |
+| rule and nature group | 10 | 0.0159 | 0.0096 | 233 sd |
+
+Those two columns answer different questions and only one of them is about size. The
+distance above the null says the association is not chance, and it is enormous only
+because the null is tight: there are 259,958 (rule, variance) pairs behind it, so
+detecting a small association is easy. **The sd distance is not an effect size.** The
+effect size is NMI, which at 0.0435 on a 0-to-1 scale says a rule shifts the mix of
+error types well short of determining it.
+
+The usable magnitude is the spread across rules, not either statistic: a rule's
+earned-income share runs 0.03 to 0.43 between the 10th and 90th percentiles, and 0.00 to
+0.70 end to end, against a national mix of 0.33. That range is what a state acts on.
+
+A case trips several rules, so the units are (rule, variance) pairs rather than a
+partition; the null has the same structure, so the comparison holds.
 
 ### Caveats
 
