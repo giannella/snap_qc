@@ -1454,9 +1454,8 @@ The median precision row moves from 0.3345 to 0.3471 at the 5% budget, and that
 apparent gain is an artifact of the median landing on a different state. The lift row
 shows the same trap from the other side: at the 10% budget the 5% rate has the higher
 median precision (0.2770 against 0.2753) but the lower median lift (2.09x against
-2.15x), because a median of ratios is not the ratio of medians. The within-state
-difference is the honest statistic, and **its median is exactly 0.0000 at
-both budgets**, for precision and for dollar recall alike. At the 5% budget fdr05f
+2.15x). The within-state difference is the honest statistic, and **its median is
+exactly 0.0000 at both budgets**, for precision and for dollar recall alike. At the 5% budget fdr05f
 was better in 1 state and worse in 0; at the 10% budget better in 1 and worse in 1.
 
 Per state, precision and dollar recall, fdr10f then fdr05f. The blended pool fell to
