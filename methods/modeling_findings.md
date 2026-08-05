@@ -1084,7 +1084,7 @@ errors formerly coded 52 or 53 are now split into 56 and 57, moving wrong-amount
 fields score 1.04 and 0.86 on the state split-half, so they are stable; the era test was
 measuring a codebook revision.
 
-**Two data corrections this work forced.** The FY2024 technical documentation, in
+**Two things we learned about using these data.** The FY2024 technical documentation, in
 `additional_data/`, defines every code the FY2023 one leaves undefined. `AGENCY` 26 is
 not a fault code but "change was not required to be reported by the client or acted upon
 by the State", and on error-case variances it is 1.4%, not the 27.3% an earlier note
