@@ -52,6 +52,13 @@ The Takeaway blockquote text is identical in both files.
      adds, changes, or retires a do/don't on one of the protected pipeline files,
      reconcile the matching section of `methods/known_constraints.md` (the hook in
      `.claude/settings.json` injects it on every edit to those files).
+   - **Update GUIDANCE.md if the row is in its scope.** GUIDANCE.md renders the
+     ledger's deployment-relevant settled / option / hazard rows for state
+     analysts. After updating the ledger row, ask one question: is this row in
+     that scope? If yes, add or reconcile the matching GUIDANCE point (each point
+     carries its `§N` and closes with status + tested scope); if the row was
+     retired, the point must come out and its phrasing goes to
+     `methods/retired_claims.txt`.
    - **Cite, don't restate.** The findings docs own every number. When a reader doc
      (README.md, GUIDANCE.md, a deck) states a number, it must carry its source
      `§N` citation. Never let a derived doc originate a number or silently diverge

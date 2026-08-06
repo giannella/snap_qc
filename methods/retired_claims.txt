@@ -29,3 +29,6 @@ Admit rules with a false-discovery-rate
 # Retired 2026-08-05 (findings 30): cross-fit ordering line dropped
 The fix under test is cross-fitting
 Cross-fitting is the more promising route
+
+# Retired 2026-08-06 (findings 17): unconditional typed-union delivery advice
+Mine per error type AND pooled, then combine

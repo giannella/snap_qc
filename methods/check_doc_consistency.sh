@@ -53,6 +53,25 @@ else
   echo "  (no $CLAIMS yet; skipping)"
 fi
 
+echo "== 3. GUIDANCE citation check (every bullet must cite a findings section) =="
+if [ -f GUIDANCE.md ]; then
+  # a bullet runs from '- **' to the next bullet or heading; each must contain a §
+  read -r bad n <<EOF2
+$(awk '
+  function flush() { if (buf != "") { n++; if (buf !~ /§/) bad++ } ; buf = "" }
+  /^- \*\*/ { flush(); buf = $0; next }
+  /^#/      { flush(); next }
+  { if (buf != "") buf = buf " " $0 }
+  END { flush(); print bad+0, n+0 }
+' GUIDANCE.md)
+EOF2
+  if [ "${bad:-0}" -ne 0 ]; then
+    echo "  FAIL: $bad of $n GUIDANCE bullet(s) carry no § citation"; fail=1
+  else
+    echo "  ok:   all $n GUIDANCE bullets cite a findings section"
+  fi
+fi
+
 echo
 if [ "$fail" -ne 0 ]; then
   echo "RESULT: FAIL. Fix the above, then re-run."
