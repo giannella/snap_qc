@@ -95,6 +95,38 @@ regenerating twice. Anything that reaches `state_delivery_lists/` is a MINOR
 version bump and Eric's decision at ship time; nothing in this proposal
 ships by itself.
 
+## State-side arm: typed mining within states, unstratified (added 2026-08-06, Eric)
+
+Question: does adding each state's own typed-frame rules, mined WITHOUT
+household strata, to the state side of the blend improve that state's
+delivered list? Per state: the any-error frame mined per stratum (unchanged)
+plus the four typed frames mined pooled across household sizes.
+
+Why the settled record does not forbid this, stated by scope: findings 17
+retired typed frames from the NATIONAL delivery vocabulary and says nothing
+about state pools; findings 11 validated coarse strata for NATIONAL mining
+and the strata choice was never separately tested at state scale, where
+strata carve a ~1,500-row pool into pieces whose typed targets have nearly
+no events. Dropping strata there is support preservation, not a re-opened
+claim.
+
+Support arithmetic, indicative (the design note computes it per state): a
+state's public FY2022-23 pool carries 96 to 280 errors; by type that is
+roughly 10 to 130 events per typed frame on the full ~1,500 rows. Admission
+(BH vs the frame base rate plus n >= 30) will admit nothing in the thinnest
+cells; that outcome is measured, not failed.
+
+Named risk, from findings 17's mechanism: small-support state-typed rules
+with inflated bounds crowding the top of the blend. The readout therefore
+counts how many state-typed rules deploy and what they displace, alongside
+the within-state precision and dollar deltas at both budgets on FY2024.
+
+This arm varies the state-pool component of the blend only, so it runs
+separately from the four national-vocabulary arms with its own
+pre-registered bar, riding the same overnight window. Mining cost is small
+(49 states x 4 typed frames at state scale); evaluation reuses the delivery
+builder machinery.
+
 ## Feedback requested
 
 - **Ben**: the outlier feature definitions. Which variables, the 99th
@@ -108,4 +140,6 @@ ships by itself.
   carries the vocabulary, rule_id, and the characterization columns, with
   family_id deferred.
 - **Both**: anything missing from the feature list while the mine is paid
-  for.
+  for; and reactions to the state-side typed arm above, particularly whether
+  the deploy-and-displace readout covers what a state would want to know
+  before its blend gains typed rules.
