@@ -77,6 +77,13 @@ or changes a constraint.
   (`ded_fields_imputed`), not dropped (§10).
 - Paths resolve through `here()`; no hardcoded machine paths
   (RESUME.md, 2026-07-27 merge).
+- **`reg_model_data.rds` is the source of truth; the CSV export is lossy**
+  (15 significant digits, does not round-trip; Eric's ruling 2026-08-06).
+  Threshold comparisons against `reg_model_data.csv` flipped rule flags on
+  cases sitting 1-2 ULP from a rule literal, and pandas' default float
+  parser lands 1 ULP low on many 17-digit decimals. Any consumer comparing
+  thresholds must read the rds, or parse the CSV with
+  `float_precision="round_trip"`, or take a `%.17g` export.
 
 ## methods/add_refill_metrics_v2.R {#refill-metrics}
 

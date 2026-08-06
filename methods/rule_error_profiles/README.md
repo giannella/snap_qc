@@ -219,3 +219,24 @@ holds.
 
 Per-rule counts double-count cases that trip several rules, so they are not a
 partition of the flagged total.
+
+## Erratum (corrected 2026-08-06) and source of truth
+
+Four rules' `n_cases_flagged` values were one low in `rule_profiles.csv`
+(train_2022_23 and all_2022_24 rows) and `rule_characterization.csv`: the
+three stratum 2-3 rules carrying `total_deductions_by_hh_size > 30.900` and
+the stratum 4+ rule carrying `total_deductions_by_hh_size > 14.600`.
+Mechanism: this pipeline read `reg_model_data.csv`, a 15-significant-digit
+export that does not round-trip doubles. Two FY2023 cases sit 1-2 ULP above
+those thresholds in the frame (Tennessee 202306, `total_deductions_by_hh_size`
+= 30.900000000000002; Wisconsin 202302, = 14.600000000000001); the export
+printed them as 30.9 and 14.6, so the `>` comparison flipped. Both are
+non-error cases, so every error-case, variance, and share figure was and is
+unaffected; test_2024 rows were unaffected. All other values were verified
+against the ground truth (543 rules x 3 eras).
+
+**`reg_model_data.rds` is the source of truth, not the CSV.** Any consumer
+doing threshold comparisons must either read the rds, or parse the CSV with
+`float_precision="round_trip"` (pandas) - the default and "high" parsers also
+land 1 ULP off on many decimals - or take a `%.17g` export. The pipeline
+script now reads with `float_precision="round_trip"`.

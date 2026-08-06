@@ -216,10 +216,34 @@ f_uni   <- file.path(OUT_DIR, "rule_universe.csv")
 f_cases <- file.path(OUT_DIR, "profile_cases_train.csv")
 f_prul  <- file.path(OUT_DIR, "profile_rules_train.csv")
 write.csv(uni[, c("rule_id", "hh", "rule")], f_uni, row.names = FALSE)
+
+# Full-precision frame export for the helper. The repo-root reg_model_data.csv
+# round-trips doubles at 15 significant digits, which flips threshold
+# comparisons for cases within 1-2 ULP of a rule cut (Tennessee 202306/24100
+# has total_deductions_by_hh_size = 30.900000000000002, printed "30.9", so
+# "> 30.900" disagrees between pandas and the R evaluator - the ground truth).
+# %.17g round-trips exactly, so the helper sees the same doubles R sees.
+HELPER_FEATURES <- c(
+  "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
+  "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
+  "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
+  "percent_abawd", "unc_rawben_rel_max", "months_since_cert_n",
+  "count_divisible_by_100")
+exp_df <- adf[rows_tr_nat, c("state_name", "yrmonth", "hhldno", "fiscal_year",
+                             "over_threshold", "cert_HH_size_FS_n",
+                             HELPER_FEATURES), drop = FALSE]
+for (v in HELPER_FEATURES) {
+  x <- as.numeric(exp_df[[v]])
+  exp_df[[v]] <- ifelse(is.na(x), "", sprintf("%.17g", x))
+}
+f_frame <- tempfile("pdd_frame_fullprec_", fileext = ".csv")
+write.csv(exp_df, f_frame, row.names = FALSE)
+
 stamp("calling python variance-join helper (reconciles vs rule_profiles.csv) ...")
 rc <- system2(PYTHON_BIN, c("methods/profile_distance_variance_join.py",
                             "--rules", f_uni, "--out-cases", f_cases,
-                            "--out-rules", f_prul))
+                            "--out-rules", f_prul, "--frame", f_frame))
+invisible(file.remove(f_frame))
 if (rc != 0) stop("python helper failed (exit ", rc, "); see its stderr above.")
 prul  <- read.csv(f_prul, stringsAsFactors = FALSE)
 cases <- read.csv(f_cases, stringsAsFactors = FALSE)
@@ -255,6 +279,16 @@ if (!identical(as.integer(n_errcase_tr), as.integer(prul$n_error_cases)))
   stop("ASSERTION FAILED: python train error-case counts differ from the R evaluator's.")
 stamp("cross-evaluator: python == R on n_flagged_train and n_error_cases for all %d rules",
       nrow(uni))
+
+# ANCHOR_ONLY=1 stops here: every reconciliation anchor has run (per-list
+# FY2024 accounting, helper-vs-artifact profiles, python-vs-R flag counts)
+# and nothing downstream - no distance, no analysis, no signal statistic -
+# has been computed. Useful for validating evaluator parity on the full
+# universe without touching the pre-registered readings.
+if (Sys.getenv("ANCHOR_ONLY", "0") == "1") {
+  stamp("ANCHOR_ONLY=1: all anchors passed; stopping before any distance or signal computation.")
+  quit(save = "no", status = 0)
+}
 
 ## ── 4. distance machinery ─────────────────────────────────────────────────────
 loc <- lapply(setNames(nm = HH_LEVELS), function(h) which(uni$hh == h))

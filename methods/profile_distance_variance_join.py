@@ -120,8 +120,14 @@ def hh_group_of(n):
                     np.where(n <= 1, "1", np.where(n <= 3, "2-3", "4+")))
 
 
-def load_frame():
-    df = pd.read_csv(FRAME, usecols=FEATURES + KEYS, low_memory=False)
+def load_frame(path):
+    # float_precision="round_trip" is REQUIRED: the default (and "high") C
+    # parsers land 1 ULP low on many 17-significant-digit decimals (e.g.
+    # "0.83199999999999996" -> 0.8319999999999999 instead of 0.832), which
+    # flips threshold comparisons at rule cuts and breaks parity with the R
+    # evaluator. round_trip uses Python's strtod, which is exact.
+    df = pd.read_csv(path, usecols=FEATURES + KEYS, low_memory=False,
+                     float_precision="round_trip")
     df = df[df["fiscal_year"].astype(str).isin(TRAIN_YEARS)].copy()
     assert len(df) > 70000, "expected the FY2022-23 train frame, got %d rows" % len(df)
     for f in FEATURES:
@@ -168,13 +174,19 @@ def main():
     ap.add_argument("--rules", required=True)
     ap.add_argument("--out-cases", required=True)
     ap.add_argument("--out-rules", required=True)
+    # The R driver passes a %.17g full-precision frame export. The repo-root
+    # reg_model_data.csv round-trips doubles at only 15 significant digits,
+    # which flips threshold comparisons for cases within 1-2 ULP of a rule
+    # cut (e.g. total_deductions_by_hh_size 30.900000000000002 prints as
+    # "30.9", so "> 30.900" disagrees with the R evaluator, the ground truth).
+    ap.add_argument("--frame", default=FRAME)
     args = ap.parse_args()
 
     rules = pd.read_csv(args.rules)
     assert {"rule_id", "hh", "rule"} <= set(rules.columns)
     print("[helper] rule universe: %d rules" % len(rules), flush=True)
 
-    df = load_frame()
+    df = load_frame(args.frame)
     print("[helper] FY2022-23 train frame: %d rows, %d errors"
           % (len(df), int(df["is_error"].sum())), flush=True)
 
@@ -256,16 +268,22 @@ def main():
         rl[c] = rl[c].fillna(0).astype(int)
 
     # ---- reconciliation against the committed section 29 artifact ----------
+    # FATAL-EXACT on every field for every rule. The four lossy-CSV flag
+    # counts in rule_profiles.csv were corrected 2026-08-06 (Eric's ruling;
+    # erratum in methods/rule_error_profiles/README.md), so no allowlist is
+    # needed: this helper reads a %.17g full-precision frame export with
+    # round_trip parsing and must agree with the corrected artifact and with
+    # the R evaluator (reg_model_data.rds is the source of truth).
     prof = pd.read_csv(PROFILES)
     tr = prof[prof["era"] == "train_2022_23"].set_index(["hh", "rule"])
-    n_ok, bad = 0, []
+    n_ok, n_flag_ok, bad = 0, 0, []
     for t in rl.itertuples(index=False):
-        if (t.hh, t.rule) not in tr.index:
+        key = (t.hh, t.rule)
+        if key not in tr.index:
             bad.append((t.rule_id, "rule absent from rule_profiles.csv train era"))
             continue
-        p = tr.loc[(t.hh, t.rule)]
-        checks = [("n_cases_flagged", t.n_flagged_train),
-                  ("n_error_cases", t.n_error_cases),
+        p = tr.loc[key]
+        checks = [("n_error_cases", t.n_error_cases),
                   ("n_variances", t.n_variances)]
         for g in ELEMENT_GROUPS:
             checks.append(("n_elem_" + g.replace(" ", "_"),
@@ -275,8 +293,14 @@ def main():
             bad.append((t.rule_id, str(mism)))
         else:
             n_ok += 1
-    print("[helper] RECONCILIATION vs rule_profiles.csv (train era): %d/%d rules exact"
-          % (n_ok, len(rl)), flush=True)
+        if int(p["n_cases_flagged"]) == int(t.n_flagged_train):
+            n_flag_ok += 1
+        else:
+            bad.append((t.rule_id, "n_cases_flagged: committed %d vs recomputed %d"
+                        % (int(p["n_cases_flagged"]), int(t.n_flagged_train))))
+    print("[helper] RECONCILIATION vs rule_profiles.csv (train era): substance "
+          "exact %d/%d; n_cases_flagged exact %d/%d"
+          % (n_ok, len(rl), n_flag_ok, len(rl)), flush=True)
     if bad:
         for b in bad[:10]:
             print("[helper]   MISMATCH rule_id=%s: %s" % b, file=sys.stderr)

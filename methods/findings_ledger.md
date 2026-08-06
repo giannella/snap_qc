@@ -78,6 +78,7 @@ row(s) here.
 | Claim | Status | Scope tested | Source |
 |---|---|---|---|
 | reg_model_data.rds is saved by the munging script only; a hand-built frame silently dropped ~31% of errors for weeks | hazard | 2026-07-07 rebuild | §10; CLAUDE.md |
+| reg_model_data.rds is the source of truth; the CSV export is lossy at 15 significant digits and pandas' default parser lands 1 ULP low, which flipped rule flags on threshold-straddling cases (four §29 artifact flag counts were off by one; corrected 2026-08-06). CSV consumers must parse round-trip or read the rds | hazard | full-universe cross-evaluator check, 543 rules, 2026-08-06 | methods/known_constraints.md#munging; Eric's ruling 2026-08-06 |
 | FY2020/FY2021 are excluded by decision; the reconciliation filter is a validity guard and additive-only on the six kept years | settled | relax-and-measure study | §24 |
 | Multi-element error cases are kept; deduction-field NAs are zero-filled, not dropped | settled | frame rebuild | §10 |
 | Public data shows a state 43-91% of its own errors (ineligible cases are invisible) | settled | FY22-24, per state | §10 |

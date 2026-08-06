@@ -154,7 +154,16 @@ def refill(idx_list, n_rows, budget_frac):
 
 
 def load_frame():
-    df = pd.read_csv(FRAME, usecols=FEATURES + KEYS, low_memory=False)
+    # float_precision="round_trip" so the parser adds no error of its own (the
+    # default and "high" C parsers land 1 ULP low on many decimals; see
+    # methods/known_constraints.md#munging and the erratum in
+    # methods/rule_error_profiles/README.md). NOTE: reg_model_data.rds is the
+    # source of truth; the on-disk CSV is a 15-significant-digit export, so a
+    # regeneration from it will still miss cases sitting 1-2 ULP above a rule
+    # threshold (the 2026-08-06 erratum's two cases) until the CSV is
+    # re-exported at full precision (%.17g) from the rds.
+    df = pd.read_csv(FRAME, usecols=FEATURES + KEYS, low_memory=False,
+                     float_precision="round_trip")
     df = df[df["fiscal_year"].astype(str).isin(TRAIN_YEARS + [TEST_YEAR])].copy()
     assert len(df) == 118263, "expected the 118,263-row FY2022-24 frame, got %d" % len(df)
     for f in FEATURES:
