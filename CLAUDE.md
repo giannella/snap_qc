@@ -117,6 +117,14 @@ and charts from our own runs, never with authority or intuition. Rules:
 - Keep frame-relative AND any-error numbers honest side by side; never quote
   only the flattering one.
 
+## Task tracking
+
+**GitHub issues are the task board** (2026-08-06): operational and code
+follow-ups are filed as issues; research claims and their statuses stay in
+`methods/findings_ledger.md`; RESUME.md points at both. Claude-drafted issues
+and comments post from Eric's account and must say so in the text ("Drafted
+by Claude; posted from Eric's account").
+
 ## Reference documents
 
 - `methods/findings_ledger.md` — one row per claim: status (settled / retired / option / hazard / open), the scope it was tested at, and its section citation. **The first stop when planning any experiment or pipeline change**; quote its rows in the pre-run design note. Maintained by the log-finding skill.
