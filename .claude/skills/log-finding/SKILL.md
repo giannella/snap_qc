@@ -43,6 +43,15 @@ The Takeaway blockquote text is identical in both files.
    takeaway layer, not just the record.
 
 4. **Propagate (this is how the docs avoid drift):**
+   - **Update the ledger.** `methods/findings_ledger.md` carries one row per claim
+     (status, tested scope, section citation). Add or update the row(s) this finding
+     touches: a new claim gets a row, a replication updates the scope column, a
+     retirement flips the status. A finding without a ledger row is invisible at
+     planning time.
+   - **Update the constraints file if the finding is operational.** If the finding
+     adds, changes, or retires a do/don't on one of the protected pipeline files,
+     reconcile the matching section of `methods/known_constraints.md` (the hook in
+     `.claude/settings.json` injects it on every edit to those files).
    - **Cite, don't restate.** The findings docs own every number. When a reader doc
      (README.md, GUIDANCE.md, a deck) states a number, it must carry its source
      `§N` citation. Never let a derived doc originate a number or silently diverge

@@ -1,3 +1,4 @@
+# Constraints: see methods/known_constraints.md#delivery-builder
 # DELIVERY builder: the blended frozen list for one state, built on ALL
 # public years (2022-2024) -- the version a state is actually handed
 # (modeling_findings.md #16). NO holdout: every public year trains, so the

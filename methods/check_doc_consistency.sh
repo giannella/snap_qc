@@ -20,7 +20,7 @@ cd "$(dirname "$0")/.." || exit 2   # repo root
 fail=0
 
 # Reader-facing docs that must contain no em-dashes.
-READER_DOCS=(README.md GUIDANCE.md PIPELINE.md methods/modeling_findings.md methods/modeling_findings_detailed.md)
+READER_DOCS=(README.md GUIDANCE.md PIPELINE.md methods/modeling_findings.md methods/modeling_findings_detailed.md methods/findings_ledger.md methods/known_constraints.md)
 # Derived docs that only CITE the findings; they must not assert a retired claim.
 DERIVED_DOCS=(README.md GUIDANCE.md PIPELINE.md)
 

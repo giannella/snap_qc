@@ -1,3 +1,4 @@
+# Constraints: see methods/known_constraints.md#munging
 # 0. Libraries
 library(ranger)
 library(yardstick)

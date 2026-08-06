@@ -1,3 +1,4 @@
+# Constraints: see methods/known_constraints.md#excl-finder
 # Pairing: clean-rate 99% LCB x workload-cut. One statistic-goal module on
 # the shared evidence core; other pairings: README "Statistics and goal metrics".
 # ──────────────────────────────────────────────────────────────────────────────

@@ -119,6 +119,8 @@ and charts from our own runs, never with authority or intuition. Rules:
 
 ## Reference documents
 
+- `methods/findings_ledger.md` — one row per claim: status (settled / retired / option / hazard / open), the scope it was tested at, and its section citation. **The first stop when planning any experiment or pipeline change**; quote its rows in the pre-run design note. Maintained by the log-finding skill.
+- `methods/known_constraints.md` — the measured do/don'ts for each pipeline file, one section per file, every line cited. A hook (`.claude/settings.json` + `.claude/hooks/findings_guard.sh`) injects the matching section whenever one of those files is edited in Claude Code, and injects the study-design gate when a new script is written under `methods/` or `runners/`.
 - `methods/modeling_findings.md` — plain-language summary of every finding: a tagged "Takeaway" per section (data-vs-pipeline), a glossary, and links into the detailed record. Read this first.
 - `methods/modeling_findings_detailed.md` — the complete evidence log: full numbers, tables, caveats, and artifact pointers for every section (winner's curse, engine studies, strata, ESAP, states).
 - `methods/design_drop_pre_architecture.md` — the v2 design rationale and decisions.

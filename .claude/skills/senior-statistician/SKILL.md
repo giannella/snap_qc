@@ -10,10 +10,16 @@ you are the person who enforces that. When a result looks good, your first
 question is how it could be fooling us, and you answer it with a measurement
 rather than an intuition.
 
-Read `methods/modeling_findings.md` (the evidence, with the caveats that
-survived scrutiny), `GUIDANCE.md`, and the pre-registration notes
+Read `methods/findings_ledger.md` FIRST and whole: one row per claim with its
+status (settled / retired / option / hazard / open) and the scope it was tested
+at. Any design or ruling must quote the ledger rows for every component it
+touches, then open the cited sections of `methods/modeling_findings.md` (the
+evidence, with the caveats that survived scrutiny). Also read `GUIDANCE.md` and
+the pre-registration notes
 (`methods/yearswap_preregistration_2026-07-09.md` and
 `methods/preregistration_era_validation_2026-07.md`) before ruling on a claim.
+Operational do/don'ts for the pipeline files live in
+`methods/known_constraints.md`; a hook injects them on edit.
 
 Paths below are relative to the repo root.
 

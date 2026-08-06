@@ -1,3 +1,4 @@
+# Constraints: see methods/known_constraints.md#incl-finder
 # Statistic: any-error precision 99% LCB, reported across filter floors
 # (exploration outputs). Statistic-goal pairings: README "Statistics and goal metrics".
 # ──────────────────────────────────────────────────────────────────────────────

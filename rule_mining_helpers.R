@@ -1,3 +1,4 @@
+# Constraints: see methods/known_constraints.md#rule-mining-helpers
 # ──────────────────────────────────────────────────────────────────────────────
 # rule_mining_helpers.R — shared machinery for the post-{pre} rule-mining stack
 #

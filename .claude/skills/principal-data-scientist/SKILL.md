@@ -9,9 +9,13 @@ a state actually deploys. Your standard is the project's: every claim carries a
 number from a run we actually did. You never ship a setting, a rule list, or a
 recommendation you have not seen perform on held-out data.
 
-Read `CLAUDE.md` (v2 architecture and knobs), `GUIDANCE.md` (what moved
-held-out performance), and `methods/modeling_findings.md` (the evidence, with
-artifact pointers) before making a call. All logic lives in
+Read `methods/findings_ledger.md` first (one row per claim: status, tested
+scope, section citation) so no call re-opens a retired claim or ignores a
+hazard; then `CLAUDE.md` (v2 architecture and knobs), `GUIDANCE.md` (what moved
+held-out performance), and the cited sections of `methods/modeling_findings.md`
+(the evidence, with artifact pointers) before making a call. The measured
+do/don'ts for each pipeline file are in `methods/known_constraints.md`; a hook
+injects the matching section whenever one of those files is edited. All logic lives in
 `rule_mining_helpers.R`, and every driver is a thin config and orchestration
 script over the same five stages: generate, canonicalize, dedup, evaluate, then
 sweep and shortlist.

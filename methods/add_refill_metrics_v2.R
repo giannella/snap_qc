@@ -1,4 +1,5 @@
 # Add workload-matched "refill" metrics to the any-error 2024 scorecard.
+# Constraints: see methods/known_constraints.md#refill-metrics
 #
 # The scorecard as built scores the FROZEN CORE list: the list is filled against
 # the state's FY2022-23 caseload, frozen, and scored on FY2024 with no refilling.
