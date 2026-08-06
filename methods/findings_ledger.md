@@ -34,7 +34,8 @@ until the section lands in the findings docs.
 | Structure-anchored dollar statistic (credit dollar size only as far as flagged cases' benefit levels justify) | open | none | §21 motivates |
 | Rank-position-aware ordering reliability criterion (principled replacement for the fixed-z bound) | open | none | §20-22 motivate |
 | Coverage-aware ordering / union of partitions vs a workload-matched single list | open; any mechanism collides with the deliberate removal of greedy nets | none | §30 partition dependence; handoff 2026-08-05 |
-| Seed-to-seed variation of the shipped full-data pipeline | open; study pre-registered and approved 2026-08-05, in flight | none yet | §30 scope note; methods/preregistration_seed_stability_2026-08-05.md |
+| Seed-to-seed variation of the shipped pipeline: deep coverage is seed-stable (pairwise error-case Jaccard 0.959-0.965 at depth 20,000, every pool covers all 4,803 FY2024 errors, one mine saturates reach) but budget-depth lists are not (errors-caught overlap 0.531 at 5%, 0.666 at 10%); the instability is ordering, not vocabulary | measured 2026-08-05, pre-registered bar cleared by every pair; write-up drafted, pending review (lands as §31 after §30) | one era (FY2022-23 to FY2024), national pools only, no dedup machinery | methods/seed_stability_v2/; prereg 2026-08-05 |
+| Preference-based reordering of the deep pool (state promotes rules via §29 characterization fields): does it preserve precision? | open; unlocked by the seed-stability result (coverage is seed-stable at depth, the necessary condition) | none | seed-stability study; §29 |
 
 ## Admission (which rules enter the pool)
 
