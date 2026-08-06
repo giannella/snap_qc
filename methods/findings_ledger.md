@@ -108,6 +108,8 @@ until the section lands in the findings docs.
 | Characterization columns on delivery lists (built, staged for the next list build; MINOR bump is Eric's call) | open | RESUME.md roadmap; §29 |
 | A1-F1 pipeline upgrade (rule_id, admit_bh helper, finder upgrades; de-OOM before any heavy regen) | open | RESUME.md next-session plan |
 | Case-overlap pre-registered bar landed between its thresholds (0.325/0.435 vs bars 0.3/0.5); disposition undecided | open | §30 |
+| Per-stratum outlier features (value above the within-stratum 99th percentile on shelter, deductions, income fields) as rule inputs; the issue reports 26% error among extreme-shelter HH-3 cases vs the ~11% base | open (Ben, issue #7, 2026-08-05); a vocabulary change needing a full re-mine, same class as the at_max_benefit feature, and a candidate to ride the same regen mine | GitHub #7 |
+| Representing ineligible households in the modeling frame; the public file omits them entirely and only per-state/year counts exist (additional_data/snap_qc_exclusion_all_years.csv), no case records; the issue conjectures many of the largest errors are FSBEN = $0 cases | open discussion (Ben, issue #8, 2026-08-05); bears directly on the §10 visibility limit; no method proposed yet | GitHub #8; §10 |
 
 ## Process rules (always in force)
 
