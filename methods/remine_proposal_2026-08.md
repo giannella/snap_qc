@@ -27,9 +27,16 @@ together pays for that night once:
    dollars-per-flag) already requires regenerating the vocabulary; it has
    been queued since 2026-07-22.
 
-Prerequisite before any of it: the finder and EXCL scripts must get the
-chunked-reducer treatment (`reduce_flags_for_rules()`), or the regen OOMs
-this box (ledger hazard row; RESUME.md A1-F1 caveat).
+Memory prerequisite, scoped precisely: the chunked reducer
+(`reduce_flags_for_rules()`) already exists in the helpers and has scored
+full national pools repeatedly without incident (the delivery builder since
+2026-07-22, and three full mines in the findings 31 study), so the
+attribution arms and the state-side arm need NO code fixes and are not
+gated. What remains unfixed is the two finder scripts (`INCL_find_*_v2.R`,
+`EXCL_find_*_v2.R`), which still call the old evaluator 3x per frame x 5
+frames x 3 strata; that gates only the follow-on five-frame regen if it runs
+through those scripts, and the fix is porting their calls to the existing
+helper (ledger hazard row; RESUME.md A1-F1 caveat).
 
 ## Proposed feature set (the decision we want feedback on)
 
@@ -135,10 +142,12 @@ builder machinery.
   states would evaluate the rules. Also whether issue #8's ineligible-case
   question should shape any feature here or stays separate (our read:
   separate; the public file has no feature rows for those cases to mine).
-- **Eric**: decided 2026-08-05. Four arms (full factorial); sequencing is
-  de-OOM first, attribution run second, one full regen third; the bump
-  carries the vocabulary, rule_id, and the characterization columns, with
-  family_id deferred.
+- **Eric**: decided 2026-08-05, sequencing corrected 2026-08-06. Four
+  national arms (full factorial) plus the state-side typed arm; the
+  attribution run is not gated on any code fix and goes first, the finder
+  de-OOM happens before the follow-on five-frame regen; the bump carries
+  the vocabulary, rule_id, and the characterization columns, with family_id
+  deferred.
 - **Both**: anything missing from the feature list while the mine is paid
   for; and reactions to the state-side typed arm above, particularly whether
   the deploy-and-displace readout covers what a state would want to know
