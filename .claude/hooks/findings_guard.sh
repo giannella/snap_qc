@@ -96,6 +96,8 @@ if [ -n "$TEXT" ]; then
   : > "$MARK" 2>/dev/null
   emit "MEASURED CONSTRAINTS for the file being modified (from methods/known_constraints.md; each line cites its finding). These are settled by experiment; do not relax one without a new finding.
 
+Routing (methods/known_constraints.md#routing): work in this file is written under the principal-data-scientist skill (invoke it now if this session has not), and the change is reviewed by a fresh senior-statistician subagent before any run or commit.
+
 $TEXT"
 fi
 exit 0

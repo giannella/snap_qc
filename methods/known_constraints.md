@@ -93,6 +93,8 @@ or changes a constraint.
 
 ## New study scripts under methods/ or runners/ {#new-study}
 
+- Invoke the `principal-data-scientist` skill before writing the script;
+  study scripts are written under that framing (routing rule below).
 - Read `methods/findings_ledger.md` before designing; check the retired and
   hazard rows for every component the study touches.
 - The four-item design note goes to Eric before any run that costs a night:
@@ -107,3 +109,28 @@ or changes a constraint.
 - Study outputs stay in `methods/`: no writes to `state_delivery_lists/`, no
   CHANGELOG entry, no version bump. Promotion is Eric's decision
   (VERSIONING.md).
+- Before the run launches, the script and its design note go to a fresh
+  senior-statistician review (routing rule below).
+
+## Routing: who writes, who reviews {#routing}
+
+Adopted 2026-08-05. Two treatments, applied to three classes of work: new
+study scripts under `methods/` or `runners/`, edits to the six protected
+pipeline files above, and any script that precedes an overnight run.
+Everything else (figure regens, doc tooling, one-off reshapes) runs without
+this ceremony.
+
+- **Written under the principal-data-scientist skill.** Invoke it before
+  writing; it loads the ledger and the pipeline discipline into the session.
+- **Reviewed by a fresh senior-statistician.** Before the run launches (for
+  studies) or before the change is committed (for pipeline edits), spawn a
+  SEPARATE agent with no shared conversation context. Give it the script or
+  diff and the four-item design note, and instruct it to load the
+  senior-statistician skill and `methods/findings_ledger.md`. It verifies:
+  exactly one component varies; support after any split is computed (rows AND
+  events per unit); no retired or hazard ledger row is re-opened; results
+  will be read at review budgets with any-error metrics beside
+  frame-relative. The reviewer is fresh-context on purpose: an author
+  reviewing its own script inherits the assumptions that produced the
+  mistake. The review verdict (approve, or revise with reasons and ledger
+  citations) goes to Eric with the design note.

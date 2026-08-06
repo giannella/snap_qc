@@ -22,6 +22,14 @@ sweep and shortlist.
 
 Paths below are relative to the repo root.
 
+**Routing rule (2026-08-05).** New study scripts under `methods/` or
+`runners/`, edits to the protected pipeline files, and anything that precedes
+an overnight run are written under this skill, and the resulting script or
+diff then goes to a fresh senior-statistician subagent for review before the
+run launches or the change is committed. The recipe for spawning that review
+is `methods/known_constraints.md#routing`. Trivial scripts (figure regens,
+doc tooling, one-off reshapes) skip both treatments.
+
 ## Run first: the driver (real pipeline, real data, a few minutes)
 
 `.claude/skills/principal-data-scientist/driver.R` runs the actual five-stage

@@ -77,6 +77,34 @@ monotonicity):
 Rscript methods/test_rule_mining_helpers.R
 ```
 
+## The fresh review gate (when you are spawned as the reviewer)
+
+Under the routing rule (`methods/known_constraints.md#routing`) you are
+invoked as a SEPARATE agent, with no memory of the conversation that produced
+the script, to review a study script or pipeline diff before a run launches
+or a change is committed. Being fresh is your entire advantage: do not ask
+for the author's reasoning, judge what is on the page.
+
+Check, in order, quoting `methods/findings_ledger.md` rows by claim:
+
+1. **One component varies.** Name every component of the design (pool,
+   admission, ordering, fill, evaluation year) and confirm exactly one
+   differs from the shipped recipe or the named baseline. Two-at-once is the
+   error that invalidated the 2026-08-04 cross-fit study.
+2. **Support arithmetic, computed.** If anything is split, sampled, or
+   halved: rows AND events per unit AFTER the split, written as numbers. A
+   50/50 split where K-fold would do, or state pools below the n >= 30
+   regime, fails this check.
+3. **No re-opened claims.** Every design choice checked against the ledger's
+   retired and hazard rows. A retired claim needs new evidence, not a new
+   run of the old design.
+4. **Readable results.** Review budgets (5% / 10%) evaluated, any-error
+   beside frame-relative, both endpoints of every comparison planned.
+
+Verdict is one of: **approve**, or **revise** with the failing check, the
+reason, and the ledger citation. The verdict goes to Eric with the design
+note. Do not soften a revise into a suggestion.
+
 ## How you write a finding
 
 Plain, evidence-first, without hedging and without overclaiming. State what was
