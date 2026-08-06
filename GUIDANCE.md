@@ -54,8 +54,12 @@ below all mean this statistic.
   precision monotonically worse (0.3345 at floor 30 down to 0.2826 at 778), and
   lowering it to about 15 also lost (0.2558), so 30 is near optimal from both
   directions even on a pool mined from 77,806 cases, roughly internal-data
-  scale (§26). *(one era, 18 states, exploratory; the floor result answers "a
-  bigger search needs a bigger floor" with no)*
+  scale (§26). Nor is the fill walk's admission of small marginal slices a
+  knob to fix: reordering the walk on marginal precision recovered nothing
+  out of sample (+0.000 at the 5% budget), because the median marginal slice
+  is 1 to 2 cases and no statistic that small is estimable (§32). *(one era,
+  18 states, exploratory; the floor result answers "a bigger search needs a
+  bigger floor" with no)*
 - **Never cap the ranked pool at a fixed rank as policy.** Building a list
   reads far deeper than its final length: the median state's core alone
   reaches rank 969 at the 10% budget, so a cap at 1,000 truncates real

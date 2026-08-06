@@ -1,0 +1,1936 @@
+"state","basis","budget","decile","n_rules","median_own_precision","median_marginal_precision"
+"Alabama","holdout",5,1,2,0.625,0.583333333333333
+"Alabama","holdout",5,2,2,0.375,0.375
+"Alabama","holdout",5,3,2,0.3,0
+"Alabama","holdout",5,4,2,0.458333333333333,0.291666666666667
+"Alabama","holdout",5,5,2,0.125,0.125
+"Alabama","holdout",5,6,2,0.25,0.25
+"Alabama","holdout",5,7,2,0.916666666666667,0.916666666666667
+"Alabama","holdout",5,8,2,0.2,0.0833333333333333
+"Alabama","holdout",5,9,2,0.583333333333333,0.583333333333333
+"Alabama","holdout",5,10,3,0.5,0
+"Alabama","holdout",10,1,4,0.625,0.583333333333333
+"Alabama","holdout",10,2,5,0.416666666666667,0.25
+"Alabama","holdout",10,3,5,0.5,0.5
+"Alabama","holdout",10,4,4,0.45,0.333333333333333
+"Alabama","holdout",10,5,5,0.454545454545455,0
+"Alabama","holdout",10,6,5,0.333333333333333,0
+"Alabama","holdout",10,7,4,0.0833333333333333,0.166666666666667
+"Alabama","holdout",10,8,5,0.5,0
+"Alabama","holdout",10,9,5,0,0
+"Alabama","holdout",10,10,5,0.357142857142857,0
+"Alabama","train",5,1,17,0.333333333333333,0
+"Alabama","train",5,2,17,0.4,0
+"Alabama","train",5,3,17,0.333333333333333,0
+"Alabama","train",5,4,18,0.5,0.282051282051282
+"Alabama","train",5,5,17,0.467741935483871,0
+"Alabama","train",5,6,17,0.333333333333333,0
+"Alabama","train",5,7,18,0.435394298407997,0
+"Alabama","train",5,8,17,0.32,0
+"Alabama","train",5,9,17,0.424657534246575,0
+"Alabama","train",5,10,18,0.366666666666667,0
+"Alabama","train",10,1,35,0.333333333333333,0
+"Alabama","train",10,2,36,0.5,0.0714285714285714
+"Alabama","train",10,3,36,0.460851480303401,0
+"Alabama","train",10,4,36,0.406773211567732,0
+"Alabama","train",10,5,36,0.341085271317829,0
+"Alabama","train",10,6,36,0.255434782608696,0
+"Alabama","train",10,7,36,0.285714285714286,0
+"Alabama","train",10,8,36,0.309407728421813,0
+"Alabama","train",10,9,36,0.268166960020116,0
+"Alabama","train",10,10,36,0.266521996449004,0
+"Arizona","holdout",5,1,1,0.333333333333333,0.333333333333333
+"Arizona","holdout",5,2,1,0.3,0.3
+"Arizona","holdout",5,3,1,0.416666666666667,0
+"Arizona","holdout",5,4,2,0.323863636363636,0.2
+"Arizona","holdout",5,5,1,0.217391304347826,0
+"Arizona","holdout",5,6,1,0.238095238095238,0
+"Arizona","holdout",5,7,2,0.125,0
+"Arizona","holdout",5,8,1,0.275862068965517,0
+"Arizona","holdout",5,9,1,0.235294117647059,0.5
+"Arizona","holdout",5,10,2,0.568181818181818,0.5
+"Arizona","holdout",10,1,2,0.316666666666667,0.316666666666667
+"Arizona","holdout",10,2,3,0.375,0
+"Arizona","holdout",10,3,3,0.238095238095238,0
+"Arizona","holdout",10,4,2,0.137931034482759,0
+"Arizona","holdout",10,5,3,0.235294117647059,0.5
+"Arizona","holdout",10,6,3,0.294117647058824,0.25
+"Arizona","holdout",10,7,2,0.264705882352941,0.4
+"Arizona","holdout",10,8,3,0.357142857142857,0
+"Arizona","holdout",10,9,3,0.384615384615385,0.333333333333333
+"Arizona","holdout",10,10,3,0.291666666666667,0.666666666666667
+"Arizona","train",5,1,9,0.627906976744186,0.25
+"Arizona","train",5,2,10,0.62202380952381,0.125
+"Arizona","train",5,3,10,0.598484848484849,0
+"Arizona","train",5,4,9,0.565217391304348,0.363636363636364
+"Arizona","train",5,5,10,0.5,0.25
+"Arizona","train",5,6,10,0.507575757575758,0
+"Arizona","train",5,7,9,0.516666666666667,0.333333333333333
+"Arizona","train",5,8,10,0.496478873239437,0
+"Arizona","train",5,9,10,0.493055555555556,0.0833333333333333
+"Arizona","train",5,10,10,0.508531746031746,0.125
+"Arizona","train",10,1,20,0.626453488372093,0.25
+"Arizona","train",10,2,21,0.565217391304348,0.333333333333333
+"Arizona","train",10,3,21,0.5,0
+"Arizona","train",10,4,21,0.5,0
+"Arizona","train",10,5,21,0.492063492063492,0.166666666666667
+"Arizona","train",10,6,20,0.473755656108597,0
+"Arizona","train",10,7,21,0.479166666666667,0
+"Arizona","train",10,8,21,0.454545454545455,0
+"Arizona","train",10,9,21,0.434782608695652,0
+"Arizona","train",10,10,21,0.421052631578947,0
+"Arkansas","holdout",5,1,1,1,1
+"Arkansas","holdout",5,2,2,0,0
+"Arkansas","holdout",5,3,2,0.291666666666667,0.0714285714285714
+"Arkansas","holdout",5,4,2,0.25,0
+"Arkansas","holdout",5,5,2,0.266666666666667,0.222222222222222
+"Arkansas","holdout",5,6,2,0.547619047619048,0.533333333333333
+"Arkansas","holdout",5,7,2,0,0
+"Arkansas","holdout",5,8,2,0.5,0.5
+"Arkansas","holdout",5,9,2,0,0
+"Arkansas","holdout",5,10,2,0.166666666666667,0
+"Arkansas","holdout",10,1,3,0,0
+"Arkansas","holdout",10,2,3,0.25,0
+"Arkansas","holdout",10,3,4,0.380952380952381,0.222222222222222
+"Arkansas","holdout",10,4,3,0,0
+"Arkansas","holdout",10,5,4,0,0
+"Arkansas","holdout",10,6,3,0,0
+"Arkansas","holdout",10,7,3,0.333333333333333,0.333333333333333
+"Arkansas","holdout",10,8,4,0.3,0
+"Arkansas","holdout",10,9,3,0,0
+"Arkansas","holdout",10,10,4,0,0
+"Arkansas","train",5,1,15,0.5,0.25
+"Arkansas","train",5,2,16,0.375,0
+"Arkansas","train",5,3,16,0.136363636363636,0
+"Arkansas","train",5,4,15,0.444444444444444,0
+"Arkansas","train",5,5,16,0.333333333333333,0
+"Arkansas","train",5,6,16,0.2,0
+"Arkansas","train",5,7,15,0.157894736842105,0
+"Arkansas","train",5,8,16,0.205263157894737,0
+"Arkansas","train",5,9,16,0.158385093167702,0
+"Arkansas","train",5,10,16,0.205263157894737,0
+"Arkansas","train",10,1,29,0.5,0
+"Arkansas","train",10,2,30,0.333333333333333,0
+"Arkansas","train",10,3,30,0.25,0
+"Arkansas","train",10,4,30,0.195238095238095,0
+"Arkansas","train",10,5,30,0.176508760545101,0
+"Arkansas","train",10,6,30,0.168235294117647,0
+"Arkansas","train",10,7,30,0.167670682730924,0
+"Arkansas","train",10,8,30,0.169540229885057,0
+"Arkansas","train",10,9,30,0.165422885572139,0
+"Arkansas","train",10,10,30,0.145856507230256,0
+"California","holdout",5,1,1,0,0
+"California","holdout",5,2,2,0.333333333333333,0.5
+"California","holdout",5,3,2,0.666666666666667,0.666666666666667
+"California","holdout",5,4,2,0.125,0.125
+"California","holdout",5,5,2,0.1,0
+"California","holdout",5,6,2,0.291666666666667,0.2
+"California","holdout",5,7,2,0.25,0.5
+"California","holdout",5,8,2,0.125,0.125
+"California","holdout",5,9,2,0,0
+"California","holdout",5,10,2,0.666666666666667,0.666666666666667
+"California","holdout",10,1,2,0,0
+"California","holdout",10,2,3,0.666666666666667,1
+"California","holdout",10,3,2,0.125,0.125
+"California","holdout",10,4,3,0.2,0
+"California","holdout",10,5,2,0.30952380952381,0.272058823529412
+"California","holdout",10,6,3,0,0
+"California","holdout",10,7,2,0.125,0
+"California","holdout",10,8,3,0.285714285714286,0.166666666666667
+"California","holdout",10,9,2,0.142857142857143,0
+"California","holdout",10,10,3,0.24,0.5
+"California","train",5,1,15,0.5,0.5
+"California","train",5,2,15,0.4,0.333333333333333
+"California","train",5,3,15,0.166666666666667,0
+"California","train",5,4,16,0.375,0.666666666666667
+"California","train",5,5,15,0.333333333333333,0
+"California","train",5,6,15,0.25,0
+"California","train",5,7,16,0.287878787878788,0
+"California","train",5,8,15,0.4,0
+"California","train",5,9,15,0.357142857142857,0
+"California","train",5,10,16,0.333333333333333,0
+"California","train",10,1,28,0.5,0.416666666666667
+"California","train",10,2,28,0.342857142857143,0.333333333333333
+"California","train",10,3,28,0.333333333333333,0
+"California","train",10,4,28,0.333333333333333,0
+"California","train",10,5,29,0.357142857142857,0
+"California","train",10,6,28,0.333333333333333,0
+"California","train",10,7,28,0.354166666666667,0
+"California","train",10,8,28,0.316770186335404,0
+"California","train",10,9,28,0.366666666666667,0
+"California","train",10,10,29,0.285714285714286,0
+"Colorado","holdout",5,1,2,0.5,0.666666666666667
+"Colorado","holdout",5,2,3,1,1
+"Colorado","holdout",5,3,2,0.375,0.333333333333333
+"Colorado","holdout",5,4,3,1,1
+"Colorado","holdout",5,5,3,0.571428571428571,0.666666666666667
+"Colorado","holdout",5,6,2,0.5,0.25
+"Colorado","holdout",5,7,3,0.428571428571429,0
+"Colorado","holdout",5,8,2,0.5,0.5
+"Colorado","holdout",5,9,3,0.75,0.666666666666667
+"Colorado","holdout",5,10,3,0.5,0
+"Colorado","holdout",10,1,4,0.833333333333333,1
+"Colorado","holdout",10,2,4,0.375,0.333333333333333
+"Colorado","holdout",10,3,5,1,1
+"Colorado","holdout",10,4,4,0.5,0.25
+"Colorado","holdout",10,5,5,0.666666666666667,0.666666666666667
+"Colorado","holdout",10,6,4,0.666666666666667,0.25
+"Colorado","holdout",10,7,4,0.464285714285714,0.666666666666667
+"Colorado","holdout",10,8,5,0.454545454545455,0
+"Colorado","holdout",10,9,4,0.291666666666667,0
+"Colorado","holdout",10,10,5,0.5,0
+"Colorado","train",5,1,16,0.833333333333333,0.833333333333333
+"Colorado","train",5,2,17,0.375,0
+"Colorado","train",5,3,16,0.45,0
+"Colorado","train",5,4,17,0.4,0
+"Colorado","train",5,5,16,0.398913043478261,0
+"Colorado","train",5,6,17,0.333333333333333,0
+"Colorado","train",5,7,16,0.4,0
+"Colorado","train",5,8,17,0.485714285714286,0
+"Colorado","train",5,9,16,0.405032467532468,0.125
+"Colorado","train",5,10,17,0.4,0.333333333333333
+"Colorado","train",10,1,33,0.5,0.333333333333333
+"Colorado","train",10,2,34,0.405882352941176,0
+"Colorado","train",10,3,33,0.333333333333333,0
+"Colorado","train",10,4,34,0.44949494949495,0
+"Colorado","train",10,5,34,0.4,0.225
+"Colorado","train",10,6,33,0.384615384615385,0
+"Colorado","train",10,7,34,0.333333333333333,0
+"Colorado","train",10,8,33,0.3,0
+"Colorado","train",10,9,34,0.301089324618736,0
+"Colorado","train",10,10,34,0.269230769230769,0
+"Connecticut","holdout",5,1,1,0,0
+"Connecticut","holdout",5,2,2,0.75,0.5
+"Connecticut","holdout",5,3,1,0,0
+"Connecticut","holdout",5,4,2,0.2,0.2
+"Connecticut","holdout",5,5,1,0.5,0.5
+"Connecticut","holdout",5,6,2,0.173913043478261,0.181818181818182
+"Connecticut","holdout",5,7,1,0,0
+"Connecticut","holdout",5,8,2,0.666666666666667,0.666666666666667
+"Connecticut","holdout",5,9,1,0.333333333333333,0
+"Connecticut","holdout",5,10,2,1,1
+"Connecticut","holdout",10,1,2,0.5,0.5
+"Connecticut","holdout",10,2,3,0,0
+"Connecticut","holdout",10,3,3,0.4,0.4
+"Connecticut","holdout",10,4,3,0.333333333333333,0.333333333333333
+"Connecticut","holdout",10,5,3,0.666666666666667,0.5
+"Connecticut","holdout",10,6,3,1,1
+"Connecticut","holdout",10,7,3,0.333333333333333,0.2
+"Connecticut","holdout",10,8,3,0.384615384615385,0
+"Connecticut","holdout",10,9,3,0.428571428571429,0.5
+"Connecticut","holdout",10,10,3,0.428571428571429,0.5
+"Connecticut","train",5,1,9,0.666666666666667,0.666666666666667
+"Connecticut","train",5,2,9,0.5,0.285714285714286
+"Connecticut","train",5,3,10,0.577380952380952,0.477272727272727
+"Connecticut","train",5,4,9,0.25,0.307692307692308
+"Connecticut","train",5,5,10,0.261363636363636,0
+"Connecticut","train",5,6,9,0.421052631578947,0.476190476190476
+"Connecticut","train",5,7,9,0.508196721311475,0.166666666666667
+"Connecticut","train",5,8,10,0.51,0.136363636363636
+"Connecticut","train",5,9,9,0.509433962264151,0
+"Connecticut","train",5,10,10,0.322916666666667,0.0833333333333333
+"Connecticut","train",10,1,24,0.541666666666667,0.5
+"Connecticut","train",10,2,24,0.4,0.25
+"Connecticut","train",10,3,25,0.508196721311475,0.272727272727273
+"Connecticut","train",10,4,24,0.485879873551106,0.0714285714285714
+"Connecticut","train",10,5,25,0.468354430379747,0
+"Connecticut","train",10,6,24,0.467741935483871,0
+"Connecticut","train",10,7,24,0.448996655518395,0
+"Connecticut","train",10,8,25,0.475,0
+"Connecticut","train",10,9,24,0.3953125,0
+"Connecticut","train",10,10,25,0.25,0
+"Delaware","holdout",5,1,1,0,0
+"Delaware","holdout",5,2,2,0.75,0.75
+"Delaware","holdout",5,3,2,0.9,1
+"Delaware","holdout",5,4,2,0.583333333333333,0.583333333333333
+"Delaware","holdout",5,5,2,0.75,0.666666666666667
+"Delaware","holdout",5,6,2,0.25,0.5
+"Delaware","holdout",5,7,2,0.333333333333333,0.375
+"Delaware","holdout",5,8,2,0.25,0.25
+"Delaware","holdout",5,9,2,0.535714285714286,0.416666666666667
+"Delaware","holdout",5,10,2,0.25,0.25
+"Delaware","holdout",10,1,2,0.25,0.25
+"Delaware","holdout",10,2,3,1,1
+"Delaware","holdout",10,3,3,0.666666666666667,0.666666666666667
+"Delaware","holdout",10,4,3,0.5,0.333333333333333
+"Delaware","holdout",10,5,3,0,0
+"Delaware","holdout",10,6,2,0.472222222222222,0.535714285714286
+"Delaware","holdout",10,7,3,0.5,0.5
+"Delaware","holdout",10,8,3,0,0
+"Delaware","holdout",10,9,3,0.333333333333333,0.333333333333333
+"Delaware","holdout",10,10,3,0,0
+"Delaware","train",5,1,7,1,1
+"Delaware","train",5,2,7,0.666666666666667,0.5
+"Delaware","train",5,3,8,0.669642857142857,0.666666666666667
+"Delaware","train",5,4,7,0.571428571428571,0
+"Delaware","train",5,5,8,0.513804713804714,0.366666666666667
+"Delaware","train",5,6,7,0.5,0
+"Delaware","train",5,7,7,0.6,0
+"Delaware","train",5,8,8,0.5,0
+"Delaware","train",5,9,7,0.142857142857143,0
+"Delaware","train",5,10,8,0.5,0.5
+"Delaware","train",10,1,15,0.666666666666667,1
+"Delaware","train",10,2,16,0.601973684210526,0.539473684210526
+"Delaware","train",10,3,15,0.509090909090909,0
+"Delaware","train",10,4,16,0.5,0
+"Delaware","train",10,5,15,0.454545454545455,0
+"Delaware","train",10,6,16,0.25,0
+"Delaware","train",10,7,15,0.333333333333333,0
+"Delaware","train",10,8,16,0.384057971014493,0
+"Delaware","train",10,9,15,0.428571428571429,0
+"Delaware","train",10,10,16,0.33879781420765,0
+"District of Columbia","holdout",5,2,1,0.633333333333333,0.633333333333333
+"District of Columbia","holdout",5,4,1,0.586206896551724,0.714285714285714
+"District of Columbia","holdout",5,5,1,0.615384615384615,0.5
+"District of Columbia","holdout",5,7,1,0.606060606060606,0
+"District of Columbia","holdout",5,9,1,0.630434782608696,0.75
+"District of Columbia","holdout",5,10,1,1,1
+"District of Columbia","holdout",10,1,1,0.633333333333333,0.633333333333333
+"District of Columbia","holdout",10,2,2,0.60079575596817,0.607142857142857
+"District of Columbia","holdout",10,3,2,0.611853832442068,0.25
+"District of Columbia","holdout",10,4,2,0.589285714285714,0.464285714285714
+"District of Columbia","holdout",10,5,2,0.565217391304348,0.5
+"District of Columbia","holdout",10,6,2,0.769230769230769,0.5
+"District of Columbia","holdout",10,7,2,0.575510204081633,0.25
+"District of Columbia","holdout",10,8,2,0.477541371158392,0
+"District of Columbia","holdout",10,9,2,0.532051282051282,0
+"District of Columbia","holdout",10,10,2,0.45,0
+"District of Columbia","train",5,1,5,0.806451612903226,0.636363636363636
+"District of Columbia","train",5,2,5,0.76,0.526315789473684
+"District of Columbia","train",5,3,5,0.740740740740741,0.5
+"District of Columbia","train",5,4,5,0.74468085106383,0.333333333333333
+"District of Columbia","train",5,5,5,0.738095238095238,0
+"District of Columbia","train",5,6,5,0.706896551724138,0.4
+"District of Columbia","train",5,7,5,0.717391304347826,0
+"District of Columbia","train",5,8,5,0.705882352941177,0.4
+"District of Columbia","train",5,9,5,0.695652173913043,0.444444444444444
+"District of Columbia","train",5,10,5,0.68,0
+"District of Columbia","train",10,1,12,0.765971316818775,0.58133971291866
+"District of Columbia","train",10,2,13,0.74468085106383,0.333333333333333
+"District of Columbia","train",10,3,13,0.708333333333333,0
+"District of Columbia","train",10,4,13,0.686274509803922,0
+"District of Columbia","train",10,5,13,0.660377358490566,0
+"District of Columbia","train",10,6,13,0.659574468085106,0
+"District of Columbia","train",10,7,13,0.61038961038961,0
+"District of Columbia","train",10,8,13,0.6,0
+"District of Columbia","train",10,9,13,0.615384615384615,0
+"District of Columbia","train",10,10,13,0.573770491803279,0
+"Florida","holdout",5,1,1,1,1
+"Florida","holdout",5,2,2,0.4,0.25
+"Florida","holdout",5,3,2,0.7,0.75
+"Florida","holdout",5,4,1,1,1
+"Florida","holdout",5,5,2,0.583333333333333,0.583333333333333
+"Florida","holdout",5,6,2,0.452991452991453,0.291666666666667
+"Florida","holdout",5,7,1,0,0
+"Florida","holdout",5,8,2,0,0
+"Florida","holdout",5,9,2,0.366666666666667,0.2
+"Florida","holdout",5,10,2,0.625,0.5
+"Florida","holdout",10,1,2,0.8,0.75
+"Florida","holdout",10,2,2,0.3,0.25
+"Florida","holdout",10,3,2,1,1
+"Florida","holdout",10,4,2,0.583333333333333,0.583333333333333
+"Florida","holdout",10,5,2,0.452991452991453,0.291666666666667
+"Florida","holdout",10,6,2,0,0
+"Florida","holdout",10,7,2,0.322751322751323,0.27037037037037
+"Florida","holdout",10,8,2,0.0833333333333333,0
+"Florida","holdout",10,9,2,0.366666666666667,0.5
+"Florida","holdout",10,10,2,0.625,0.75
+"Florida","train",5,1,10,0.816666666666667,0.625
+"Florida","train",5,2,10,0.675,0.583333333333333
+"Florida","train",5,3,10,0.721153846153846,0.476190476190476
+"Florida","train",5,4,10,0.366666666666667,0
+"Florida","train",5,5,10,0.51530612244898,0.352272727272727
+"Florida","train",5,6,10,0.383333333333333,0.0625
+"Florida","train",5,7,10,0.5,0
+"Florida","train",5,8,10,0.485050654806029,0
+"Florida","train",5,9,10,0.487704918032787,0
+"Florida","train",5,10,11,0.5,0
+"Florida","train",10,1,19,0.75,0.5
+"Florida","train",10,2,19,0.5,0.285714285714286
+"Florida","train",10,3,19,0.434782608695652,0.125
+"Florida","train",10,4,20,0.48943661971831,0.0714285714285714
+"Florida","train",10,5,19,0.5,0
+"Florida","train",10,6,19,0.5,0
+"Florida","train",10,7,20,0.442586399108138,0
+"Florida","train",10,8,19,0.4,0
+"Florida","train",10,9,19,0.408602150537634,0
+"Florida","train",10,10,20,0.444444444444444,0.0666666666666667
+"Georgia","holdout",5,2,1,0.263157894736842,0.263157894736842
+"Georgia","holdout",5,4,1,1,1
+"Georgia","holdout",5,5,1,0.666666666666667,0.5
+"Georgia","holdout",5,7,1,0.230769230769231,0.25
+"Georgia","holdout",5,9,1,0.266666666666667,0.266666666666667
+"Georgia","holdout",5,10,1,0.25,0
+"Georgia","holdout",10,1,1,0.263157894736842,0.263157894736842
+"Georgia","holdout",10,2,1,1,1
+"Georgia","holdout",10,3,1,0.666666666666667,0.5
+"Georgia","holdout",10,4,1,0.230769230769231,0.25
+"Georgia","holdout",10,5,2,0.258333333333333,0.133333333333333
+"Georgia","holdout",10,6,1,0.466666666666667,0.666666666666667
+"Georgia","holdout",10,7,1,0.384615384615385,0
+"Georgia","holdout",10,8,1,0.363636363636364,0.363636363636364
+"Georgia","holdout",10,9,1,0.176470588235294,0.176470588235294
+"Georgia","holdout",10,10,2,0.276363636363636,0.183333333333333
+"Georgia","train",5,1,6,1,1
+"Georgia","train",5,2,6,0.681985294117647,0.538235294117647
+"Georgia","train",5,3,6,0.66260162601626,0.5
+"Georgia","train",5,4,6,0.641025641025641,0.475
+"Georgia","train",5,5,6,0.639318885448916,0.433155080213904
+"Georgia","train",5,6,6,0.6321044546851,0.416666666666667
+"Georgia","train",5,7,6,0.614285714285714,0.522222222222222
+"Georgia","train",5,8,6,0.609756097560976,0.333333333333333
+"Georgia","train",5,9,6,0.591989987484355,0.330357142857143
+"Georgia","train",5,10,6,0.611455108359133,0
+"Georgia","train",10,1,15,0.709677419354839,0.676470588235294
+"Georgia","train",10,2,16,0.641941391941392,0.477272727272727
+"Georgia","train",10,3,15,0.621621621621622,0.444444444444444
+"Georgia","train",10,4,16,0.597872340425532,0.30952380952381
+"Georgia","train",10,5,15,0.56140350877193,0.25
+"Georgia","train",10,6,16,0.597297297297297,0.166666666666667
+"Georgia","train",10,7,15,0.546875,0
+"Georgia","train",10,8,16,0.559429824561404,0.1
+"Georgia","train",10,9,15,0.549019607843137,0
+"Georgia","train",10,10,16,0.535714285714286,0
+"Idaho","holdout",5,1,2,0.5,0.5
+"Idaho","holdout",5,2,2,0.25,0.25
+"Idaho","holdout",5,3,2,0.5,0.75
+"Idaho","holdout",5,4,2,0.5,0.5
+"Idaho","holdout",5,5,3,0.2,0
+"Idaho","holdout",5,6,2,0,0
+"Idaho","holdout",5,7,2,0,0
+"Idaho","holdout",5,8,2,0.166666666666667,0.166666666666667
+"Idaho","holdout",5,9,2,0.25,0.25
+"Idaho","holdout",5,10,3,0.142857142857143,0
+"Idaho","holdout",10,1,3,0,0
+"Idaho","holdout",10,2,4,0.5,0.5
+"Idaho","holdout",10,3,4,0.333333333333333,0.227272727272727
+"Idaho","holdout",10,4,4,0,0
+"Idaho","holdout",10,5,4,0.166666666666667,0.166666666666667
+"Idaho","holdout",10,6,4,0.0714285714285714,0
+"Idaho","holdout",10,7,4,0.25,0
+"Idaho","holdout",10,8,4,0,0
+"Idaho","holdout",10,9,4,0,0
+"Idaho","holdout",10,10,4,0.18,0
+"Idaho","train",5,1,16,0.629166666666667,0
+"Idaho","train",5,2,16,0.354166666666667,0
+"Idaho","train",5,3,16,0,0
+"Idaho","train",5,4,16,0,0
+"Idaho","train",5,5,16,0,0
+"Idaho","train",5,6,16,0.166666666666667,0
+"Idaho","train",5,7,16,0.05,0
+"Idaho","train",5,8,16,0.105555555555556,0
+"Idaho","train",5,9,16,0.0954545454545455,0
+"Idaho","train",5,10,17,0.105263157894737,0
+"Idaho","train",10,1,28,0.580645161290323,0
+"Idaho","train",10,2,29,0,0
+"Idaho","train",10,3,29,0,0
+"Idaho","train",10,4,29,0.1,0
+"Idaho","train",10,5,29,0.1,0
+"Idaho","train",10,6,29,0.0909090909090909,0
+"Idaho","train",10,7,29,0.0869565217391304,0
+"Idaho","train",10,8,29,0.135922330097087,0
+"Idaho","train",10,9,29,0.0958904109589041,0
+"Idaho","train",10,10,29,0.0975609756097561,0
+"Illinois","holdout",5,1,1,0.7,0.7
+"Illinois","holdout",5,2,2,0.488095238095238,0.666666666666667
+"Illinois","holdout",5,3,1,0.571428571428571,0.428571428571429
+"Illinois","holdout",5,4,2,0.572727272727273,0
+"Illinois","holdout",5,5,1,0.636363636363636,0
+"Illinois","holdout",5,6,2,0.3,0
+"Illinois","holdout",5,7,1,0.5,0.5
+"Illinois","holdout",5,8,2,0.588942307692308,0
+"Illinois","holdout",5,9,1,0.416666666666667,0
+"Illinois","holdout",5,10,2,0.730769230769231,0.5
+"Illinois","holdout",10,1,2,0.516666666666667,0.516666666666667
+"Illinois","holdout",10,2,2,0.607142857142857,0.714285714285714
+"Illinois","holdout",10,3,2,0.572727272727273,0
+"Illinois","holdout",10,4,2,0.618181818181818,0
+"Illinois","holdout",10,5,2,0.25,0.25
+"Illinois","holdout",10,6,2,0.588942307692308,0
+"Illinois","holdout",10,7,2,0.351190476190476,0.09375
+"Illinois","holdout",10,8,2,0.445054945054945,0
+"Illinois","holdout",10,9,2,0.636363636363636,0.5
+"Illinois","holdout",10,10,3,0.5,0
+"Illinois","train",5,1,10,0.730921052631579,0.527777777777778
+"Illinois","train",5,2,10,0.664102564102564,0
+"Illinois","train",5,3,10,0.636813186813187,0.267857142857143
+"Illinois","train",5,4,10,0.615217391304348,0
+"Illinois","train",5,5,10,0.623310810810811,0
+"Illinois","train",5,6,10,0.58615221987315,0.166666666666667
+"Illinois","train",5,7,10,0.53519768563163,0.633333333333333
+"Illinois","train",5,8,10,0.535359801488834,0
+"Illinois","train",5,9,10,0.494897959183673,0.125
+"Illinois","train",5,10,11,0.517857142857143,0
+"Illinois","train",10,1,20,0.701351351351351,0
+"Illinois","train",10,2,20,0.630602006688963,0.1
+"Illinois","train",10,3,20,0.618503118503118,0
+"Illinois","train",10,4,21,0.532258064516129,0
+"Illinois","train",10,5,20,0.507301587301587,0
+"Illinois","train",10,6,20,0.5,0
+"Illinois","train",10,7,21,0.424050632911392,0
+"Illinois","train",10,8,20,0.418859649122807,0
+"Illinois","train",10,9,20,0.463624338624339,0
+"Illinois","train",10,10,21,0.415841584158416,0
+"Indiana","holdout",5,1,1,0,0
+"Indiana","holdout",5,2,1,0,0
+"Indiana","holdout",5,3,2,0,0
+"Indiana","holdout",5,4,1,1,1
+"Indiana","holdout",5,5,2,0.695652173913043,0.695652173913043
+"Indiana","holdout",5,6,1,0.666666666666667,0
+"Indiana","holdout",5,7,1,0.466666666666667,0.333333333333333
+"Indiana","holdout",5,8,2,0.376644736842105,0.1
+"Indiana","holdout",5,9,1,0.285714285714286,0.5
+"Indiana","holdout",5,10,2,0.736842105263158,0.5
+"Indiana","holdout",10,1,2,0,0
+"Indiana","holdout",10,2,2,0,0
+"Indiana","holdout",10,3,3,1,1
+"Indiana","holdout",10,4,2,0.566666666666667,0.166666666666667
+"Indiana","holdout",10,5,3,0.315789473684211,0.2
+"Indiana","holdout",10,6,2,0.642857142857143,0.7
+"Indiana","holdout",10,7,2,0.236842105263158,0
+"Indiana","holdout",10,8,3,0.333333333333333,0.333333333333333
+"Indiana","holdout",10,9,2,0.337301587301587,0.416666666666667
+"Indiana","holdout",10,10,3,0.296296296296296,0
+"Indiana","train",5,1,7,0.5,0.142857142857143
+"Indiana","train",5,2,7,0.628571428571429,0.631578947368421
+"Indiana","train",5,3,7,0.595238095238095,0.4
+"Indiana","train",5,4,7,0.557692307692308,0
+"Indiana","train",5,5,8,0.291666666666667,0
+"Indiana","train",5,6,7,0.54,0.285714285714286
+"Indiana","train",5,7,7,0.547619047619048,0
+"Indiana","train",5,8,7,0.558823529411765,0.272727272727273
+"Indiana","train",5,9,7,0.444444444444444,0
+"Indiana","train",5,10,8,0.5,0.111111111111111
+"Indiana","train",10,1,21,0.605263157894737,0.5
+"Indiana","train",10,2,21,0.526315789473684,0
+"Indiana","train",10,3,21,0.527272727272727,0
+"Indiana","train",10,4,21,0.5,0
+"Indiana","train",10,5,22,0.5,0
+"Indiana","train",10,6,21,0.467741935483871,0
+"Indiana","train",10,7,21,0.447761194029851,0
+"Indiana","train",10,8,21,0.426666666666667,0
+"Indiana","train",10,9,21,0.43859649122807,0
+"Indiana","train",10,10,22,0.434285714285714,0
+"Iowa","holdout",5,1,3,0.333333333333333,0.5
+"Iowa","holdout",5,2,3,0.5,0
+"Iowa","holdout",5,3,3,1,1
+"Iowa","holdout",5,4,3,0,0
+"Iowa","holdout",5,5,3,0.5,0
+"Iowa","holdout",5,6,3,0,0
+"Iowa","holdout",5,7,3,0,0
+"Iowa","holdout",5,8,3,0.2,0
+"Iowa","holdout",5,9,3,0,0
+"Iowa","holdout",5,10,4,0.208333333333333,0
+"Iowa","holdout",10,1,5,0.5,0.5
+"Iowa","holdout",10,2,5,0.5,0.5
+"Iowa","holdout",10,3,5,0.5,0
+"Iowa","holdout",10,4,6,0,0
+"Iowa","holdout",10,5,5,0,0
+"Iowa","holdout",10,6,5,0.166666666666667,0
+"Iowa","holdout",10,7,6,0.166666666666667,0
+"Iowa","holdout",10,8,5,0.285714285714286,0.2
+"Iowa","holdout",10,9,5,0,0
+"Iowa","holdout",10,10,6,0.366666666666667,0.166666666666667
+"Iowa","train",5,1,20,0.266666666666667,0.3
+"Iowa","train",5,2,20,0.333333333333333,0
+"Iowa","train",5,3,20,0.285714285714286,0.236111111111111
+"Iowa","train",5,4,20,0.333333333333333,0
+"Iowa","train",5,5,21,0.333333333333333,0
+"Iowa","train",5,6,20,0.323863636363636,0
+"Iowa","train",5,7,20,0.288018433179724,0
+"Iowa","train",5,8,20,0.171428571428571,0
+"Iowa","train",5,9,20,0.255434782608696,0
+"Iowa","train",5,10,21,0.230769230769231,0
+"Iowa","train",10,1,36,0.333333333333333,0
+"Iowa","train",10,2,36,0.333333333333333,0
+"Iowa","train",10,3,36,0.333333333333333,0
+"Iowa","train",10,4,36,0.263186813186813,0
+"Iowa","train",10,5,36,0.236111111111111,0
+"Iowa","train",10,6,36,0.225806451612903,0
+"Iowa","train",10,7,36,0.201371826371826,0
+"Iowa","train",10,8,36,0.201123595505618,0
+"Iowa","train",10,9,36,0.203605743279715,0
+"Iowa","train",10,10,37,0.207142857142857,0
+"Kansas","holdout",5,1,2,0.25,0.25
+"Kansas","holdout",5,2,2,0.5,0.5
+"Kansas","holdout",5,3,3,0.166666666666667,0.25
+"Kansas","holdout",5,4,2,0,0
+"Kansas","holdout",5,5,3,0.166666666666667,0
+"Kansas","holdout",5,6,2,0.25,0.25
+"Kansas","holdout",5,7,2,0.25,0.25
+"Kansas","holdout",5,8,3,0,0
+"Kansas","holdout",5,9,2,0.321428571428571,0.5
+"Kansas","holdout",5,10,3,0.5,0.5
+"Kansas","holdout",10,1,4,0.25,0.25
+"Kansas","holdout",10,2,5,0,0
+"Kansas","holdout",10,3,5,0.166666666666667,0
+"Kansas","holdout",10,4,5,0,0
+"Kansas","holdout",10,5,5,0.142857142857143,0
+"Kansas","holdout",10,6,5,0.153846153846154,0
+"Kansas","holdout",10,7,5,0.2,0.2
+"Kansas","holdout",10,8,5,0.166666666666667,0
+"Kansas","holdout",10,9,5,0.333333333333333,0
+"Kansas","holdout",10,10,5,0,0
+"Kansas","train",5,1,16,0.30952380952381,0
+"Kansas","train",5,2,17,0.272727272727273,0
+"Kansas","train",5,3,16,0.375,0
+"Kansas","train",5,4,17,0.25,0
+"Kansas","train",5,5,17,0.285714285714286,0
+"Kansas","train",5,6,16,0.183333333333333,0
+"Kansas","train",5,7,17,0.25,0
+"Kansas","train",5,8,16,0.226495726495726,0.215909090909091
+"Kansas","train",5,9,17,0.222222222222222,0
+"Kansas","train",5,10,17,0.142857142857143,0
+"Kansas","train",10,1,35,0.285714285714286,0
+"Kansas","train",10,2,35,0.357142857142857,0
+"Kansas","train",10,3,35,0.25,0
+"Kansas","train",10,4,36,0.267857142857143,0.154761904761905
+"Kansas","train",10,5,35,0.157894736842105,0
+"Kansas","train",10,6,35,0.1875,0
+"Kansas","train",10,7,36,0.169721767594108,0
+"Kansas","train",10,8,35,0.166666666666667,0
+"Kansas","train",10,9,35,0.166666666666667,0
+"Kansas","train",10,10,36,0.161255411255411,0
+"Kentucky","holdout",5,1,2,1,1
+"Kentucky","holdout",5,2,3,0.5,0.5
+"Kentucky","holdout",5,3,2,0,0
+"Kentucky","holdout",5,4,3,0,0
+"Kentucky","holdout",5,5,2,0,0
+"Kentucky","holdout",5,6,3,0,0
+"Kentucky","holdout",5,7,2,0.5,0.5
+"Kentucky","holdout",5,8,3,0.25,0
+"Kentucky","holdout",5,9,2,0.5,0.5
+"Kentucky","holdout",5,10,3,0,0
+"Kentucky","holdout",10,1,4,1,1
+"Kentucky","holdout",10,2,5,0,0
+"Kentucky","holdout",10,3,5,0,0
+"Kentucky","holdout",10,4,4,0.375,0.25
+"Kentucky","holdout",10,5,5,0.25,0.166666666666667
+"Kentucky","holdout",10,6,5,0,0
+"Kentucky","holdout",10,7,4,0.125,0.5
+"Kentucky","holdout",10,8,5,0.363636363636364,0
+"Kentucky","holdout",10,9,5,0.25,0
+"Kentucky","holdout",10,10,5,0.3,0
+"Kentucky","train",5,1,16,0.45,0.166666666666667
+"Kentucky","train",5,2,17,0.333333333333333,0
+"Kentucky","train",5,3,16,0.125,0
+"Kentucky","train",5,4,17,0.2,0
+"Kentucky","train",5,5,16,0.457142857142857,0.261363636363636
+"Kentucky","train",5,6,17,0.264705882352941,0
+"Kentucky","train",5,7,16,0.221774193548387,0
+"Kentucky","train",5,8,17,0.25,0
+"Kentucky","train",5,9,16,0.255434782608696,0
+"Kentucky","train",5,10,17,0.236363636363636,0
+"Kentucky","train",10,1,33,0.333333333333333,0
+"Kentucky","train",10,2,33,0.2,0
+"Kentucky","train",10,3,33,0.333333333333333,0
+"Kentucky","train",10,4,34,0.25,0
+"Kentucky","train",10,5,33,0.25,0
+"Kentucky","train",10,6,33,0.217391304347826,0
+"Kentucky","train",10,7,34,0.25,0
+"Kentucky","train",10,8,33,0.191489361702128,0
+"Kentucky","train",10,9,33,0.223880597014925,0
+"Kentucky","train",10,10,34,0.179029304029304,0
+"Louisiana","holdout",5,1,2,0.25,0.25
+"Louisiana","holdout",5,2,2,0,0
+"Louisiana","holdout",5,3,2,0.416666666666667,0.25
+"Louisiana","holdout",5,4,3,0,0
+"Louisiana","holdout",5,5,2,0.4375,0.464285714285714
+"Louisiana","holdout",5,6,2,0,0
+"Louisiana","holdout",5,7,3,0,0
+"Louisiana","holdout",5,8,2,0.166666666666667,0.25
+"Louisiana","holdout",5,9,2,0.142857142857143,0.166666666666667
+"Louisiana","holdout",5,10,3,0.166666666666667,0
+"Louisiana","holdout",10,1,4,0,0
+"Louisiana","holdout",10,2,4,0.166666666666667,0
+"Louisiana","holdout",10,3,4,0.1875,0.214285714285714
+"Louisiana","holdout",10,4,4,0,0
+"Louisiana","holdout",10,5,5,0.285714285714286,0.333333333333333
+"Louisiana","holdout",10,6,4,0.0833333333333333,0
+"Louisiana","holdout",10,7,4,0,0
+"Louisiana","holdout",10,8,4,0.1,0.166666666666667
+"Louisiana","holdout",10,9,4,0,0
+"Louisiana","holdout",10,10,5,0.153846153846154,0
+"Louisiana","train",5,1,14,0.5,0.416666666666667
+"Louisiana","train",5,2,15,0.166666666666667,0
+"Louisiana","train",5,3,15,0.25,0
+"Louisiana","train",5,4,15,0.25,0
+"Louisiana","train",5,5,15,0.208333333333333,0
+"Louisiana","train",5,6,15,0.333333333333333,0
+"Louisiana","train",5,7,15,0.333333333333333,0.333333333333333
+"Louisiana","train",5,8,15,0.321428571428571,0
+"Louisiana","train",5,9,15,0.189189189189189,0
+"Louisiana","train",5,10,15,0.173913043478261,0
+"Louisiana","train",10,1,29,0.333333333333333,0
+"Louisiana","train",10,2,30,0.25,0
+"Louisiana","train",10,3,29,0.25,0
+"Louisiana","train",10,4,30,0.333333333333333,0.0666666666666667
+"Louisiana","train",10,5,30,0.181551116333725,0
+"Louisiana","train",10,6,29,0.238095238095238,0
+"Louisiana","train",10,7,30,0.306020066889632,0
+"Louisiana","train",10,8,29,0.20952380952381,0
+"Louisiana","train",10,9,30,0.241094863142107,0
+"Louisiana","train",10,10,30,0.2,0
+"Maine","holdout",5,2,1,1,1
+"Maine","holdout",5,3,1,0.4,0.4
+"Maine","holdout",5,4,1,0.294117647058824,0
+"Maine","holdout",5,5,1,0.259259259259259,0.166666666666667
+"Maine","holdout",5,7,1,0.290322580645161,0.5
+"Maine","holdout",5,8,1,0.303030303030303,0.5
+"Maine","holdout",5,9,1,0.242424242424242,0
+"Maine","holdout",5,10,1,1,1
+"Maine","holdout",10,1,2,0.7,0.7
+"Maine","holdout",10,2,3,0.290322580645161,0.166666666666667
+"Maine","holdout",10,3,3,0.242424242424242,0
+"Maine","holdout",10,4,2,0.266553480475382,0.1
+"Maine","holdout",10,5,3,0.411764705882353,1
+"Maine","holdout",10,6,3,0.323529411764706,0
+"Maine","holdout",10,7,2,0.421428571428571,0.166666666666667
+"Maine","holdout",10,8,3,0.333333333333333,0.25
+"Maine","holdout",10,9,3,0.25,0
+"Maine","holdout",10,10,3,0.244897959183673,0
+"Maine","train",5,1,11,0,0
+"Maine","train",5,2,11,0.666666666666667,0.454545454545455
+"Maine","train",5,3,11,0.533333333333333,0.333333333333333
+"Maine","train",5,4,12,0.45,0
+"Maine","train",5,5,11,0.25,0
+"Maine","train",5,6,11,0.4,0
+"Maine","train",5,7,12,0.439949431099874,0
+"Maine","train",5,8,11,0.5,0
+"Maine","train",5,9,11,0.439655172413793,0
+"Maine","train",5,10,12,0.48134328358209,0.170454545454545
+"Maine","train",10,1,25,0.533333333333333,0.454545454545455
+"Maine","train",10,2,25,0.5,0
+"Maine","train",10,3,26,0.366666666666667,0
+"Maine","train",10,4,25,0.444444444444444,0
+"Maine","train",10,5,26,0.456186127419004,0.107954545454545
+"Maine","train",10,6,25,0.430232558139535,0
+"Maine","train",10,7,25,0.4,0
+"Maine","train",10,8,26,0.316666666666667,0
+"Maine","train",10,9,25,0.417910447761194,0
+"Maine","train",10,10,26,0.375573394495413,0
+"Maryland","holdout",5,3,1,0,0
+"Maryland","holdout",5,5,1,0,0
+"Maryland","holdout",5,8,1,0.428571428571429,0.428571428571429
+"Maryland","holdout",5,10,1,0,0
+"Maryland","holdout",10,2,1,0,0
+"Maryland","holdout",10,3,1,0,0
+"Maryland","holdout",10,4,1,0.428571428571429,0.428571428571429
+"Maryland","holdout",10,5,1,0.357142857142857,0.357142857142857
+"Maryland","holdout",10,6,1,0,0
+"Maryland","holdout",10,7,1,0.357142857142857,0.5
+"Maryland","holdout",10,8,1,0.333333333333333,0.5
+"Maryland","holdout",10,9,1,0.333333333333333,0
+"Maryland","holdout",10,10,1,0.3,0
+"Maryland","train",5,1,4,1,1
+"Maryland","train",5,2,5,0.5,0
+"Maryland","train",5,3,5,0.625,0.545454545454545
+"Maryland","train",5,4,5,0.571428571428571,0.483870967741935
+"Maryland","train",5,5,5,0.581395348837209,0
+"Maryland","train",5,6,5,0.5,0
+"Maryland","train",5,7,5,0.583333333333333,0
+"Maryland","train",5,8,5,0.5,0
+"Maryland","train",5,9,5,0.53448275862069,0.25
+"Maryland","train",5,10,5,0.564102564102564,0.25
+"Maryland","train",10,1,11,0.666666666666667,0.666666666666667
+"Maryland","train",10,2,11,0.585365853658537,0.25
+"Maryland","train",10,3,11,0.5,0
+"Maryland","train",10,4,11,0.512820512820513,0
+"Maryland","train",10,5,11,0.560975609756098,0.2
+"Maryland","train",10,6,11,0.547619047619048,0
+"Maryland","train",10,7,11,0.5625,0.111111111111111
+"Maryland","train",10,8,11,0.481012658227848,0
+"Maryland","train",10,9,11,0.5,0
+"Maryland","train",10,10,11,0.470588235294118,0
+"Massachusetts","holdout",5,1,2,1,1
+"Massachusetts","holdout",5,2,2,0.5,0.5
+"Massachusetts","holdout",5,3,2,0.5,0.5
+"Massachusetts","holdout",5,4,2,0.875,1
+"Massachusetts","holdout",5,5,2,1,1
+"Massachusetts","holdout",5,6,2,0.583333333333333,0.5
+"Massachusetts","holdout",5,7,2,0.333333333333333,0.333333333333333
+"Massachusetts","holdout",5,8,2,0.585714285714286,0.416666666666667
+"Massachusetts","holdout",5,9,2,0.65,0.25
+"Massachusetts","holdout",5,10,2,0,0
+"Massachusetts","holdout",10,1,2,1,1
+"Massachusetts","holdout",10,2,3,0.5,0.5
+"Massachusetts","holdout",10,3,3,0.75,1
+"Massachusetts","holdout",10,4,2,1,1
+"Massachusetts","holdout",10,5,3,0.666666666666667,0.5
+"Massachusetts","holdout",10,6,3,0.571428571428571,0.333333333333333
+"Massachusetts","holdout",10,7,2,0.345238095238095,0.345238095238095
+"Massachusetts","holdout",10,8,3,0.25,0
+"Massachusetts","holdout",10,9,3,0.285714285714286,0.25
+"Massachusetts","holdout",10,10,3,0.5,0
+"Massachusetts","train",5,1,15,0.666666666666667,0.5
+"Massachusetts","train",5,2,16,0.585714285714286,0.5
+"Massachusetts","train",5,3,16,0.596875,0.431818181818182
+"Massachusetts","train",5,4,16,0.422619047619048,0
+"Massachusetts","train",5,5,16,0.489130434782609,0
+"Massachusetts","train",5,6,16,0.5,0
+"Massachusetts","train",5,7,16,0.524242424242424,0.0625
+"Massachusetts","train",5,8,16,0.392307692307692,0
+"Massachusetts","train",5,9,16,0.406593406593407,0
+"Massachusetts","train",5,10,16,0.5,0
+"Massachusetts","train",10,1,30,0.639784946236559,0.5
+"Massachusetts","train",10,2,31,0.555555555555556,0
+"Massachusetts","train",10,3,31,0.5,0
+"Massachusetts","train",10,4,31,0.5,0.125
+"Massachusetts","train",10,5,31,0.4,0
+"Massachusetts","train",10,6,30,0.4,0
+"Massachusetts","train",10,7,31,0.333333333333333,0
+"Massachusetts","train",10,8,31,0.333333333333333,0
+"Massachusetts","train",10,9,31,0.397260273972603,0
+"Massachusetts","train",10,10,31,0.375,0
+"Michigan","holdout",5,1,1,1,1
+"Michigan","holdout",5,2,1,0,0
+"Michigan","holdout",5,3,1,0,0
+"Michigan","holdout",5,4,1,1,1
+"Michigan","holdout",5,5,1,1,1
+"Michigan","holdout",5,6,1,0,0
+"Michigan","holdout",5,7,1,0.666666666666667,0.5
+"Michigan","holdout",5,8,1,0,0
+"Michigan","holdout",5,9,1,0.3,0.3
+"Michigan","holdout",5,10,2,0.34375,0.3125
+"Michigan","holdout",10,1,1,1,1
+"Michigan","holdout",10,2,2,0,0
+"Michigan","holdout",10,3,2,1,1
+"Michigan","holdout",10,4,2,0.0789473684210526,0.0789473684210526
+"Michigan","holdout",10,5,2,0.483333333333333,0.416666666666667
+"Michigan","holdout",10,6,2,0.172697368421053,0.238095238095238
+"Michigan","holdout",10,7,2,0.5,0.75
+"Michigan","holdout",10,8,2,0.333333333333333,0.333333333333333
+"Michigan","holdout",10,9,2,0.833333333333333,0.5
+"Michigan","holdout",10,10,2,0.416666666666667,0.5
+"Michigan","train",5,1,12,1,1
+"Michigan","train",5,2,12,0.5,0.416666666666667
+"Michigan","train",5,3,12,0.333333333333333,0
+"Michigan","train",5,4,12,0.45,0.25
+"Michigan","train",5,5,12,0.318181818181818,0
+"Michigan","train",5,6,12,0.5,0
+"Michigan","train",5,7,12,0.489430894308943,0.159090909090909
+"Michigan","train",5,8,12,0.5,0.116883116883117
+"Michigan","train",5,9,12,0.479508196721312,0
+"Michigan","train",5,10,13,0.384615384615385,0
+"Michigan","train",10,1,24,0.583333333333333,0.5
+"Michigan","train",10,2,25,0.4,0
+"Michigan","train",10,3,25,0.466666666666667,0
+"Michigan","train",10,4,25,0.5,0.0909090909090909
+"Michigan","train",10,5,25,0.477272727272727,0
+"Michigan","train",10,6,25,0.485714285714286,0.1875
+"Michigan","train",10,7,25,0.4,0
+"Michigan","train",10,8,25,0.4,0
+"Michigan","train",10,9,25,0.333333333333333,0
+"Michigan","train",10,10,25,0.428571428571429,0
+"Minnesota","holdout",5,1,2,1,1
+"Minnesota","holdout",5,2,2,0,0
+"Minnesota","holdout",5,3,2,0.75,0.5
+"Minnesota","holdout",5,4,2,0.357142857142857,0.3
+"Minnesota","holdout",5,5,3,0.5,0
+"Minnesota","holdout",5,6,2,1,1
+"Minnesota","holdout",5,7,2,0.527777777777778,0
+"Minnesota","holdout",5,8,2,0.642857142857143,0.642857142857143
+"Minnesota","holdout",5,9,2,0.425,0.125
+"Minnesota","holdout",5,10,3,1,1
+"Minnesota","holdout",10,1,4,0.5,0.5
+"Minnesota","holdout",10,2,4,0.607142857142857,0.3
+"Minnesota","holdout",10,3,4,0.55,0.166666666666667
+"Minnesota","holdout",10,4,4,0.527777777777778,0.142857142857143
+"Minnesota","holdout",10,5,4,0.8,0.625
+"Minnesota","holdout",10,6,4,0.375,0
+"Minnesota","holdout",10,7,4,0.3125,0
+"Minnesota","holdout",10,8,4,0.416666666666667,0.1
+"Minnesota","holdout",10,9,4,0.166666666666667,0.166666666666667
+"Minnesota","holdout",10,10,5,0.3,0
+"Minnesota","train",5,1,16,1,1
+"Minnesota","train",5,2,16,0.5,0.166666666666667
+"Minnesota","train",5,3,16,0.55,0.125
+"Minnesota","train",5,4,16,0.4,0
+"Minnesota","train",5,5,17,0.5,0
+"Minnesota","train",5,6,16,0.48728813559322,0
+"Minnesota","train",5,7,16,0.333333333333333,0
+"Minnesota","train",5,8,16,0.408333333333333,0.1
+"Minnesota","train",5,9,16,0.333333333333333,0
+"Minnesota","train",5,10,17,0.366666666666667,0
+"Minnesota","train",10,1,30,0.633333333333333,0.5
+"Minnesota","train",10,2,31,0.5,0
+"Minnesota","train",10,3,30,0.5,0
+"Minnesota","train",10,4,31,0.333333333333333,0
+"Minnesota","train",10,5,31,0.428571428571429,0
+"Minnesota","train",10,6,30,0.345238095238095,0
+"Minnesota","train",10,7,31,0.285714285714286,0
+"Minnesota","train",10,8,30,0.325757575757576,0
+"Minnesota","train",10,9,31,0.27027027027027,0
+"Minnesota","train",10,10,31,0.25,0
+"Mississippi","holdout",5,1,1,0,0
+"Mississippi","holdout",5,2,1,1,1
+"Mississippi","holdout",5,3,1,0,0
+"Mississippi","holdout",5,4,1,0.5,0.5
+"Mississippi","holdout",5,5,1,1,1
+"Mississippi","holdout",5,6,1,0.388888888888889,0.333333333333333
+"Mississippi","holdout",5,7,1,0.625,1
+"Mississippi","holdout",5,8,1,0.379310344827586,0
+"Mississippi","holdout",5,9,1,0,0
+"Mississippi","holdout",5,10,2,0,0
+"Mississippi","holdout",10,1,2,0.5,0.5
+"Mississippi","holdout",10,2,3,0.5,0.5
+"Mississippi","holdout",10,3,2,0.506944444444444,0.666666666666667
+"Mississippi","holdout",10,4,3,0,0
+"Mississippi","holdout",10,5,2,0.404040404040404,0.238095238095238
+"Mississippi","holdout",10,6,3,0.516129032258065,0.6
+"Mississippi","holdout",10,7,2,0.267857142857143,0.5
+"Mississippi","holdout",10,8,3,0.5,0.166666666666667
+"Mississippi","holdout",10,9,2,0.25,0.25
+"Mississippi","holdout",10,10,3,0.352941176470588,0.2
+"Mississippi","train",5,1,9,1,1
+"Mississippi","train",5,2,10,0.25,0
+"Mississippi","train",5,3,10,0.509058988764045,0
+"Mississippi","train",5,4,10,0.521739130434783,0.236111111111111
+"Mississippi","train",5,5,10,0.504545454545455,0.0555555555555556
+"Mississippi","train",5,6,9,0.492307692307692,0
+"Mississippi","train",5,7,10,0.451103189131901,0.0454545454545455
+"Mississippi","train",5,8,10,0.462626262626263,0
+"Mississippi","train",5,9,10,0.433187946074544,0
+"Mississippi","train",5,10,10,0.475432389937107,0
+"Mississippi","train",10,1,22,0.519736842105263,0.222222222222222
+"Mississippi","train",10,2,23,0.5125,0.2
+"Mississippi","train",10,3,23,0.464285714285714,0
+"Mississippi","train",10,4,23,0.455555555555556,0
+"Mississippi","train",10,5,23,0.446153846153846,0
+"Mississippi","train",10,6,23,0.401709401709402,0
+"Mississippi","train",10,7,23,0.346007604562738,0
+"Mississippi","train",10,8,23,0.345291479820628,0
+"Mississippi","train",10,9,23,0.166666666666667,0
+"Mississippi","train",10,10,23,0.285714285714286,0
+"Missouri","holdout",5,1,1,1,1
+"Missouri","holdout",5,2,1,0,0
+"Missouri","holdout",5,3,1,0,0
+"Missouri","holdout",5,4,2,0,0
+"Missouri","holdout",5,5,1,0,0
+"Missouri","holdout",5,6,1,0,0
+"Missouri","holdout",5,7,2,0.625,0.5
+"Missouri","holdout",5,8,1,0.333333333333333,0.5
+"Missouri","holdout",5,9,1,0.8,0.666666666666667
+"Missouri","holdout",5,10,2,0.205882352941176,0.2
+"Missouri","holdout",10,1,3,0,0
+"Missouri","holdout",10,2,4,0,0
+"Missouri","holdout",10,3,3,0.5,0.5
+"Missouri","holdout",10,4,4,0.205882352941176,0.2
+"Missouri","holdout",10,5,3,0.368421052631579,0
+"Missouri","holdout",10,6,4,0.138888888888889,0
+"Missouri","holdout",10,7,3,0.285714285714286,0
+"Missouri","holdout",10,8,4,0,0
+"Missouri","holdout",10,9,3,0.25,0
+"Missouri","holdout",10,10,4,0.25,0.5
+"Missouri","train",5,1,14,0.633333333333333,0.375
+"Missouri","train",5,2,14,0.55,0
+"Missouri","train",5,3,14,0.366666666666667,0.125
+"Missouri","train",5,4,14,0.316666666666667,0
+"Missouri","train",5,5,14,0.495614035087719,0
+"Missouri","train",5,6,14,0.343137254901961,0
+"Missouri","train",5,7,14,0.39375,0
+"Missouri","train",5,8,14,0.369318181818182,0
+"Missouri","train",5,9,14,0.256363636363636,0
+"Missouri","train",5,10,15,0.266666666666667,0
+"Missouri","train",10,1,28,0.6,0.125
+"Missouri","train",10,2,29,0.333333333333333,0
+"Missouri","train",10,3,29,0.4,0
+"Missouri","train",10,4,29,0.363636363636364,0
+"Missouri","train",10,5,29,0.25,0
+"Missouri","train",10,6,29,0.230769230769231,0
+"Missouri","train",10,7,29,0.203703703703704,0
+"Missouri","train",10,8,29,0.285714285714286,0
+"Missouri","train",10,9,29,0.25,0
+"Missouri","train",10,10,29,0.222222222222222,0
+"Montana","holdout",5,1,2,0.5,0.5
+"Montana","holdout",5,2,2,0.5,0.5
+"Montana","holdout",5,3,2,0.333333333333333,0.5
+"Montana","holdout",5,4,2,0,0
+"Montana","holdout",5,5,3,0,0
+"Montana","holdout",5,6,2,0.25,0.5
+"Montana","holdout",5,7,2,0,0
+"Montana","holdout",5,8,2,0.2,0
+"Montana","holdout",5,9,2,0.5,0.5
+"Montana","holdout",5,10,3,1,1
+"Montana","holdout",10,1,2,0.5,0.5
+"Montana","holdout",10,2,3,0,0
+"Montana","holdout",10,3,3,0,0
+"Montana","holdout",10,4,2,0,0
+"Montana","holdout",10,5,3,0,0
+"Montana","holdout",10,6,3,0,0
+"Montana","holdout",10,7,2,0.0789473684210526,0.0555555555555556
+"Montana","holdout",10,8,3,0.166666666666667,0
+"Montana","holdout",10,9,3,0.2,0
+"Montana","holdout",10,10,3,0.125,0
+"Montana","train",5,1,13,0.666666666666667,0.666666666666667
+"Montana","train",5,2,14,0.291666666666667,0
+"Montana","train",5,3,14,0.416666666666667,0
+"Montana","train",5,4,13,0.25,0
+"Montana","train",5,5,14,0.354166666666667,0
+"Montana","train",5,6,14,0.333333333333333,0
+"Montana","train",5,7,13,0.25,0
+"Montana","train",5,8,14,0.275,0
+"Montana","train",5,9,14,0.333333333333333,0
+"Montana","train",5,10,14,0.333333333333333,0
+"Montana","train",10,1,24,0.464285714285714,0.5
+"Montana","train",10,2,25,0.333333333333333,0
+"Montana","train",10,3,25,0.333333333333333,0
+"Montana","train",10,4,25,0.25,0
+"Montana","train",10,5,25,0.333333333333333,0
+"Montana","train",10,6,24,0.345238095238095,0
+"Montana","train",10,7,25,0.25,0
+"Montana","train",10,8,25,0.272727272727273,0
+"Montana","train",10,9,25,0.25,0
+"Montana","train",10,10,25,0.238095238095238,0
+"Nebraska","holdout",5,1,2,0,0
+"Nebraska","holdout",5,2,3,0,0
+"Nebraska","holdout",5,3,3,0,0
+"Nebraska","holdout",5,4,2,0,0
+"Nebraska","holdout",5,5,3,0.2,0
+"Nebraska","holdout",5,6,3,0,0
+"Nebraska","holdout",5,7,2,0,0
+"Nebraska","holdout",5,8,3,0,0
+"Nebraska","holdout",5,9,3,0.0909090909090909,0
+"Nebraska","holdout",5,10,3,0,0
+"Nebraska","holdout",10,1,4,0,0
+"Nebraska","holdout",10,2,4,0,0
+"Nebraska","holdout",10,3,4,0.0833333333333333,0
+"Nebraska","holdout",10,4,4,0.333333333333333,0.333333333333333
+"Nebraska","holdout",10,5,4,0,0
+"Nebraska","holdout",10,6,4,0.0454545454545455,0
+"Nebraska","holdout",10,7,4,0.125,0.125
+"Nebraska","holdout",10,8,4,0,0
+"Nebraska","holdout",10,9,4,0.0625,0
+"Nebraska","holdout",10,10,4,0.118055555555556,0.0454545454545455
+"Nebraska","train",5,1,18,0,0
+"Nebraska","train",5,2,18,0,0
+"Nebraska","train",5,3,18,0,0
+"Nebraska","train",5,4,19,0,0
+"Nebraska","train",5,5,18,0.133928571428571,0
+"Nebraska","train",5,6,18,0.0714285714285714,0
+"Nebraska","train",5,7,19,0.157894736842105,0
+"Nebraska","train",5,8,18,0.166666666666667,0
+"Nebraska","train",5,9,18,0.186813186813187,0
+"Nebraska","train",5,10,19,0.142857142857143,0
+"Nebraska","train",10,1,33,0,0
+"Nebraska","train",10,2,34,0,0
+"Nebraska","train",10,3,34,0.133928571428571,0
+"Nebraska","train",10,4,34,0.148351648351648,0
+"Nebraska","train",10,5,34,0.166666666666667,0
+"Nebraska","train",10,6,33,0.207547169811321,0
+"Nebraska","train",10,7,34,0.194059405940594,0
+"Nebraska","train",10,8,34,0.181818181818182,0
+"Nebraska","train",10,9,34,0.16869918699187,0
+"Nebraska","train",10,10,34,0.130681818181818,0
+"Nevada","holdout",5,1,2,0.4875,0.3
+"Nevada","holdout",5,2,2,0.166666666666667,0
+"Nevada","holdout",5,3,2,0.5,0.5
+"Nevada","holdout",5,4,2,0.181818181818182,0.5
+"Nevada","holdout",5,5,2,0.3875,0.125
+"Nevada","holdout",5,6,2,0.3125,0
+"Nevada","holdout",5,7,2,0,0
+"Nevada","holdout",5,8,2,0.5,0.5
+"Nevada","holdout",5,9,2,0.666666666666667,0.75
+"Nevada","holdout",5,10,3,0.285714285714286,0
+"Nevada","holdout",10,1,4,0.354166666666667,0
+"Nevada","holdout",10,2,4,0.181818181818182,0.5
+"Nevada","holdout",10,3,5,0.375,0
+"Nevada","holdout",10,4,4,0.5,0.5
+"Nevada","holdout",10,5,5,0.285714285714286,0.333333333333333
+"Nevada","holdout",10,6,4,0.0952380952380952,0
+"Nevada","holdout",10,7,4,0.159313725490196,0
+"Nevada","holdout",10,8,5,0,0
+"Nevada","holdout",10,9,4,0,0
+"Nevada","holdout",10,10,5,0.0555555555555556,0
+"Nevada","train",5,1,15,0.444444444444444,0.333333333333333
+"Nevada","train",5,2,15,0.333333333333333,0
+"Nevada","train",5,3,15,0.3,0
+"Nevada","train",5,4,16,0.333333333333333,0
+"Nevada","train",5,5,15,0.333333333333333,0
+"Nevada","train",5,6,15,0.352941176470588,0
+"Nevada","train",5,7,16,0.238636363636364,0
+"Nevada","train",5,8,15,0.205128205128205,0
+"Nevada","train",5,9,15,0.3,0
+"Nevada","train",5,10,16,0.238336713995943,0
+"Nevada","train",10,1,31,0.363636363636364,0
+"Nevada","train",10,2,31,0.333333333333333,0
+"Nevada","train",10,3,31,0.333333333333333,0
+"Nevada","train",10,4,32,0.227272727272727,0
+"Nevada","train",10,5,31,0.235294117647059,0
+"Nevada","train",10,6,31,0.25,0
+"Nevada","train",10,7,32,0.2,0
+"Nevada","train",10,8,31,0.25,0
+"Nevada","train",10,9,31,0.21875,0
+"Nevada","train",10,10,32,0.225987841945289,0
+"New Hampshire","holdout",5,1,1,1,1
+"New Hampshire","holdout",5,2,2,0.25,0.25
+"New Hampshire","holdout",5,3,1,0.5,0.5
+"New Hampshire","holdout",5,4,2,0.142857142857143,0.1
+"New Hampshire","holdout",5,5,1,0,0
+"New Hampshire","holdout",5,6,2,0,0
+"New Hampshire","holdout",5,7,1,0.333333333333333,0.333333333333333
+"New Hampshire","holdout",5,8,2,0.5,0.5
+"New Hampshire","holdout",5,9,1,0,0
+"New Hampshire","holdout",5,10,2,0.25,0.25
+"New Hampshire","holdout",10,1,3,0.5,0.5
+"New Hampshire","holdout",10,2,3,0.285714285714286,0.2
+"New Hampshire","holdout",10,3,3,0,0
+"New Hampshire","holdout",10,4,3,0.333333333333333,0.333333333333333
+"New Hampshire","holdout",10,5,4,0,0
+"New Hampshire","holdout",10,6,3,0.5,0.5
+"New Hampshire","holdout",10,7,3,1,1
+"New Hampshire","holdout",10,8,3,0.222222222222222,0.142857142857143
+"New Hampshire","holdout",10,9,3,0,0
+"New Hampshire","holdout",10,10,4,0.291666666666667,0
+"New Hampshire","train",5,1,16,0.333333333333333,0.166666666666667
+"New Hampshire","train",5,2,17,0,0
+"New Hampshire","train",5,3,16,0.25,0
+"New Hampshire","train",5,4,17,0.428571428571429,0
+"New Hampshire","train",5,5,17,0.285714285714286,0
+"New Hampshire","train",5,6,16,0,0
+"New Hampshire","train",5,7,17,0.2,0
+"New Hampshire","train",5,8,16,0.333333333333333,0
+"New Hampshire","train",5,9,17,0.142857142857143,0
+"New Hampshire","train",5,10,17,0.142857142857143,0
+"New Hampshire","train",10,1,28,0,0
+"New Hampshire","train",10,2,28,0.354166666666667,0
+"New Hampshire","train",10,3,28,0.333333333333333,0
+"New Hampshire","train",10,4,29,0.2,0
+"New Hampshire","train",10,5,28,0.275,0
+"New Hampshire","train",10,6,28,0.142857142857143,0
+"New Hampshire","train",10,7,29,0.214285714285714,0
+"New Hampshire","train",10,8,28,0.149074074074074,0
+"New Hampshire","train",10,9,28,0.219551282051282,0
+"New Hampshire","train",10,10,29,0.2,0
+"New Jersey","holdout",5,1,1,0,0
+"New Jersey","holdout",5,2,1,1,1
+"New Jersey","holdout",5,3,1,0,0
+"New Jersey","holdout",5,4,1,0,0
+"New Jersey","holdout",5,5,2,0.125,0
+"New Jersey","holdout",5,6,1,0,0
+"New Jersey","holdout",5,7,1,0,0
+"New Jersey","holdout",5,8,1,0.333333333333333,0.5
+"New Jersey","holdout",5,9,1,0,0
+"New Jersey","holdout",5,10,2,0.1875,0.2
+"New Jersey","holdout",10,1,2,0.5,0.5
+"New Jersey","holdout",10,2,3,0,0
+"New Jersey","holdout",10,3,3,0,0
+"New Jersey","holdout",10,4,2,0.166666666666667,0.25
+"New Jersey","holdout",10,5,3,0.25,0.333333333333333
+"New Jersey","holdout",10,6,3,0.4,0
+"New Jersey","holdout",10,7,2,0,0
+"New Jersey","holdout",10,8,3,0.333333333333333,0
+"New Jersey","holdout",10,9,3,0,0
+"New Jersey","holdout",10,10,3,0.25,0.5
+"New Jersey","train",5,1,16,0,0
+"New Jersey","train",5,2,16,0,0
+"New Jersey","train",5,3,16,0.213235294117647,0
+"New Jersey","train",5,4,16,0.142857142857143,0
+"New Jersey","train",5,5,17,0.352941176470588,0
+"New Jersey","train",5,6,16,0.25,0
+"New Jersey","train",5,7,16,0.25,0
+"New Jersey","train",5,8,16,0.2,0
+"New Jersey","train",5,9,16,0,0
+"New Jersey","train",5,10,17,0.25,0
+"New Jersey","train",10,1,30,0,0
+"New Jersey","train",10,2,30,0.150375939849624,0
+"New Jersey","train",10,3,30,0.25,0
+"New Jersey","train",10,4,31,0.25,0
+"New Jersey","train",10,5,30,0.1125,0
+"New Jersey","train",10,6,30,0.197916666666667,0
+"New Jersey","train",10,7,31,0.222222222222222,0
+"New Jersey","train",10,8,30,0.247641509433962,0
+"New Jersey","train",10,9,30,0.246212121212121,0
+"New Jersey","train",10,10,31,0.2,0
+"New Mexico","holdout",5,1,2,0.625,0.75
+"New Mexico","holdout",5,2,2,0,0
+"New Mexico","holdout",5,3,3,1,1
+"New Mexico","holdout",5,4,2,0.458333333333333,0.666666666666667
+"New Mexico","holdout",5,5,3,0.5,0.5
+"New Mexico","holdout",5,6,2,0.75,0.5
+"New Mexico","holdout",5,7,2,0.166666666666667,0.166666666666667
+"New Mexico","holdout",5,8,3,0.25,0.25
+"New Mexico","holdout",5,9,2,0.590909090909091,0.75
+"New Mexico","holdout",5,10,3,0,0
+"New Mexico","holdout",10,1,2,0.625,0.75
+"New Mexico","holdout",10,2,2,0,0
+"New Mexico","holdout",10,3,3,1,1
+"New Mexico","holdout",10,4,2,0.458333333333333,0.666666666666667
+"New Mexico","holdout",10,5,3,0.5,0.5
+"New Mexico","holdout",10,6,2,0.75,0.5
+"New Mexico","holdout",10,7,2,0.266666666666667,0.270114942528736
+"New Mexico","holdout",10,8,3,0.3,0.25
+"New Mexico","holdout",10,9,2,0.273648648648649,0.333333333333333
+"New Mexico","holdout",10,10,3,0.30188679245283,0
+"New Mexico","train",5,1,8,0.625,0.75
+"New Mexico","train",5,2,9,0.25,0
+"New Mexico","train",5,3,9,0.5,0.416666666666667
+"New Mexico","train",5,4,8,0.596875,0.509259259259259
+"New Mexico","train",5,5,9,0.555555555555556,0.333333333333333
+"New Mexico","train",5,6,9,0.526315789473684,0
+"New Mexico","train",5,7,8,0.518187830687831,0.0882352941176471
+"New Mexico","train",5,8,9,0.536585365853659,0
+"New Mexico","train",5,9,9,0.521739130434783,0.333333333333333
+"New Mexico","train",5,10,9,0.5,0
+"New Mexico","train",10,1,20,0.5,0.25
+"New Mexico","train",10,2,21,0.5625,0.416666666666667
+"New Mexico","train",10,3,20,0.518518518518518,0
+"New Mexico","train",10,4,21,0.5,0
+"New Mexico","train",10,5,20,0.50609756097561,0.25
+"New Mexico","train",10,6,21,0.512820512820513,0
+"New Mexico","train",10,7,20,0.484570661896243,0
+"New Mexico","train",10,8,21,0.469387755102041,0.166666666666667
+"New Mexico","train",10,9,20,0.472137791286727,0.0833333333333333
+"New Mexico","train",10,10,21,0.444444444444444,0
+"New York","holdout",5,1,1,0,0
+"New York","holdout",5,2,2,0.666666666666667,0.75
+"New York","holdout",5,3,2,0.7,0.75
+"New York","holdout",5,4,2,0.25,0.25
+"New York","holdout",5,5,2,0.666666666666667,0.583333333333333
+"New York","holdout",5,6,2,0.666666666666667,0.5
+"New York","holdout",5,7,2,0.666666666666667,0.5
+"New York","holdout",5,8,2,0.125,0.166666666666667
+"New York","holdout",5,9,2,0.333333333333333,0.25
+"New York","holdout",5,10,2,0.395833333333333,0.5
+"New York","holdout",10,1,3,0.333333333333333,0.5
+"New York","holdout",10,2,3,0.5,0.5
+"New York","holdout",10,3,4,0.5,0.25
+"New York","holdout",10,4,3,0.666666666666667,0.5
+"New York","holdout",10,5,4,0.208333333333333,0.166666666666667
+"New York","holdout",10,6,3,0.666666666666667,0.666666666666667
+"New York","holdout",10,7,3,1,1
+"New York","holdout",10,8,4,0.6,0.5
+"New York","holdout",10,9,3,0.6,0.5
+"New York","holdout",10,10,4,0.287037037037037,0
+"New York","train",5,1,11,0.6,0.571428571428571
+"New York","train",5,2,12,0.416666666666667,0
+"New York","train",5,3,12,0.5,0.5
+"New York","train",5,4,12,0.511904761904762,0
+"New York","train",5,5,12,0.474424552429668,0
+"New York","train",5,6,12,0.49,0
+"New York","train",5,7,12,0.4375,0
+"New York","train",5,8,12,0.354166666666667,0
+"New York","train",5,9,12,0.354166666666667,0
+"New York","train",5,10,12,0.444444444444444,0.125
+"New York","train",10,1,25,0.571428571428571,0
+"New York","train",10,2,25,0.5,0.5
+"New York","train",10,3,25,0.478260869565217,0
+"New York","train",10,4,25,0.375,0
+"New York","train",10,5,26,0.414285714285714,0
+"New York","train",10,6,25,0.48780487804878,0
+"New York","train",10,7,25,0.46,0
+"New York","train",10,8,25,0.4375,0
+"New York","train",10,9,25,0.428571428571429,0
+"New York","train",10,10,26,0.327956989247312,0
+"North Carolina","holdout",5,1,2,0.75,0.75
+"North Carolina","holdout",5,2,3,0.333333333333333,0
+"North Carolina","holdout",5,3,3,0.666666666666667,0
+"North Carolina","holdout",5,4,2,0,0
+"North Carolina","holdout",5,5,3,0,0
+"North Carolina","holdout",5,6,3,0.333333333333333,0.333333333333333
+"North Carolina","holdout",5,7,2,0.25,0.5
+"North Carolina","holdout",5,8,3,0.375,0.333333333333333
+"North Carolina","holdout",5,9,3,0,0
+"North Carolina","holdout",5,10,3,0.5,1
+"North Carolina","holdout",10,1,3,0.5,0.5
+"North Carolina","holdout",10,2,4,0.25,0
+"North Carolina","holdout",10,3,4,0,0
+"North Carolina","holdout",10,4,4,0.166666666666667,0.166666666666667
+"North Carolina","holdout",10,5,4,0.0714285714285714,0.0526315789473684
+"North Carolina","holdout",10,6,4,0.6875,0.666666666666667
+"North Carolina","holdout",10,7,4,0.111111111111111,0.25
+"North Carolina","holdout",10,8,4,0.266666666666667,0
+"North Carolina","holdout",10,9,4,0.1875,0
+"North Carolina","holdout",10,10,4,0.125,0.2
+"North Carolina","train",5,1,18,0.5,0.416666666666667
+"North Carolina","train",5,2,19,0.5,0
+"North Carolina","train",5,3,19,0.5,0.142857142857143
+"North Carolina","train",5,4,19,0.333333333333333,0
+"North Carolina","train",5,5,19,0.4,0
+"North Carolina","train",5,6,18,0.436507936507937,0
+"North Carolina","train",5,7,19,0.4,0.142857142857143
+"North Carolina","train",5,8,19,0.296296296296296,0
+"North Carolina","train",5,9,19,0.3,0
+"North Carolina","train",5,10,19,0.333333333333333,0
+"North Carolina","train",10,1,31,0.5,0.333333333333333
+"North Carolina","train",10,2,32,0.416666666666667,0
+"North Carolina","train",10,3,32,0.4,0
+"North Carolina","train",10,4,31,0.4,0
+"North Carolina","train",10,5,32,0.333333333333333,0
+"North Carolina","train",10,6,32,0.333333333333333,0
+"North Carolina","train",10,7,31,0.307692307692308,0
+"North Carolina","train",10,8,32,0.294117647058824,0
+"North Carolina","train",10,9,32,0.290570175438597,0
+"North Carolina","train",10,10,32,0.284033613445378,0
+"North Dakota","holdout",5,1,1,0,0
+"North Dakota","holdout",5,2,2,0,0
+"North Dakota","holdout",5,3,1,0.5,0.5
+"North Dakota","holdout",5,4,2,0,0
+"North Dakota","holdout",5,5,1,1,1
+"North Dakota","holdout",5,6,2,0.5,0.25
+"North Dakota","holdout",5,7,1,0,0
+"North Dakota","holdout",5,8,2,0,0
+"North Dakota","holdout",5,9,1,0.5,0
+"North Dakota","holdout",5,10,2,0.375,0.666666666666667
+"North Dakota","holdout",10,1,2,0,0
+"North Dakota","holdout",10,2,3,0,0
+"North Dakota","holdout",10,3,3,0.5,0
+"North Dakota","holdout",10,4,3,0,0
+"North Dakota","holdout",10,5,3,0.25,0
+"North Dakota","holdout",10,6,2,0.361111111111111,0.6
+"North Dakota","holdout",10,7,3,0,0
+"North Dakota","holdout",10,8,3,0,0
+"North Dakota","holdout",10,9,3,0,0
+"North Dakota","holdout",10,10,3,0,0
+"North Dakota","train",5,1,10,0.5,0.375
+"North Dakota","train",5,2,11,0,0
+"North Dakota","train",5,3,11,0.25,0
+"North Dakota","train",5,4,11,0.333333333333333,0
+"North Dakota","train",5,5,11,0.25,0
+"North Dakota","train",5,6,11,0.333333333333333,0
+"North Dakota","train",5,7,11,0,0
+"North Dakota","train",5,8,11,0.285714285714286,0
+"North Dakota","train",5,9,11,0.333333333333333,0
+"North Dakota","train",5,10,11,0.25,0
+"North Dakota","train",10,1,20,0.333333333333333,0
+"North Dakota","train",10,2,20,0.291666666666667,0
+"North Dakota","train",10,3,20,0.25,0
+"North Dakota","train",10,4,20,0,0
+"North Dakota","train",10,5,20,0.333333333333333,0
+"North Dakota","train",10,6,20,0.225,0
+"North Dakota","train",10,7,20,0.160714285714286,0
+"North Dakota","train",10,8,20,0.16025641025641,0
+"North Dakota","train",10,9,20,0.237647058823529,0
+"North Dakota","train",10,10,21,0.3125,0
+"Ohio","holdout",5,1,2,0,0
+"Ohio","holdout",5,2,2,0.166666666666667,0.5
+"Ohio","holdout",5,3,3,0,0
+"Ohio","holdout",5,4,2,0,0
+"Ohio","holdout",5,5,3,0.5,0.5
+"Ohio","holdout",5,6,2,0,0
+"Ohio","holdout",5,7,2,0.4375,0.0714285714285714
+"Ohio","holdout",5,8,3,0.333333333333333,0.333333333333333
+"Ohio","holdout",5,9,2,0.583333333333333,1
+"Ohio","holdout",5,10,3,0,0
+"Ohio","holdout",10,1,4,0,0
+"Ohio","holdout",10,2,5,0,0
+"Ohio","holdout",10,3,5,0,0
+"Ohio","holdout",10,4,5,0.375,0.142857142857143
+"Ohio","holdout",10,5,5,0.5,0
+"Ohio","holdout",10,6,4,0.666666666666667,0.583333333333333
+"Ohio","holdout",10,7,5,0.222222222222222,0
+"Ohio","holdout",10,8,5,0,0
+"Ohio","holdout",10,9,5,0.285714285714286,0
+"Ohio","holdout",10,10,5,0.333333333333333,0.5
+"Ohio","train",5,1,19,0.4,0
+"Ohio","train",5,2,20,0.316666666666667,0
+"Ohio","train",5,3,20,0.276190476190476,0
+"Ohio","train",5,4,19,0.25,0.25
+"Ohio","train",5,5,20,0.279220779220779,0
+"Ohio","train",5,6,20,0.285714285714286,0
+"Ohio","train",5,7,19,0.166666666666667,0
+"Ohio","train",5,8,20,0.32051282051282,0
+"Ohio","train",5,9,20,0.279220779220779,0
+"Ohio","train",5,10,20,0.255,0
+"Ohio","train",10,1,36,0.366666666666667,0
+"Ohio","train",10,2,37,0.266666666666667,0
+"Ohio","train",10,3,37,0.25,0
+"Ohio","train",10,4,37,0.255813953488372,0
+"Ohio","train",10,5,37,0.333333333333333,0
+"Ohio","train",10,6,36,0.227739726027397,0
+"Ohio","train",10,7,37,0.254237288135593,0
+"Ohio","train",10,8,37,0.220779220779221,0
+"Ohio","train",10,9,37,0.18232044198895,0
+"Ohio","train",10,10,37,0.195945945945946,0
+"Oklahoma","holdout",5,1,2,0.5,0.5
+"Oklahoma","holdout",5,2,2,0.625,0.625
+"Oklahoma","holdout",5,3,2,0.5,0.5
+"Oklahoma","holdout",5,4,3,0.5,0
+"Oklahoma","holdout",5,5,2,0.642857142857143,0.642857142857143
+"Oklahoma","holdout",5,6,2,0.5,0.5
+"Oklahoma","holdout",5,7,3,0.333333333333333,0.5
+"Oklahoma","holdout",5,8,2,0.45,0.2
+"Oklahoma","holdout",5,9,2,0.125,0.166666666666667
+"Oklahoma","holdout",5,10,3,0,0
+"Oklahoma","holdout",10,1,3,0.25,0.25
+"Oklahoma","holdout",10,2,3,1,1
+"Oklahoma","holdout",10,3,3,0.5,0
+"Oklahoma","holdout",10,4,4,0.642857142857143,0.642857142857143
+"Oklahoma","holdout",10,5,3,0.333333333333333,0.5
+"Oklahoma","holdout",10,6,3,0.4,0.333333333333333
+"Oklahoma","holdout",10,7,4,0,0
+"Oklahoma","holdout",10,8,3,0.166666666666667,0
+"Oklahoma","holdout",10,9,3,0.375,0.4
+"Oklahoma","holdout",10,10,4,0.136363636363636,0.117647058823529
+"Oklahoma","train",5,1,10,0.5,0.25
+"Oklahoma","train",5,2,11,0.461538461538462,0.375
+"Oklahoma","train",5,3,11,0.375,0
+"Oklahoma","train",5,4,11,0.5,0.511627906976744
+"Oklahoma","train",5,5,11,0.333333333333333,0
+"Oklahoma","train",5,6,10,0.472222222222222,0.242857142857143
+"Oklahoma","train",5,7,11,0.4,0.235294117647059
+"Oklahoma","train",5,8,11,0.4,0
+"Oklahoma","train",5,9,11,0.46,0
+"Oklahoma","train",5,10,11,0.5,0.428571428571429
+"Oklahoma","train",10,1,22,0.5,0.4375
+"Oklahoma","train",10,2,23,0.428571428571429,0
+"Oklahoma","train",10,3,22,0.345238095238095,0.1
+"Oklahoma","train",10,4,23,0.4,0
+"Oklahoma","train",10,5,22,0.442857142857143,0.195454545454545
+"Oklahoma","train",10,6,23,0.417721518987342,0
+"Oklahoma","train",10,7,22,0.352413793103448,0
+"Oklahoma","train",10,8,23,0.328571428571429,0
+"Oklahoma","train",10,9,22,0.428675048355899,0
+"Oklahoma","train",10,10,23,0.38961038961039,0
+"Oregon","holdout",5,2,1,1,1
+"Oregon","holdout",5,3,1,0,0
+"Oregon","holdout",5,4,1,0.45,0.45
+"Oregon","holdout",5,5,1,0.333333333333333,0.333333333333333
+"Oregon","holdout",5,7,1,0,0
+"Oregon","holdout",5,8,1,0.36,0
+"Oregon","holdout",5,9,1,0.44,0.5
+"Oregon","holdout",5,10,1,0.391304347826087,0
+"Oregon","holdout",10,1,2,0.5,0.5
+"Oregon","holdout",10,2,2,0.391666666666667,0.391666666666667
+"Oregon","holdout",10,3,2,0.18,0
+"Oregon","holdout",10,4,3,0.44,0.5
+"Oregon","holdout",10,5,2,0.403571428571429,0.439393939393939
+"Oregon","holdout",10,6,2,0.392307692307692,0.321428571428571
+"Oregon","holdout",10,7,3,0.4,1
+"Oregon","holdout",10,8,2,0.25,0.25
+"Oregon","holdout",10,9,2,0.404137931034483,0
+"Oregon","holdout",10,10,3,0.307692307692308,0
+"Oregon","train",5,1,7,0.696969696969697,0.696969696969697
+"Oregon","train",5,2,8,0.666666666666667,0.366666666666667
+"Oregon","train",5,3,8,0.639318885448916,0.388888888888889
+"Oregon","train",5,4,8,0.616515837104072,0.291666666666667
+"Oregon","train",5,5,8,0.583478260869565,0.25
+"Oregon","train",5,6,7,0.5,0
+"Oregon","train",5,7,8,0.56875,0
+"Oregon","train",5,8,8,0.552105948762484,0
+"Oregon","train",5,9,8,0.520833333333333,0
+"Oregon","train",5,10,8,0.472222222222222,0
+"Oregon","train",10,1,16,0.666666666666667,0.45
+"Oregon","train",10,2,17,0.625,0.333333333333333
+"Oregon","train",10,3,17,0.56,0
+"Oregon","train",10,4,17,0.553191489361702,0
+"Oregon","train",10,5,17,0.5,0
+"Oregon","train",10,6,17,0.525,0
+"Oregon","train",10,7,17,0.529411764705882,0
+"Oregon","train",10,8,17,0.512820512820513,0
+"Oregon","train",10,9,17,0.478260869565217,0
+"Oregon","train",10,10,17,0.469387755102041,0
+"Pennsylvania","holdout",5,1,2,0,0
+"Pennsylvania","holdout",5,2,2,0.5,0.5
+"Pennsylvania","holdout",5,3,2,0.25,0.25
+"Pennsylvania","holdout",5,4,2,0.642857142857143,0.666666666666667
+"Pennsylvania","holdout",5,5,2,0.25,0.25
+"Pennsylvania","holdout",5,6,2,0.416666666666667,0.25
+"Pennsylvania","holdout",5,7,2,0.340909090909091,0.625
+"Pennsylvania","holdout",5,8,2,0.25,0.25
+"Pennsylvania","holdout",5,9,2,0.583333333333333,0.5
+"Pennsylvania","holdout",5,10,2,0.15,0.25
+"Pennsylvania","holdout",10,1,3,0,0
+"Pennsylvania","holdout",10,2,4,0.75,0.75
+"Pennsylvania","holdout",10,3,3,0.285714285714286,0.333333333333333
+"Pennsylvania","holdout",10,4,4,0.416666666666667,0.375
+"Pennsylvania","holdout",10,5,3,0.5,0.5
+"Pennsylvania","holdout",10,6,4,0.233333333333333,0.25
+"Pennsylvania","holdout",10,7,3,0.333333333333333,0
+"Pennsylvania","holdout",10,8,4,0.416666666666667,0.194444444444444
+"Pennsylvania","holdout",10,9,3,0.333333333333333,0
+"Pennsylvania","holdout",10,10,4,0.1,0
+"Pennsylvania","train",5,1,13,0.666666666666667,0.633333333333333
+"Pennsylvania","train",5,2,14,0.5,0
+"Pennsylvania","train",5,3,13,0.5,0
+"Pennsylvania","train",5,4,14,0.5,0
+"Pennsylvania","train",5,5,14,0.486111111111111,0
+"Pennsylvania","train",5,6,13,0.5,0.125
+"Pennsylvania","train",5,7,14,0.494444444444444,0
+"Pennsylvania","train",5,8,13,0.428571428571429,0
+"Pennsylvania","train",5,9,14,0.395833333333333,0
+"Pennsylvania","train",5,10,14,0.354166666666667,0
+"Pennsylvania","train",10,1,28,0.606989247311828,0.166666666666667
+"Pennsylvania","train",10,2,29,0.5,0
+"Pennsylvania","train",10,3,29,0.5,0
+"Pennsylvania","train",10,4,29,0.428571428571429,0
+"Pennsylvania","train",10,5,29,0.375,0
+"Pennsylvania","train",10,6,28,0.379807692307692,0
+"Pennsylvania","train",10,7,29,0.333333333333333,0
+"Pennsylvania","train",10,8,29,0.3125,0
+"Pennsylvania","train",10,9,29,0.315789473684211,0
+"Pennsylvania","train",10,10,29,0.333333333333333,0
+"Rhode Island","holdout",5,2,1,1,1
+"Rhode Island","holdout",5,3,1,1,1
+"Rhode Island","holdout",5,5,1,0.217391304347826,0.217391304347826
+"Rhode Island","holdout",5,6,1,0.666666666666667,0
+"Rhode Island","holdout",5,8,1,1,1
+"Rhode Island","holdout",5,9,1,0.5,0.5
+"Rhode Island","holdout",5,10,1,0.75,0.666666666666667
+"Rhode Island","holdout",10,2,1,1,1
+"Rhode Island","holdout",10,3,1,1,1
+"Rhode Island","holdout",10,4,1,0.217391304347826,0.217391304347826
+"Rhode Island","holdout",10,5,1,0.416666666666667,0.466666666666667
+"Rhode Island","holdout",10,6,1,0.666666666666667,0
+"Rhode Island","holdout",10,7,1,1,1
+"Rhode Island","holdout",10,8,1,0.5,0.5
+"Rhode Island","holdout",10,9,1,0.391304347826087,0.333333333333333
+"Rhode Island","holdout",10,10,1,0.32,0.166666666666667
+"Rhode Island","train",5,1,6,0.75,0.333333333333333
+"Rhode Island","train",5,2,7,0.69047619047619,0
+"Rhode Island","train",5,3,6,0.667657045840407,0
+"Rhode Island","train",5,4,7,0.634146341463415,0
+"Rhode Island","train",5,5,6,0.620265151515151,0.25
+"Rhode Island","train",5,6,7,0.617647058823529,0.333333333333333
+"Rhode Island","train",5,7,6,0.588345864661654,0.340579710144927
+"Rhode Island","train",5,8,7,0.6,0.333333333333333
+"Rhode Island","train",5,9,6,0.577380952380952,0.333333333333333
+"Rhode Island","train",5,10,7,0.560975609756098,0
+"Rhode Island","train",10,1,12,0.73763440860215,0.333333333333333
+"Rhode Island","train",10,2,13,0.657894736842105,0
+"Rhode Island","train",10,3,13,0.617647058823529,0.333333333333333
+"Rhode Island","train",10,4,13,0.605263157894737,0.333333333333333
+"Rhode Island","train",10,5,13,0.5625,0.333333333333333
+"Rhode Island","train",10,6,13,0.545454545454545,0.25
+"Rhode Island","train",10,7,13,0.531914893617021,0
+"Rhode Island","train",10,8,13,0.534883720930233,0
+"Rhode Island","train",10,9,13,0.521739130434783,0.166666666666667
+"Rhode Island","train",10,10,13,0.5,0
+"South Carolina","holdout",5,1,2,0,0
+"South Carolina","holdout",5,2,2,0.5,0.5
+"South Carolina","holdout",5,3,2,0.5,0.5
+"South Carolina","holdout",5,4,2,0.333333333333333,0.333333333333333
+"South Carolina","holdout",5,5,2,0.1875,0.3
+"South Carolina","holdout",5,6,2,0.25,0
+"South Carolina","holdout",5,7,2,0.533333333333333,0.533333333333333
+"South Carolina","holdout",5,8,2,0.166666666666667,0
+"South Carolina","holdout",5,9,2,0.0555555555555556,0
+"South Carolina","holdout",5,10,2,0.5,0.5
+"South Carolina","holdout",10,1,2,0,0
+"South Carolina","holdout",10,2,3,1,1
+"South Carolina","holdout",10,3,2,0.333333333333333,0.333333333333333
+"South Carolina","holdout",10,4,3,0,0
+"South Carolina","holdout",10,5,2,0.382352941176471,0.132352941176471
+"South Carolina","holdout",10,6,3,0.193548387096774,0.333333333333333
+"South Carolina","holdout",10,7,2,0.2,0
+"South Carolina","holdout",10,8,3,0,0
+"South Carolina","holdout",10,9,2,0.5,0.5
+"South Carolina","holdout",10,10,3,0,0
+"South Carolina","train",5,1,11,0.5,0.5
+"South Carolina","train",5,2,12,0.422222222222222,0.125
+"South Carolina","train",5,3,12,0.416666666666667,0
+"South Carolina","train",5,4,12,0.529647435897436,0
+"South Carolina","train",5,5,12,0.5,0
+"South Carolina","train",5,6,12,0.495454545454545,0
+"South Carolina","train",5,7,12,0.494897959183673,0
+"South Carolina","train",5,8,12,0.489130434782609,0
+"South Carolina","train",5,9,12,0.435526315789474,0
+"South Carolina","train",5,10,12,0.44949494949495,0
+"South Carolina","train",10,1,22,0.44949494949495,0.291666666666667
+"South Carolina","train",10,2,23,0.5,0
+"South Carolina","train",10,3,22,0.50531914893617,0
+"South Carolina","train",10,4,23,0.489795918367347,0
+"South Carolina","train",10,5,23,0.454545454545455,0
+"South Carolina","train",10,6,22,0.44969696969697,0.078125
+"South Carolina","train",10,7,23,0.416666666666667,0
+"South Carolina","train",10,8,22,0.382093450028233,0
+"South Carolina","train",10,9,23,0.333333333333333,0
+"South Carolina","train",10,10,23,0.333333333333333,0
+"South Dakota","holdout",5,1,2,0,0
+"South Dakota","holdout",5,2,2,0,0
+"South Dakota","holdout",5,3,2,0.5,0.5
+"South Dakota","holdout",5,4,2,0,0
+"South Dakota","holdout",5,5,2,0,0
+"South Dakota","holdout",5,6,2,0,0
+"South Dakota","holdout",5,7,2,0.5,0.5
+"South Dakota","holdout",5,8,2,0,0
+"South Dakota","holdout",5,9,2,0,0
+"South Dakota","holdout",5,10,2,1,1
+"South Dakota","holdout",10,1,3,0,0
+"South Dakota","holdout",10,2,4,0,0
+"South Dakota","holdout",10,3,3,0,0
+"South Dakota","holdout",10,4,4,0,0
+"South Dakota","holdout",10,5,4,0,0
+"South Dakota","holdout",10,6,3,1,1
+"South Dakota","holdout",10,7,4,0.142857142857143,0
+"South Dakota","holdout",10,8,3,0,0
+"South Dakota","holdout",10,9,4,0.1,0.125
+"South Dakota","holdout",10,10,4,0,0
+"South Dakota","train",5,1,15,0,0
+"South Dakota","train",5,2,15,0,0
+"South Dakota","train",5,3,15,0,0
+"South Dakota","train",5,4,15,0,0
+"South Dakota","train",5,5,15,0,0
+"South Dakota","train",5,6,15,0,0
+"South Dakota","train",5,7,15,0.0625,0
+"South Dakota","train",5,8,15,0,0
+"South Dakota","train",5,9,15,0,0
+"South Dakota","train",5,10,16,0,0
+"South Dakota","train",10,1,30,0,0
+"South Dakota","train",10,2,30,0,0
+"South Dakota","train",10,3,30,0,0
+"South Dakota","train",10,4,30,0,0
+"South Dakota","train",10,5,31,0,0
+"South Dakota","train",10,6,30,0,0
+"South Dakota","train",10,7,30,0.10727969348659,0
+"South Dakota","train",10,8,30,0.0669642857142857,0
+"South Dakota","train",10,9,30,0.0473790322580645,0
+"South Dakota","train",10,10,31,0,0
+"Tennessee","holdout",5,1,2,0.25,0.25
+"Tennessee","holdout",5,2,2,0.25,0.333333333333333
+"Tennessee","holdout",5,3,2,0,0
+"Tennessee","holdout",5,4,2,0.0833333333333333,0
+"Tennessee","holdout",5,5,2,0.182539682539683,0.111111111111111
+"Tennessee","holdout",5,6,2,0.166666666666667,0.5
+"Tennessee","holdout",5,7,2,0.5,0.5
+"Tennessee","holdout",5,8,2,0.0454545454545455,0
+"Tennessee","holdout",5,9,2,0.0625,0
+"Tennessee","holdout",5,10,2,1,1
+"Tennessee","holdout",10,1,2,0.25,0.25
+"Tennessee","holdout",10,2,2,0.25,0.333333333333333
+"Tennessee","holdout",10,3,3,0,0
+"Tennessee","holdout",10,4,2,0.194444444444444,0.111111111111111
+"Tennessee","holdout",10,5,3,0.142857142857143,0
+"Tennessee","holdout",10,6,2,0.5,0.5
+"Tennessee","holdout",10,7,2,0.0454545454545455,0
+"Tennessee","holdout",10,8,3,0.1,0.0526315789473684
+"Tennessee","holdout",10,9,2,0.1875,0.125
+"Tennessee","holdout",10,10,3,1,1
+"Tennessee","train",5,1,18,0.211111111111111,0
+"Tennessee","train",5,2,19,0.4,0
+"Tennessee","train",5,3,19,0.333333333333333,0
+"Tennessee","train",5,4,18,0.236363636363636,0
+"Tennessee","train",5,5,19,0.25,0
+"Tennessee","train",5,6,19,0.285714285714286,0
+"Tennessee","train",5,7,18,0.286666666666667,0.0625
+"Tennessee","train",5,8,19,0.285714285714286,0
+"Tennessee","train",5,9,19,0.428571428571429,0
+"Tennessee","train",5,10,19,0.25,0
+"Tennessee","train",10,1,33,0.25,0
+"Tennessee","train",10,2,34,0.333333333333333,0
+"Tennessee","train",10,3,34,0.30952380952381,0
+"Tennessee","train",10,4,33,0.222222222222222,0
+"Tennessee","train",10,5,34,0.340579710144927,0
+"Tennessee","train",10,6,34,0.333333333333333,0
+"Tennessee","train",10,7,33,0.271186440677966,0
+"Tennessee","train",10,8,34,0.301110083256244,0
+"Tennessee","train",10,9,34,0.255,0
+"Tennessee","train",10,10,34,0.3,0
+"Texas","holdout",5,1,1,0,0
+"Texas","holdout",5,2,2,0.5,0.5
+"Texas","holdout",5,3,2,0.25,0.25
+"Texas","holdout",5,4,2,0.416666666666667,0.666666666666667
+"Texas","holdout",5,5,2,0,0
+"Texas","holdout",5,6,2,0.333333333333333,0.35
+"Texas","holdout",5,7,2,0.214285714285714,0.142857142857143
+"Texas","holdout",5,8,2,0.166666666666667,0
+"Texas","holdout",5,9,2,0.75,0.5
+"Texas","holdout",5,10,2,0.75,0.5
+"Texas","holdout",10,1,1,0,0
+"Texas","holdout",10,2,2,0.5,0.5
+"Texas","holdout",10,3,2,0.25,0.25
+"Texas","holdout",10,4,2,0.416666666666667,0.666666666666667
+"Texas","holdout",10,5,2,0,0
+"Texas","holdout",10,6,1,0.282051282051282,0.282051282051282
+"Texas","holdout",10,7,2,0.333333333333333,0.1
+"Texas","holdout",10,8,2,0.214285714285714,0.2
+"Texas","holdout",10,9,2,0.166666666666667,0
+"Texas","holdout",10,10,2,0.224431818181818,0.125
+"Texas","train",5,1,10,0,0
+"Texas","train",5,2,11,0.25,0
+"Texas","train",5,3,10,0.5,0.75
+"Texas","train",5,4,11,0.0909090909090909,0
+"Texas","train",5,5,11,0.25,0
+"Texas","train",5,6,10,0.183333333333333,0
+"Texas","train",5,7,11,0.471428571428571,0.25
+"Texas","train",5,8,10,0.267857142857143,0
+"Texas","train",5,9,11,0.488888888888889,0
+"Texas","train",5,10,11,0.433734939759036,0
+"Texas","train",10,1,26,0.25,0
+"Texas","train",10,2,27,0.2,0
+"Texas","train",10,3,27,0.25,0
+"Texas","train",10,4,27,0.464285714285714,0.125
+"Texas","train",10,5,27,0.409090909090909,0
+"Texas","train",10,6,26,0.412121212121212,0
+"Texas","train",10,7,27,0.305555555555556,0
+"Texas","train",10,8,27,0.375,0
+"Texas","train",10,9,27,0.333333333333333,0
+"Texas","train",10,10,27,0.2,0
+"Utah","holdout",5,1,2,0,0
+"Utah","holdout",5,2,2,0.5,0.5
+"Utah","holdout",5,3,2,0.183333333333333,0.1
+"Utah","holdout",5,4,2,0,0
+"Utah","holdout",5,5,3,0,0
+"Utah","holdout",5,6,2,0.5,0.5
+"Utah","holdout",5,7,2,0.0714285714285714,0
+"Utah","holdout",5,8,2,0.125,0.25
+"Utah","holdout",5,9,2,0,0
+"Utah","holdout",5,10,3,0,0
+"Utah","holdout",10,1,4,0,0
+"Utah","holdout",10,2,4,0.0833333333333333,0
+"Utah","holdout",10,3,4,0,0
+"Utah","holdout",10,4,4,0.0714285714285714,0
+"Utah","holdout",10,5,4,0,0
+"Utah","holdout",10,6,4,0,0
+"Utah","holdout",10,7,4,0.154761904761905,0.25
+"Utah","holdout",10,8,4,0.03125,0.05
+"Utah","holdout",10,9,4,0.0833333333333333,0
+"Utah","holdout",10,10,5,0.1,0
+"Utah","train",5,1,19,0,0
+"Utah","train",5,2,19,0,0
+"Utah","train",5,3,19,0,0
+"Utah","train",5,4,20,0.111111111111111,0
+"Utah","train",5,5,19,0.0714285714285714,0
+"Utah","train",5,6,19,0.2,0
+"Utah","train",5,7,20,0.190909090909091,0
+"Utah","train",5,8,19,0.0769230769230769,0
+"Utah","train",5,9,19,0.0909090909090909,0
+"Utah","train",5,10,20,0.196153846153846,0
+"Utah","train",10,1,36,0,0
+"Utah","train",10,2,37,0.0833333333333333,0
+"Utah","train",10,3,36,0.03125,0
+"Utah","train",10,4,37,0.2,0
+"Utah","train",10,5,37,0.0909090909090909,0
+"Utah","train",10,6,36,0.144957983193277,0
+"Utah","train",10,7,37,0.122448979591837,0
+"Utah","train",10,8,36,0.140873015873016,0
+"Utah","train",10,9,37,0.130434782608696,0
+"Utah","train",10,10,37,0.125,0
+"Vermont","holdout",5,1,1,0.25,0.25
+"Vermont","holdout",5,2,2,0.5,0.25
+"Vermont","holdout",5,3,1,0.5,0.5
+"Vermont","holdout",5,4,2,0.416666666666667,0.25
+"Vermont","holdout",5,5,1,0,0
+"Vermont","holdout",5,6,2,0,0
+"Vermont","holdout",5,7,1,0.2,0
+"Vermont","holdout",5,8,2,0.55,0.625
+"Vermont","holdout",5,9,1,0.428571428571429,0
+"Vermont","holdout",5,10,2,0,0
+"Vermont","holdout",10,1,2,0.375,0.375
+"Vermont","holdout",10,2,3,0.5,0
+"Vermont","holdout",10,3,2,0.25,0.25
+"Vermont","holdout",10,4,3,0,0
+"Vermont","holdout",10,5,3,0.5,0.5
+"Vermont","holdout",10,6,2,0.214285714285714,0
+"Vermont","holdout",10,7,3,0.2,0
+"Vermont","holdout",10,8,2,0.25,0.5
+"Vermont","holdout",10,9,3,0.2,0
+"Vermont","holdout",10,10,3,0.333333333333333,0
+"Vermont","train",5,1,13,0.5,0.5
+"Vermont","train",5,2,14,0.333333333333333,0
+"Vermont","train",5,3,14,0.366666666666667,0.25
+"Vermont","train",5,4,13,0.375,0
+"Vermont","train",5,5,14,0.316666666666667,0
+"Vermont","train",5,6,14,0.224747474747475,0
+"Vermont","train",5,7,13,0.241379310344828,0
+"Vermont","train",5,8,14,0.25,0
+"Vermont","train",5,9,14,0.240384615384615,0
+"Vermont","train",5,10,14,0.178571428571429,0
+"Vermont","train",10,1,28,0.4,0
+"Vermont","train",10,2,28,0.354166666666667,0
+"Vermont","train",10,3,29,0.230769230769231,0
+"Vermont","train",10,4,28,0.25,0
+"Vermont","train",10,5,29,0.208333333333333,0
+"Vermont","train",10,6,28,0.25,0
+"Vermont","train",10,7,28,0.162698412698413,0
+"Vermont","train",10,8,29,0.183673469387755,0
+"Vermont","train",10,9,28,0.180194805194805,0
+"Vermont","train",10,10,29,0.153846153846154,0
+"Virginia","holdout",5,1,2,0.5,0.5
+"Virginia","holdout",5,2,2,0,0
+"Virginia","holdout",5,3,2,1,1
+"Virginia","holdout",5,4,3,0.25,0.25
+"Virginia","holdout",5,5,2,0.5,0.5
+"Virginia","holdout",5,6,2,0.466666666666667,0.333333333333333
+"Virginia","holdout",5,7,3,0,0
+"Virginia","holdout",5,8,2,0.5,0.5
+"Virginia","holdout",5,9,2,0.75,0.5
+"Virginia","holdout",5,10,3,0.4,0
+"Virginia","holdout",10,1,2,0.5,0.5
+"Virginia","holdout",10,2,3,0,0
+"Virginia","holdout",10,3,2,0.625,0.625
+"Virginia","holdout",10,4,3,0,0
+"Virginia","holdout",10,5,2,0.8,0.666666666666667
+"Virginia","holdout",10,6,3,0.333333333333333,0
+"Virginia","holdout",10,7,2,0.5,0.5
+"Virginia","holdout",10,8,3,0.5,0
+"Virginia","holdout",10,9,2,0.438095238095238,0.25
+"Virginia","holdout",10,10,3,0.25,0
+"Virginia","train",5,1,6,0.5,0.583333333333333
+"Virginia","train",5,2,7,0.5,1
+"Virginia","train",5,3,7,0.25,0
+"Virginia","train",5,4,6,0.452380952380952,0.166666666666667
+"Virginia","train",5,5,7,0.3125,0
+"Virginia","train",5,6,7,0.428571428571429,0.285714285714286
+"Virginia","train",5,7,6,0.486531986531986,0.37741935483871
+"Virginia","train",5,8,7,0.333333333333333,0
+"Virginia","train",5,9,7,0.527777777777778,0.333333333333333
+"Virginia","train",5,10,7,0.472222222222222,0.387755102040816
+"Virginia","train",10,1,15,0.5,0.6
+"Virginia","train",10,2,15,0.333333333333333,0
+"Virginia","train",10,3,15,0.5,0.354838709677419
+"Virginia","train",10,4,15,0.5,0.333333333333333
+"Virginia","train",10,5,15,0.5,0.333333333333333
+"Virginia","train",10,6,15,0.454545454545455,0
+"Virginia","train",10,7,15,0.46031746031746,0
+"Virginia","train",10,8,15,0.477272727272727,0
+"Virginia","train",10,9,15,0.448275862068966,0.133333333333333
+"Virginia","train",10,10,15,0.4,0
+"Washington","holdout",5,1,2,1,1
+"Washington","holdout",5,2,2,0.166666666666667,0.166666666666667
+"Washington","holdout",5,3,2,0.25,0.25
+"Washington","holdout",5,4,2,0.166666666666667,0
+"Washington","holdout",5,5,3,1,1
+"Washington","holdout",5,6,2,0.625,0.6
+"Washington","holdout",5,7,2,0.3125,0.166666666666667
+"Washington","holdout",5,8,2,0.1,0
+"Washington","holdout",5,9,2,0.166666666666667,0.5
+"Washington","holdout",5,10,3,0.5,1
+"Washington","holdout",10,1,4,0.666666666666667,0.666666666666667
+"Washington","holdout",10,2,5,0,0
+"Washington","holdout",10,3,5,1,1
+"Washington","holdout",10,4,4,0.1,0
+"Washington","holdout",10,5,5,0.4,1
+"Washington","holdout",10,6,5,0,0
+"Washington","holdout",10,7,4,0.25,0.2
+"Washington","holdout",10,8,5,0.333333333333333,0
+"Washington","holdout",10,9,5,0,0
+"Washington","holdout",10,10,5,0.222222222222222,0
+"Washington","train",5,1,16,1,1
+"Washington","train",5,2,16,0.583333333333333,0.25
+"Washington","train",5,3,17,0.5,0.333333333333333
+"Washington","train",5,4,16,0.333333333333333,0
+"Washington","train",5,5,17,0.375,0
+"Washington","train",5,6,16,0.405882352941176,0
+"Washington","train",5,7,16,0.297931034482759,0
+"Washington","train",5,8,17,0.263157894736842,0
+"Washington","train",5,9,16,0.303320561941252,0
+"Washington","train",5,10,17,0.275,0
+"Washington","train",10,1,29,0.666666666666667,0.666666666666667
+"Washington","train",10,2,30,0.464285714285714,0.125
+"Washington","train",10,3,30,0.333333333333333,0
+"Washington","train",10,4,30,0.326666666666667,0
+"Washington","train",10,5,30,0.291005291005291,0
+"Washington","train",10,6,30,0.25,0
+"Washington","train",10,7,30,0.240384615384615,0
+"Washington","train",10,8,30,0.22020202020202,0
+"Washington","train",10,9,30,0.242647058823529,0
+"Washington","train",10,10,30,0.215384615384615,0
+"West Virginia","holdout",5,1,2,0.5,0.5
+"West Virginia","holdout",5,2,2,0.5,0.5
+"West Virginia","holdout",5,3,2,0.166666666666667,0
+"West Virginia","holdout",5,4,3,0,0
+"West Virginia","holdout",5,5,2,0.25,0.25
+"West Virginia","holdout",5,6,2,0.666666666666667,0.666666666666667
+"West Virginia","holdout",5,7,3,0.25,0
+"West Virginia","holdout",5,8,2,0,0
+"West Virginia","holdout",5,9,2,0,0
+"West Virginia","holdout",5,10,3,0,0
+"West Virginia","holdout",10,1,2,0.5,0.5
+"West Virginia","holdout",10,2,3,0,0
+"West Virginia","holdout",10,3,3,0,0
+"West Virginia","holdout",10,4,3,0,0
+"West Virginia","holdout",10,5,3,0.333333333333333,0.333333333333333
+"West Virginia","holdout",10,6,3,0.25,0
+"West Virginia","holdout",10,7,3,0,0
+"West Virginia","holdout",10,8,3,0,0
+"West Virginia","holdout",10,9,3,0,0
+"West Virginia","holdout",10,10,3,0.2,0.2
+"West Virginia","train",5,1,17,0.666666666666667,0.5
+"West Virginia","train",5,2,17,0.5,0
+"West Virginia","train",5,3,17,0.333333333333333,0
+"West Virginia","train",5,4,17,0.333333333333333,0
+"West Virginia","train",5,5,17,0.277777777777778,0.2
+"West Virginia","train",5,6,17,0.2,0
+"West Virginia","train",5,7,17,0.277777777777778,0
+"West Virginia","train",5,8,17,0.241379310344828,0
+"West Virginia","train",5,9,17,0.227272727272727,0
+"West Virginia","train",5,10,18,0.25,0
+"West Virginia","train",10,1,28,0.5,0.0714285714285714
+"West Virginia","train",10,2,29,0.333333333333333,0
+"West Virginia","train",10,3,28,0.25,0
+"West Virginia","train",10,4,29,0.25,0
+"West Virginia","train",10,5,28,0.236074270557029,0
+"West Virginia","train",10,6,29,0.25,0
+"West Virginia","train",10,7,28,0.202020202020202,0
+"West Virginia","train",10,8,29,0.28,0
+"West Virginia","train",10,9,28,0.222813238770686,0
+"West Virginia","train",10,10,29,0.207792207792208,0
+"Wisconsin","holdout",5,1,1,1,1
+"Wisconsin","holdout",5,2,2,0.375,0.375
+"Wisconsin","holdout",5,3,2,0,0
+"Wisconsin","holdout",5,4,2,0.05,0.05
+"Wisconsin","holdout",5,5,2,0,0
+"Wisconsin","holdout",5,6,2,0.166666666666667,0.25
+"Wisconsin","holdout",5,7,2,0.05,0
+"Wisconsin","holdout",5,8,2,0.0555555555555556,0.1
+"Wisconsin","holdout",5,9,2,0.5,0.5
+"Wisconsin","holdout",5,10,2,0.5,0.5
+"Wisconsin","holdout",10,1,4,0.375,0.375
+"Wisconsin","holdout",10,2,4,0,0
+"Wisconsin","holdout",10,3,4,0,0
+"Wisconsin","holdout",10,4,4,0.05,0
+"Wisconsin","holdout",10,5,4,0.5,0.5
+"Wisconsin","holdout",10,6,4,0.107142857142857,0.111111111111111
+"Wisconsin","holdout",10,7,4,0.3125,0
+"Wisconsin","holdout",10,8,4,0,0
+"Wisconsin","holdout",10,9,4,0.148351648351648,0.125
+"Wisconsin","holdout",10,10,5,0.0588235294117647,0
+"Wisconsin","train",5,1,19,0.2,0
+"Wisconsin","train",5,2,20,0.128787878787879,0
+"Wisconsin","train",5,3,19,0.2,0
+"Wisconsin","train",5,4,20,0.118055555555556,0
+"Wisconsin","train",5,5,20,0.216374269005848,0
+"Wisconsin","train",5,6,19,0,0
+"Wisconsin","train",5,7,20,0.2,0
+"Wisconsin","train",5,8,19,0.153846153846154,0
+"Wisconsin","train",5,9,20,0.148351648351648,0
+"Wisconsin","train",5,10,20,0.188888888888889,0
+"Wisconsin","train",10,1,40,0.183333333333333,0
+"Wisconsin","train",10,2,41,0.166666666666667,0
+"Wisconsin","train",10,3,40,0.133928571428571,0
+"Wisconsin","train",10,4,41,0.157894736842105,0
+"Wisconsin","train",10,5,40,0.164414414414414,0
+"Wisconsin","train",10,6,41,0.134328358208955,0
+"Wisconsin","train",10,7,40,0.153846153846154,0
+"Wisconsin","train",10,8,41,0.166666666666667,0
+"Wisconsin","train",10,9,40,0.131884057971014,0
+"Wisconsin","train",10,10,41,0.153846153846154,0
+"Wyoming","holdout",5,2,1,0,0
+"Wyoming","holdout",5,3,1,0.5,0.5
+"Wyoming","holdout",5,4,1,0,0
+"Wyoming","holdout",5,5,1,1,1
+"Wyoming","holdout",5,7,1,0.5,0.5
+"Wyoming","holdout",5,8,1,0,0
+"Wyoming","holdout",5,9,1,0,0
+"Wyoming","holdout",5,10,1,0,0
+"Wyoming","holdout",10,1,1,0,0
+"Wyoming","holdout",10,2,1,0.5,0.5
+"Wyoming","holdout",10,3,1,0,0
+"Wyoming","holdout",10,4,2,0.75,0.75
+"Wyoming","holdout",10,5,1,0,0
+"Wyoming","holdout",10,6,1,0,0
+"Wyoming","holdout",10,7,2,0,0
+"Wyoming","holdout",10,8,1,0,0
+"Wyoming","holdout",10,9,1,0,0
+"Wyoming","holdout",10,10,2,0.25,0.25
+"Wyoming","train",5,1,8,0,0
+"Wyoming","train",5,2,8,0,0
+"Wyoming","train",5,3,8,0,0
+"Wyoming","train",5,4,9,0,0
+"Wyoming","train",5,5,8,0,0
+"Wyoming","train",5,6,8,0,0
+"Wyoming","train",5,7,9,0,0
+"Wyoming","train",5,8,8,0,0
+"Wyoming","train",5,9,8,0,0
+"Wyoming","train",5,10,9,0,0
+"Wyoming","train",10,1,15,0,0
+"Wyoming","train",10,2,16,0,0
+"Wyoming","train",10,3,16,0,0
+"Wyoming","train",10,4,16,0,0
+"Wyoming","train",10,5,16,0,0
+"Wyoming","train",10,6,15,0.222222222222222,0
+"Wyoming","train",10,7,16,0.183333333333333,0
+"Wyoming","train",10,8,16,0.148351648351648,0
+"Wyoming","train",10,9,16,0.116666666666667,0
+"Wyoming","train",10,10,16,0,0

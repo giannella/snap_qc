@@ -190,6 +190,14 @@ we learned is recoverable. Each points to its numbered section.
   overlap 0.531 at 5%, 0.666 at 10%). The instability is ordering, not
   vocabulary; the preference-ordering line of work opens.
 
+- **08-06**: Measured the fill walk's residual adverse selection (#32, Eric's
+  question): capacity-weighted marginal precision runs 3-4 points below the
+  rules' own precision on holdout (0.314 vs 0.345 at the 5% budget); the
+  zero-error marginal slices match their binomial expectation (median slice
+  1-2 cases); an oracle re-walk gains +0.175 but the deployable version gains
+  +0.000/+0.011, so marginal-quality-aware ordering is retired at public
+  scale for lack of an estimable statistic. Priced into all quoted numbers.
+
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
 registered in methods/make_all_charts_v2.R so figures regenerate in one
@@ -2645,3 +2653,116 @@ certificate held). Every number in this section re-derives from
 `methods/seed_stability_v2/seed_stability_*.csv`; the run configuration is in
 `seed_stability_run_info.csv`. Implementation commit f30ac9c (which carries
 the review record), results commit 473d304.
+
+## 32. Marginal precision of delivered rules: the walk's adverse selection is real, about 3 to 4 points, and not recoverable at public scale (2026-08-06)
+
+> **Takeaway: about our pipeline (a measured answer to a fair objection).** The
+> delivery walk admits any rule whose flags include at least one not-yet-covered
+> case, so a rule can enter on a marginal slice that is mostly false positives.
+> Measured on the shipped machinery, the effect is real but modest and already
+> inside every number we quote: weighting rules by the cases they actually
+> contribute, marginal precision runs 3 to 4 points below the same rules' own
+> precision on the held-out year (0.314 against 0.345 at the 5% budget, 0.273
+> against 0.310 at 10%). And reordering cannot recover the gap: an oracle that
+> peeks at realized outcomes gains +0.175, while the deployable version, ordered
+> on training-year marginal precision and scored a year ahead, gains +0.000 at
+> the 5% budget and +0.011 at 10%. The median marginal slice is 1 to 2 cases,
+> so no marginal statistic has support to stand on at public-data scale; the
+> lower-bound walk stays.
+
+The question, raised by Eric 2026-08-06: the fill walk is overlap-aware in
+selection (a rule enters only if it adds new cases, section 27) but the test is
+existence, not quality, so a rule adding one error and many clean cases is
+admitted. Does that lower delivered precision, and would a marginal-quality-aware
+selection do better at the same budget?
+
+**What was measured.** For every rule on every list, two precisions on the same
+caseload: its own (errors among ALL cases it flags there) and its marginal
+(errors among only the cases it newly contributed when walked in rank order).
+Two bases: the 98 shipped lists on their 2022-24 build caseload (the train
+basis), and the 98 bench lists built on FY2022-23 with marginal slices scored on
+FY2024 (the holdout basis, the honest one). The machinery reproduced the shipped
+artifacts exactly before any new number was read: recomputed new-case counts
+matched `n_new_at_rank` at every rank of all 196 lists, and the FY2024 walk
+reproduced the committed scorecard for every state and budget.
+
+**The scenario, counted, and the binomial check that right-sizes it.** On the
+holdout basis, 54.8% of deployed rules at the 5% budget (57.8% at 10%)
+contribute a marginal slice below the state's base error rate, and those slices
+carry 38.6% / 39.6% of budget capacity; 54.6% / 57.1% of deployed rules add zero
+errors. But the median marginal slice is 1 to 2 cases, and a 2-case slice from a
+rule whose true precision is 0.30 comes up empty 49% of the time by chance
+alone. Summing that over the actual slice sizes and own-precisions, the expected
+zero-error share is 54.1% / 55.2%, almost exactly what is observed. The mass of
+empty slices is chance on tiny samples, not evidence of selectively bad
+residuals. The genuine adverse selection is the capacity-weighted gap above:
+about 3 points at the 5% budget and 4 at 10%.
+
+**Do not read the train basis.** On the build caseload the own-vs-marginal gap
+looks like 13 to 15 points in the deep ranks. Train-side own precision is
+selection-inflated (rules were admitted and ranked for looking good on exactly
+that data, section 1) while marginal slices were never selected on, so the
+train-basis gap mostly measures the winner's curse in the own column, not the
+residuals. On the train basis the observed zero-error share (0.63 to 0.69) also
+exceeds its binomial expectation (0.50 to 0.53); on holdout it does not.
+
+**Reordering does not recover the gap.**
+
+| re-walk, same rules, same capacity | 5% budget | 10% budget |
+|---|---|---|
+| oracle: ordered by realized marginal precision (peeks at outcomes; upper bound, unachievable) | +0.175 | +0.176 |
+| deployable: ordered by FY2022-23 marginal precision, scored on FY2024 | +0.000 | +0.011 |
+
+The oracle's gain is what sorting on the answer key buys when slices are 1 to 2
+cases: it is the same arithmetic that turns raw train precision 0.20 into
+deployed 0.10 (section 1). The deployable version transfers essentially nothing,
+because a 1-or-2-case estimate carries almost no information about next year's
+residual quality. And the repo's own support discipline cannot help: the n >= 30
+floor (sections 19, 26) cannot be applied to marginal slices without emptying
+the list, since the walk's deduplication is precisely what makes slices small.
+Marginal-quality-aware ordering at public-data scale fails for lack of anything
+estimable to order on, not for lack of trying. A state's internal data
+(40k-100k rows) scales slices up roughly 30 to 50x; the question stays open
+there only.
+
+**Follow-up idea recorded, not yet tested.** A rule's section 29
+characterization profile is computed on its full error set (median 126 error
+cases), so profile dissimilarity between rules IS estimable where marginal
+precision is not, and could serve as a proxy for complementarity if profile
+distance predicts case-level complementarity out of year. Two measured cautions:
+profiles converge to the national mix as support grows (sections 29, 6), so the
+signal lives in narrow rules; and every ordering intervention tested against the
+plain lower bound has lost or failed to transfer (sections 18, 20, 30, and this
+section). A pairwise diagnostic on existing artifacts precedes any arm.
+
+
+### Run record and verification
+
+Script `methods/marginal_precision_diagnostic_v2.R` (post-processing only, no
+mining; full run 0.9 minutes). Per the routing rule it was written under the
+principal-data-scientist framing and reviewed by a fresh senior-statistician
+before running; the review's one required fix (the train-basis oracle must vary
+only the walk order: same rule set, same capacity as the shipped comparator) was
+applied, and the review added the totals assertion and the binomial
+expected-zeros benchmark.
+
+Hard assertions, all passed: 98/98 shipped lists reproduced `n_flagged_state`
+and `n_new_at_rank` exactly at every rank on the 2022-24 caseload; 98/98 bench
+lists reproduced `n_new_at_rank` on the FY2022-23 build caseload AND the
+committed FY2024 scorecard (`methods/anyerror_blended_holdout_2024/holdout_metrics.json`)
+for every state and budget, including the Michigan reference (19 rules, 86
+cases, 24 errors, precision 0.2791). The capacity-weighted numbers in the
+takeaway are sum(k_new)/sum(n_new) against sum(own_precision x n_new)/sum(n_new)
+over holdout-deployed rules (879 rules at the 5% budget, 1,511 at 10%),
+re-derived independently from `per_rule_marginal.csv` before recording.
+
+Artifacts, all in `methods/marginal_precision_diagnostic/`: `per_rule_marginal.csv`
+(21,706 rows: state, budget, basis, rank, role, n_new, k_new, marginal and own
+precision, LCB), `adverse_selection_by_decile.csv` and
+`adverse_selection_by_state_decile.csv` (medians are zero-inflated because the
+median slice is 1-2 cases; read the paired within-rule gap and the
+capacity-weighted numbers), `scenario_shares.csv` (the below-base and zero-error
+shares with their binomial expectations), `headroom_oracle.csv` (per state:
+shipped, oracle, and deployable re-walk), `state_base_rates.csv`. Inputs:
+`state_delivery_lists/` (read-only), `methods/anyerror_blended_holdout_2024/`
+bench lists, `reg_model_data.rds`.

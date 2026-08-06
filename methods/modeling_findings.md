@@ -1339,3 +1339,86 @@ at-max-benefit feature question before the next delivery-list build.
   necessary condition.
 
 *Detail and artifacts: [detailed record](modeling_findings_detailed.md#31-seed-stability-the-deep-pool-covers-the-same-errors-the-top-of-the-ranking-does-not-2026-08-05), §31. Artifacts: [`methods/seed_stability_v2/`](https://github.com/giannella/snap_qc/tree/main/methods/seed_stability_v2).*
+
+## 32. Marginal precision of delivered rules: the walk's adverse selection is real, about 3 to 4 points, and not recoverable at public scale
+
+> **Takeaway: about our pipeline (a measured answer to a fair objection).** The
+> delivery walk admits any rule whose flags include at least one not-yet-covered
+> case, so a rule can enter on a marginal slice that is mostly false positives.
+> Measured on the shipped machinery, the effect is real but modest and already
+> inside every number we quote: weighting rules by the cases they actually
+> contribute, marginal precision runs 3 to 4 points below the same rules' own
+> precision on the held-out year (0.314 against 0.345 at the 5% budget, 0.273
+> against 0.310 at 10%). And reordering cannot recover the gap: an oracle that
+> peeks at realized outcomes gains +0.175, while the deployable version, ordered
+> on training-year marginal precision and scored a year ahead, gains +0.000 at
+> the 5% budget and +0.011 at 10%. The median marginal slice is 1 to 2 cases,
+> so no marginal statistic has support to stand on at public-data scale; the
+> lower-bound walk stays.
+
+The question, raised by Eric 2026-08-06: the fill walk is overlap-aware in
+selection (a rule enters only if it adds new cases, section 27) but the test is
+existence, not quality, so a rule adding one error and many clean cases is
+admitted. Does that lower delivered precision, and would a marginal-quality-aware
+selection do better at the same budget?
+
+**What was measured.** For every rule on every list, two precisions on the same
+caseload: its own (errors among ALL cases it flags there) and its marginal
+(errors among only the cases it newly contributed when walked in rank order).
+Two bases: the 98 shipped lists on their 2022-24 build caseload (the train
+basis), and the 98 bench lists built on FY2022-23 with marginal slices scored on
+FY2024 (the holdout basis, the honest one). The machinery reproduced the shipped
+artifacts exactly before any new number was read: recomputed new-case counts
+matched `n_new_at_rank` at every rank of all 196 lists, and the FY2024 walk
+reproduced the committed scorecard for every state and budget.
+
+**The scenario, counted, and the binomial check that right-sizes it.** On the
+holdout basis, 54.8% of deployed rules at the 5% budget (57.8% at 10%)
+contribute a marginal slice below the state's base error rate, and those slices
+carry 38.6% / 39.6% of budget capacity; 54.6% / 57.1% of deployed rules add zero
+errors. But the median marginal slice is 1 to 2 cases, and a 2-case slice from a
+rule whose true precision is 0.30 comes up empty 49% of the time by chance
+alone. Summing that over the actual slice sizes and own-precisions, the expected
+zero-error share is 54.1% / 55.2%, almost exactly what is observed. The mass of
+empty slices is chance on tiny samples, not evidence of selectively bad
+residuals. The genuine adverse selection is the capacity-weighted gap above:
+about 3 points at the 5% budget and 4 at 10%.
+
+**Do not read the train basis.** On the build caseload the own-vs-marginal gap
+looks like 13 to 15 points in the deep ranks. Train-side own precision is
+selection-inflated (rules were admitted and ranked for looking good on exactly
+that data, section 1) while marginal slices were never selected on, so the
+train-basis gap mostly measures the winner's curse in the own column, not the
+residuals. On the train basis the observed zero-error share (0.63 to 0.69) also
+exceeds its binomial expectation (0.50 to 0.53); on holdout it does not.
+
+**Reordering does not recover the gap.**
+
+| re-walk, same rules, same capacity | 5% budget | 10% budget |
+|---|---|---|
+| oracle: ordered by realized marginal precision (peeks at outcomes; upper bound, unachievable) | +0.175 | +0.176 |
+| deployable: ordered by FY2022-23 marginal precision, scored on FY2024 | +0.000 | +0.011 |
+
+The oracle's gain is what sorting on the answer key buys when slices are 1 to 2
+cases: it is the same arithmetic that turns raw train precision 0.20 into
+deployed 0.10 (section 1). The deployable version transfers essentially nothing,
+because a 1-or-2-case estimate carries almost no information about next year's
+residual quality. And the repo's own support discipline cannot help: the n >= 30
+floor (sections 19, 26) cannot be applied to marginal slices without emptying
+the list, since the walk's deduplication is precisely what makes slices small.
+Marginal-quality-aware ordering at public-data scale fails for lack of anything
+estimable to order on, not for lack of trying. A state's internal data
+(40k-100k rows) scales slices up roughly 30 to 50x; the question stays open
+there only.
+
+**Follow-up idea recorded, not yet tested.** A rule's section 29
+characterization profile is computed on its full error set (median 126 error
+cases), so profile dissimilarity between rules IS estimable where marginal
+precision is not, and could serve as a proxy for complementarity if profile
+distance predicts case-level complementarity out of year. Two measured cautions:
+profiles converge to the national mix as support grows (sections 29, 6), so the
+signal lives in narrow rules; and every ordering intervention tested against the
+plain lower bound has lost or failed to transfer (sections 18, 20, 30, and this
+section). A pairwise diagnostic on existing artifacts precedes any arm.
+
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md#32-marginal-precision-of-delivered-rules-the-walks-adverse-selection-is-real-about-3-to-4-points-and-not-recoverable-at-public-scale-2026-08-06), §32. Artifacts: [`methods/marginal_precision_diagnostic/`](https://github.com/giannella/snap_qc/tree/main/methods/marginal_precision_diagnostic).*
