@@ -34,7 +34,7 @@ until the section lands in the findings docs.
 | Structure-anchored dollar statistic (credit dollar size only as far as flagged cases' benefit levels justify) | open | none | §21 motivates |
 | Rank-position-aware ordering reliability criterion (principled replacement for the fixed-z bound) | open | none | §20-22 motivate |
 | Coverage-aware ordering / union of partitions vs a workload-matched single list | open; any mechanism collides with the deliberate removal of greedy nets | none | §30 partition dependence; handoff 2026-08-05 |
-| Seed-to-seed variation of the shipped full-data pipeline | open (never measured; partition variation is a different quantity) | none | §30 scope note |
+| Seed-to-seed variation of the shipped full-data pipeline | open; study pre-registered and approved 2026-08-05, in flight | none yet | §30 scope note; methods/preregistration_seed_stability_2026-08-05.md |
 
 ## Admission (which rules enter the pool)
 
