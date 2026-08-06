@@ -104,6 +104,12 @@ below all mean this statistic.
   the national rules on one confidence-bound scale, sizes the core to your
   budget against your own recent caseload, and adds buffer rules to 3x depth so
   reviewers never run dry; you walk it in rank order with no outcome data.
+  The fill walk is overlap-aware: a rule enters the list only if it flags
+  cases no higher-ranked rule already flagged, so redundant rules never
+  occupy list slots (at the 5% budget the walk reads a median 1,544 ranked
+  rules to deliver 137, §27), and every quoted precision counts each case
+  and each error once, so overlap cannot inflate it. The rank on your list
+  is the delivered walk order among kept rules.
   Freezing in advance cost under a point of precision against an
   after-the-fact list (0.294 vs 0.301 at 5%; 0.270 vs 0.275 at 10%, §15), and
   the blend beat a national-only list at the 5% budget (0.324 vs 0.294) while

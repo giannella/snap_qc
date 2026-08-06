@@ -21,6 +21,15 @@ This is the default deployment deliverable described in the README and
   the review budget (5% or 10% of caseload) is reached — those rules are
   `role = "core"` — and then to 3x that depth as substitutes
   (`role = "buffer"`).
+- **The fill walk is overlap-aware.** Reading down the pool in bound order, a
+  rule enters the list only if it flags at least one case that no
+  higher-ranked rule already flagged (`n_new_at_rank` > 0 at build time);
+  rules whose coverage is already claimed are passed over and never appear.
+  The order is still strictly the confidence bound — the walk never promotes
+  a lower-bound rule for having new cases; it only skips redundant ones.
+  `rank` is therefore the position in the delivered walk order, not the
+  rule's position in the underlying pool (which is much deeper; see
+  `methods/modeling_findings.md` section 27).
 - Deployment is outcome-free: walk the list in `rank` order, activating
   rules while review capacity fits. No outcome data or modeling is needed
   to run it.
@@ -63,7 +72,7 @@ and ranked on the any-error target.
 | `precision_train_lcb` | one-sided 99% Wilson lower confidence bound of that precision — the ranking statistic |
 | `n_flagged_state` | cases the rule flags on the state's own 2022-24 caseload |
 | `n_new_at_rank` | of those, cases not already flagged by higher-ranked rules (walked in rank order) |
-| `rank` | position in the walk order (1 = activate first) |
+| `rank` | position in the delivered walk order (1 = activate first); only rules that added new cases at build time are listed, so ranks count kept rules, not the underlying pool |
 | `role` | `core` (fills the budget on the 2022-24 caseload) or `buffer` (substitutes, to 3x depth) |
 
 ## Caveats
@@ -72,6 +81,10 @@ and ranked on the any-error target.
   benchmark (mined 2022-23, tested on 2024), walked national/blended lists
   delivered median precision ~0.27-0.32 at these budgets against state base
   rates of 8-17%; expect deflation from the training numbers, not a match.
+- All quoted list-level precision is computed on the union of flagged cases:
+  a case counts once no matter how many rules flag it, and an error caught
+  by several rules counts once. Overlap between rules cannot inflate these
+  numbers.
 - The public files show only 43-81% of each state's error cases (ineligible
   determinations are excluded; see `methods/state_error_accounting/`). A
   state's own internal validation on FY25/26 files is the deciding test
