@@ -1096,3 +1096,246 @@ Coverage on error-case variances is near total: NATURE 1.000, AGENCY 1.000, DISC
 41.9%.
 
 *Detail: [detailed record](modeling_findings_detailed.md#29-characterizing-what-each-delivered-rule-finds-so-a-state-can-choose-its-own-rules-2026-08-04), §29. Artifacts, including the characterization sheet itself: [`methods/rule_error_profiles/`](https://github.com/giannella/snap_qc/tree/main/methods/rule_error_profiles).*
+
+## 30. Out-of-fold ordering does not reproduce at deliverable scale, and how much the mining draw decides
+
+> **Takeaway: about our pipeline.** Ranking the national pool by a bound computed on
+> data the rules were not mined from does not beat ranking by the self-scored bound
+> once the result is measured as delivered precision on an unseen year. The
+> pre-registered bar was a +0.010 within-state median at the 5% review budget; the
+> result was **-0.0044** across 49 states, and +0.0000 at the 10% budget, under both
+> admission variants. Section 22's +1.6pp does not carry into the deliverable. What
+> the same run does show is how much rides on the mining draw: two partitions'
+> top-100 rules share **3.2%** of their signatures, yet the **5% budget lists** they
+> produce catch **38.2%** of the same errors, twelve times the rule-level agreement
+> and six times chance. Most of the rule churn is cosmetic. The remainder is not:
+> only **one error in ten** is caught by all five partitions. Section 31, run later
+> the same day, bounds the decomposition: under seed variation alone the same
+> 5%-budget overlap is 0.531, though on mines of double the data (full FY2022-23
+> against the halves here), which itself stabilizes lists. So the seed lottery in a
+> single mine accounts for much of the churn seen here, with the data half and the
+> data volume sharing the remainder in a split this pair of studies cannot separate.
+
+Pre-registered in `methods/preregistration_national_only_xfit_2026-08-05.md` before
+any result existed, including both bars and the decision rules.
+
+### Why national-only
+
+The 2026-08-04 study cross-fitted the national pool and every state's own pool at
+once, which halved state pools to 48-140 errors and destroyed them; it is recorded
+as an invalid design rather than a refuted idea. The obvious repair, cross-fitting
+only the national pool, turns out not to be available either. Measured on the cached
+mines at the top 1% of the national ranking (mean of self-scored minus out-of-fold
+bound over the top 1% ranked by the self-scored bound), the self-scored Wilson bound
+overstates the out-of-fold bound by **+0.106 for national rules**; the same
+overstatement was recorded as larger still for state pools (+0.123) at the time,
+but that computation was not preserved as an artifact and a post-hoc re-derivation
+did not reproduce it exactly, so read the state-side figure as direction only.
+Either way, blending a cross-fitted national pool with self-scored state pools on
+one sorted scale would systematically promote state rules. The state pool is
+therefore dropped, which section 14 already supports: the plain national list is
+the best default a state can deploy.
+
+### The ordering result
+
+Five cached partitions of FY2022-23, each mining on 38,901 rows carrying ~4,242
+errors and scoring on the complementary 38,905. Both arms read the same vocabulary;
+only the ranking statistic differs. Evaluated by filling each of 49 states' training
+caseloads to the review budget, freezing, and walking against that state's FY2024
+cases.
+
+| out-of-fold minus self-scored | 5% budget | 10% budget |
+|---|---|---|
+| per state the mean over 5 partitions, median across 49 states, common admission | -0.0044 | +0.0000 |
+| states better / worse (ties from the 4-decimal precision column) | 18 / 28 (3 tied) | 23 / 24 (2 tied) |
+| across all 245 state-partition pairs | 95 better / 118 worse (32 tied) | 111 / 106 (28 tied) |
+| own-admission variant | -0.0053 | -0.0021 |
+
+The aggregation is stated exactly because the two natural readings differ: taking
+the MEDIAN over partitions within each state instead of the mean gives -0.0213 at
+the 5% budget. Both readings fail the pre-registered +0.010 bar.
+
+Self-scored admission passes about 11% more rules than out-of-fold admission
+(mean over the five partitions 41,443 against 37,335, own-admission variant),
+which is the same inflation appearing one stage earlier.
+
+### How much the mining draw decides
+
+The rules barely agree across partitions. Ranked by the out-of-fold bound, two
+partitions' top 100 share a pairwise Jaccard of **0.032** by signature, with **zero**
+signatures common to all five. By exact rule text the Jaccard is 0.000 to 0.006.
+That is not a property of out-of-fold scoring; ranking by the self-scored bound
+gives 0.066. It also sits against 72.9% of signatures being common to all five
+partitions across the pool as a whole, so the pool is stable in composition while
+its top is not.
+
+The delivered lists agree far more than their rules do:
+
+| | 5% budget | 10% budget |
+|---|---|---|
+| Jaccard, cases flagged | 0.325 | 0.435 |
+| Jaccard, errors caught | 0.382 | 0.497 |
+| chance baseline for errors | 0.063 | 0.126 |
+| errors caught by all five partitions | 10.6% | 22.3% |
+
+Ten states, both budgets, out-of-fold arm. The walk fills to the same capacity each
+time, so the sets are near-equal in size and the comparison is of composition. One
+machinery note for anyone comparing across studies: admission in these arms is BH
+within stratum, where the shipped delivery builder pools BH across strata with
+per-rule stratum base rates. Section 31 matches the builder, so its contrast with
+this table carries that small admission difference on top of the intended one.
+
+Two readings, both supported. Agreement at the case level is twelve times agreement
+at the rule level, so most of the rule churn is different descriptions of the same
+work. And two partitions still share under 40% of the errors they catch, with one
+error in ten common to all five, so the lists are not interchangeable either.
+
+The pre-registered bar did not resolve this: above 0.5 was to mean stable, below 0.3
+was to mean the draw changes which errors a state finds, and the result landed
+between them at both budgets. Section 31 then supplied most of the missing
+decomposition. Under seed variation alone, with the shipped recipe on the full
+77,806 rows (double the 38,901 each partition mined on, a difference that itself
+stabilizes lists), the same ten-state readout gives 0.531 and 0.666, and coverage
+converges to near-identity by depth 20,000 of the ranking (pairwise 0.959 to 0.965,
+every seed's pool covering all 4,803 test errors). The summary of both studies
+together: the reachable error set is stable, budget-depth lists are not, and the
+instability is a property of ordering under any single draw, seed or data half
+alike, not of what the mining can reach. How the residual gap (0.531 against 0.382)
+splits between the data half and the doubled mining data is not separable from this
+pair of studies.
+
+### Scope, and what this does not say
+
+Every figure here comes from mining on half the data. The shipped pipeline mines on
+all of it, so this particular source of variation does not exist in the delivered
+lists. What those lists do have is ensemble seed variation, which was untested when
+this section was drafted; the pre-registration claimed a low overlap here would be a
+finding about the currently shipped pipeline, and that claim reached too far and was
+withdrawn. Section 31 then measured the shipped pipeline directly, seed varying and
+nothing else, and found budget-list overlap of 0.531 at the 5% budget: the
+withdrawn claim's conclusion was approximately right, but it needed its own
+experiment rather than an extrapolation from half-data mining.
+
+Delivered precision moved with the partition by a median standard deviation of
+0.0443 at the 5% budget. Read that with the measurement in mind: a median state has
+872 FY2024 cases, so a 5% budget flags about 44, and precision on 44 cases carries a
+binomial standard error of 0.068 by itself. The partitions vary less than
+independent draws would, which is the case-overlap result seen from another angle.
+
+### Decision
+
+The pre-registered rule fires: section 22 does not generalise to the deliverable, so
+the line is dropped, K-fold cross-fitting is not warranted, and the blended version
+stays shelved. No pipeline change.
+
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md#30-out-of-fold-ordering-does-not-reproduce-at-deliverable-scale-and-how-much-the-mining-draw-decides-2026-08-05), §30. Artifacts: [`methods/national_only_xfit/`](https://github.com/giannella/snap_qc/tree/main/methods/national_only_xfit).*
+
+## 31. Seed stability: the deep pool covers the same errors; the top of the ranking does not
+
+> **Takeaway: about our pipeline (pre-registered, bar cleared decisively).**
+> Re-mining the national pool with different random seeds changes the rule
+> text a lot and the errors reached almost not at all, once you go deep
+> enough. By depth 20,000 of the ranking, two seeds' rules cover 96% the
+> same FY2024 error cases (pairwise Jaccard 0.959 to 0.965 against a 0.705
+> chance baseline at that reach), and every seed's full admitted pool covers
+> ALL 4,803 test errors, so nothing in coverage is left on the table by
+> mining once.
+> At the depths a review budget actually deploys, the seed matters more:
+> two seeds' 5% budget lists catch only about half the same errors (median
+> 0.531). The pre-registered conclusion follows: the instability in our
+> lists is an ORDERING phenomenon, not a vocabulary one, which opens the
+> preference-ordering line of work (letting a state promote rules by what
+> it can catch and fix, using the section 29 characterization fields)
+> without fear of losing reach.
+
+**Design** (pre-registered before any number existed, approved same day).
+Three seeds, one component varying: seed A is the cached full-data mine
+(seed 117), B (20260805) and C (31415) fresh mines, all on the full FY2022-23
+frame (77,806 rows, 8,485 errors; no split), any-error frame, shipped
+admission (pooled BH at FDR 10% + n >= 30) and ordering (99% Wilson LCB),
+national pool only. Evaluated as FY2024 error-case coverage (4,803 errors,
+40,457 rows, 49 states) at depths K = 100 / 200 / 1,000 / 20,000 / full.
+The seed-A determinism anchor passed both parts (recomputed n/k identical to
+the era cache for all 144,533 rules; 50,697 admitted, matching the era
+artifact), so the machinery reproduces the shipped scoring exactly.
+
+**Scale stability.** Raw pools: 144,533 / 144,933 / 144,488 rules. Admitted:
+50,697 / 51,503 / 51,372 (within 1.6%).
+
+**The primary result.** Median pairwise Jaccard of covered FY2024 error-case
+sets, with the chance baseline at matched reach in parentheses:
+
+| K | case Jaccard (chance) | signature Jaccard | all-3-seed intersection / union |
+|---|---|---|---|
+| 100 | 0.656 (0.029) | 0.150 | 0.549 |
+| 200 | 0.698 (0.040) | 0.186 | 0.580 |
+| 1,000 | 0.658 (0.127) | 0.240 | 0.541 |
+| 20,000 | 0.961 (0.705) | 0.354 | 0.943 |
+| full | 1.000 (1.000) | 0.399 | 1.000 |
+
+The pre-registered bar (>= 0.80 at K = 20,000 for the ordering fork) was
+cleared by every pair individually (0.9593, 0.9608, 0.9649), not just the
+median. Dollar-weighted coverage tracks the case numbers everywhere (0.9665
+to 0.9698 at K = 20,000). The pre-registered expectation (ordering fork) was
+written down in advance and confirmed.
+
+**Full pools saturate; one mine suffices for reach.** Every seed's full
+admitted pool covers all 4,803 of 4,803 FY2024 errors, and the
+union-accumulation curve is degenerate: seed A alone reaches 4,803, so seeds
+B and C add zero new errors.
+
+**Where the seed does matter: the top of the list.** From K = 100 to 1,000
+the pairwise overlap plateaus at 0.65 to 0.70 (first crossing of 0.70 at
+rank 63, but the curve is not monotone; it dips back to 0.658 at K = 1,000).
+On the ten section 30 states, the budget readout gives median pairwise
+errors-caught Jaccard of **0.531 at the 5% budget and 0.666 at 10%** (chance
+0.057 / 0.126), with wide state spread (Texas 0.889, New Jersey 0.200 at 5%;
+per-state counts are small, 3 to 32 errors caught, so individual state
+numbers are noisy). Plainly: the shipped pipeline mines once with one
+arbitrary seed, and a different draw would deliver a 5% list catching only
+about half the same errors, while drawing from the same deep reservoir.
+States should hear the constructive version: many near-equivalent orderings
+exist, which is exactly what makes preference-based reordering viable.
+
+**Text churn is not work churn, now shown at seed level.** Rule-signature
+overlap stays low everywhere (0.15 at K = 100, 0.354 at K = 20,000) while
+case-level agreement reaches 0.96: different seeds describe largely the same
+underlying errors with largely different rules. Section 30 found this for
+half-data partitions; it holds under seed variation alone.
+
+**Contrast with section 30's partitions (data + seed vs seed alone).**
+Errors-caught Jaccard on the same ten states: 0.531 vs 0.382 at 5%, 0.666
+vs 0.497 at 10%. Seed variation alone accounts for much of the partition
+study's churn. Three differences ride on the contrast, so read it as an
+approximate decomposition, not an exact one: this study's mines use the full
+77,806 rows against the partitions' 38,901 each, and the doubled data itself
+stabilizes lists, so part of the gap is volume rather than the data half's
+variation being removed; the section 30 scripts ran BH within stratum while
+this study matches the shipped pooled-BH recipe (a discrepancy in section
+30's machinery, surfaced by this study's pre-launch review); and section
+30's numbers embed out-of-fold scoring.
+
+**Incidental observation for section 28.** Two of the three seeds put a
+`rel_max`-band rule at the very top of the national ranking (seed A rank 1:
+`unc_rawben_rel_max` in (0.891, 0.991]; seed B rank 1: `rawben_rel_max` in
+[0.984, 0.992)), independent draws landing in the reconstruction-artifact
+band section 28 flagged. Strengthens the case for resolving the
+at-max-benefit feature question before the next delivery-list build.
+
+**Caveats.**
+- The chance baseline at K = 20,000 is high (0.705) because each seed's
+  top-20,000 already reaches about 83% of all errors; the claim is the
+  excess over chance (0.961 vs 0.705) plus the all-pairs unanimity, not the
+  raw Jaccard alone.
+- One era (train FY2022-23, test FY2024), national pools only. State-pool
+  seed stability is unmeasured (states' own rules enter blended lists; see
+  the prereg's national-only caveat).
+- No dedup in this machinery (matches the section 30 comparison and the
+  50,697 anchor; differs from the shipped builder), so the depth-K numbers
+  describe a redundant ranking and K* is conservative relative to the
+  deduped shipped list.
+- Whether preference-based reordering PRESERVES PRECISION is untested; this
+  study only establishes that deep coverage is seed-stable, which is the
+  necessary condition.
+
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md#31-seed-stability-the-deep-pool-covers-the-same-errors-the-top-of-the-ranking-does-not-2026-08-05), §31. Artifacts: [`methods/seed_stability_v2/`](https://github.com/giannella/snap_qc/tree/main/methods/seed_stability_v2).*

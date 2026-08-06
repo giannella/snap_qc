@@ -25,3 +25,7 @@ Admit rules with a false-discovery-rate
 # (state_error_accounting/visibility_by_state_2022_2024.csv) shows the true range is
 # 43% (New Jersey) to 91% (Georgia). Guard the stale upper bound:
 43-81%
+
+# Retired 2026-08-05 (findings 30): cross-fit ordering line dropped
+The fix under test is cross-fitting
+Cross-fitting is the more promising route

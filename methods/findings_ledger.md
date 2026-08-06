@@ -17,10 +17,6 @@ quoted here carries its section citation and must match it. Statuses:
 Maintained by the `log-finding` skill: every new finding adds or updates its
 row(s) here.
 
-Provisional citation: §30 (national-only cross-fit) is drafted and awaiting
-review (2026-08-05, draft outside the repo); rows citing it are provisional
-until the section lands in the findings docs.
-
 ## Ordering and selection statistics
 
 | Claim | Status | Scope tested | Source |
@@ -34,8 +30,8 @@ until the section lands in the findings docs.
 | Structure-anchored dollar statistic (credit dollar size only as far as flagged cases' benefit levels justify) | open | none | §21 motivates |
 | Rank-position-aware ordering reliability criterion (principled replacement for the fixed-z bound) | open | none | §20-22 motivate |
 | Coverage-aware ordering / union of partitions vs a workload-matched single list | open; any mechanism collides with the deliberate removal of greedy nets | none | §30 partition dependence; handoff 2026-08-05 |
-| Seed-to-seed variation of the shipped pipeline: deep coverage is seed-stable (pairwise error-case Jaccard 0.959-0.965 at depth 20,000, every pool covers all 4,803 FY2024 errors, one mine saturates reach) but budget-depth lists are not (errors-caught overlap 0.531 at 5%, 0.666 at 10%); the instability is ordering, not vocabulary | measured 2026-08-05, pre-registered bar cleared by every pair; write-up drafted, pending review (lands as §31 after §30) | one era (FY2022-23 to FY2024), national pools only, no dedup machinery | methods/seed_stability_v2/; prereg 2026-08-05 |
-| Preference-based reordering of the deep pool (state promotes rules via §29 characterization fields): does it preserve precision? | open; unlocked by the seed-stability result (coverage is seed-stable at depth, the necessary condition) | none | seed-stability study; §29 |
+| Seed-to-seed variation of the shipped pipeline: deep coverage is seed-stable (pairwise error-case Jaccard 0.959-0.965 at depth 20,000, every pool covers all 4,803 FY2024 errors, one mine saturates reach) but budget-depth lists are not (errors-caught overlap 0.531 at 5%, 0.666 at 10%); the instability is ordering, not vocabulary | settled 2026-08-05, pre-registered bar cleared by every pair | one era (FY2022-23 to FY2024), national pools only, no dedup machinery | §31 |
+| Preference-based reordering of the deep pool (state promotes rules via §29 characterization fields): does it preserve precision? | open; unlocked by §31 (coverage is seed-stable at depth, the necessary condition) | none | §31; §29 |
 
 ## Admission (which rules enter the pool)
 
@@ -108,7 +104,7 @@ until the section lands in the findings docs.
 | family_id labeled-substitutes column (design decided, not built) | open | RESUME.md roadmap |
 | Characterization columns on delivery lists (built, staged for the next list build; MINOR bump is Eric's call) | open | RESUME.md roadmap; §29 |
 | A1-F1 pipeline upgrade (rule_id, admit_bh helper, finder upgrades; de-OOM before any heavy regen) | open | RESUME.md next-session plan |
-| Case-overlap pre-registered bar landed between its thresholds (0.325/0.435 vs bars 0.3/0.5); disposition undecided | open | §30 |
+| Case-overlap pre-registered bar landed between its thresholds (0.325/0.435 vs bars 0.3/0.5) | resolved by §31's seed-only decomposition: the reachable error set is stable, budget-depth lists are not, under any single draw | §30, §31 |
 | Per-stratum outlier features (value above the within-stratum 99th percentile on shelter, deductions, income fields) as rule inputs; the issue reports 26% error among extreme-shelter HH-3 cases vs the ~11% base | open (Ben, issue #7, 2026-08-05); a vocabulary change needing a full re-mine, same class as the at_max_benefit feature, and a candidate to ride the same regen mine | GitHub #7 |
 | Representing ineligible households in the modeling frame; the public file omits them entirely and only per-state/year counts exist (additional_data/snap_qc_exclusion_all_years.csv), no case records; the issue conjectures many of the largest errors are FSBEN = $0 cases | open discussion (Ben, issue #8, 2026-08-05); bears directly on the §10 visibility limit; no method proposed yet | GitHub #8; §10 |
 

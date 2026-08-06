@@ -286,11 +286,17 @@ else identical, beat the self-scored ranking by 1.6 points of precision at a 5% 
 tight review budget operates (findings 22).
 
 A penalty constant cannot fix this; it can only trade one bias for another, which is what
-the floor and stringency results above demonstrate. The fix under test is cross-fitting:
-split each pool at random, mine one half, and score the candidates on the other, so the
-ordering carries no selection inflation to correct. Rules rediscovered across independent
-splits also get a stability signal for free, counted over rule *shape*, since exact
-thresholds move with the split and text-level rediscovery runs near 2%.
+the floor and stringency results above demonstrate. Cross-fitting (split each pool at
+random, mine one half, score the candidates on the other, so the ordering carries no
+selection inflation) was the candidate fix, and it was tested at deliverable scale and did
+not carry: ranking the national pool by an out-of-fold bound moved delivered precision by
+-0.0044 at the 5% budget and +0.0000 at 10% against a pre-registered +0.010 bar, so the
+line is dropped (findings 30). A follow-up located the instability without it: different
+mining seeds cover 96% the same errors by depth 20,000 of the ranking while their
+5%-budget lists catch only about half the same errors, so what varies across draws is the
+ordering, not what the mining can reach (findings 31). The defect is real, priced, and
+currently has no validated repair; the open candidate is a rank-position-aware
+reliability criterion (findings 20-22, 30).
 
 ### One scale spans two very different searches
 
@@ -302,9 +308,12 @@ national ones at the same nominal bound, and the single scale treats them as equ
 A per-pool penalty looks like the obvious repair and is not. Selection inflation grows with
 sqrt(2 ln *m*), and *m* differs far less between the pools than case counts do: z of 4.87
 nationally against 4.70 for a typical state pool, a 4% difference against a 50x difference
-in rows. A floor scaled that way was tested and lost (findings 26). Cross-fitting is the
-more promising route precisely because it removes the inflation from both pools directly
-rather than trying to price it.
+in rows. A floor scaled that way was tested and lost (findings 26). Cross-fitting only the
+national pool while state pools stay self-scored is also unavailable: at the top 1% of the
+ranking the self-scored bound overstates the out-of-fold bound by +0.106 for national
+rules, and directionally more for state pools, so a mixed scale would systematically
+promote state rules (findings 30). The one-scale problem stands without a validated
+repair.
 
 This matters unevenly, and the split is sharp. At the 5% budget, 26 of the 49 states take
 no core rules at all from their own pool, while three take more than half and the District
