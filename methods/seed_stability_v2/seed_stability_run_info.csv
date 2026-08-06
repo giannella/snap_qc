@@ -1,0 +1,4 @@
+"seed_name","seed_value","source","n_raw_rules","n_admitted","top_rule_hh","top_rule_lcb","top_rule"
+"A",117,"methods/state_similarity_v2/transfer_benchmark_train2223_test24/fdr_raw_vocab/raw_national.rds",144533,50697,"1",0.5272,"total_deductions_by_hh_size > 336.000 & unc_rawben_rel_max >   0.891 & unc_rawben_rel_max <=   0.991 & utilities <=  29.500"
+"B",20260805,"fresh mine",144933,51503,"1",0.6268,"rawben_rel_max >=   0.984 & rawben_rel_max <   0.992 & shelter_expenses_by_hh_size >= 809.000 & utilities < 347.000"
+"C",31415,"fresh mine",144488,51372,"1",0.4892,"shelter_expenses_by_hh_size >  426.00 & shelter_expenses_by_hh_size <= 1120.00 & unc_rawben_rel_max >    1.93 & utilities <=  294.00"

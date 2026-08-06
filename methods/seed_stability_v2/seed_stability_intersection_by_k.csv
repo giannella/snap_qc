@@ -1,0 +1,6 @@
+"K","n_seeds","n_union","n_intersection","intersection_share_of_union","intersection_share_of_errors","union_share_of_errors","median_pairwise_jaccard"
+"100",3,357,196,0.549,0.0408,0.0743,0.6564
+"200",3,491,285,0.5804,0.0593,0.1022,0.6982
+"1000",3,1441,780,0.5413,0.1624,0.3,0.6576
+"20000",3,4091,3858,0.943,0.8032,0.8518,0.9608
+"full",3,4803,4803,1,1,1,1
