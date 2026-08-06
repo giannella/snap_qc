@@ -55,17 +55,21 @@ the one-shot economics of this proposal.
 ## Evaluation design (sketch; the design note will pin it)
 
 Attribution needs arms, because adding both feature groups at once cannot say
-which one earned any change:
+which one earned any change. Four arms, the full factorial (decided by Eric
+2026-08-05: it judges the outlier features independently of at_max and
+detects any interaction between them, since both touch benefit-boundary and
+shelter cases):
 
 | arm | vocabulary |
 |---|---|
 | baseline | current 19 features (re-mined, same seed discipline as findings 31) |
 | +atmax | baseline + at_max_benefit |
+| +outliers | baseline + the five outlier indicators |
 | +atmax+outliers | the full proposed set |
 
 Any-error national frame, train FY2022-23, test FY2024 (true future year),
 one mine per arm (findings 31 timed the identical mine-plus-score at roughly
-an hour per arm, so three arms fit one overnight). Metrics per arm: delivered
+an hour per arm, so four arms fit one overnight). Metrics per arm: delivered
 precision at the 5% and 10% budgets on the findings 25/26 harness, the
 findings 28 artifact-exposure share of delivered cases (we want it to fall),
 error and dollar coverage, and any-error beside frame-relative throughout.
@@ -82,10 +86,14 @@ they appear in delivered lists with real support.
 
 If the attribution run clears its bars, the follow-on is the full five-frame
 regen with the winning feature set, which is also where the queued
-deliverable changes ride: rule_id, the characterization columns (findings
-29), and the family_id substitutes column. Anything that reaches
-`state_delivery_lists/` is a MINOR version bump and Eric's decision at ship
-time; nothing in this proposal ships by itself.
+deliverable changes ride: rule_id and the characterization columns (findings
+29) ship in the same MINOR bump as the vocabulary; the family_id substitutes
+column waits for a later bump (decided by Eric 2026-08-05: it is not yet
+built, and holding the bump for it buys nothing). One regen, not two: the
+A1-F1 code upgrades and the feature change land together rather than
+regenerating twice. Anything that reaches `state_delivery_lists/` is a MINOR
+version bump and Eric's decision at ship time; nothing in this proposal
+ships by itself.
 
 ## Feedback requested
 
@@ -95,8 +103,9 @@ time; nothing in this proposal ships by itself.
   states would evaluate the rules. Also whether issue #8's ineligible-case
   question should shape any feature here or stays separate (our read:
   separate; the public file has no feature rows for those cases to mine).
-- **Eric**: the arm structure, the sequencing against A1-F1 (de-OOM first,
-  attribution run second, full regen third), and which deliverable changes
-  ride the same version bump.
+- **Eric**: decided 2026-08-05. Four arms (full factorial); sequencing is
+  de-OOM first, attribution run second, one full regen third; the bump
+  carries the vocabulary, rule_id, and the characterization columns, with
+  family_id deferred.
 - **Both**: anything missing from the feature list while the mine is paid
   for.
