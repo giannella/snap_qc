@@ -1,0 +1,24 @@
+[23:15:18] rep 1: 138133 rules
+[23:15:19] rep 2: 137106 rules
+[23:15:19] rep 3: 138343 rules
+[23:15:20] rep 4: 138403 rules
+[23:15:20] rep 5: 138248 rules
+[23:15:20] === ranking statistic: lcb_hon ===
+  top  100: distinct signatures per partition 85/90/89/88/82 | pairwise Jaccard median 0.032 (range 0.018-0.087)
+            signatures present in 5/4/3/2/1 partitions: 0/1/8/34/338
+  top  500: distinct signatures per partition 315/314/346/342/332 | pairwise Jaccard median 0.128 (range 0.108-0.167)
+            signatures present in 5/4/3/2/1 partitions: 20/37/60/168/885
+  top 1000: distinct signatures per partition 650/625/653/699/680 | pairwise Jaccard median 0.147 (range 0.134-0.170)
+            signatures present in 5/4/3/2/1 partitions: 46/86/139/319/1678
+[23:15:24] === ranking statistic: lcb_self ===
+  top  100: distinct signatures per partition 77/70/84/87/85 | pairwise Jaccard median 0.066 (range 0.045-0.108)
+            signatures present in 5/4/3/2/1 partitions: 1/2/14/39/270
+  top  500: distinct signatures per partition 370/355/367/389/371 | pairwise Jaccard median 0.078 (range 0.068-0.118)
+            signatures present in 5/4/3/2/1 partitions: 10/21/63/179/1171
+  top 1000: distinct signatures per partition 696/633/666/734/694 | pairwise Jaccard median 0.109 (range 0.092-0.139)
+            signatures present in 5/4/3/2/1 partitions: 24/61/133/373/1914
+[23:15:27] === exact rule text, for contrast ===
+  top  100 by text: pairwise Jaccard median 0.0000
+  top  500 by text: pairwise Jaccard median 0.0060
+  top 1000 by text: pairwise Jaccard median 0.0048
+[23:15:30] done

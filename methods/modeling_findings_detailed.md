@@ -2495,7 +2495,7 @@ section was recorded. Notes a reader needs to reproduce them:
   with f the median errors-caught share per state; it reproduces as
   0.0630 / 0.1261.
 - The signature numbers are logged in
-  `methods/national_only_xfit/partition_signature_overlap.log` (regenerated
+  `methods/national_only_xfit/partition_signature_overlap.txt` (regenerated
   2026-08-05 by `methods/partition_signature_overlap_v2.R` against the cached
   mines). "Zero signatures common to all five" holds for the out-of-fold
   ranking's top 100; the self-scored top 100 has one. The whole-pool 72.9%
