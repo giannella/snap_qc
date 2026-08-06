@@ -1,0 +1,13 @@
+PROFILE-DISTANCE DIAGNOSTIC: one-screen summary
+Plan: methods/profile_distance_diagnostic_plan_2026-08-06.md | run 2026-08-06 14:58
+States 49 | instances 2390 | distinct rules 543 | A1 pairs 6786 | perm draws 200
+
+instrument         certificate eligible    gap5all  p95null    gap10 gap5f<99  verdict
+i1_fresh_overlap   0.951       yes          0.0876   0.0656   0.0817   0.0802  SIGNAL
+i2_spectral        0.981       yes          0.1016   0.0712   0.0677   0.0642  NO SIGNAL
+i3_nb_hellinger    0.963       yes          0.0789   0.0816   0.0762   0.0897  NO SIGNAL
+i4_profile_tv      0.855       yes          0.1051   0.0853   0.0925   0.0763  NO SIGNAL
+i5_signature       1.000       yes          0.0815   0.0686   0.0534   0.0637  NO SIGNAL
+i6_consensus       0.964       yes          0.1060   0.0867   0.0968   0.0986  NO SIGNAL
+
+Stage-2 recommendation (plan's no-arm gate): winner = i1_fresh_overlap (largest f<0.99 gap; i1 judged on all capacity; ties to the cheaper instrument). SIGNAL does NOT create a study arm: next step is the retrospective re-walk on the section 32 harness (same rules, same capacity, LCB order with i1_fresh_overlap as tie-break/diversity term, scored on FY2024), judged on the section 30 bar: +0.010 within-state median at the 5% budget across 49 states.

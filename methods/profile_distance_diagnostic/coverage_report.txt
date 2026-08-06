@@ -1,0 +1,8 @@
+states: 49 | lists verified vs per_rule_marginal.csv: 98/98
+deployed instances (holdout basis): 2390 | distinct rules: 543
+rules with >= 20 FY2022-23 error cases (i4 eligible): 500/543 (7.4% of instances, 5.0% of 5%-budget capacity excluded)
+rules with >= 50 train error cases (attenuation scope): 355
+A1 pairs: 6786 distinct; outcome defined: 6780; both>=50 scope: 2764
+A2 instances with a predecessor: 2101/2390 | f < 0.99 instances: 1192
+spectral: dims 3/3/1, isolated nodes 0/0/0
+permutation draws: 200 | certificate splits: 5
