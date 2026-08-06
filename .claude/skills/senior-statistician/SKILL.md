@@ -100,6 +100,16 @@ Check, in order, quoting `methods/findings_ledger.md` rows by claim:
    run of the old design.
 4. **Readable results.** Review budgets (5% / 10%) evaluated, any-error
    beside frame-relative, both endpoints of every comparison planned.
+5. **Engineering artifacts are not failure modes** (Eric's rule, 2026-08-06).
+   Every pre-stated bar or guard must test the analytical question. If an
+   outcome can be prevented by a design change or an incremental engineering
+   parameter that does not overturn the approach under test (fill completion,
+   buffer or window depth, compute budget, checkpoint plumbing), it must be
+   engineered away or asserted by construction, never left as a judged
+   failure mode. A plan that could record a refutation because of such an
+   artifact fails this check; the near-miss that created this rule was an
+   under-fill "guard" on a walk whose deliverable has a buffer precisely so
+   reviewers never run dry.
 
 Verdict is one of: **approve**, or **revise** with the failing check, the
 reason, and the ledger citation. The verdict goes to Eric with the design

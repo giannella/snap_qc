@@ -116,6 +116,13 @@ or changes a constraint.
 - Study outputs stay in `methods/`: no writes to `state_delivery_lists/`, no
   CHANGELOG entry, no version bump. Promotion is Eric's decision
   (VERSIONING.md).
+- **Engineering artifacts are not failure modes** (Eric, 2026-08-06): a
+  pre-stated bar or guard must test the analytical question. Any outcome
+  preventable by a design change or an incremental engineering parameter
+  that does not overturn the approach under test is a design requirement
+  (engineer it away, or assert it by construction), never a judged failure
+  mode. A pre-registration that could close a line of work over such an
+  artifact is an invalid design.
 - Before the run launches, the script and its design note go to a fresh
   senior-statistician review (routing rule below).
 
