@@ -1,4 +1,4 @@
-# Guidance from validation studies
+# Modeling research and takeaways
 
 A brief overview of what we've learned about what works and what doesn't from modeling QC data. 
 Note: Because of the amount of underlying detail, if you want to make use of all this in your modeling, it may be easier to point an AI assistant at this document, the ledger, modeling_findings.md, and detailed_modeling_findings.md. This overview recaps the key lessons in 
@@ -125,6 +125,20 @@ below all mean this statistic.
   not beat the shared scale for the median state, and at thin sample sizes it
   collapses; hold the 30-case floor and a holdout year (§9, §14). *(settled,
   18-state and 12-state future-year tests)*
+- **Since v2.4.0 the delivered lists carry a fresh-share floor: a rule earns
+  its slot only if at least half of what it flags is new work.** The floor
+  is two-era validated at the shipped 0.50 threshold, which cleared both
+  pre-registered bars (median within-state precision change +0.0118 at the
+  5% budget vs a +0.010 bar on the first era; +0.0070 vs +0.005 on a second
+  era a decade away; two-era pooled +0.0100; means +0.0151 and +0.0152). At
+  the 10% budget it is also positive (medians +0.0061 and +0.0110, means
+  +0.0092 and +0.0128) with dollar recall essentially unchanged at both
+  budgets, and few states are materially hurt (3 of 49 and 2 of 47 worse
+  than -0.05 at the 5% budget). Review workload is unchanged by
+  construction; `SORT_WALK_USE_FRESH_SHARE <- FALSE` in the builder
+  restores the legacy walk (§33-34 and the §34 addendum, which also
+  records why the higher 0.60 threshold was not shipped). *(settled, two
+  eras, pre-registered at every stage)*
 - **Read your list as one of many near-equivalent orderings, not as canonical.**
   Re-running the miner with a different random seed changes most of the rule
   text and changes about half of what a 5% budget list catches (median overlap

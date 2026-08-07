@@ -116,6 +116,14 @@ or changes a constraint.
 - Study outputs stay in `methods/`: no writes to `state_delivery_lists/`, no
   CHANGELOG entry, no version bump. Promotion is Eric's decision
   (VERSIONING.md).
+- **Mandatory shipping companions** (Eric, 2026-08-07): the pre-registered
+  decision statistic stays the within-state MEDIAN, and every shipping
+  readout must carry two companions: the within-state MEAN and the
+  HARMED-TAIL count (states whose paired change is worse than -0.05). A
+  median win contradicted by both companions does not ship. Origin: the
+  0.60-vs-0.50 threshold adjudication (findings 34 addendum), where the
+  median lens alone would have shipped a threshold that doubled the harmed
+  tail on all six harness-budget readouts.
 - **Engineering artifacts are not failure modes** (Eric, 2026-08-06): a
   pre-stated bar or guard must test the analytical question. Any outcome
   preventable by a design change or an incremental engineering parameter

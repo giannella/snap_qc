@@ -90,7 +90,7 @@ The two tree-visualization scripts are for looking at where error dollars concen
 | `OBJECTIVE` | "dollars" | recall basis for plots/x (counts always also written) |
 | `SIGNIF_DIGITS` | 3 | rule threshold rounding |
 | `SORT_WALK_USE_FRESH_SHARE` | TRUE | delivery builder: fresh-share floor on the fill walk (findings 33-34); FALSE restores the legacy walk |
-| `SORT_WALK_MIN_FRESH_SHARE` | 0.60 | the floor on f = n_new/n_flagged at a rule's turn; skipped slots refilled from deeper ranks at unchanged consumed capacity (findings 33-34; fine-grid rule 2026-08-07) |
+| `SORT_WALK_MIN_FRESH_SHARE` | 0.50 | the floor on f = n_new/n_flagged at a rule's turn; skipped slots refilled from deeper ranks at unchanged consumed capacity (findings 33-34 and the section 34 adjudication) |
 
 ## v1 (legacy) — handle with care
 

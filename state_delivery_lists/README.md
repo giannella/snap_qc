@@ -21,12 +21,16 @@ This is the default deployment deliverable described in the README and
   the review budget (5% or 10% of caseload) is reached — those rules are
   `role = "core"` — and then to 3x that depth as substitutes
   (`role = "buffer"`).
-- **The fill walk is overlap-aware.** Reading down the pool in bound order, a
-  rule enters the list only if it flags at least one case that no
-  higher-ranked rule already flagged (`n_new_at_rank` > 0 at build time);
-  rules whose coverage is already claimed are passed over and never appear.
-  The order is still strictly the confidence bound — the walk never promotes
-  a lower-bound rule for having new cases; it only skips redundant ones.
+- **The fill walk is overlap-aware, and since v2.4.0 it carries a
+  fresh-share floor.** Reading down the pool in bound order, a rule enters
+  the list only if it flags at least one case that no higher-ranked rule
+  already flagged (`n_new_at_rank` > 0 at build time), AND at least half of
+  its flagged cases are new work (fresh share f = n_new / n_flagged >= 0.50);
+  rules below the floor are passed over and their slots refill from deeper
+  ranks at unchanged consumed workload (two-era validation:
+  `modeling_findings.md` sections 33-34). The order is still strictly the
+  confidence bound — the walk never promotes a lower-bound rule for having
+  new cases.
   `rank` is therefore the position in the delivered walk order, not the
   rule's position in the underlying pool (which is much deeper; see
   `methods/modeling_findings.md` section 27).
@@ -78,9 +82,14 @@ and ranked on the any-error target.
 ## Caveats
 
 - Precision columns are training-data numbers on 2022-24. On the time-shifted
-  benchmark (mined 2022-23, tested on 2024), walked national/blended lists
-  delivered median precision ~0.27-0.32 at these budgets against state base
-  rates of 8-17%; expect deflation from the training numbers, not a match.
+  benchmark (mined 2022-23, tested on 2024), the v2.4.0 fresh-share walk
+  improves the median state's delivered precision by +0.012 at the 5% budget
+  (mean +0.015) and +0.006 at 10% (mean +0.009), at review workload unchanged
+  by construction and dollar recall essentially unchanged at both budgets;
+  3 of 49 states move worse than -0.05 at the 5% budget
+  (`modeling_findings.md` sections 33-34 and the section 34 addendum; set
+  `SORT_WALK_USE_FRESH_SHARE <- FALSE` in the builder to restore the legacy
+  walk). Expect deflation from the training numbers, not a match.
 - All quoted list-level precision is computed on the union of flagged cases:
   a case counts once no matter how many rules flag it, and an error caught
   by several rules counts once. Overlap between rules cannot inflate these

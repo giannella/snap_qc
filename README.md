@@ -4,7 +4,7 @@ Code and data for modeling SNAP payment errors as interpretable, easy-to-impleme
 
 Released under the Apache 2.0 license: use and build on the code, ideas, or results freely.
 
-**[Updates & compatibility](VERSIONING.md)** · **[Guidance from validation studies](GUIDANCE.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Changelog](CHANGELOG.md)**
+**[Updates & compatibility](VERSIONING.md)** · **[Modeling research and takeaways](GUIDANCE.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Changelog](CHANGELOG.md)**
 
 ## Updates and compatibility
 
@@ -20,7 +20,7 @@ See [VERSIONING.md](VERSIONING.md): tagged releases, plain-language change summa
 
 **Why v2 exists.** Shortlisting mined rules by their raw training precision suffers a strong winner's curse: a rule looks best partly because it got lucky, so a list built to hit 20% precision delivered only ~10% on data it hadn't seen. v2 filters on the **lower confidence bound (Wilson LCB)** of each rule's training precision instead. A rule that clears a 20% filter now delivers about 20% on hold-out data (data set aside and never used to build or pick the rules).
 
-The rebuild paid off in other ways. The pipeline runs several times faster (v1 mined one error-type dataset in about 40 minutes; v2 mines all four typed datasets plus the pooled all-errors model in about 45) and fits on a 16 GB laptop, where v1's internal lasso needed 40+ GB at scale. It scores every rule against **all** error types, so a rule mined for earned-income errors still gets credit when the case it flags turns out to have a deduction error, which is what happens in deployment. And it mines the largest error category v1 left out, `other_error`, which is mostly **deductions**. The engine change alone catches 55% of error dollars at the 0.20 filter floor versus 47% for the CART-based generator {pre} used. That is about eight more points of error-dollar recall (the share of all error dollars caught), at slightly higher precision. The [guidance section](#guidance-from-the-validation-studies) summarizes these results; [`methods/modeling_findings.md`](methods/modeling_findings.md) gives them in full.
+The rebuild paid off in other ways. The pipeline runs several times faster (v1 mined one error-type dataset in about 40 minutes; v2 mines all four typed datasets plus the pooled all-errors model in about 45) and fits on a 16 GB laptop, where v1's internal lasso needed 40+ GB at scale. It scores every rule against **all** error types, so a rule mined for earned-income errors still gets credit when the case it flags turns out to have a deduction error, which is what happens in deployment. And it mines the largest error category v1 left out, `other_error`, which is mostly **deductions**. The engine change alone catches 55% of error dollars at the 0.20 filter floor versus 47% for the CART-based generator {pre} used. That is about eight more points of error-dollar recall (the share of all error dollars caught), at slightly higher precision. The [research-takeaways section](#modeling-research-and-takeaways) summarizes these results; [`methods/modeling_findings.md`](methods/modeling_findings.md) gives them in full.
 
 ---
 
@@ -51,7 +51,7 @@ Rscript runners/run_blended_delivery_batch.R > blended_delivery_run.log 2>&1
 2. **Rank on one scale.** The state's own rules are merged into the national pool, and every rule is ranked by the 99% lower bound of its own training precision, so state and national rules compete on comparable, confidence-discounted evidence.
 3. **Fill to budget.** The list is filled against the state's caseload to a 5% or 10% review budget (the *core*) and extended with ranked *buffer* rules out to 3x that depth. The fill is overlap-aware: a rule enters the list only if it flags cases no higher-ranked rule already flagged, so `rank` on a delivered list is the walk order among kept rules and every listed rule added new cases at build time. The state activates rules in rank order until review capacity fills, with no outcome data needed at any step.
 
-Tested a full year ahead of the training data (mined on 2022-23, scored on each state's 2024), this recipe beat the national-only list at the 5% budget (median precision 0.324 vs 0.294, catching 15% vs 12% of error dollars), came out about even at 10% (0.262 vs 0.270), and cleared every one of 18 states' base error rate (national ~11%, a 1.5-3.4x lift over reviewing at random). Ready-built lists are in [`state_delivery_lists/`](state_delivery_lists/).
+Tested a full year ahead of the training data (mined on 2022-23, scored on each state's 2024), this recipe beat the national-only list at the 5% budget (median precision 0.324 vs 0.294, catching 15% vs 12% of error dollars), came out about even at 10% (0.262 vs 0.270), and cleared every one of 18 states' base error rate (national ~11%, a 1.5-3.4x lift over reviewing at random). Since v2.4.0 the fill walk also applies a **fresh-share floor** (a rule earns its list slot only if at least half of what it flags is new work), validated on two independent eras: about a point of delivered precision at the 5% budget (median within-state change +0.012, mean +0.015) and half a point at 10% (+0.006 median, +0.009 mean), at unchanged review workload and essentially unchanged dollar recall; the off switch and full readouts are in `modeling_findings.md` sections 33-34. Ready-built lists are in [`state_delivery_lists/`](state_delivery_lists/).
 
 ![The delivery-list build: mine rule pools, rank them on one confidence scale, fill to the review budget](presentation_figures/pipeline_option_B.png)
 
@@ -129,7 +129,7 @@ Two scripts at the repo root fit a single `rpart` regression tree predicting the
 
 Both source their fitting metrics and plot wrappers from `tree_visualization_helpers/`.
 
-These are for looking at the data, not for producing rules. They share no code with `rule_mining_helpers.R`, they use a single tree rather than the xgboost and ranger ensembles, and nothing in the delivery pipeline reads their output. Treat what a tree shows as a starting point for a question, not as a validated result: a single deep tree fit on all of a state's rows has no hold-out and carries the winner's curse described under [Guidance from validation studies](#guidance-from-validation-studies).
+These are for looking at the data, not for producing rules. They share no code with `rule_mining_helpers.R`, they use a single tree rather than the xgboost and ranger ensembles, and nothing in the delivery pipeline reads their output. Treat what a tree shows as a starting point for a question, not as a validated result: a single deep tree fit on all of a state's rows has no hold-out and carries the winner's curse described under [Modeling research and takeaways](#modeling-research-and-takeaways).
 
 They need two more packages than the pipeline, and they expect the modelling frame to already be in the environment:
 
@@ -161,7 +161,7 @@ The recommended path (the blended, budget-filled state list). Changing `ADMISSIO
 | `FDR_ALPHA` | `0.10` | the FDR level (default 10%), used when `ADMISSION` is `"fdr10"` |
 | `PAIRING` | `"lcb99_workloadfill"` | ranking statistic for the fill order; set `"dpf_workloadfill"` to rank by error dollars per flagged case (see the Statistics and goal metrics table) |
 | `SORT_WALK_USE_FRESH_SHARE` | `TRUE` | fresh-share floor on the fill walk (findings 33-34); `FALSE` restores the legacy walk and ignores the threshold knob |
-| `SORT_WALK_MIN_FRESH_SHARE` | `0.60` | the floor: a rule is skipped at its turn unless its new cases are at least this share of everything it flags, with the skipped slots refilled from deeper ranks at unchanged consumed capacity (findings 33-34) |
+| `SORT_WALK_MIN_FRESH_SHARE` | `0.50` | the floor: a rule is skipped at its turn unless its new cases are at least this share of everything it flags, with the skipped slots refilled from deeper ranks at unchanged consumed capacity (findings 33-34) |
 
 The fresh-share floor was validated on two eras (findings 33-34): rules whose flags mostly duplicate earlier rules' are skipped, and the capacity they would have consumed is refilled from deeper, fresher rules, so the delivered list carries the same consumed workload either way.
 
@@ -195,7 +195,7 @@ Finds rules that safely drop low-risk cases from a review pile (scored on the cl
 
 Packages: `dplyr`, `ggplot2`, `ranger`, `xgboost` (plus `rpart` for the optional bagged-CART engine). No `{pre}` required.
 
-## Guidance from validation studies
+## Modeling research and takeaways
 
 Moved to its own page, [GUIDANCE.md](GUIDANCE.md): what moved held-out
 performance in the experiments we ran, from selection statistics to

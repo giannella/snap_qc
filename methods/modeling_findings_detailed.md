@@ -3003,3 +3003,46 @@ knobs (names decided by Eric): SORT_WALK_USE_FRESH_SHARE (TRUE default;
 FALSE restores the legacy walk and ignores the threshold) and
 SORT_WALK_MIN_FRESH_SHARE (default 0.60). Full 10%-budget companions for
 state internal testing are in the committed sensitivity grids.
+
+**Absolute benchmark medians at the selected threshold (recorded 2026-08-07
+for the v2.4.0 release docs; era-1 bench harness, build FY2022-23, score
+FY2024, 49 states, f = 0.60, from
+`methods/freshshare_rewalk/per_state_paired.csv`):** at the 5% budget,
+median delivered precision 0.3256 with the floor against 0.3137 without,
+median unweighted dollar recall 0.1179 against 0.1198; at the 10% budget,
+0.2632 against 0.2745 precision and 0.2183 against 0.2448 dollar recall.
+The 5%-budget improvement and the 10%-budget give-back are the two sides of
+the 0.60 selection, whose rule optimized the 5% budget by Eric's explicit
+scoping (states are most likely capacity-bound at 5%); the 10% companions
+are published for states that test deeper internally. Medians of levels and
+medians of paired differences do not commute, so these level figures sit
+beside, not in place of, the paired readouts above.
+
+**Threshold adjudication (2026-08-07, Eric): v2.4.0 ships f = 0.50, not the
+0.60 the median-lens rule selected.** The mandatory-companion review (means
+and harmed-tail counts beside the decision median) found 0.60's case
+confined to the single 5%-budget median column: on within-state MEANS, 0.60
+never materially beats 0.50 on any harness at any budget (best margin
++0.0005) while 0.50 wins all three 10% readouts (+0.0092/+0.0062/+0.0128 vs
++0.0047/-0.0227-tranche/+0.0069 class) and era-2 5% by double (+0.0152 vs
++0.0072); on 10% MEDIANS 0.50 leads on all three harnesses; and the harmed
+tail (states worse than -0.05 paired) roughly doubles under 0.60 on all six
+harness-budget readouts (5%: 3 vs 6, 4 vs 8, 2 vs 7; 10%: 0 vs 3, 2 vs 7,
+1 vs 4; worst state -0.215 at era-2 5% under 0.60). A state deploys one
+list and cannot average across states. 0.50 is additionally the point that
+cleared both pre-registered confirmatory bars. Standing rule adopted from
+this adjudication (Eric): in every future shipping decision, the median
+stays the pre-registered decision statistic, and the within-state MEAN and
+the HARMED-TAIL count (paired change worse than -0.05) are mandatory
+companions; a median win contradicted by both companions does not ship.
+
+**Depth-indexed threshold: coherent, frozen.** The tranche decomposition
+(5%-budget fill vs the 5-to-10% increment, paired medians) shows the floor's
+returns decline with depth on era 1 (f=0.60 increment -0.0098 blended,
+-0.0227 national-only) but NOT on era 2 (+0.0110), so any capacity-indexed
+schedule calibrated today would hard-code era 1's profile - the section 20
+"failed second-era hint" shape. The zero-new-parameter schedule (0.60 to the
+5%-budget depth, 0.50 beyond) is recorded as a frozen pre-registered
+candidate awaiting a genuinely unread test bed (the FY2025 public file when
+it lands, or a state's internal data); with all three current harnesses
+consumed by its construction, testing it now would be confirmatory theater.

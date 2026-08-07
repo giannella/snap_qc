@@ -99,7 +99,13 @@ Check, in order, quoting `methods/findings_ledger.md` rows by claim:
    retired and hazard rows. A retired claim needs new evidence, not a new
    run of the old design.
 4. **Readable results.** Review budgets (5% / 10%) evaluated, any-error
-   beside frame-relative, both endpoints of every comparison planned.
+   beside frame-relative, both endpoints of every comparison planned - and
+   every shipping bar carries its mandatory companions (Eric, 2026-08-07):
+   the within-state MEAN and the HARMED-TAIL count (paired change worse
+   than -0.05) beside the decision median. A median win contradicted by
+   both companions does not ship; a plan whose bars lack the companions
+   fails this check. (Origin: the 0.60 threshold's median win concealed a
+   doubled harmed tail; findings 34 addendum.)
 5. **Engineering artifacts are not failure modes** (Eric's rule, 2026-08-06).
    Every pre-stated bar or guard must test the analytical question. If an
    outcome can be prevented by a design change or an incremental engineering

@@ -69,7 +69,8 @@ if (!exists("ADMISSION")) ADMISSION <- "fdr10"
 if (!exists("FDR_ALPHA")) FDR_ALPHA <- 0.10   # false-discovery-rate target used when ADMISSION == "fdr10"
 
 # Fresh-share floor on the fill walk (findings 33-34, two-era validated;
-# the 0.60 threshold selected by the pre-stated fine-grid rule, 2026-08-07).
+# the shipping threshold 0.50 adjudicated by the mandatory companions,
+# findings 34 addendum, 2026-08-07).
 # The fill becomes the validated two-pass walk (walk2 of
 # methods/freshshare_rewalk_v2.R): a floor-0 legacy scan first fixes the
 # consumed core and total capacities, then the fresh-share walk fills to
@@ -83,7 +84,9 @@ if (!exists("FDR_ALPHA")) FDR_ALPHA <- 0.10   # false-discovery-rate target used
 # itself, so legacy behavior is the legacy code, byte-identical to the
 # committed lists (methods/check_builder_freshshare_identity.R).
 if (!exists("SORT_WALK_USE_FRESH_SHARE")) SORT_WALK_USE_FRESH_SHARE <- TRUE   # FALSE restores the legacy walk and ignores the threshold knob
-if (!exists("SORT_WALK_MIN_FRESH_SHARE")) SORT_WALK_MIN_FRESH_SHARE <- 0.60   # selected by the pre-stated fine-grid rule, 2026-08-07
+if (!exists("SORT_WALK_MIN_FRESH_SHARE")) SORT_WALK_MIN_FRESH_SHARE <- 0.50   # the two-era confirmatory point; adjudicated over 0.60 by the
+                                                                              # mandatory companions (means and harmed-tail counts), findings 34
+                                                                              # addendum, Eric 2026-08-07
 
 # Which frames feed the vocabulary. The typed + pooled union is the validated
 # default (findings #3: typed frames surface specialized rules the pooled

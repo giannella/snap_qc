@@ -187,7 +187,12 @@ reproduces the list exactly.
 cases no earlier rule already flagged, a greedy set cover against a capacity constraint.
 Rules fill the **core** until the budget is reached, 5% or 10% of the state's caseload, and
 then the **buffer** out to three times that depth, as named substitutes rather than extra
-capacity.
+capacity. Since v2.4.0 the walk also applies a **fresh-share floor**: a rule is taken in
+the first pass only if at least half of its flagged cases are new work
+(f = new cases / flagged cases >= 0.50), with skipped slots refilled from deeper ranks at
+unchanged consumed workload. The floor is two-era validated and positive at both budgets
+with dollar recall held (findings 33-34 and the section 34 addendum, which also records
+the threshold adjudication); a builder switch restores the legacy walk.
 
 The walk reads much further than it delivers, because rules that add no new cases are
 skipped: a median of 1,544 ranks to deliver 137 rules at the 5% budget, and 4,194 to
