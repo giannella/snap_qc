@@ -162,6 +162,21 @@ two-era pooled median at the chosen f, never the winning grid cell. The
 fine-grid rerun recomputes the already-recorded grid cells, which must
 reproduce the committed values exactly (a free drift anchor).
 
+Builder knobs, names decided by Eric 2026-08-07:
+
+```r
+SORT_WALK_USE_FRESH_SHARE <- TRUE   # FALSE restores the legacy walk and
+                                    # ignores SORT_WALK_MIN_FRESH_SHARE
+SORT_WALK_MIN_FRESH_SHARE <- <chosen by the fine-grid rule>
+```
+
+Implementation note: FALSE routes through the two-pass walk with the floor
+at 0, which findings 33-34's baseline-identity anchors proved take-for-take
+identical to the legacy walk (192/192 lists) - one code path, no duplicate
+walk to drift. The identity check joins the regression test so the claim
+stays verified. Both knobs land in the builder header, CLAUDE.md's knob
+table, and the README knob table at v2.5.0, citing sections 33-34.
+
 Builder implementation is protected-file work: PDS writes, fresh review
 against findings 33-34 and the chosen threshold, regression test, then the
 single v2.5.0 regeneration carries everything.
