@@ -23,9 +23,35 @@ together pays for that night once:
    19.6 to 23.8% on capped shelter, medical, earned and unearned income. The
    open question a re-mine answers: do explicit outlier indicators find
    pockets the depth-4 trees do not already reach by splitting on raw values?
-3. **The A1-F1 finder upgrade** (rule_id on emitters, admit_bh helper,
-   dollars-per-flag) already requires regenerating the vocabulary; it has
-   been queued since 2026-07-22.
+3. **The A1-F1 finder upgrade** already requires regenerating the
+   vocabulary; it has been queued since 2026-07-22. The step codes, defined
+   (they come from the 2026-07-22 session plan recorded in RESUME.md):
+
+   | step | content |
+   |---|---|
+   | A/B | shared helpers `admit_bh()` (the Benjamini-Hochberg + n >= 30 admission as one tested function) and `rule_id_of()` (stable rule identifiers), with regression-test coverage |
+   | C | `rule_id` column on the delivery builder's output + regenerate the 49 lists off cache |
+   | D | INCL finder upgrades (n >= 30 / FDR-10% admission columns, dollars-per-flag) + regeneration + an old-vs-new delta report for review |
+   | E | `rule_id` on the EXCL emitter |
+   | F | study 3: any-error vs frame-relative ranking |
+
+   **rule_id, defined:** a deterministic identifier derived from the rule's
+   stratum and canonical text (stable hash), so a rule can be referenced
+   across builds, versions, GitHub issues, and state feedback without
+   quoting its full condition string, and so lists regenerated from the
+   same vocabulary carry the same IDs.
+
+   **family_id, defined (operative proposal; Eric to confirm the grouping
+   rule):** a label grouping substitutable rules within a stratum, so a
+   state vetoing a rule can see its alternates. Proposed grouping: connected
+   components of build-caseload flag overlap (pairwise Jaccard >= 0.5)
+   within stratum, which matches how substitutes behave in the walk (they
+   claim each other's cases). The findings 33 diagnostic's spectral
+   clusters (`methods/profile_distance_diagnostic/spectral_clusters.csv`)
+   are the measured alternative basis; the fresh-share floor makes families
+   operationally meaningful, since the walk now skips within-family
+   redundancy by design. family_id remains deferred from this release per
+   the 2026-08-05 decision unless Eric says otherwise.
 
 Memory prerequisite, scoped precisely: the chunked reducer
 (`reduce_flags_for_rules()`) already exists in the helpers and has scored
@@ -54,6 +80,18 @@ helper (ledger hazard row; RESUME.md A1-F1 caveat).
 - Explicitly staying out: `second_element_i` (hazard row: state reporting is
   inconsistent); no change to the target, strata, engines, admission, or
   ordering (all settled rows; findings 4, 11, 19, 20).
+
+**Pre-screen for the outlier indicators (added 2026-08-07, Eric): each of
+the five is tested individually before any mining.** Two mining-free
+screens, an afternoon of compute: (1) standalone - each indicator evaluated
+as a single-condition rule on FY2022-23 (n, k, precision, 99% LCB, shipped
+admission pass/fail) with an FY2024 holdout check; (2) marginal over
+deployed coverage - among cases NOT flagged by each state's deployed core
+(where budgets actually live, and where findings 31 says coverage is not
+the constraint), does the indicator run above the base rate? Indicators
+passing both screens enter the re-mine arm; failures are dropped from its
+vocabulary; if all five fail, the outliers arm is skipped. Results posted
+to issue #7 for Ben.
 
 Question for both reviewers: is anything else worth adding while we are
 paying for the mine? A feature added later costs another full night; that is
