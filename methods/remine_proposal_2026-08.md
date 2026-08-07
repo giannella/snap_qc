@@ -134,6 +134,35 @@ pre-registered bar, riding the same overnight window. Mining cost is small
 (49 states x 4 typed frames at state scale); evaluation reuses the delivery
 builder machinery.
 
+## The fresh-share floor rides this release (added 2026-08-07, Eric)
+
+Findings 33-34: the fresh-share floor is two-era validated (era 1 blended
++0.0118 vs a +0.010 bar; era 2 +0.0070 vs a +0.005 bar; two-era pooled
++0.0100; dollar guard 0.0000 everywhere at f = 0.50) and goes into
+`INCL_build_blended_delivery_list_v2.R` as part of this release. **The
+release target is v2.5.0**, bundling: the re-mine vocabulary (whatever the
+attribution arms admit), rule_id, the characterization columns, and the
+fresh-share floor. One regeneration, one migration for states.
+
+**Threshold selection, pre-stated before the fine grid is read.** The
+existing grid runs {0.25, 0.40, 0.50, 0.60, 0.75}; the fine step adds
+{0.55, 0.65, 0.70} on all three harnesses (era-1 blended, era-1
+national-only bridge, era-2), re-walk only, no mining, roughly 1.5-2 hours.
+The mechanism is validated; this is dose-finding on an engineering
+parameter, per the engineering-artifacts rule. Selection rule: choose the f
+in {0.40 ... 0.75 at 0.05 steps} maximizing the MINIMUM of the two eras'
+5%-budget medians (era-1 blended and era-2), subject to the dollar guard
+(>= -0.005) on [SCOPE - Eric's choice, see below]; ties break toward the
+lower f. The shipped effect estimate is the two-era pooled median at the
+chosen f, never the winning grid cell. Open knob for Eric before the grid
+runs: whether the dollar guard binds at both budgets on both eras (stricter;
+currently disqualifies 0.60, whose era-1 blended 10% dollar change was
+-0.0184) or at the 5% budget only (currently leaves 0.60 the leader).
+
+Builder implementation is protected-file work: PDS writes, fresh review
+against findings 33-34 and the chosen threshold, regression test, then the
+single v2.5.0 regeneration carries everything.
+
 ## Feedback requested
 
 - **Ben**: the outlier feature definitions. Which variables, the 99th
