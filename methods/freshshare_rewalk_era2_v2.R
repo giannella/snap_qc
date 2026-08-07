@@ -95,7 +95,9 @@ FDR_ALPHA   <- 0.10
 MIN_TRAIN_FLAGGED <- 30
 F_PRIMARY   <- 0.50
 F_CHALLENGER<- 0.60
-F_GRID      <- c(0.25, 0.40, 0.50, 0.60, 0.75)
+F_GRID      <- c(0.25, 0.40, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75)
+# extended 2026-08-07 per the pre-stated fine-grid step in
+# methods/remine_proposal_2026-08.md; previously recorded cells must reproduce
 WINDOW_TOPK <- 12000
 BAR_BRIDGE  <- 0.005      # proceed/re-scope floor (plan)
 ERA1_BLENDED<- 0.0118     # Eric's hypothesis reference (stage 2, section 33)

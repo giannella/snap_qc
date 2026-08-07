@@ -81,7 +81,10 @@ HOLDOUT_YEAR <- "2024"
 BUDGETS      <- c(0.05, 0.10)
 RANK_STAT    <- "precision_train_lcb"
 F_PRIMARY    <- 0.50
-F_GRID       <- c(0.25, 0.40, 0.50, 0.60, 0.75)   # plan: descriptive only
+F_GRID       <- c(0.25, 0.40, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75)   # plan: descriptive
+# only; extended 2026-08-07 per the pre-stated fine-grid step in
+# methods/remine_proposal_2026-08.md (dose-finding on the validated mechanism;
+# previously recorded cells must reproduce exactly on the rerun)
 WINDOW_TOPK  <- 12000
 BAR_PRIMARY  <- 0.010     # median paired precision diff, 5% budget
 BAR_GUARD    <- -0.005    # median dollar-recall (fraction) change, 5% budget

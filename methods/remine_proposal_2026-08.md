@@ -149,15 +149,18 @@ existing grid runs {0.25, 0.40, 0.50, 0.60, 0.75}; the fine step adds
 {0.55, 0.65, 0.70} on all three harnesses (era-1 blended, era-1
 national-only bridge, era-2), re-walk only, no mining, roughly 1.5-2 hours.
 The mechanism is validated; this is dose-finding on an engineering
-parameter, per the engineering-artifacts rule. Selection rule: choose the f
+parameter, per the engineering-artifacts rule. Selection rule, fixed 2026-08-07 (Eric): choose the f
 in {0.40 ... 0.75 at 0.05 steps} maximizing the MINIMUM of the two eras'
 5%-budget medians (era-1 blended and era-2), subject to the dollar guard
-(>= -0.005) on [SCOPE - Eric's choice, see below]; ties break toward the
-lower f. The shipped effect estimate is the two-era pooled median at the
-chosen f, never the winning grid cell. Open knob for Eric before the grid
-runs: whether the dollar guard binds at both budgets on both eras (stricter;
-currently disqualifies 0.60, whose era-1 blended 10% dollar change was
--0.0184) or at the 5% budget only (currently leaves 0.60 the leader).
+(>= -0.005) at the 5% BUDGET ONLY, on both eras; ties break toward the
+lower f. Rationale, Eric's: states are most likely capacity-bound at 5% of
+cases, so the optimization targets it; every candidate's 10%-budget
+precision and dollar-recall readings are reported as companions on all
+three harnesses for states that want to test deeper internally, and the
+eventual findings section carries them. The shipped effect estimate is the
+two-era pooled median at the chosen f, never the winning grid cell. The
+fine-grid rerun recomputes the already-recorded grid cells, which must
+reproduce the committed values exactly (a free drift anchor).
 
 Builder implementation is protected-file work: PDS writes, fresh review
 against findings 33-34 and the chosen threshold, regression test, then the
