@@ -2984,3 +2984,22 @@ per_state_paired.csv before recording (+0.011781 bridge; +0.006979 era-2 at
 0.50; +0.017512 at 0.60). Scripts: methods/freshshare_rewalk_era2_v2.R.
 Plan: methods/era2_freshshare_replication_plan_2026-08-06.md. Log:
 freshshare_era2_run.log (untracked).
+
+### Addendum (2026-08-07): the fine grid and the threshold selection
+
+The pre-stated fine-grid step (methods/remine_proposal_2026-08.md) added
+f in {0.55, 0.65, 0.70} on all three harnesses; every previously recorded
+grid cell reproduced exactly on the rerun (30/30 across the three grids).
+Selection rule, fixed before the grid was read: maximize the minimum of the
+two eras' 5%-budget medians subject to the dollar guard (>= -0.005) at the
+5% budget on both eras, ties to the lower f. Result: **f = 0.60** (min
++0.0175; 0.65 posted min +0.0200 but failed the era-1 5% dollar guard at
+-0.0053; 0.55 and 0.70 read +0.0107 and +0.0125). The mechanical rule and
+section 34's pre-registered compound rule converge on 0.60. Shipped
+estimate per the rule: two-era pooled median at 0.60 = +0.0185 at the 5%
+budget (96 state-pairs) and +0.0037 at 10%; the era-2-only +0.0175 is the
+conservative read (the one cell never involved in any selection). Builder
+knobs (names decided by Eric): SORT_WALK_USE_FRESH_SHARE (TRUE default;
+FALSE restores the legacy walk and ignores the threshold) and
+SORT_WALK_MIN_FRESH_SHARE (default 0.60). Full 10%-budget companions for
+state internal testing are in the committed sensitivity grids.

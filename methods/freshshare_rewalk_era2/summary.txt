@@ -1,6 +1,6 @@
 BRIDGE + ERA-2 FRESH-SHARE REPLICATION: verdicts
-Plan: methods/era2_freshshare_replication_plan_2026-08-06.md | run 2026-08-06 21:59
-Anchors: support reconciliation PASS; era-2 cache determinism PASS (145313 rules); bridge LCB anchor PASS (11898 rows); baseline identity 192 walks; capacity assertions 960, all exact; window redos 193 (+0 baseline)
+Plan: methods/era2_freshshare_replication_plan_2026-08-06.md | run 2026-08-07 10:30
+Anchors: support reconciliation PASS; era-2 cache determinism PASS (145313 rules); bridge LCB anchor PASS (11898 rows); baseline identity 192 walks; capacity assertions 1536, all exact; window redos 408 (+0 baseline)
 
 ARM A BRIDGE (era 1, national-only, 49 states, f = 0.50):
   5% median paired precision diff = +0.0118 (10%: +0.0045)
@@ -17,8 +17,14 @@ Bridge sensitivity grid (descriptive only):
   0.40     10       49                0.0061                       -0.0060
   0.50      5       49                0.0118                        0.0000
   0.50     10       49                0.0045                       -0.0068
+  0.55      5       49                0.0055                       -0.0028
+  0.55     10       49               -0.0078                       -0.0189
   0.60      5       49                0.0154                       -0.0028
   0.60     10       49               -0.0031                       -0.0184
+  0.65      5       49                0.0189                       -0.0053
+  0.65     10       49                0.0075                       -0.0117
+  0.70      5       49                0.0210                       -0.0012
+  0.70     10       49               -0.0039                       -0.0162
   0.75      5       49                0.0075                       -0.0014
   0.75     10       49                0.0045                       -0.0137
  median_dollar_recall_wtd_diff median_fill_rate median_walk_depth
@@ -28,8 +34,14 @@ Bridge sensitivity grid (descriptive only):
                        -0.0040           0.7913              8302
                         0.0000           0.7692              2283
                        -0.0096           0.8120             10839
+                       -0.0013           0.7465              2758
+                       -0.0098           0.7932             13268
                        -0.0037           0.7117              2868
                        -0.0215           0.7866             14771
+                       -0.0067           0.7348              3136
+                       -0.0103           0.7886             18653
+                       -0.0016           0.6912              3661
+                       -0.0163           0.7807             21962
                        -0.0016           0.7110              4332
                        -0.0163           0.7701             22788
  median_errors_diff n_used_completion n_window_redone
@@ -40,7 +52,13 @@ Bridge sensitivity grid (descriptive only):
                   0                 0               0
                  -1                 0              19
                   0                 0               0
+                 -2                 0              30
+                  0                 0               0
                  -1                 0              37
+                 -1                 0               0
+                 -1                 0              43
+                  0                 0               0
+                 -1                 0              48
                   0                 0               0
                   0                 0              48
 
@@ -67,8 +85,14 @@ Era-2 sensitivity grid (descriptive only):
   0.40     10       47                0.0113                        0.0000
   0.50      5       47                0.0070                        0.0000
   0.50     10       47                0.0110                       -0.0049
+  0.55      5       47                0.0118                       -0.0017
+  0.55     10       47                0.0051                       -0.0150
   0.60      5       47                0.0175                       -0.0033
   0.60     10       47                0.0071                       -0.0018
+  0.65      5       47                0.0200                        0.0000
+  0.65     10       47                0.0088                       -0.0064
+  0.70      5       47                0.0125                        0.0000
+  0.70     10       47                0.0109                       -0.0078
   0.75      5       47                0.0146                        0.0000
   0.75     10       47                0.0134                       -0.0025
  median_dollar_recall_wtd_diff median_fill_rate median_walk_depth
@@ -78,8 +102,14 @@ Era-2 sensitivity grid (descriptive only):
                         0.0000           0.8551              8155
                         0.0000           0.8516              3451
                        -0.0037           0.8642              9176
+                        0.0000           0.8342              3868
+                       -0.0115           0.8276             11115
                        -0.0018           0.8342              4000
                        -0.0033           0.8391             12773
+                        0.0000           0.8367              4285
+                       -0.0055           0.8286             16231
+                        0.0000           0.7879              4556
+                       -0.0093           0.8343             18773
                         0.0033           0.8081              4941
                        -0.0058           0.8229             21170
  median_errors_diff n_used_completion n_window_redone
@@ -90,6 +120,12 @@ Era-2 sensitivity grid (descriptive only):
                   0                 0               0
                   0                 0               8
                   0                 0               0
+                 -1                 0              18
+                  0                 0               0
                  -1                 0              27
+                  0                 0               0
+                  0                 0              34
+                  0                 0               0
+                 -1                 0              42
                   0                 0               0
                  -1                 0              44

@@ -1,8 +1,8 @@
 STAGE-2 FRESH-SHARE RE-WALK: verdict
-Plan: methods/stage2_freshshare_rewalk_plan_2026-08-06.md | run 2026-08-06 17:12
+Plan: methods/stage2_freshshare_rewalk_plan_2026-08-06.md | run 2026-08-07 07:38
 States 49 | mechanism: two-pass walk, fresh-share floor f >= 0.50
 Anchors: 98/98 F_MIN=0 rebuilds; 98/98 FY2024 refill matches; 98/98 scorecard matches
-Capacity assertions passed: 588 walks (all exact) | window redos: 54 | completion used: 0
+Capacity assertions passed: 882 walks (all exact) | window redos: 119 | completion used: 0
 
 PRIMARY  (5% budget): median paired precision diff = +0.0118 vs bar +0.010 -> CLEARED
 SECONDARY (10% budget, directional): median = +0.0061 -> positive
@@ -18,8 +18,14 @@ Sensitivity grid (descriptive only, no verdict; medians across states):
   0.40     10       49                0.0045                       -0.0043
   0.50      5       49                0.0118                        0.0000
   0.50     10       49                0.0061                       -0.0018
+  0.55      5       49                0.0107                        0.0000
+  0.55     10       49               -0.0027                       -0.0158
   0.60      5       49                0.0261                       -0.0012
   0.60     10       49                0.0000                       -0.0158
+  0.65      5       49                0.0261                       -0.0053
+  0.65     10       49                0.0098                       -0.0189
+  0.70      5       49                0.0210                       -0.0014
+  0.70     10       49                0.0085                       -0.0260
   0.75      5       49                0.0145                       -0.0034
   0.75     10       49                0.0072                       -0.0087
  median_dollar_recall_wtd_diff median_fill_rate median_walk_depth
@@ -29,8 +35,14 @@ Sensitivity grid (descriptive only, no verdict; medians across states):
                        -0.0040           0.9061              5462
                         0.0000           0.8344              1710
                        -0.0020           0.8966              6956
+                        0.0000           0.8477              2002
+                       -0.0157           0.8995              8726
                        -0.0013           0.8000              2076
                        -0.0159           0.9112              9722
+                       -0.0072           0.7789              2390
+                       -0.0144           0.9049             11557
+                       -0.0007           0.8019              2732
+                       -0.0206           0.8087             13924
                        -0.0074           0.8019              3058
                        -0.0163           0.8686             15513
  median_errors_diff n_used_completion n_window_redone
@@ -41,6 +53,12 @@ Sensitivity grid (descriptive only, no verdict; medians across states):
                   0                 0               0
                   0                 0               3
                   0                 0               0
+                 -1                 0              12
+                  0                 0               0
                  -1                 0              14
+                  0                 0               0
+                  0                 0              22
+                  0                 0               0
+                 -1                 0              31
                   0                 0               0
                   0                 0              36
