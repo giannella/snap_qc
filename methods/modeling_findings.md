@@ -1422,3 +1422,80 @@ plain lower bound has lost or failed to transfer (sections 18, 20, 30, and this
 section). A pairwise diagnostic on existing artifacts precedes any arm.
 
 *Detail and artifacts: [detailed record](modeling_findings_detailed.md#32-marginal-precision-of-delivered-rules-the-walks-adverse-selection-is-real-about-3-to-4-points-and-not-recoverable-at-public-scale-2026-08-06), §32. Artifacts: [`methods/marginal_precision_diagnostic/`](https://github.com/giannella/snap_qc/tree/main/methods/marginal_precision_diagnostic).*
+
+## 33. A fresh-share floor in the delivery walk clears the pre-registered bar; a candidate pending second-era replication
+
+> **Takeaway: about our pipeline (pre-registered, one shot, cleared; NOT yet
+> shipped).** Requiring each rule on a delivered list to bring at least half
+> new cases (fresh share f = new cases / flagged cases >= 0.50 at its turn in
+> the walk, on both core and buffer), with skipped slots refilled from deeper
+> ranks, raised delivered precision by a median **+0.0118** at the 5% review
+> budget across 49 states on the held-out year, against a pre-registered
+> +0.010 bar, at reviewer workload identical by construction and a median
+> dollar-recall change of exactly 0.0000. It is the first of five
+> ordering-or-selection interventions to beat the plain LCB walk (shrinkage
+> §18, stricter z §20, out-of-fold §30, and outcome-based marginal reordering
+> §32 all lost or failed to transfer). The margin over the bar is thin
+> (+0.0018 against a ~0.008 standard error on the median), so the pre-stated
+> second-era replication (train FY2017-18, test FY2019, 18 states) is
+> mandatory before any shipping decision, which is Eric's call as a MINOR
+> version bump.
+
+**The chain that produced it, in one paragraph.** Section 32 priced the
+problem: the walk admits any rule adding at least one new case regardless of
+the quality of its marginal slice, costing 3 to 4 points of capacity-weighted
+precision, concentrated on the ~43% of capacity where fresh share falls below
+0.99, and unrecoverable by outcome-based reordering (marginal slices, median
+1-2 cases, support no statistic). A pre-registered six-instrument diagnostic
+(`methods/profile_distance_diagnostic_plan_2026-08-06.md`) then raced
+outcome-free dissimilarity measures with a split-half stability certificate as
+an eligibility gate and permutation nulls per instrument: flag-overlap fresh
+share was the ONE SIGNAL (tercile gap in realized FY2024 marginal precision
++0.0876 at the 5% budget against a permutation 95th percentile of 0.0656;
+bottom tercile 0.245, top 0.332; certificate 0.951). Spectral co-firing,
+naive-Bayes feature divergence, profile TV distance, signature distance, and a
+consensus all posted large all-capacity gaps that FAILED the pre-stated
+restriction to f < 0.99 capacity: their apparent signal was the fresh-share
+structure itself, not incremental information. The pre-committed consequence
+was this stage-2 re-walk (`methods/stage2_freshshare_rewalk_plan_2026-08-06.md`),
+one shot on the section 30 bar.
+
+**The mechanism** is a two-pass walk: a priority pass keeps a rule only if its
+sequential fresh share at its turn is at least 0.50 (the threshold is the
+observed lower-tercile boundary among deployed 5%-budget core instances, so it
+removes approximately the tercile the diagnostic measured at 0.245); a
+completion pass then walks skipped rules under the shipped test until capacity
+fills, so consumed capacity equals the baseline exactly by construction
+(asserted, never judged: 588 of 588 walks exact). f uses flags only, computed
+where `n_new_at_rank` is computed today, so the deliverable remains the same
+outcome-free frozen list and states receive no new machinery.
+
+**The result, against the pre-stated rules:**
+
+| pre-stated test | result |
+|---|---|
+| primary: median paired within-state precision difference, 5% budget, 49 states | +0.0118 vs bar +0.010: CLEARED |
+| secondary: 10% budget, directional | +0.0061, positive |
+| guard: median dollar-recall change at 5% (bar -0.005) | 0.0000, held |
+| states better / worse / tied at 5% | 29 / 16 / 4 |
+
+**The sensitivity grid** (descriptive only, pre-stated to carry no verdict):
+f_min of 0.25 does nothing (+0.0000), 0.40 gives +0.0130, 0.50 +0.0118, 0.60
++0.0261, 0.75 +0.0145 at the 5% budget, so the effect occupies the 0.40-0.75
+band rather than a knife edge. The 0.60 peak is a note for the second-era
+pre-registration, not a result of this run; its own caution travels with it:
+at the 10% budget, 0.60 read +0.0000 precision with a -0.0158 dollar-recall
+change, a signature to check before preferring it.
+
+**Caveats.** One era for the confirmatory readout (FY2022-23 build, FY2024
+score); the margin is one-quarter of a standard error above the bar, which is
+exactly why the second-era gate exists; the second-era harness has 18 states,
+not 49, so its bar must be set with its own power arithmetic; the fresh-share
+floor interacts with list length (median walk depth grew from 1,213 to 1,710
+at the 5% budget), which is compute at build time, not state-side complexity;
+and nothing here touches the LCB ordering statistic, which remains settled
+(§1, §20). The one-shot rule stands: had this failed, the line was
+pre-committed to close at public scale, and no alternative mechanism or
+threshold was to be tried on this outcome.
+
+*Detail and artifacts: [detailed record](modeling_findings_detailed.md#33-a-fresh-share-floor-in-the-delivery-walk-clears-the-pre-registered-bar-a-candidate-pending-second-era-replication-2026-08-06), §33. Artifacts: [`methods/freshshare_rewalk/`](https://github.com/giannella/snap_qc/tree/main/methods/freshshare_rewalk), [`methods/profile_distance_diagnostic/`](https://github.com/giannella/snap_qc/tree/main/methods/profile_distance_diagnostic).*

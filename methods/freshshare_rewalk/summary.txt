@@ -1,0 +1,46 @@
+STAGE-2 FRESH-SHARE RE-WALK: verdict
+Plan: methods/stage2_freshshare_rewalk_plan_2026-08-06.md | run 2026-08-06 17:12
+States 49 | mechanism: two-pass walk, fresh-share floor f >= 0.50
+Anchors: 98/98 F_MIN=0 rebuilds; 98/98 FY2024 refill matches; 98/98 scorecard matches
+Capacity assertions passed: 588 walks (all exact) | window redos: 54 | completion used: 0
+
+PRIMARY  (5% budget): median paired precision diff = +0.0118 vs bar +0.010 -> CLEARED
+SECONDARY (10% budget, directional): median = +0.0061 -> positive
+GUARD    (5% dollar recall, unweighted): median change = +0.0000 vs -0.005 -> HELD
+
+CONSEQUENCE (plan, pre-stated): bar and guards cleared - the fresh-share floor becomes a validated selection-refinement CANDIDATE for INCL_build_blended_delivery_list_v2.R. Promotion into shipped lists is a MINOR bump and Eric's call, and per the section 20 discipline it additionally requires replication on the second era before shipping: the cached train FY2017-18 / test FY2019 harness, same mechanism, same 0.50 threshold, bar pre-stated then.
+
+Sensitivity grid (descriptive only, no verdict; medians across states):
+ f_min budget n_states median_precision_diff median_dollar_recall_unw_diff
+  0.25      5       49                0.0000                        0.0000
+  0.25     10       49               -0.0004                        0.0000
+  0.40      5       49                0.0130                        0.0000
+  0.40     10       49                0.0045                       -0.0043
+  0.50      5       49                0.0118                        0.0000
+  0.50     10       49                0.0061                       -0.0018
+  0.60      5       49                0.0261                       -0.0012
+  0.60     10       49                0.0000                       -0.0158
+  0.75      5       49                0.0145                       -0.0034
+  0.75     10       49                0.0072                       -0.0087
+ median_dollar_recall_wtd_diff median_fill_rate median_walk_depth
+                        0.0000           0.8549              1213
+                        0.0000           0.9169              3573
+                        0.0000           0.8344              1419
+                       -0.0040           0.9061              5462
+                        0.0000           0.8344              1710
+                       -0.0020           0.8966              6956
+                       -0.0013           0.8000              2076
+                       -0.0159           0.9112              9722
+                       -0.0074           0.8019              3058
+                       -0.0163           0.8686             15513
+ median_errors_diff n_used_completion n_window_redone
+                  0                 0               0
+                  0                 0               0
+                  0                 0               0
+                  0                 0               1
+                  0                 0               0
+                  0                 0               3
+                  0                 0               0
+                 -1                 0              14
+                  0                 0               0
+                  0                 0              36
