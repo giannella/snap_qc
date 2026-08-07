@@ -210,6 +210,15 @@ we learned is recoverable. Each points to its numbered section.
   established as the source of truth over the lossy CSV; the
   engineering-artifacts-are-not-failure-modes rule adopted and encoded.
 
+- **08-06 (late)**: The fresh-share floor replicated on the second era (#34):
+  era-2 confirmatory +0.0070 vs the +0.005 bar (47 states, FY2017-18 to
+  FY2019), guard held, two-era pooled +0.0100; the bridge showed the effect
+  indifferent to pool composition (+0.0118 national-only, matching blended to
+  the fourth decimal; Eric's dilution hypothesis formally refuted by
+  0.000019); the 0.60 challenger met all four pre-stated conditions and is
+  the proposed shipping threshold. First walk change to achieve two-era
+  validation; promotion is Eric's MINOR-bump call.
+
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
 registered in methods/make_all_charts_v2.R so figures regenerate in one
@@ -2891,3 +2900,87 @@ Scripts: `methods/profile_distance_diagnostic_v2.R` +
 `methods/profile_distance_diagnostic_plan_2026-08-06.md`,
 `methods/stage2_freshshare_rewalk_plan_2026-08-06.md`. Full run 26 minutes;
 log `freshshare_rewalk_run.log` (untracked).
+
+## 34. The fresh-share floor replicates on the second era; two-era validated, promotion pending (2026-08-06)
+
+> **Takeaway: about our pipeline (pre-registered replication; cleared; promotion
+> is a decision, not a result).** The fresh-share floor of section 33 replicated
+> a decade away: on lists built from FY2017-18 and scored on FY2019, f >= 0.50
+> delivered a median paired precision gain of **+0.0070** at the 5% budget
+> across 47 states against a pre-registered +0.005 bar, with the dollar guard
+> held at exactly 0.0000 and the 10%-budget secondary at **+0.0110**. The
+> two-era pooled median is **+0.0100**. A bridge arm first showed the effect is
+> indifferent to pool composition: national-only on era 1 it reads +0.0118 at
+> the 5% budget, matching the blended result to the fourth decimal, so the
+> benefit is a property of the walk, not of any pool. The 0.60 challenger met
+> all four of its pre-stated conditions on era 2 (median +0.0175, strictly
+> above 0.50's +0.0070; guard held at -0.0033; its era-1 warning signature did
+> not reproduce), so 0.60 is the proposed shipping threshold, with 0.50 the
+> conservative alternative. The floor is now validated on two eras; shipping
+> it is a MINOR version bump and Eric's call.
+
+Pre-registered in `methods/era2_freshshare_replication_plan_2026-08-06.md`
+(approved with a +0.005 era-2 bar whose power arithmetic is in the plan: SE
+~0.0108 on the 47-state median, 74% power against the era-1 effect, joint
+two-stage false-positive rate ~5.5%; the shipping claim is therefore a
+"+0.010-scale effect supported by two eras jointly", and the pooled +0.0100
+lands on it).
+
+**The bridge, and the dilution hypothesis.** Eric's pre-stated hypothesis was
+that the state-rule slots DILUTED the floor's benefit, predicting a
+national-only bridge effect of at least the blended +0.0118. The bridge read
++0.011781: formally REFUTED by the pre-stated rule (short of the bar by
+0.000019), substantively answered as "no dilution and no amplification". Two
+caveats attach: the bridge pool is the undeduped admitted cache (50,697
+rules) while the stage-2 bench walk consumed its deduped derivative (32,633),
+so the bridge-vs-blended comparison carries dedup status as a second
+difference (dedup is not walk-neutral under an f-floor); and FY2024 was read
+a third time by the bridge, which is why it carries no shipping verdict. The
+bridge-vs-era-2 link the shipping gate rides on is undeduped on both sides.
+
+**Era-2 integrity.** Support reconciliation matched the plan's pre-computed
+table (national build 79,907 rows / 7,115 errors; test 39,221 / 3,931;
+Wyoming and South Dakota excluded by the pre-stated floor; 47 eligible). The
+cache determinism anchor recomputed n/k from the frame for all 145,313 cached
+FY2017-18 rules and matched exactly. Admission was recomputed with the
+shipped pooled-BH recipe, not the within-stratum variant the era scripts
+carried. 192 baseline-identity anchors and 960 capacity assertions passed
+exactly; 193 windowed walks were redone unpruned under the corrected
+certificate; the completion pass was never needed on a walk actually used,
+in this run or any before it.
+
+**The challenger, condition by condition (pre-stated, evaluated only because
+the confirmatory arm cleared):** era-2 5% median +0.0175 >= +0.005; strictly
+beats 0.50's +0.0070; dollar guard -0.0033 >= -0.005; and the era-1 warning
+signature (10% precision <= 0 AND dollar <= -0.010) did not reproduce (era-2
+10%: precision +0.0071, dollar -0.0018). All four TRUE, so the compound rule
+proposes 0.60. The era-2 grid is consistent with a broad optimum around
+0.60-0.75 at the 5% budget (+0.0175 / +0.0146) with positive 10% readings
+throughout; the era-1 grids favored 0.60 at 5% but showed its 10% weakness,
+which era 2 did not.
+
+**What did not move.** The dollar guard read 0.0000 at the shipped threshold
+on every harness (blended era 1, bridge, era 2): the floor buys precision
+without giving back error dollars at the 5% budget. At 0.60 the 10%-budget
+dollar costs seen on era 1 (-0.0184 unweighted, blended grid) shrank to
+-0.0018 on era 2.
+
+
+### Run record
+
+Implemented on the reviewed stage-2 machinery (walk2 and the certificate
+verbatim); fresh senior-statistician review APPROVE with one required change
+(the dedup caveat now printed in the bridge summary block) and a ruling that
+declined the runtime shortcut in favor of the smoke-covered code (it also
+caught that the WINDOW_TOPK-raise variant would have made the run slower).
+All seven disclosed implementation choices accepted, including the
+load-bearing one: the bridge walks the undeduped admitted cache so the
+bridge-to-era-2 link varies era alone. Blinding by construction: the SMOKE
+path serializes nothing and never computes the branch median; the
+proceed/re-scope branch was machine-read per the plan. Full run 2026-08-06
+19:47 to 21:59 (2h12m), exit 0, zero failures. Verdicts read only from the
+run's summary.txt per the launch conditions; medians re-derived from
+per_state_paired.csv before recording (+0.011781 bridge; +0.006979 era-2 at
+0.50; +0.017512 at 0.60). Scripts: methods/freshshare_rewalk_era2_v2.R.
+Plan: methods/era2_freshshare_replication_plan_2026-08-06.md. Log:
+freshshare_era2_run.log (untracked).
