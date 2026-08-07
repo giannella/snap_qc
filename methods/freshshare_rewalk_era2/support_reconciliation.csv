@@ -1,0 +1,50 @@
+"state","build_rows_1718","build_errors_1718","test_rows_19","test_errors_19","eligible"
+"Alabama",2043,139,965,77,TRUE
+"Arizona",1534,119,767,64,TRUE
+"Arkansas",2020,166,870,58,TRUE
+"California",1440,147,833,76,TRUE
+"Colorado",1441,151,769,92,TRUE
+"Connecticut",1601,134,829,81,TRUE
+"Delaware",1336,241,436,56,TRUE
+"District of Columbia",1735,278,854,169,TRUE
+"Florida",1873,79,840,61,TRUE
+"Georgia",1904,221,891,113,TRUE
+"Idaho",1781,64,896,24,TRUE
+"Illinois",1734,184,717,83,TRUE
+"Indiana",1724,144,806,76,TRUE
+"Iowa",1775,221,852,129,TRUE
+"Kansas",1781,115,875,64,TRUE
+"Kentucky",2000,160,963,76,TRUE
+"Louisiana",1517,53,819,32,TRUE
+"Maine",1730,222,934,181,TRUE
+"Maryland",1453,134,556,57,TRUE
+"Massachusetts",1844,112,907,64,TRUE
+"Michigan",1671,268,840,147,TRUE
+"Minnesota",1488,182,916,110,TRUE
+"Mississippi",1938,78,925,84,TRUE
+"Missouri",1689,193,829,71,TRUE
+"Montana",1433,177,633,68,TRUE
+"Nebraska",1671,104,881,64,TRUE
+"Nevada",1755,168,817,67,TRUE
+"New Hampshire",1212,73,583,56,TRUE
+"New Jersey",1422,111,693,72,TRUE
+"New Mexico",1792,226,824,122,TRUE
+"New York",1732,150,863,63,TRUE
+"North Carolina",1984,155,912,70,TRUE
+"North Dakota",862,34,438,27,TRUE
+"Ohio",1880,163,876,90,TRUE
+"Oklahoma",1868,167,949,101,TRUE
+"Oregon",1736,171,775,90,TRUE
+"Pennsylvania",1569,152,772,90,TRUE
+"Rhode Island",1053,188,899,248,TRUE
+"South Carolina",1869,152,1057,83,TRUE
+"South Dakota",1354,31,654,15,FALSE
+"Tennessee",1963,90,983,76,TRUE
+"Texas",1694,134,754,82,TRUE
+"Utah",1640,131,900,49,TRUE
+"Vermont",1313,57,607,28,TRUE
+"Virginia",1413,168,599,87,TRUE
+"Washington",1728,81,842,56,TRUE
+"West Virginia",1497,172,741,81,TRUE
+"Wisconsin",1810,206,1007,88,TRUE
+"Wyoming",605,49,273,13,FALSE

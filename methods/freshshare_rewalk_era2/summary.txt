@@ -1,0 +1,95 @@
+BRIDGE + ERA-2 FRESH-SHARE REPLICATION: verdicts
+Plan: methods/era2_freshshare_replication_plan_2026-08-06.md | run 2026-08-06 21:59
+Anchors: support reconciliation PASS; era-2 cache determinism PASS (145313 rules); bridge LCB anchor PASS (11898 rows); baseline identity 192 walks; capacity assertions 960, all exact; window redos 193 (+0 baseline)
+
+ARM A BRIDGE (era 1, national-only, 49 states, f = 0.50):
+  5% median paired precision diff = +0.0118 (10%: +0.0045)
+  Eric's hypothesis (dilution: bridge >= blended +0.0118): REFUTED (logged, per the plan, whichever way it goes)
+  proceed/re-scope floor +0.005: PROCEED - era 2 runs under this plan
+  (The bridge carries no shipping verdict of its own.)
+  CAVEAT (required by the pre-launch review): the bridge pool is the undeduped admitted cache (50,697 rules) while the stage-2 bench walk consumed its deduped derivative (32,633), so the comparison against the blended +0.0118 carries dedup status as a second difference alongside pool composition; dedup is not walk-neutral under an f-floor (dominance-dropped tighter rules are high-fresh-share substitutes). The bridge-vs-era-2 link, which the shipping gate rides on, is undeduped on both sides and unaffected.
+
+Bridge sensitivity grid (descriptive only):
+ f_min budget n_states median_precision_diff median_dollar_recall_unw_diff
+  0.25      5       49                0.0000                        0.0000
+  0.25     10       49                0.0066                        0.0000
+  0.40      5       49                0.0055                        0.0000
+  0.40     10       49                0.0061                       -0.0060
+  0.50      5       49                0.0118                        0.0000
+  0.50     10       49                0.0045                       -0.0068
+  0.60      5       49                0.0154                       -0.0028
+  0.60     10       49               -0.0031                       -0.0184
+  0.75      5       49                0.0075                       -0.0014
+  0.75     10       49                0.0045                       -0.0137
+ median_dollar_recall_wtd_diff median_fill_rate median_walk_depth
+                        0.0000           0.7464              1711
+                        0.0000           0.7949              6146
+                        0.0000           0.7946              2171
+                       -0.0040           0.7913              8302
+                        0.0000           0.7692              2283
+                       -0.0096           0.8120             10839
+                       -0.0037           0.7117              2868
+                       -0.0215           0.7866             14771
+                       -0.0016           0.7110              4332
+                       -0.0163           0.7701             22788
+ median_errors_diff n_used_completion n_window_redone
+                  0                 0               0
+                  0                 0               1
+                  0                 0               0
+                 -1                 0               7
+                  0                 0               0
+                 -1                 0              19
+                  0                 0               0
+                 -1                 0              37
+                  0                 0               0
+                  0                 0              48
+
+ARM B ERA-2 CONFIRMATORY (f = 0.50, 47 states, build FY2017-18, score FY2019):
+  5% median = +0.0070 vs bar +0.005 -> CLEARED
+  dollar guard (5%, unweighted) = +0.0000 vs -0.005 -> HELD
+  secondary (10%, directional) = +0.0110 -> positive
+  two-era pooled median (stage-2 blended 49 states + era-2 47 states) = +0.0100
+
+ARM C CHALLENGER (f = 0.60; evaluated because the confirmatory arm cleared):
+  1. clears the era-2 bar (median +0.0175 >= +0.005): TRUE
+  2. strictly beats 0.50's era-2 5% median (+0.0175 > +0.0070): TRUE
+  3. holds the 5% dollar guard (-0.0033 >= -0.005): TRUE
+  4. no era-1 warning signature at era 2 (10%: prec +0.0071, dollar -0.0018; signature = prec <= 0 AND dollar <= -0.010): TRUE
+  challenger compound rule: MET - 0.60 goes to Eric as the proposed threshold
+
+CONSEQUENCE (plan, pre-stated): bridge held and confirmatory cleared (guards held) - the fresh-share floor is validated on two eras and goes to Eric as a MINOR-bump promotion decision for INCL_build_blended_delivery_list_v2.R. Either way the decision, the CHANGELOG entry, and the version bump are Eric's, not this study's.
+
+Era-2 sensitivity grid (descriptive only):
+ f_min budget n_states median_precision_diff median_dollar_recall_unw_diff
+  0.25      5       47                0.0000                        0.0000
+  0.25     10       47                0.0034                        0.0000
+  0.40      5       47                0.0077                        0.0000
+  0.40     10       47                0.0113                        0.0000
+  0.50      5       47                0.0070                        0.0000
+  0.50     10       47                0.0110                       -0.0049
+  0.60      5       47                0.0175                       -0.0033
+  0.60     10       47                0.0071                       -0.0018
+  0.75      5       47                0.0146                        0.0000
+  0.75     10       47                0.0134                       -0.0025
+ median_dollar_recall_wtd_diff median_fill_rate median_walk_depth
+                        0.0000           0.8685              2842
+                        0.0000           0.8920              5900
+                        0.0000           0.8258              3239
+                        0.0000           0.8551              8155
+                        0.0000           0.8516              3451
+                       -0.0037           0.8642              9176
+                       -0.0018           0.8342              4000
+                       -0.0033           0.8391             12773
+                        0.0033           0.8081              4941
+                       -0.0058           0.8229             21170
+ median_errors_diff n_used_completion n_window_redone
+                  0                 0               0
+                  0                 0               0
+                  0                 0               0
+                  0                 0               2
+                  0                 0               0
+                  0                 0               8
+                  0                 0               0
+                 -1                 0              27
+                  0                 0               0
+                 -1                 0              44
