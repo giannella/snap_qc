@@ -2962,8 +2962,8 @@ which era 2 did not.
 **What did not move.** The dollar guard read 0.0000 at the shipped threshold
 on every harness (blended era 1, bridge, era 2): the floor buys precision
 without giving back error dollars at the 5% budget. At 0.60 the 10%-budget
-dollar costs seen on era 1 (-0.0184 unweighted, blended grid) shrank to
--0.0018 on era 2.
+dollar costs seen on era 1 (-0.0158 unweighted on the blended grid, -0.0184
+on the bridge) shrank to -0.0018 on era 2.
 
 
 ### Run record
