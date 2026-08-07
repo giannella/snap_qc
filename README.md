@@ -160,6 +160,10 @@ The recommended path (the blended, budget-filled state list). Changing `ADMISSIO
 | `ADMISSION` | `"fdr10"` | which candidate rules to keep by a false-discovery-rate (**FDR**) test vs the stratum base rate, plus `n >= 30`; set `"legacy"` for the old raw-precision filter |
 | `FDR_ALPHA` | `0.10` | the FDR level (default 10%), used when `ADMISSION` is `"fdr10"` |
 | `PAIRING` | `"lcb99_workloadfill"` | ranking statistic for the fill order; set `"dpf_workloadfill"` to rank by error dollars per flagged case (see the Statistics and goal metrics table) |
+| `SORT_WALK_USE_FRESH_SHARE` | `TRUE` | fresh-share floor on the fill walk (findings 33-34); `FALSE` restores the legacy walk and ignores the threshold knob |
+| `SORT_WALK_MIN_FRESH_SHARE` | `0.60` | the floor: a rule is skipped at its turn unless its new cases are at least this share of everything it flags, with the skipped slots refilled from deeper ranks at unchanged consumed capacity (findings 33-34) |
+
+The fresh-share floor was validated on two eras (findings 33-34): rules whose flags mostly duplicate earlier rules' are skipped, and the capacity they would have consumed is refilled from deeper, fresher rules, so the delivered list carries the same consumed workload either way.
 
 (Engine, year, and `LCB_Z` = 2.326 defaults match the inclusion finder below.)
 

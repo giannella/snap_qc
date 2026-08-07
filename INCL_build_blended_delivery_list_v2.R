@@ -68,6 +68,23 @@ RANK_STAT <- if (identical(PAIRING, "dpf_workloadfill")) "dollars_per_flag_train
 if (!exists("ADMISSION")) ADMISSION <- "fdr10"
 if (!exists("FDR_ALPHA")) FDR_ALPHA <- 0.10   # false-discovery-rate target used when ADMISSION == "fdr10"
 
+# Fresh-share floor on the fill walk (findings 33-34, two-era validated;
+# the 0.60 threshold selected by the pre-stated fine-grid rule, 2026-08-07).
+# The fill becomes the validated two-pass walk (walk2 of
+# methods/freshshare_rewalk_v2.R): a floor-0 legacy scan first fixes the
+# consumed core and total capacities, then the fresh-share walk fills to
+# EXACTLY those capacities - phase 1 the core, phase 2 the buffer - each
+# phase a priority scan (a rule is taken only when its sequential fresh
+# share f = n_new / n_flagged_state clears the floor) followed, only if the
+# target is short, by a completion scan over ALL untaken rules under the
+# shipped test (n_new >= 1). Low-fresh-share slots are thus refilled from
+# deeper ranks at unchanged consumed workload; exact fill is asserted, and
+# a shortfall stops the build. FALSE (or floor 0) outputs the legacy scan
+# itself, so legacy behavior is the legacy code, byte-identical to the
+# committed lists (methods/check_builder_freshshare_identity.R).
+if (!exists("SORT_WALK_USE_FRESH_SHARE")) SORT_WALK_USE_FRESH_SHARE <- TRUE   # FALSE restores the legacy walk and ignores the threshold knob
+if (!exists("SORT_WALK_MIN_FRESH_SHARE")) SORT_WALK_MIN_FRESH_SHARE <- 0.60   # selected by the pre-stated fine-grid rule, 2026-08-07
+
 # Which frames feed the vocabulary. The typed + pooled union is the validated
 # default (findings #3: typed frames surface specialized rules the pooled
 # target misses). Set to "any_error" alone to reproduce the original
@@ -79,7 +96,9 @@ FRAME_TAG <- if (identical(MINING_FRAMES, "any_error")) "anyerror" else
   sprintf("%dframes", length(MINING_FRAMES))
 
 POOL_CACHE <- "methods/delivery_pools_2022_2024_v3"   # keyed by admission below
-out_dir <- "state_delivery_lists"
+# out_dir is pre-settable so the identity check can build into a temp dir
+# without touching the user-facing lists
+if (!exists("out_dir")) out_dir <- "state_delivery_lists"
 dir.create(POOL_CACHE, showWarnings = FALSE, recursive = TRUE)
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -232,18 +251,62 @@ idx_tr <- flags_for_rules(pool, tr, strata_tr, label = "")
 if (!RANK_STAT %in% names(pool))
   stop(sprintf("pool cache lacks '%s' (it predates the dollar-yield statistic); delete %s and re-run", RANK_STAT, POOL_CACHE))
 ord <- order(-pool[[RANK_STAT]], pool$hh, pool$rule, method = "radix")
+nfl <- lengths(idx_tr)   # per-rule flags on this state's caseload (fresh-share denominator)
 
 for (b in BUDGETS) {
   cap <- floor(b * nrow(tr)); cap_buf <- floor(BUFFER_MULT * b * nrow(tr))
-  un <- rep(FALSE, nrow(tr)); n_in <- 0L
+  # PASS ZERO: the legacy scan, verbatim, at floor 0. Its consumed core (C0)
+  # and total (CT) capacities are the fill targets for the fresh-share walk
+  # below, so a fresh-share list carries the SAME consumed workload as the
+  # legacy list would (the findings 33-34 construction property). When the
+  # floor is off or 0, this list IS the output: legacy identity comes from
+  # running the legacy code itself.
+  un <- rep(FALSE, nrow(tr)); n_in <- 0L; n_core <- 0L
   frozen <- integer(0); buffer <- integer(0)
   for (i in ord) {
     add <- sum(!un[idx_tr[[i]]])
     if (add == 0) next
     if (n_in + add <= cap) {
-      un[idx_tr[[i]]] <- TRUE; n_in <- n_in + add; frozen <- c(frozen, i)
+      un[idx_tr[[i]]] <- TRUE; n_in <- n_in + add; n_core <- n_core + add
+      frozen <- c(frozen, i)
     } else if (n_in + add <= cap_buf) {
       un[idx_tr[[i]]] <- TRUE; n_in <- n_in + add; buffer <- c(buffer, i)
+    }
+  }
+  fmin <- if (SORT_WALK_USE_FRESH_SHARE) SORT_WALK_MIN_FRESH_SHARE else 0
+  if (fmin > 0) {
+    C0 <- n_core; CT <- n_in
+    # THE FRESH-SHARE WALK: walk2 of methods/freshshare_rewalk_v2.R
+    # (findings 33-34, twice-reviewed), verbatim semantics on the builder's
+    # rank order. Phase 1 fills the core to exactly C0, phase 2 the buffer
+    # to exactly CT; each phase is a priority scan (rank order, taking a
+    # rule only when it adds cases, its fresh share add / n_flagged_state
+    # clears the floor, and it fits the target) then, only if the target is
+    # short, a completion scan over ALL untaken rules under the shipped test
+    # (n_new >= 1). Exact fill is a construction property and is ASSERTED:
+    # a shortfall stops the build as a bug, never a result.
+    un <- rep(FALSE, nrow(tr)); n_in <- 0L
+    taken <- logical(length(idx_tr))
+    frozen <- integer(0); buffer <- integer(0)
+    for (ph in 1:2) {
+      tgt <- if (ph == 1) C0 else CT
+      for (ps in 1:2) {
+        if (n_in >= tgt) break
+        for (i in ord) {
+          if (taken[i]) next
+          ix <- idx_tr[[i]]
+          add <- sum(!un[ix])
+          if (add == 0L) next
+          if (ps == 1 && add / nfl[i] < fmin) next
+          if (n_in + add > tgt) next
+          un[ix] <- TRUE; n_in <- n_in + add; taken[i] <- TRUE
+          if (ph == 1) frozen <- c(frozen, i) else buffer <- c(buffer, i)
+          if (n_in == tgt) break
+        }
+      }
+      if (n_in != tgt)
+        stop(sprintf("CAPACITY ASSERTION FAILED [%s budget %.0f%%, phase %d]: the fresh-share walk consumed %d cases against the floor-0 walk's %d. The findings 33-34 construction property is violated - a bug that stops the build, never a result.",
+                     DELIVERY_STATE, 100 * b, ph, n_in, tgt))
     }
   }
   sel <- c(frozen, buffer)
