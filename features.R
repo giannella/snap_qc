@@ -5,6 +5,26 @@ library(dplyr)
 # Flags
 using_qc_data <- TRUE 
 
+# If using_qc_data is false, set the following variables with 
+# your dataset's column names
+state_col_map <- c(
+  fiscal_year = "FISCAL_YEAR",
+  state_name  = "STATE",
+  rawusize    = "HOUSEHOLD_SIZE",
+  rawgrinc    = "GROSS_INCOME",
+  rawearn     = "EARNED_INCOME",
+  rawunearn   = "UNEARNED_INCOME",
+  rawmedded   = "MEDICAL_DEDUCTION",
+  rawdepded   = "DEPENDENT_CARE_DEDUCTION",
+  rawcsded    = "CHILD_SUPPORT_DEDUCTION",
+  rawrent     = "RENT"
+)
+
+rename_cols <- function(data, map = state_col_map, qc = using_qc_data) {
+  if (qc) return(data)
+  dplyr::rename(data, dplyr::any_of(map))
+}
+
 # Additional data
 folder <- paste0(here(), "/")
 year_data <- read.csv(paste0(folder, "additional_data/year_data.csv"))
@@ -32,6 +52,7 @@ add_percentile <- function(data, col,
 #' Add all engineered features
 add_features <- function(data) {
   data |>
+    rename_cols() |>
     dplyr::left_join(dplyr::select(year_data, year, cpi),       
                      by = c("fiscal_year" = "year")) |>
     add_percentile(rawgrinc) |>
