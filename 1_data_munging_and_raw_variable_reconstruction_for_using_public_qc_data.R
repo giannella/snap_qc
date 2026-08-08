@@ -404,6 +404,9 @@ mydata$correctednotes <- ifelse(
   mydata$correctednotes
 )
 
+# Drop cases where the rawusize becomes 0
+mydata <- mydata[mydata$rawusize != 0, ]
+
 # Update maxben and standard deduction with new household sizes
 if (correct_variables) {
   mydata$rawbenmax <- mapply(
