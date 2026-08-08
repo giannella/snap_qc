@@ -424,11 +424,12 @@ if (correct_variables) {
 }
 
 # Step 7. Adjust other variables
-# This method shifts variables up or down by $3 until the equation
+# This method shifts variables up or down by $1 until the equation
 # balances or hit another limiting parameter (going below $0)
 
-income_shift <- 3
-max_iterations <- 1000
+income_shift <- 1
+max_iterations <- 3000
+matching_tolerance <- 0
 
 adjust_income <- function(mydata, col, elements, prefix, max_iter = max_iterations) {
   
@@ -440,7 +441,7 @@ adjust_income <- function(mydata, col, elements, prefix, max_iter = max_iteratio
     
     direction <- mydata$RAWBEN - mydata$fsben_uncapped
     diff <- mydata$RAWBEN - mydata$rawben_recreated
-    diff_matches <- abs(diff) <= 3
+    diff_matches <- abs(diff) <= matching_tolerance
     
     done <- ((direction > 0 & mydata[[col]] <= 0) | mydata$rawben_recreated <= 0 | 
                (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
@@ -497,7 +498,7 @@ adjust_shelter <- function(mydata, col, elements, prefix, max_iter = max_iterati
     
     direction <- mydata$RAWBEN - mydata$FSBEN
     diff <- mydata$RAWBEN - mydata$rawben_recreated
-    diff_matches <- abs(diff) <= 3
+    diff_matches <- abs(diff) <= matching_tolerance
     
     done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | mydata$rawben_recreated <= 0 |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
@@ -556,7 +557,7 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
     
     direction <- mydata$RAWBEN - mydata$FSBEN
     diff <- mydata$RAWBEN - mydata$rawben_recreated
-    diff_matches <- abs(diff) <= 3
+    diff_matches <- abs(diff) <= matching_tolerance
     
     done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | mydata$rawben_recreated <= 0 |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
