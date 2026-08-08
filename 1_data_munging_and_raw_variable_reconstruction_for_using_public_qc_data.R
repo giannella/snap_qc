@@ -443,7 +443,7 @@ adjust_income <- function(mydata, col, elements, prefix, max_iter = max_iteratio
     diff <- mydata$RAWBEN - mydata$rawben_recreated
     diff_matches <- abs(diff) <= matching_tolerance
     
-    done <- ((direction > 0 & mydata[[col]] <= 0) | mydata$rawben_recreated <= 0 | 
+    done <- ((diff_matches | direction > 0 & mydata[[col]] <= 0) | mydata$rawben_recreated <= 0 | 
                (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) | 
                (direction < 0 & mydata$rawben_uncapped < 0) | !eligible)
