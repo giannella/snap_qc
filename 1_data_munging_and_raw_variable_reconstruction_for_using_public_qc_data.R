@@ -837,6 +837,9 @@ if (apply_correction_smoothing) {
 mydata <- mydata %>% mutate(raw_total_deductions = rawdepded + rawcsded +
                               rawsltded + rawmedded + rawernded)
 
+#### Add additional features from features.R
+source("features.R")
+mydata <- add_features(mydata)
 
 #### Misc calculations for write up ####
 
