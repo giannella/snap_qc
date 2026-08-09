@@ -107,7 +107,7 @@ shelter cases):
 
 | arm | vocabulary |
 |---|---|
-| baseline | current 19 features (re-mined, same seed discipline as findings 31) |
+| baseline | current 16 features (re-mined, same seed discipline as findings 31; the proposal originally said 19, but the three raw*_by_hh_size names never existed in the frame and were silently dropped — Gate-1 session 2026-08-08) |
 | +atmax | baseline + at_max_benefit |
 | +outliers | baseline + the five outlier indicators |
 | +atmax+outliers | the full proposed set |
