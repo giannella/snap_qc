@@ -1,0 +1,7 @@
+"arm","seed","n_features","n_raw_rules","n_admitted","top_rule_hh","top_rule_lcb","top_rule"
+"base",117,16,143096,50577,"1",0.634,"rawben_rel_max >    0.998 & shelter_expenses_by_hh_size > 1220.000 & unc_rawben_rel_max <=    1.000 & utilities <=  558.000"
+"base",20260805,16,142490,50285,"1",0.6027,"rawben_rel_max >    0.998 & shelter_expenses_by_hh_size > 1290.000 & unc_rawben_rel_max <=    1.000 & utilities <=  678.000"
+"base",31415,16,142162,50370,"1",0.6121,"months_since_cert_n >=  14.000 & rawben_rel_max <   0.986 & unc_rawben_rel_max >=   0.972 & utilities < 347.000"
+"cand",117,26,151001,59675,"1",0.6995,"rawben_rel_max >   0.998 & rawrent_p >   0.973 & total_deductions_by_hh_size > 625.000 & unc_rawben_rel_max <=   1.000"
+"cand",20260805,26,150578,59144,"1",0.6913,"medical_deductions >= 118.000 & rawben_rel_max >=   0.313 & rawmedded_p <   0.154 & utilities < 875.000"
+"cand",31415,26,150368,59092,"1",0.6379,"medical_deductions > 138.000 & rawmedded_p <=   0.272 & total_deductions_by_hh_size > 380.000"
