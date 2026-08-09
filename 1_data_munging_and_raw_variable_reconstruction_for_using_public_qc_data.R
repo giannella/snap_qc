@@ -13,6 +13,8 @@ options(max.print = 10000)
 correct_variables <- TRUE
 apply_correction_smoothing <- TRUE
 exclude_2020_2021 <- TRUE
+exclude_MFIP <- TRUE
+exclude_SSI_CAP <- TRUE
 
 # 1. Load data
 folder <- paste0(here(), "/")
@@ -146,6 +148,12 @@ mydata <- mydata %>%
 mydata <- mydata[!mydata$state_name %in% c("Alaska", "Hawaii", "Guam", "Virgin Islands"), ]
 nrow(mydata) # 135980
 
+# Exclude MFIP and SSI_CAP cases
+# Due to non-standard benefits calculations
+if (exclude_MFIP)    mydata <- mydata[mydata$MN_FIP  %in% 0, ]
+if (exclude_SSI_CAP) mydata <- mydata[mydata$SSI_CAP %in% 0, ]
+nrow(mydata)
+
 # If you wanted to be very careful, you could drop all observations with second error elements 
 ## we lose even more signal from errors for most purposes so commenting out by default
 # (to focus on single error rows)
@@ -235,6 +243,7 @@ mydata$fsben_uncapped <- mydata$BENMAX - (0.3 * mydata$fsnet_allow_negative)
 mydata$fsben_uncapped <- floor(mydata$fsben_uncapped)
 mydata$fsben_recreated <- pmax(mydata$fsben_uncapped, mydata$fsminimum_ben)
 mydata$fsben_recreated <- pmin(mydata$fsben_recreated, mydata$BENMAX)
+mydata$unc_fsben_rel_max <- mydata$fsben_uncapped / mydata$BENMAX
 
 # CHECK - should be >99.9%
 mean(mydata$fsben_recreated == mydata$FSBEN) * 100 
@@ -396,6 +405,9 @@ mydata$correctednotes <- ifelse(
   mydata$correctednotes
 )
 
+# Drop cases where the rawusize becomes 0
+mydata <- mydata[mydata$rawusize != 0, ]
+
 # Update maxben and standard deduction with new household sizes
 if (correct_variables) {
   mydata$rawbenmax <- mapply(
@@ -416,11 +428,12 @@ if (correct_variables) {
 }
 
 # Step 7. Adjust other variables
-# This method shifts variables up or down by $3 until the equation
+# This method shifts variables up or down by $1 until the equation
 # balances or hit another limiting parameter (going below $0)
 
-income_shift <- 3
-max_iterations <- 1000
+income_shift <- 1
+max_iterations <- 3000
+matching_tolerance <- 0
 
 adjust_income <- function(mydata, col, elements, prefix, max_iter = max_iterations) {
   
@@ -432,9 +445,9 @@ adjust_income <- function(mydata, col, elements, prefix, max_iter = max_iteratio
     
     direction <- mydata$RAWBEN - mydata$fsben_uncapped
     diff <- mydata$RAWBEN - mydata$rawben_recreated
-    diff_matches <- abs(diff) <= 3
+    diff_matches <- abs(diff) <= matching_tolerance
     
-    done <- ((direction > 0 & mydata[[col]] <= 0) | mydata$rawben_recreated <= 0 | 
+    done <- ((diff_matches | direction > 0 & mydata[[col]] <= 0) | mydata$rawben_recreated <= 0 | 
                (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) | 
                (direction < 0 & mydata$rawben_uncapped < 0) | !eligible)
@@ -489,7 +502,7 @@ adjust_shelter <- function(mydata, col, elements, prefix, max_iter = max_iterati
     
     direction <- mydata$RAWBEN - mydata$FSBEN
     diff <- mydata$RAWBEN - mydata$rawben_recreated
-    diff_matches <- abs(diff) <= 3
+    diff_matches <- abs(diff) <= matching_tolerance
     
     done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | mydata$rawben_recreated <= 0 |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
@@ -548,7 +561,7 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
     
     direction <- mydata$RAWBEN - mydata$FSBEN
     diff <- mydata$RAWBEN - mydata$rawben_recreated
-    diff_matches <- abs(diff) <= 3
+    diff_matches <- abs(diff) <= matching_tolerance
     
     done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | mydata$rawben_recreated <= 0 |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
@@ -829,6 +842,9 @@ if (apply_correction_smoothing) {
 mydata <- mydata %>% mutate(raw_total_deductions = rawdepded + rawcsded +
                               rawsltded + rawmedded + rawernded)
 
+#### Add additional features from features.R
+source("features.R")
+mydata <- add_features(mydata)
 
 #### Misc calculations for write up ####
 
