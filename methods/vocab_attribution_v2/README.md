@@ -64,7 +64,18 @@ top-20k window, both arms, incumbents and new).
 
 ## Additional considerations based on prompting (Eric + results review, 2026-08-09)
 
-**1. The artifact fix did not cost performance — a win.** Findings 28
+**1. The artifact fix did not cost performance — a win (Eric's
+conclusion, and the headline reading of this study).** The baseline is
+artificially high because of the artifact: its top-ranked rule is a
+near-boundary rel_max shape in all three seeds, so the bar the candidate
+arm was measured against still carries residual artifact-correlate
+inflation. That the new variables and the fixed data frame produce the
+SAME overall performance against that inflated bar — while drawing 85.8%
+of their deployed rules from legitimate features instead — is a win, not
+a null: benchmark-level delivered precision no longer depends on the
+reconstruction artifact. The details:
+
+Findings 28
 measured that 88 delivered rules took 76.7% of their flags from the
 reconstruction band just below max benefit, and two of three seeds put a
 band rule at national rank 1 (findings 31). The 2026-08-08 frame rebuild
