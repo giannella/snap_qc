@@ -137,3 +137,22 @@ of equal delivered performance.
 contrast. The remine proposal's four national factorial arms and the
 state-typed arm remain pending; their results are unknown, and their
 design note should incorporate the recommendations above.
+
+**4. Eric's ruling on the Massachusetts baseline (2026-08-09).**
+Precision at the 0.55-0.58 level is what artifact-driven mining
+produced: the pre-fix era's results were inflated by the reconstruction
+artifact (findings 28), and with the artifact diminished by the
+2026-08-08 recreation fix, lower results at MA are the expected
+deflation toward truth, not harm. A drop from that level is therefore
+not a concern unless the resulting level falls below 0.30. Applied to
+the cells: candidate MA at 5% is 0.263 / 0.289 / 0.526 (two seeds
+marginally below 0.30) and at 10% is 0.250 / 0.276 / 0.329; Michigan
+never falls below 0.298. Under this ruling the MA/MI redistribution
+concern is marginal, and the do-not-adopt verdict rests on the primary
+readout (no gain, mandatory companions negative, deployment cost), not
+on the harmed tail. Context recorded with it: the strict findings-28
+band accounts for 2.6-5.3% of MA's 38 baseline flags, so any remaining
+inflation runs through correlates of the artifact (e.g. the
+near-boundary rel_max rule shapes that still top the baseline ranking)
+rather than the strict band itself; MA's baseline lift is 3.7x over its
+0.1545 FY2024 base rate.
