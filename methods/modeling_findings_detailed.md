@@ -637,14 +637,14 @@ in run1_lcb_criterion/).*
 > below roughly 60% visibility should treat public/national rules as a *supplement*
 > and run the pipeline on their own internal data.
 
-Two pipeline defects were found and fixed, then the remaining gap quantified:
+Two frame changes preceded the measurement:
 
-- **Stale single-element frame**: reg_model_data.rds descended from a build
-  with the multi-element drop active. Every result before 2026-07-07 was
-  mined on ~69% of true errors (multi-element cases, 31% of errors, excluded).
-  Fixed: multi-element cases kept (second_element_i tracks them; NOT a mining
-  feature: states report second elements too inconsistently). The frame now
-  saves from the script directly, so it cannot silently drift again.
+- **Multi-element cases restored**: every result before 2026-07-07 was
+  mined on a single-element frame, ~69% of true errors (multi-element cases,
+  31% of errors, excluded). The rebuild keeps them (second_element_i tracks
+  them; NOT a mining feature: states report second elements too
+  inconsistently). The frame now saves from the script directly, so the .rds
+  always matches the munging code.
 - **Deduction-NA drops**: states like WA/MS/MN leave optional deduction fields
   unrecorded in blocks; those rows are now zero-filled (ded_fields_imputed
   flag) instead of dropped. Recovered ~16% of WA's caseload.

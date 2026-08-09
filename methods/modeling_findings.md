@@ -376,12 +376,12 @@ single-state mining detail: [detailed record](modeling_findings_detailed.md#9-st
 > below roughly 60% visibility should treat public/national rules as a *supplement*
 > and run the pipeline on their own internal data.
 
-The headline gap comes with two pipeline fixes we made along the way (both now
+The headline gap comes with two frame changes made along the way (both now
 permanent):
 
-- An earlier frame had silently dropped multi-element error cases, about 31% of all
-  errors. Fixed; the frame now saves straight from the build script so it cannot
-  drift again.
+- Earlier frames excluded multi-element error cases, about 31% of all errors.
+  The 2026-07-07 rebuild keeps them, and the frame now saves straight from the
+  build script (one code path writes it).
 - Optional deduction fields left blank by some states were being dropped as missing;
   they are now zero-filled, which recovered ~16% of Washington's caseload.
 

@@ -68,8 +68,8 @@ or changes a constraint.
 ## 1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R {#munging}
 
 - `reg_model_data.rds` is saved by this script and only this script. Never
-  hand-build or hand-save the frame: a stale hand-built frame silently
-  excluded ~31% of error cases for weeks (§10; CLAUDE.md).
+  hand-build or hand-save the frame; one code path writes it (§10;
+  CLAUDE.md).
 - FY2020 and FY2021 stay excluded (decision, not measurement), and the
   benefit-reconciliation filter stays on; the exclusions are validity guards,
   additive-only on the six kept years (§24).

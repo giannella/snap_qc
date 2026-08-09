@@ -8,7 +8,7 @@ and the findings in `methods/modeling_findings.md`.
 
 `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R`:
 
-1. **Multi-element error cases are kept.** The old frame silently dropped every
+1. **Multi-element error cases are kept.** The old frame excluded every
    case whose review found more than one error element (`ELEMENT2` non-missing)
    — about 31% of all above-threshold errors. A `second_element_i` flag marks
    them, but it is NOT used as a mining feature (state reporting of second
@@ -18,8 +18,8 @@ and the findings in `methods/modeling_findings.md`.
    rows are kept with 0 and flagged via `ded_fields_imputed`. Only rows missing
    `RENT`/`UTIL` are still dropped.
 3. **The frame is saved by the script itself** (`saveRDS` at the end), so
-   `reg_model_data.rds` can never again drift from the munging code. The stale
-   hand-built frame is archived at
+   `reg_model_data.rds` always matches the munging code. The previous
+   single-element frame is archived at
    `archive_data/reg_model_data_singleelement_stale_2026-07-04.rds`; results
    mined from it live in `*/run3_singleelement_frame/` (INCL) and analogous
    `run*` archive subfolders.
