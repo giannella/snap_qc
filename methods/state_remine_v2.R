@@ -167,7 +167,10 @@ stamp("frame ready: %d states, %d features prepped", length(STATES),
 
 ## ---- shared helpers ---------------------------------------------------------
 admit_rank_frame <- function(rdf, n, k, base_rate) {
-  # BH FDR 10% vs the frame's own base rate AND n >= MIN_N, 99%-LCB order
+  # ONE BH at FDR 10% across the frame's candidates, base_rate scalar or
+  # per-rule vector (per-stratum base rates enter the p-values, the
+  # multiplicity correction is joint - exactly the shipped builder's and
+  # factorial's path, findings 19), AND n >= MIN_N; 99%-LCB order
   rdf$n <- as.integer(n); rdf$k <- k
   pvals <- pbinom(rdf$k - 1, rdf$n, base_rate, lower.tail = FALSE)
   m <- length(pvals); o <- order(pvals)
@@ -176,7 +179,8 @@ admit_rank_frame <- function(rdf, n, k, base_rate) {
   adm <- rdf[bh & rdf$n >= MIN_N, , drop = FALSE]
   if (!nrow(adm)) return(adm)
   adm$lcb <- wilson_lcb(adm$k, adm$n, LCB_Z)
-  adm[order(-adm$lcb, -adm$n, adm$rule, method = "radix"), , drop = FALSE]
+  adm[order(-adm$lcb, -adm$n, adm$hh, adm$rule, method = "radix"), ,
+      drop = FALSE]
 }
 
 walk_mask <- function(idx_tr, idx_te, n_tr, n_te, b) {
@@ -297,9 +301,13 @@ if (n_paired >= MIN_PAIRED_STATES) {
         n_paired, median(d), mean(d), sum(d < -0.05), median(dd), WINNER)
 } else if (file.exists(NATIONAL_DELTAS) &&
            "d_prec_pct_vs_persize" %in% names(read.csv(NATIONAL_DELTAS, nrows = 1))) {
+  # mirror the factorial's own aggregation: per-state seed means, then the
+  # median across states (review flag 5)
   nat <- read.csv(NATIONAL_DELTAS)
-  nat5 <- nat %>% filter(budget == 0.05)
-  nat_med <- median(nat5$d_prec_pct_vs_persize)
+  nat5 <- nat %>% filter(budget == 0.05) %>% group_by(target) %>%
+    summarise(dp = mean(d_prec_pct_vs_persize), .groups = "drop")
+  nat_med <- median(nat5$dp)
+  stopifnot(!is.na(nat_med))
   WINNER <- if (nat_med > 0) "pct" else "ps"
   stamp("RUNOFF UNREADABLE (%d paired states < %d): falling back to the national pct_vs_persize winner (median %+.4f) -> WINNER: %s",
         n_paired, MIN_PAIRED_STATES, nat_med, WINNER)
@@ -319,9 +327,16 @@ writeLines(WINNER, file.path(OUT_DIR, "runoff_winner.txt"))
 stamp("=== stage 2: state pools with vocabulary '%s' ===", WINNER)
 pool_summary <- list()
 for (state in STATES) {
-  fn <- file.path(POOL_DIR, sprintf("pool_%s.rds", gsub(" ", "_", state)))
+  fn <- file.path(POOL_DIR, sprintf("pool_%s_%s.rds", gsub(" ", "_", state),
+                                    WINNER))
   if (RESUME_FROM_CHECKPOINT && file.exists(fn)) {
-    stamp("  %s: pool resumed", state); next
+    pool <- readRDS(fn)
+    pool_summary[[state]] <- data.frame(
+      state = state, vocab = WINNER,
+      n_typed = sum(pool$hh == "all"),
+      n_anyerror = sum(pool$hh != "all"),
+      n_total = nrow(pool))
+    stamp("  %s: pool resumed (%d rules)", state, nrow(pool)); next
   }
   tr_s <- which(st == state & yr %in% TRAIN_YEARS)
   trs <- adf[tr_s, , drop = FALSE]
@@ -336,26 +351,30 @@ for (state in STATES) {
     trs, list(any_error = list(rows = seq_len(nrow(trs)), ie = ie_s)),
     strata_s, VOCABS[[WINNER]],
     xgb = XGB, rf = RF, signif_digits = SIGNIF_DIGITS, seed = SEED,
-    verbose = FALSE)
+    verbose = TRUE)   # per-stratum rows AND events print (design note item 3)
   ae_adm <- NULL
   if (!is.null(ae) && nrow(ae)) {
     fl <- flags_for_rules(ae, trs, strata_s, label = "")
     n <- vapply(fl, length, integer(1))
     k <- vapply(fl, function(ix) sum(ie_s[ix]), numeric(1))
     base_by_hh_s <- vapply(strata_s, function(rows) mean(ie_s[rows]), numeric(1))
-    # per-stratum base rate for each rule
-    parts <- list()
-    for (h in HH_LEVELS) {
-      sel <- ae$hh == h
-      if (!any(sel)) next
-      adm_h <- admit_rank_frame(ae[sel, , drop = FALSE], n[sel], k[sel],
-                                base_by_hh_s[[h]])
-      if (nrow(adm_h)) { adm_h$mined_frame <- "any_error"; parts[[h]] <- adm_h }
-    }
-    if (length(parts)) ae_adm <- bind_rows(parts)
+    # ONE BH across all strata's candidates, per-stratum base rates in the
+    # p-values (review 2026-08-09 blocking item; findings 19 as shipped)
+    adm <- admit_rank_frame(ae, n, k, base_by_hh_s[ae$hh])
+    if (nrow(adm)) { adm$mined_frame <- "any_error"; ae_adm <- adm }
   }
   pool <- bind_rows(typed_pool,
                     if (!is.null(ae_adm)) ae_adm else NULL)
+  # provenance: n/k/lcb are on the mined frame's own scale - typed rows on
+  # the typed frame, any-error rows on the stratum any-error scale. A blend
+  # consumer must NOT sort across scales (rule-pool-incomparability hazard)
+  # and must dedup cross-frame duplicate rule texts (see pools/README.md).
+  if (nrow(pool)) {
+    pool$lcb_scale <- ifelse(pool$hh == "all",
+                             paste0("typed:", pool$mined_frame),
+                             "anyerror_stratum")
+    pool$mined_frames <- NULL
+  }
   saveRDS(pool, fn)
   pool_summary[[state]] <- data.frame(
     state = state, vocab = WINNER,
