@@ -1,0 +1,50 @@
+"state","vocab","n_typed","n_anyerror","n_total"
+"Alabama","ps",10525,3710,14235
+"Arizona","ps",19182,12191,31373
+"Arkansas","ps",7774,3688,11462
+"California","ps",16480,9013,25493
+"Colorado","ps",14882,6256,21138
+"Connecticut","ps",16360,8556,24916
+"Delaware","ps",1827,91,1918
+"District of Columbia","ps",19000,7915,26915
+"Florida","ps",14541,5781,20322
+"Georgia","ps",27902,15324,43226
+"Idaho","ps",2818,1959,4777
+"Illinois","ps",17958,10869,28827
+"Indiana","ps",13174,8042,21216
+"Iowa","ps",12060,1836,13896
+"Kansas","ps",5738,1417,7155
+"Kentucky","ps",9729,4058,13787
+"Louisiana","ps",9726,4589,14315
+"Maine","ps",15282,7658,22940
+"Maryland","ps",11797,6320,18117
+"Massachusetts","ps",12638,7135,19773
+"Michigan","ps",14046,4353,18399
+"Minnesota","ps",11693,5331,17024
+"Mississippi","ps",17776,8214,25990
+"Missouri","ps",10445,2529,12974
+"Montana","ps",7333,1194,8527
+"Nebraska","ps",6319,998,7317
+"Nevada","ps",12628,8791,21419
+"New Hampshire","ps",8708,3890,12598
+"New Jersey","ps",7317,3955,11272
+"New Mexico","ps",21954,11241,33195
+"New York","ps",11476,5474,16950
+"North Carolina","ps",14041,5986,20027
+"North Dakota","ps",6750,1781,8531
+"Ohio","ps",9913,3344,13257
+"Oklahoma","ps",17601,10851,28452
+"Oregon","ps",15895,9825,25720
+"Pennsylvania","ps",10628,2334,12962
+"Rhode Island","ps",22067,10803,32870
+"South Carolina","ps",13267,5901,19168
+"South Dakota","ps",2239,5,2244
+"Tennessee","ps",16469,6875,23344
+"Texas","ps",10755,3250,14005
+"Utah","ps",4216,2110,6326
+"Vermont","ps",6769,968,7737
+"Virginia","ps",14984,7674,22658
+"Washington","ps",8197,4337,12534
+"West Virginia","ps",10589,4415,15004
+"Wisconsin","ps",10388,5091,15479
+"Wyoming","ps",0,0,0
