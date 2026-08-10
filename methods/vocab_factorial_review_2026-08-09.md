@@ -43,3 +43,27 @@ sign-consistency and seed-spread companions.
 
 Re-smoked clean after all fixes (16 cells, slack 0, all summary lines
 live).
+
+## Delta review: representation-contest arms (same day, evening)
+
+**Verdict: APPROVE WITH FLAGS - relaunch tonight** (delta = commit
+347d9e2 over approved 149d672; confined to the arm/contrast config; no
+mine/score/admit/walk code changed; the four approved arms byte-identical
+to what launched at 18:00).
+
+1. **pct_vs_persize is a PACKAGE contrast, not representation per se**
+   (pct_pure carries four component-level percentiles with no per-size
+   counterpart; rawrent_p best rank 3 in smoke shows the confound is
+   live). Pre-stated reading rule added to the design note before any
+   results existed: attribution to representation requires the usage
+   table + deployed-rule text; counterpart-less percentiles dominating
+   -> log "percentile package wins."
+2. **Operational**: the 18:00 run's outputs archived aside before the
+   relaunch overwrites them; afterward the four shared arms' rows are
+   diffed (identical expected; any difference = drift, do not read).
+3. **Operational**: the 6-arm run must not start until the 18:00
+   process has exited (shared cache, non-atomic saveRDS).
+4. **Cache-editing rule amended** (reviewer's sanction): additive ARMS/
+   PCT_MAP edits are allowed iff the resumed arms are diff-verified
+   unchanged and anchored; total_deductions_p verified leakage-clean
+   (case-characteristic source, per-column-independent builder).

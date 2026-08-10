@@ -45,7 +45,17 @@ Pre-registered contrasts, paired by seed: (1) base_slt - base and
 free same-seed replication of last night; (4) ps_pure - base isolates
 the per-size income additions; (5) pct_pure - base tests the full
 percentile representation as a replacement; (6) pct_pure - ps_pure is
-the head-to-head between the two representations (Eric's request). The
+the head-to-head between the two normalization PACKAGES (Eric's
+request). Pre-stated before results exist (delta review flag 1,
+2026-08-09): this contrast is packages, not representation per se —
+pct_pure additionally carries four component-level percentiles
+(rawrent_p, rawmedded_p, rawcsded_p, rawdepded_p) with no per-size
+counterpart in ps_pure, so a pct_pure win could be the representation
+or the component granularity. Attribution to representation requires
+checking the usage table and deployed-rule text for whether those
+counterpart-less percentiles carry the difference; if they dominate,
+the finding is logged as "percentile package wins," never
+"representation wins." The
 family arms carry the same reading rules as the package: deltas judged
 against seed noise with the full companion set; the percentile
 representation additionally carries the positive-bar rule (it alone
