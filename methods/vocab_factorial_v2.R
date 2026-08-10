@@ -59,14 +59,29 @@ PKG_FEATURES <- c(
   "rawmedded_p", "rawcsded_p", "rawdepded_p")
 SLT_FEATURE <- "shelter_expenses_p"
 
+# the representation contest (Eric 2026-08-09, corrected: the 16 already
+# carries two _by_hh_size features, so the percentile arm must REPLACE the
+# per-size representation, not sit on top of it). The five per-size fields:
+# total_deductions, shelter_expenses (incumbent) + gross, earned, unearned.
+PS_FEATURES  <- c("gross_by_hh_size", "earned_by_hh_size", "unearned_by_hh_size")
+PCT_FEATURES <- c("rawgrinc_p", "rawearn_p", "rawunearn_p", "rawrent_p",
+                  "rawmedded_p", "rawcsded_p", "rawdepded_p")
+stopifnot(setequal(PKG_FEATURES, c(PS_FEATURES, PCT_FEATURES)))
+INCUMBENT_PS <- c("total_deductions_by_hh_size", "shelter_expenses_by_hh_size")
+PCT_PURE_ADD <- c(PCT_FEATURES, "shelter_expenses_p", "total_deductions_p")
+
 # arm name -> vocabulary; base/cand names MUST match the 2026-08-08 study's
-# cache keys (identical configs) so their mines and scored pools resume
+# cache keys (identical configs) so their mines and scored pools resume;
+# ps_pure / pct_pure / *_slt are new keys and mine fresh
 ARMS <- list(
   base     = BASE_FEATURES,
   cand     = c(BASE_FEATURES, PKG_FEATURES),
+  ps_pure  = c(BASE_FEATURES, PS_FEATURES),   # all five _by_hh_size, zero _p
+  pct_pure = c(setdiff(BASE_FEATURES, INCUMBENT_PS), PCT_PURE_ADD),
   base_slt = c(BASE_FEATURES, SLT_FEATURE),
   cand_slt = c(BASE_FEATURES, PKG_FEATURES, SLT_FEATURE))
 ARM_NEW <- list(base = character(0), cand = PKG_FEATURES,
+                ps_pure = PS_FEATURES, pct_pure = PCT_PURE_ADD,
                 base_slt = SLT_FEATURE, cand_slt = c(PKG_FEATURES, SLT_FEATURE))
 
 # percentile column -> source column (frame names). shelter_expenses and
@@ -80,7 +95,8 @@ PCT_MAP <- c(rawgrinc_p  = "rawgross",
              rawdepded_p = "rawdepded",
              rawcsded_p  = "rawcsded",
              rawrent_p   = "rawrent",
-             shelter_expenses_p = "shelter_expenses")
+             shelter_expenses_p = "shelter_expenses",
+             total_deductions_p = "total_deductions")
 
 OUT_DIR   <- "methods/vocab_factorial_v2"
 CACHE_DIR <- "methods/vocab_attribution_v2/cache"   # shared: base/cand resume
@@ -363,7 +379,10 @@ wide <- readout %>%
 CONTRASTS <- list(
   slt_on_base = c("base_slt", "base"),
   slt_on_cand = c("cand_slt", "cand"),
-  pkg_replication = c("cand", "base"))
+  pkg_replication = c("cand", "base"),
+  persize_on_base = c("ps_pure", "base"),
+  pct_replaces_persize_vs_base = c("pct_pure", "base"),
+  pct_vs_persize = c("pct_pure", "ps_pure"))
 for (cn in names(CONTRASTS)) {
   a <- CONTRASTS[[cn]][1]; bnm <- CONTRASTS[[cn]][2]
   wide[[paste0("d_prec_", cn)]] <-
