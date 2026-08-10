@@ -1,0 +1,31 @@
+"target","contrast","n_cells","n_neg","n_pos","mean_delta"
+"Arizona","slt_on_base",6,4,2,-0.0291
+"California","slt_on_base",6,2,2,1e-04
+"Louisiana","slt_on_base",6,3,3,0.004
+"Maine","slt_on_base",6,2,2,0.0036
+"Massachusetts","slt_on_base",6,3,2,-0.0241
+"Michigan","slt_on_base",6,3,2,-0.0238
+"Mississippi","slt_on_base",6,3,3,0.0055
+"New Jersey","slt_on_base",6,4,1,-0.0081
+"Texas","slt_on_base",6,1,3,0.0223
+"Washington","slt_on_base",6,4,1,-0.0353
+"Arizona","slt_on_cand",6,4,1,-0.0194
+"California","slt_on_cand",6,3,2,1e-04
+"Louisiana","slt_on_cand",6,3,3,0.0058
+"Maine","slt_on_cand",6,1,5,0.0434
+"Massachusetts","slt_on_cand",6,3,3,-0.0373
+"Michigan","slt_on_cand",6,3,0,-0.0198
+"Mississippi","slt_on_cand",6,0,3,0.0185
+"New Jersey","slt_on_cand",6,1,3,0.0377
+"Texas","slt_on_cand",6,6,0,-0.0505
+"Washington","slt_on_cand",6,4,2,-0.0099
+"Arizona","pkg_replication",6,2,2,-0.0097
+"California","pkg_replication",6,5,0,-0.0268
+"Louisiana","pkg_replication",6,4,2,-0.0038
+"Maine","pkg_replication",6,2,2,0.0055
+"Massachusetts","pkg_replication",6,6,0,-0.1645
+"Michigan","pkg_replication",6,6,0,-0.0437
+"Mississippi","pkg_replication",6,1,5,0.0611
+"New Jersey","pkg_replication",6,1,4,0.0081
+"Texas","pkg_replication",6,1,4,0.0281
+"Washington","pkg_replication",6,3,2,0.005

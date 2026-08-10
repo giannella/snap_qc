@@ -1,0 +1,13 @@
+"arm","budget","median_seed_spread"
+"base",0.05,0.0553
+"base",0.1,0.0415
+"base_slt",0.05,0.076
+"base_slt",0.1,0.0472
+"cand",0.05,0.0741
+"cand",0.1,0.0353
+"cand_slt",0.05,0.0672
+"cand_slt",0.1,0.0539
+"pct_pure",0.05,0.093
+"pct_pure",0.1,0.0502
+"ps_pure",0.05,0.0678
+"ps_pure",0.1,0.0565
