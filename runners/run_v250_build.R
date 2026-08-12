@@ -24,18 +24,27 @@ if (!identical(rc, 0L)) {
   quit(save = "no", status = 1)
 }
 
-## ---- step 3: join characterization columns onto the lists -------------------
-cat(sprintf("[%s] step 3: joining characterization columns ...\n",
+## ---- step 3: join CURATED characterization columns onto the lists -----------
+# Eric's selection (2026-08-11): the readable headlines plus five shares and
+# one support column. The FULL ~150-column sheet stays separate
+# (rule_characterization_v250.csv) for anyone who wants to join the rest.
+CURATED <- c("n_error_cases", "element_groups_to_75", "nature_groups_to_75",
+             "found_in_case_record", "share_overissuance",
+             "timing_at_certification", "cause_agency", "cause_client")
+cat(sprintf("[%s] step 3: joining curated characterization columns ...\n",
             format(Sys.time(), "%H:%M:%S")))
 suppressMessages(library(dplyr))
 prof <- read.csv("methods/v250_candidate_lists/rule_characterization_v250.csv",
                  check.names = FALSE)
+stopifnot(all(c(CURATED, "n_cases_flagged") %in% names(prof)))
 lists <- Sys.glob("methods/v250_candidate_lists/blended_delivery_*.csv")
 stopifnot(length(lists) > 0)
 n_joined <- 0L
 for (fn in lists) {
   lst <- read.csv(fn, check.names = FALSE)
   if ("n_error_cases" %in% names(lst)) next   # already joined (rerun)
+  # merge the FULL sheet so the integrity guards can see every field,
+  # then deliver only the curated block
   merged <- merge(lst, prof, by = c("hh", "rule"), all.x = TRUE, sort = FALSE)
   merged <- merged[order(merged$rank), ]
   stopifnot(nrow(merged) == nrow(lst), !any(is.na(merged$n_error_cases)))
@@ -46,11 +55,11 @@ for (fn in lists) {
   natl_rows <- merged$pool == "national"
   stopifnot(all(merged$n_flagged_train[natl_rows] ==
                 merged$n_cases_flagged[natl_rows]))
-  # keep the shipped column order first, characterization block after
-  merged <- merged[, c(names(lst), setdiff(names(merged), names(lst)))]
+  # shipped column order first, curated characterization block after
+  merged <- merged[, c(names(lst), CURATED)]
   write.csv(merged, fn, row.names = FALSE)
   n_joined <- n_joined + 1L
 }
-cat(sprintf("[%s] step 3 done: characterization columns joined onto %d lists\n",
-            format(Sys.time(), "%H:%M:%S"), n_joined))
+cat(sprintf("[%s] step 3 done: %d curated columns joined onto %d lists (full sheet: rule_characterization_v250.csv)\n",
+            format(Sys.time(), "%H:%M:%S"), length(CURATED), n_joined))
 cat("STAGED v2.5.0 candidate build COMPLETE (not the shipped deliverable).\n")

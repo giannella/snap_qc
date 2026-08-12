@@ -67,10 +67,17 @@ rounding); (ii) pool-level `dedup_exact_coverage` / `dedup_dominated` are
 not re-run on the blend - delivered membership is invariant (zero-add rules
 are skipped by both walks); on exact-coverage ties this build delivers the
 alphabetically-first rule text rather than the fewest-conditions variant.
-Column order also differs (rank/role first; the ~150 characterization
-columns appended) - a schema change to state explicitly at promotion.
-Step 3 carries a cross-language flag-count identity assertion on
-national-pool rows (the ULP-drift guard).
+Column order also differs (rank/role first) - a schema change to state
+explicitly at promotion. Characterization on the lists is the CURATED
+block (Eric's selection, 2026-08-11 evening): n_error_cases,
+element_groups_to_75, nature_groups_to_75, found_in_case_record,
+share_overissuance, timing_at_certification, cause_agency, cause_client -
+21 columns per list in all. The full ~150-column sheet with every share's
+Wilson interval is written separately
+(rule_characterization_v250.csv) for states that want to join the rest.
+Step 3 merges the full sheet for its integrity guards (row-count, NA, and
+the cross-language flag-count identity on national-pool rows - the
+ULP-drift guard) before delivering the curated subset.
 
 ## 3. Support (computed)
 
