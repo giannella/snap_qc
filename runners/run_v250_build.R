@@ -28,9 +28,12 @@ if (!identical(rc, 0L)) {
 # Eric's selection (2026-08-11): the readable headlines plus five shares and
 # one support column. The FULL ~150-column sheet stays separate
 # (rule_characterization_v250.csv) for anyone who wants to join the rest.
+# cause_client dropped (Eric, 2026-08-11): near-complement of cause_agency
+# (median sum 0.968, correlation -0.982 on the smoke rules); the exact value
+# stays in the full sheet
 CURATED <- c("n_error_cases", "element_groups_to_75", "nature_groups_to_75",
              "found_in_case_record", "share_overissuance",
-             "timing_at_certification", "cause_agency", "cause_client")
+             "timing_at_certification", "cause_agency")
 cat(sprintf("[%s] step 3: joining curated characterization columns ...\n",
             format(Sys.time(), "%H:%M:%S")))
 suppressMessages(library(dplyr))

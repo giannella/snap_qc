@@ -71,8 +71,9 @@ Column order also differs (rank/role first) - a schema change to state
 explicitly at promotion. Characterization on the lists is the CURATED
 block (Eric's selection, 2026-08-11 evening): n_error_cases,
 element_groups_to_75, nature_groups_to_75, found_in_case_record,
-share_overissuance, timing_at_certification, cause_agency, cause_client -
-21 columns per list in all. The full ~150-column sheet with every share's
+share_overissuance, timing_at_certification, cause_agency - 20 columns
+per list in all (cause_client dropped as a near-complement of
+cause_agency: median sum 0.968, correlation -0.982 on the smoke rules). The full ~150-column sheet with every share's
 Wilson interval is written separately
 (rule_characterization_v250.csv) for states that want to join the rest.
 Step 3 merges the full sheet for its integrity guards (row-count, NA, and
