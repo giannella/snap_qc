@@ -56,6 +56,7 @@ for (pv in names(VARS)) {
       state = parts[1], hh_size = parts[2],
       variable = pv, source_column = src,
       n_2024 = length(v), n_nonzero = length(nz),
+      n_distinct = length(unique(v)),
       t(setNames(round(q, 4), paste0("p", PCTS, "_defl"))),
       t(setNames(round(q * cpi24, 0), paste0("p", PCTS, "_usd"))),
       check.names = FALSE)

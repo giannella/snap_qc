@@ -17,6 +17,11 @@ or changes a constraint.
 - Admission is Benjamini-Hochberg at FDR 10% vs the stratum base rate AND
   n >= 30 flagged training cases. The two guards do different jobs; neither
   replaces the other, and floorless admission is refuted (§19, §26).
+- The BH call is ONE joint pass across all of a frame's candidate rules,
+  with each rule's stratum base rate inside its p-value. Running BH per
+  stratum is a different multiplicity correction and admits a different
+  set (smoke: 393 vs 436 rules on one state's any-error frame); it was
+  caught in review before the state re-mine (§37).
 - Dedup deliberately keeps overlapping rules of different structure (states
   want substitutes). Never re-prune a pooled rule set with a joint lasso
   (CLAUDE.md, design decision).
@@ -33,6 +38,22 @@ or changes a constraint.
   not a stratum (§8).
 - `second_element_i` must never enter the feature set; state reporting of it
   is inconsistent (CLAUDE.md, 2026-07-07 frame rebuild).
+- Verify every name in the `features` vector against the frame's columns
+  before mining: `prep_features()` drops unknown names silently. The
+  vector's three `raw*_by_hh_size` names never existed in the frame, so
+  every v2 mine has used 16 features, not the listed 19 (§35).
+- Vocabulary results (2026-08-09, one era, EXPLORATORY): replacing the
+  per-size representation with FROZEN train-year percentiles (cutoffs fit
+  on FY2022-23 only, applied unchanged to FY2024; defined in §35) cost a
+  moderate, sign-consistent amount (mean negative in every seed, both
+  budgets, ten evaluation states); `shelter_expenses_p` added nothing.
+  Ben's pooled-years within-state percentile construction (features.R,
+  the as-built `_p` columns) was NOT what those arms tested; §37 tested
+  it 2026-08-11 (EXPLORATORY, 48 states, single seed): precision a wash
+  at 5%, and of 495 deployed `_p` conditions only 2 are high-tail - the
+  miner does not use the construction as an outlier detector. The
+  per-size vocabulary (16 + gross/earned/unearned per size) is the
+  v2.5.0 re-mine candidate, Eric's call at regen time (§35-§37).
 - This script calls the flag evaluator 3x per frame x 5 frames x 3 strata.
   Before any heavy regeneration it must use the chunked reducer or it OOMs
   (RESUME.md A1-F1 caveat).

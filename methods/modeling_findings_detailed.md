@@ -219,6 +219,53 @@ we learned is recoverable. Each points to its numbered section.
   the proposed shipping threshold. First walk change to achieve two-era
   validation; promotion is Eric's MINOR-bump call.
 
+- **08-08**: Vocabulary attribution (#35; reclassified 2026-08-11 as a
+  technical exploration, not a research finding): the 26-feature package
+  (per-size income + frozen train-year percentiles) performed the same as
+  the shipped 16 on the rebuilt frame (flat median, mean -0.0231 at 5%,
+  MA/MI sign-consistent redistribution) despite 85.8% deployed usage;
+  feature membership at equivalent performance is a judgment call on
+  deployment cost, not a bar-verdict. Incidental artifact observation
+  recorded with limits (strict band down to 2-3% of flags in both arms;
+  correlate reliance not established; pre/post-fix level comparisons
+  unpaired). Side product: the shipped vocabulary is 16 features, not 19
+  (three finder-vector names never existed in the frame).
+
+- **08-09**: The vocabulary factorial (#36, six arms, chained into the
+  state re-mine; reframed 2026-08-11, EXPLORATORY - no ledger rows, informs
+  only the open v2.5.0 vocabulary decision): replacing per-size with
+  percentiles
+  costs a moderate, sign-consistent amount (cross-state mean negative in
+  every seed at both budgets, -0.026 to -0.045 at 5%; the 5% loss is a
+  four-state harmed tail) - but on TEN evaluation states, a compute
+  trade-off; the cached pools support a 49-state evaluation-only rerun.
+  Per-size is table-free and the v2.5.0 candidate. The one-variable
+  shelter_expenses_p 2x2 added nothing despite rank-1 admission and ~26%
+  deployed share; half a night's mining on one variable is retrospectively
+  judged not worth a study.
+
+- **08-09 to 08-10**: A state-scale re-mine ran (runoff + 49 pools) but was
+  DELETED 2026-08-11: its percentile arm used the frozen train-only
+  construction, not Ben's pooled-years design, so the comparison did not
+  test his idea. Artifacts removed; surviving pieces: the joint-BH admission catch (its review record,
+  methods/state_remine_review_2026-08-09.md) and the per-size typed-mine
+  caches. The replacement §37 - Ben's within-state pooled-years percentiles
+  vs the per-size variables, exploratory, state scale - is queued.
+
+- **08-11 (evening)**: The replacement #37 ran (EXPLORATORY, no ledger
+  rows): Ben's as-built within-state percentiles, additive on the 19-var
+  per-size vocabulary, vs that vocabulary alone; 48 paired states,
+  any-error state mining, shipped fresh-share walk, single seed. Precision
+  a wash at 5% (median +0.0000, harmed 9 / helped 10 - redistribution),
+  slightly negative at 10% (-0.0041) with dollars slightly positive
+  (+0.0062). The direct answer to the outlier framing: of 495 deployed
+  `_p` conditions, 2 are high-tail (>= p90); the miner uses the features
+  heavily (75% of deployed rules) as mid-scale income/rent encodings and
+  zero/absence flags, not as outlier detectors. Review chain: B1
+  stratum-evaluation bug caught and fixed pre-launch; the walk's
+  exact-refill assertion shown empirical-only at state scale (tolerated,
+  reported gaps; max 2 cases).
+
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
 registered in methods/make_all_charts_v2.R so figures regenerate in one
@@ -3046,3 +3093,428 @@ schedule calibrated today would hard-code era 1's profile - the section 20
 candidate awaiting a genuinely unread test bed (the FY2025 public file when
 it lands, or a state's internal data); with all three current harnesses
 consumed by its construction, testing it now would be confirmatory theater.
+
+## 35. Vocabulary attribution: the 26-feature package has the same performance as 16-feature (2026-08-08)
+
+> **Takeaway: about our pipeline (a technical exploration, not a research
+> finding - reclassified on Eric's 2026-08-11 review).** Replacing the
+> 16-feature national any-error mining vocabulary with 26 features (the
+> three per-size income features plus seven FROZEN train-year percentiles)
+> left FY2024 budget-list performance unchanged beyond seed noise: median
+> paired precision delta **+0.0000** at the 5% budget (mean -0.0231, 2 of
+> 10 states worse than -0.05), both arms on the rebuilt frame. "Frozen"
+> means the percentile cutoffs were fit once on the training years
+> FY2022-23 (per state x household-size cell, on CPI-deflated dollars) and
+> applied unchanged to FY2024 - a construction this study introduced as a
+> leakage guard. It is NOT Ben's as-built `_p` columns, which rank a case
+> within all six frame years pooled (2017-19 and 2022-24), and it is
+> unrelated to the frozen delivery LIST of §15. The miner
+> used the new features heavily (median 85.8% of deployed candidate rules)
+> with no gain: different vocabularies re-describe the same errors. With
+> performance equivalent, feature membership is a judgment call on validity
+> and deployment cost (the percentile features require per-state frozen
+> cutoff tables; the per-size features are table-free arithmetic), not a
+> performance question. The pre-registered bar-and-verdict framing this
+> study originally carried overstated what was at stake; the reclassified
+> record keeps the measurement and drops the verdict. An incidental
+> observation about the §28 artifact, never part of the design, is
+> recorded below with its limits.
+
+The question, pre-registered in
+`methods/design_note_vocab_attribution_2026-08-08.md`: does the 26-feature
+vocabulary change delivered budget-list performance on a true future year
+beyond seed noise? Two arms, everything else fixed:
+
+- **baseline**: the 16 features every v2 mine has actually used. The finder
+  vectors list 19, but the three `raw*_by_hh_size` names never existed in the
+  frame and `prep_features()` dropped them silently - established 2026-08-08
+  (the Gate-1 session), an operational hazard now recorded in
+  `methods/known_constraints.md`.
+- **candidate**: those 16 plus `gross_by_hh_size`, `earned_by_hh_size`,
+  `unearned_by_hh_size` (per-size income) and `rawgrinc_p`, `rawearn_p`,
+  `rawunearn_p`, `rawrent_p`, `rawmedded_p`, `rawcsded_p`, `rawdepded_p`
+  (percentiles). Percentiles are fit on FY2022-23 only and FROZEN (per-cell
+  state x reported-HH-size empirical CDFs of CPI-deflated values, zeros
+  pinned to 0), then applied unchanged to FY2024 - the frame's as-built `_p`
+  columns rank across all years and would leak.
+
+Design: rebuilt 2026-08-08 frame (231,619 rows; train FY2022-23 76,031 rows
+/ 8,397 any-error events; test FY2024 39,528 / 4,764 - a true future year);
+shipped engines, strata, BH FDR 10% + n >= 30 admission, 99%-LCB ordering;
+the legacy §31 walk (identical across arms, chosen so §31's seed-noise
+yardstick applies like-for-like); budgets 5% / 10%; the §30/§31 ten-state
+panel (California, Texas, Michigan, Massachusetts, Arizona, Washington,
+Louisiana, Maine, New Jersey, Mississippi); seeds 117 / 20260805 / 31415
+paired across arms. All 120 walk cells valid (slack 0).
+
+Pre-registered readout (within-state median paired delta, candidate minus
+baseline, seed-mean, with the mandatory companions):
+
+| budget | median | mean | harmed tail (< -0.05) | median d dollar-recall | seed-noise ref (base / cand) |
+|---|---|---|---|---|---|
+| 5% | +0.0000 | -0.0231 | 2 of 10 | -0.0082 | 0.0553 / 0.0741 |
+| 10% | -0.0046 | -0.0050 | 1 of 10 | -0.0068 | 0.0415 / 0.0353 |
+
+Every delta sits inside the within-arm across-seed spread: **the measured
+answer is no performance difference.** (Process history, kept for the
+record: the study ran under a pre-registered do-no-harm bar and the flat
+median with negative companions read as "do not adopt"; Eric adopted the
+package the next day on artifact-independence grounds as the factorial's
+`cand` arm; §36's representation contest then mooted that. On 2026-08-11
+Eric reclassified the whole question: feature-set membership at equivalent
+performance is a technical exploration ending in a judgment call, and
+binding it to adoption bars created commitments that then had to be
+reasoned around. The measurement stands; the verdict language does not.)
+
+**What the candidate vocabulary did do.** Median 85.8% of deployed
+candidate-arm rules reference at least one new feature; all 60 state x seed
+x budget cells deploy some; `rawrent_p` and `rawmedded_p` reached admitted
+rank 1 in individual seeds. Heavy usage with zero performance change is the
+§30-31 pattern again: text churn, not work churn.
+
+**The results review corrected the null reading (PDS analysis + fresh
+senior-statistician, 2026-08-09):**
+
+- The flat median hides a sign-consistent REDISTRIBUTION: Massachusetts
+  negative in 6 of 6 cells on both precision and dollars (10% precision
+  deltas -0.145 / -0.092 / -0.145 across seeds), Michigan 6 of 6 negative,
+  Mississippi 5 of 6 positive (+0.10 precision at 10% in all three seeds).
+  Within-state moves of 0.10-0.20 in both directions netting to zero is a
+  worse property than a true null for a state-facing deliverable.
+- **Rarity-based variable exclusion is rejected on the run's own data**:
+  window share predicts nothing (the rarest window features are the
+  validated incumbents homeless 1.5%, children_i 1.6%, married 2.5% - a
+  rarity rule would trim them before touching rawcsded_p at 3.9%), and a
+  feature's share is not stable to which other features are present.
+  Vocabulary membership belongs to validity/deployability grounds plus
+  measured family-level delivered effect.
+- **Massachusetts is attributable displacement**: base arm stable
+  (0.553-0.579 at 5%, spread 0.026), candidate collapses in two of three
+  seeds (0.263 / 0.289; 10-11 of 38 flags caught vs 21-22), negative in all
+  six cells including dollars, ~3.5 SE. Trust the sign, not the -0.20
+  magnitude (an extreme order statistic across ten states).
+- **Eric's ruling on the MA baseline (2026-08-09)**: the 0.55-0.58 level was
+  artifact-inflated (§28); with the artifact diminished, lower MA results
+  are expected deflation toward truth, not harm, unless the level falls
+  below 0.30 (two candidate seeds sit marginally below at 5%). The
+  do-not-adopt verdict rests on the primary readout, not the harmed tail.
+- **New standing companions for attribution readouts**, adopted into the
+  factorial design: per-state same-sign paired-cell counts (would have
+  caught the MA/MI structure the median/mean/harmed-tail trio missed) and
+  per-arm seed spread (the candidate's 5% spread 0.0741 vs 0.0553 is
+  suggestively wider; a vocabulary that widens §31 instability is a cost
+  even at equal precision).
+
+**An incidental observation about the artifact - not part of the design,
+recorded in layers (narrowed on Eric's 2026-08-11 review; his initial win
+framing of 2026-08-09 is in the study README and its scope is corrected
+here).** The study has no pre/post-fix arm and was never designed to
+measure the fix's effect; everything in this block is opportunistic
+reading of levels. §28 measured 88 delivered rules
+taking 76.7% of their flags from the reconstruction band just below max
+benefit, and two of three §31 seeds put a band rule at national rank 1.
+Layer by layer, from measured to not-established:
+
+- MEASURED: the 2026-08-08 rebuild's $0-tolerance recreation removed most
+  of the band (in-band errors 537 to 227), and the strict-band share of
+  flagged cases in this run is 0.023-0.032 median in both arms, vs the §28
+  median of 0.063. At most a small share of either arm's current
+  performance runs through the band itself.
+- INDICATIVE, NOT PAIRED: baseline medians on the rebuilt frame (0.325 at
+  5% / 0.286 at 10%, ten-state panel) sit at the shipped benchmark levels
+  (49-state medians 0.314 / 0.275, old frame). This is a cross-panel,
+  cross-frame comparison; it cannot establish that the fix cost nothing,
+  because pre-fix levels were measured with the artifact's help on a
+  different frame and state set. Directionally (Eric, 2026-08-11): the
+  artifact was selection on the dependent variable, so removing it SHOULD
+  deflate measured precision - pre-fix levels were inflated by
+  construction. A post-fix level that holds is therefore consistent with
+  either legitimate replacement rules or residual correlate inflation
+  propping the level up; this design cannot distinguish the two.
+- NOT ESTABLISHED: that either arm's performance is free of artifact
+  CORRELATES. Near-boundary rel_max shapes still top the baseline ranking
+  in all three seeds, and the candidate's rank-1 rule in seed 117 is
+  itself a rel_max shape carrying a new feature
+  (`rawben_rel_max > 0.998 & rawrent_p > 0.973 & ...`) - so "85.8% of
+  deployed rules reference a new feature" does not mean the deployed list
+  is artifact-independent; a rule can reference both. Eric's MA ruling
+  (below) already located the residual inflation in correlates rather
+  than the strict band; that caveat applies to the win framing too.
+
+Caveats: ten states x three seeds supports a recommendation, not a
+promotion; the candidate bundles two feature families, so this run
+attributes the package, not the families (the factorial's ps_pure and
+pct_pure arms are the family-level follow-up, §36); the frozen train-only
+percentile construction worked as designed and is the template for any
+future percentile feature.
+
+Run 2026-08-08 21:21 to 01:20, no errors. Review: APPROVE WITH FLAGS
+(`methods/vocab_attribution_review_2026-08-08.md`; launch authority
+delegated by Eric). Artifacts: `methods/vocab_attribution_v2/` (README.md
+carries the full record; budget readout, paired deltas, feature usage,
+window usage, seed noise, run info CSVs). Script:
+`methods/vocab_attribution_v2.R` + `runners/run_vocab_attribution.R`.
+
+## 36. The vocabulary factorial: the percentile representation costs a moderate, sign-consistent amount vs per-size; a one-variable shelter test added nothing (2026-08-09)
+
+> **Takeaway: about our pipeline (EXPLORATORY - not an established finding
+> and deliberately carrying no ledger row; it informs the open v2.5.0
+> vocabulary decision and nothing else. Reframed on Eric's 2026-08-11
+> review).** The exploratory reading: replacing the per-size
+> (`_by_hh_size`) representation of the dollar fields with FROZEN
+> train-year percentiles (`_p`; the frozen construction defined in §35 -
+> cutoffs fit on FY2022-23 only, NOT Ben's pooled-years design) costs a
+> moderate, sign-consistent
+> amount in aggregate - measured on the TEN-STATE evaluation panel only (a
+> compute-driven §35 design choice; the mining is national, the walk
+> readout is not). The cross-state mean paired delta
+> is negative in every seed separately (**-0.026 to -0.045** at the 5%
+> budget, **-0.027 to -0.037** at 10%), the 10% per-seed medians are
+> negative in all three seeds, and the effect survives dropping
+> Massachusetts, the worst state (10% median -0.027, mean -0.019 without
+> it). At 5% the loss is a harmed tail, not a level shift: four states
+> lose 0.07-0.18 (seed-means MA -0.18, NJ -0.14, MI -0.10, TX -0.07)
+> against modest gains elsewhere, and the 5% median is seed-fragile
+> (-0.047 / 0.000 / +0.035 by seed). Only SINGLE-state readings sit inside
+> the per-state seed spread (0.055-0.093); the aggregate does not - a
+> genuinely null contrast (adding per-size income to the base) posts
+> per-seed aggregate means of just -0.014 to +0.014. Per-size also needs
+> no per-state frozen cutoff tables. The run's other half - a 2x2 on the
+> single variable `shelter_expenses_p` - added nothing (median -0.0119 on
+> the base at 5%; +0.0078 on the package with mean -0.0046) despite rank-1
+> admission and a quarter of deployed slots. Retrospectively, half a
+> night's mining on one variable was not worth a study (the
+> formality-proportionality process rule, 2026-08-11).
+
+Design (`methods/design_note_vocab_factorial_2026-08-09.md`; review
+approved, launched 18:00, chained into §37's state re-mine): six arms on
+the §35 machinery - same frame, engines, admission, ordering, legacy §31
+walk, ten-state panel, seeds 117 / 20260805 / 31415, budgets 5% / 10%. 360
+walk cells, all valid (slack 0). The base and cand pools are §35's cached
+mines reused unchanged; tonight mined the other four arms (raw vocabularies
+142k-152k rules; admitted pools 50k-60k).
+
+| arm | features | vocabulary |
+|---|---|---|
+| base | 16 | the shipped-in-practice set |
+| cand | 26 | 16 + the §35 package |
+| ps_pure | 19 | 16 + per-size income: all five `_by_hh_size` fields, zero percentiles |
+| pct_pure | 23 | 16 minus its two `_by_hh_size` features, plus percentile counterparts of all five dollar fields and the four remaining component percentiles; zero `_by_hh_size` |
+| base_slt | 17 | 16 + `shelter_expenses_p` |
+| cand_slt | 27 | 16 + package + `shelter_expenses_p` |
+
+The pct_pure arm removes two incumbents and adds nine columns; that is one
+component by design: the NORMALIZATION REPRESENTATION of the same dollar
+fields (divide-by-household-size vs rank-within-state-x-size-cell). Eric
+corrected an earlier additive design on exactly this point. Pre-stated
+attribution guard: pct_pure also carries four component percentiles with no
+per-size counterpart, so a pct win could be representation or granularity
+and would be logged as "percentile package wins", never "representation
+wins" - moot, because pct lost.
+
+**Contrast 1-2, the shelter feature (positive bar: median paired 5% delta
+> 0, not contradicted by mean and harmed tail, with real deployed usage -
+positive rather than do-no-harm because the feature alone extends the
+per-state frozen cutoff tables).** Its pre-screen had passed cleanly
+(standalone `shelter_expenses_p > 0.99` on train: precision 0.214 vs base
+0.110; FY2024 holdout 0.230 vs 0.121). Delivered, it failed:
+
+| contrast | budget | median | mean | harmed tail | median d dollars |
+|---|---|---|---|---|---|
+| base_slt - base | 5% | -0.0119 | -0.0122 | 1 of 10 | -0.0020 |
+| base_slt - base | 10% | -0.0091 | -0.0048 | 0 of 10 | -0.0080 |
+| cand_slt - cand | 5% | +0.0078 | -0.0046 | 1 of 10 | +0.0069 |
+| cand_slt - cand | 10% | -0.0097 | -0.0017 | 1 of 10 | +0.0095 |
+
+Usage was real - the null is not non-deployment: shelter rules reached
+admitted rank 1 in two of three base_slt seeds, every one of the 120 slt-arm
+cells deployed at least one, and the median deployed share in base_slt was
+25.3% at the 5% budget / 26.7% at 10% (cand_slt 9.8% / 11.6%). A
+quarter of the list turned over to shelter rules and delivered precision
+went nowhere or down. The feature is dropped. (Reclassified 2026-08-11: a
+pre-registered bar on a single variable was disproportionate formality -
+six of the night's twelve fresh mines went to these two arms. The record
+keeps the measurement, adding the feature changed nothing, and drops the
+verdict framing.)
+
+**Contrasts 4-6, the representation contest (per-state seed-mean, then
+across-state summary; sign counts over the 6 cells per state):**
+
+| contrast | budget | median | mean | harmed tail | median d dollars |
+|---|---|---|---|---|---|
+| ps_pure - base | 5% | -0.0080 | -0.0061 | 1 of 10 | -0.0010 |
+| ps_pure - base | 10% | +0.0019 | +0.0091 | 0 of 10 | -0.0105 |
+| pct_pure - base | 5% | -0.0152 | -0.0426 | 4 of 10 | -0.0162 |
+| pct_pure - base | 10% | -0.0270 | -0.0237 | 4 of 10 | -0.0148 |
+| pct_pure - ps_pure | 5% | -0.0113 | -0.0366 | 4 of 10 | -0.0090 |
+| pct_pure - ps_pure | 10% | -0.0375 | -0.0328 | 4 of 10 | -0.0237 |
+
+Adding the per-size income features to base (ps_pure) is within noise and
+harms nothing. The percentile replacement is not noise at the aggregate
+level. Computing the ten-state aggregate separately within each seed (no
+seed averaging) shows the sign is stable and the magnitude moderate:
+
+| seed | 5% median | 5% mean | 10% median | 10% mean |
+|---|---|---|---|---|
+| 117 | -0.047 | -0.045 | -0.006 | -0.034 |
+| 20260805 | 0.000 | -0.039 | -0.035 | -0.027 |
+| 31415 | +0.035 | -0.026 | -0.038 | -0.037 |
+
+The mean is negative in all six seed-budget cells; the 10% median in all
+three seeds. Excluding Massachusetts (the worst state) still leaves the
+10% aggregate at median -0.027 / mean -0.019, and the 5% mean at -0.021 -
+though the 5% MEDIAN flips to +0.015 without MA, which is why the 5%-budget
+loss is properly described as a harmed tail (four states lose 0.07-0.18 on
+seed-means: MA -0.176, NJ -0.140, MI -0.095, TX -0.073; the largest gain is
+Arizona +0.070), not a level shift. Calibration for what a null contrast
+looks like on this panel: persize_on_base's per-seed aggregate means span
+only -0.014 to +0.014. The per-state seed spread (0.055-0.093) is the
+yardstick for a SINGLE state's reading, not for these aggregates.
+(Per-seed aggregates derived 2026-08-11 from `factorial_paired_deltas.csv`
+after Eric challenged the earlier "near seed-noise" framing, which had
+applied the single-cell yardstick to the aggregate.) Sign consistency (the
+§35 standing
+companion): Massachusetts 5 of 6 cells negative (mean -0.1667), New Jersey
+5 of 6 (all non-positive, -0.1048), Texas 5 of 6 (-0.0607), Michigan 5 of
+6 (-0.0774); positive states are smaller (Arizona +0.0426, Washington
++0.0301). Absolute FY2024 medians across cells: base 0.325 / 0.285,
+ps_pure 0.301 / 0.305, pct_pure 0.292 / 0.279, cand 0.302 / 0.286.
+pct_pure also posts the widest 5% seed spread (0.093 vs base 0.0553).
+
+Contrast 3 (cand - base) reproduced §35's numbers exactly - shared cached
+pools re-walked, a machinery check, not an independent replication.
+
+**Where this leaves the v2.5.0 national vocabulary**: the percentile
+replacement tested HERE (frozen train-year fit) costs a moderate,
+sign-consistent amount on the panel, so the per-size vocabulary (ps: 16 +
+the three per-size income features, no percentiles) is the v2.5.0
+candidate for now. Note the scope of what was tested: this arm used the
+FROZEN train-only percentile construction, not Ben's pooled-years
+within-state construction - the new §37 exploratory study tests his
+actual design. The national production mine is Eric's call at regen time.
+
+Scope, stated squarely: one era (train FY2022-23, test FY2024), TEN
+evaluation states, three seeds. Ten states is thin for an effect whose 5%
+form is a four-state harmed tail - the panel was a §35 compute trade-off
+(a 49-state walk across all the pools would not fit the overnight window),
+not a power calculation. All 18 factorial pools are cached, so a 49-state
+walk readout of this contrast is an evaluation-only rerun, no mining
+needed; Eric deferred it 2026-08-11 as not important enough right now. No
+second era has been run.
+
+Artifacts: `methods/vocab_factorial_v2/` (budget readout with 360 cells,
+paired deltas, sign consistency, feature usage, seed noise, run info;
+`run1_4arm/` archives the interim 4-arm pass, identical shared cells).
+Script: `methods/vocab_factorial_v2.R` + `runners/run_vocab_factorial.R`.
+Review: `methods/vocab_factorial_review_2026-08-09.md`.
+
+
+## 37. Exploratory: Ben's within-state percentiles at state scale - precision a wash, and the miner does not use them as outlier detectors (2026-08-11)
+
+> **Takeaway: about our pipeline (EXPLORATORY - no ledger rows; single
+> seed, one era; informs the v2.5.0 vocabulary decision and nothing
+> else).** Adding Ben's seven as-built within-state percentile features
+> (pooled six-year fit, no override) to the 19-feature per-size vocabulary
+> left within-state FY2024 budget precision a wash across 48 paired
+> states: median paired delta **+0.0000** at the 5% budget (mean +0.0007,
+> 9 states harmed worse than -0.05 vs 10 helped better than +0.05 - a
+> redistribution, not equivalence), **-0.0041** at 10% (mean -0.0052),
+> with dollar recall slightly favoring the percentile arm at 10% (median
+> +0.0062). The direct answer to the outlier framing: of **495** `_p`
+> conditions in deployed rules, exactly **2 (0.4%)** are high-tail
+> conditions (> with threshold >= 0.90). The miner uses the features
+> heavily - a median 75% of deployed rules reference one, and
+> `_p`-rule-flagged cases run HIGHER precision than the non-`_p` rules
+> beside them (0.281 vs 0.168 at 5%) - but as mid-scale income and rent
+> encodings (median `>` threshold 0.254; half the conditions are
+> low-side) and as zero/absence flags on the deduction variables, not as
+> outlier detectors.
+
+Design: `methods/design_note_state_pctl_runoff_2026-08-11.md` (with the
+post-review addendum). Every design decision was Eric's, made
+interactively 2026-08-11; this replaced the deleted 2026-08-10 state
+re-mine, whose percentile arm used the frozen train-only construction
+(defined in section 35) rather than Ben's design. Arms, additive by
+Eric's ruling: **persize** = the 16 shipped-in-practice features + the 3
+per-size income features (19); **benp** = persize + Ben's 7 as-built
+`_p` columns (26; features.R construction, CPI-deflated dollars ranked
+within state x household-size cells across all six frame years pooled,
+zeros pinned to 0, used AS BUILT). Any-error frame x coarse HH strata
+mined PER STATE on FY2022-23; joint BH FDR 10% with per-stratum base
+rates AND n >= 30; 99%-LCB ordering; the shipped v2.4.0 fresh-share walk
+(f = 0.50) filled FY2022-23 to 5%/10% core + 3x buffer, froze, walked
+FY2024 in delivered order to that year's cap, outcome-free; seed 117,
+single seed. Support: printed per state x stratum (roughly 300-1,200
+rows, 5-110 events per stratum). Run 16:09-18:51 (2h42m), 49 states,
+no errors.
+
+**Paired readout (benp - persize; 48 paired states; Wyoming admits
+nothing under either arm):**
+
+| budget | median | mean | harmed (< -0.05) | helped (> +0.05) | d dollars median / mean |
+|---|---|---|---|---|---|
+| 5% | +0.0000 | +0.0007 | 9 | 10 | +0.0014 / +0.0030 |
+| 10% | -0.0041 | -0.0052 | 5 | 2 | +0.0062 / +0.0084 |
+
+Absolute within-state medians: persize 0.2945 at 5% / 0.2677 at 10%;
+benp 0.2840 / 0.2624 (dollar recall 0.1118/0.2335 vs 0.1036/0.2408).
+Per the pre-named rule this is REDISTRIBUTION: 19 states move more than
+0.05 in magnitude at 5% (Delaware -0.2418 through Connecticut +0.1591),
+netting to a flat median. The incremental-catch file shows the same
+symmetry: at 5% benp uniquely catches 235 errors nationally, persize
+uniquely catches 234, 288 shared; at 10%: 329 / 343 / 690.
+
+**What the percentile rules actually catch (the flag-profile layer,
+designed by the fresh senior-statistician review per Eric's brief):**
+
+- Condition inventory (495 `_p` conditions across 361 deployed
+  rule-instances): ops split 224 `>` / 32 `>=` / 212 `<=` / 27 `<`;
+  median threshold for `>` conditions 0.254 (q25 0.108, q75 0.485);
+  exactly 2 conditions are `>`-side with threshold >= 0.90. Variables:
+  rawgrinc_p 142, rawrent_p 109, rawunearn_p 104, rawearn_p 95; the
+  three deduction percentiles total 45, and cases flagged by rules using
+  them sit at percentile 0 (the pinned-zero mass; median flagged-zero
+  share 0.98-1.00) - absence-of-deduction encoding, not extremity.
+- Flagged cases are not tail-concentrated: the median share of flagged
+  cases above p90 is 0.00 for every variable except rawrent_p (0.16,
+  against a caseload share of 0.087; error cases 0.157). benp's UNIQUE
+  catches sit in the tails even less than its shared catches (rent 0.096
+  vs 0.174).
+- The `_p`-using rules do earn their slots on precision: median
+  precision of `_p`-rule-flagged cases 0.281 vs 0.168 for non-`_p`
+  deployed rules at 5% (0.270 vs 0.236 at 10%), carrying a median 94% of
+  caught dollars at 5% - though `_p` rules are also the majority of the
+  deployed list (median 3 of 4 rules at 5%).
+- Interpretation hazard (carried verbatim from the readout notes): `_p`
+  conditions are conjoined with non-percentile conditions, so "flagged
+  by a rule using `_p`" is rule-level, not causal, attribution.
+
+**Machinery record.** The fresh senior-statistician review (routing rule)
+returned REVISE and both blocking items mattered: (B1) the evaluation
+walk initially passed an "all" stratum list while rules are admitted per
+stratum, so `flags_for_rules()` silently applied stratum rules
+unrestricted - fixed before launch, evaluation strata now mirror mining
+strata; (B2/B3) the smoke run showed the shipped walk's exact-refill
+capacity assertion is an EMPIRICAL property of large blended pools, not
+a guarantee - at state-pool scale the completion pass stranded a 1-case
+remainder on the first smoke state. Treatment (reviewed): tolerate and
+report per phase, never modify the walk, never crash. In the full run
+the gaps were negligible: 3 of 96 cells at 5% and 1 of 96 at 10%
+nonzero, max 2 cases (1.65% of its fill target), so the deviation
+carried no comparability cost.
+
+Caveats: single seed (state-level moves are inside mining seed noise; no
+individual state's delta is readable), one era, and the information
+asymmetry pre-stated in the design note ran in benp's favor (its pooled
+percentile fit includes FY2024), which if anything leans the flat result
+against the percentile arm. Small-cell degeneracy of the construction at
+public state scale is quantified in the companion map
+(`percentile_value_map_fy2024.csv`, n_distinct column).
+
+Artifacts: `methods/state_percentile_runoff_v2/` (readout, paired table
+for both budgets, condition inventory, p-rule catch, per-variable
+profile, incremental catch, README_readout_notes.md, the FY2024
+percentile-to-value map with distinct-value counts). Script:
+`methods/state_percentile_runoff_v2.R` + `runners/run_state_percentile_runoff.R`.
+Log: pctl_runoff.log (untracked). Review record: in the design note's
+addendum.

@@ -1,0 +1,496 @@
+"state","budget","rule_rank","var","op","threshold","n_new_at_rank"
+"Alabama",0.05,3,"rawunearn_p","<=",0.0877,5
+"Alabama",0.05,5,"rawearn_p",">",0.0039,1
+"Alabama",0.05,5,"rawunearn_p",">",0.0772,1
+"Alabama",0.1,3,"rawearn_p",">",0.0039,1
+"Alabama",0.1,3,"rawunearn_p",">",0.0772,1
+"Alabama",0.1,5,"rawunearn_p","<=",0.0877,5
+"Alabama",0.1,6,"rawunearn_p","<=",0.892,16
+"Alabama",0.1,7,"rawgrinc_p","<=",0.999,16
+"Alabama",0.1,8,"rawcsded_p","<=",0.623,1
+"Arizona",0.05,1,"rawgrinc_p",">",0.558,17
+"Arizona",0.05,1,"rawunearn_p","<=",0.36,17
+"Arizona",0.05,2,"rawrent_p",">",0.254,14
+"Arizona",0.05,3,"rawearn_p",">",0.025,10
+"Arizona",0.1,1,"rawgrinc_p",">",0.558,17
+"Arizona",0.1,1,"rawunearn_p","<=",0.36,17
+"Arizona",0.1,2,"rawrent_p",">",0.254,14
+"Arizona",0.1,3,"rawgrinc_p",">",0.379,9
+"Arizona",0.1,3,"rawunearn_p",">",0.233,9
+"Arizona",0.1,5,"rawearn_p",">",0.025,10
+"Arizona",0.1,6,"rawgrinc_p",">",0.533,10
+"Arizona",0.1,6,"rawrent_p",">",0.469,10
+"Arizona",0.1,9,"rawgrinc_p",">",0.573,6
+"Arizona",0.1,9,"rawgrinc_p","<=",0.885,6
+"Arkansas",0.05,2,"rawgrinc_p",">",0.0831,14
+"Arkansas",0.05,2,"rawunearn_p","<=",0.0986,14
+"Arkansas",0.05,3,"rawgrinc_p",">",0.432,5
+"Arkansas",0.05,3,"rawgrinc_p","<=",0.748,5
+"Arkansas",0.05,4,"rawunearn_p",">",0.00714,2
+"Arkansas",0.1,2,"rawgrinc_p",">",0.0831,14
+"Arkansas",0.1,2,"rawunearn_p","<=",0.0986,14
+"Arkansas",0.1,3,"rawgrinc_p",">",0.432,5
+"Arkansas",0.1,3,"rawgrinc_p","<=",0.748,5
+"Arkansas",0.1,4,"rawearn_p","<=",0.133,15
+"Arkansas",0.1,5,"rawunearn_p",">",0.00714,2
+"Arkansas",0.1,6,"rawgrinc_p",">",0.082,4
+"Arkansas",0.1,6,"rawgrinc_p","<=",0.129,4
+"Arkansas",0.1,7,"rawgrinc_p",">",0.242,18
+"Arkansas",0.1,7,"rawrent_p",">",0.13,18
+"Arkansas",0.1,8,"rawrent_p",">",0.776,3
+"Arkansas",0.1,9,"rawcsded_p","<=",0.115,1
+"Arkansas",0.1,9,"rawrent_p","<=",0.456,1
+"Arkansas",0.1,10,"rawgrinc_p",">",0.0598,1
+"Arkansas",0.1,10,"rawunearn_p","<=",0.0946,1
+"Arkansas",0.1,11,"rawgrinc_p",">",0.0642,1
+"California",0.05,1,"rawrent_p",">=",0.834,9
+"California",0.05,2,"rawearn_p","<=",0.779,11
+"California",0.05,3,"rawrent_p",">=",0.808,4
+"California",0.05,5,"rawearn_p","<=",0.023,7
+"California",0.1,1,"rawrent_p",">=",0.834,9
+"California",0.1,2,"rawearn_p","<=",0.779,11
+"California",0.1,4,"rawcsded_p","<=",0.5,24
+"California",0.1,5,"rawearn_p","<=",0.023,7
+"California",0.1,6,"rawrent_p",">",0.831,15
+"California",0.1,8,"rawearn_p","<=",0.779,1
+"Colorado",0.05,2,"rawearn_p","<=",0.276,11
+"Colorado",0.05,2,"rawgrinc_p",">",0.334,11
+"Colorado",0.05,3,"rawrent_p",">",0.205,5
+"Colorado",0.1,3,"rawearn_p","<=",0.276,6
+"Colorado",0.1,3,"rawgrinc_p",">",0.334,6
+"Colorado",0.1,4,"rawearn_p",">",0.22,8
+"Colorado",0.1,4,"rawmedded_p","<=",0.0833,8
+"Colorado",0.1,4,"rawunearn_p",">",0.00725,8
+"Colorado",0.1,5,"rawgrinc_p",">",0.563,12
+"Connecticut",0.05,3,"rawrent_p",">",0.28,3
+"Connecticut",0.05,5,"rawgrinc_p","<",0.613,9
+"Connecticut",0.1,3,"rawgrinc_p","<",0.627,17
+"Connecticut",0.1,3,"rawrent_p",">=",0.354,17
+"Connecticut",0.1,5,"rawunearn_p",">",0.637,5
+"Connecticut",0.1,6,"rawgrinc_p","<",0.613,5
+"Connecticut",0.1,7,"rawrent_p",">=",0.00337,3
+"Connecticut",0.1,7,"rawunearn_p",">=",0.118,3
+"Delaware",0.05,1,"rawgrinc_p",">",0.237,34
+"Delaware",0.05,1,"rawrent_p","<=",0.876,34
+"Delaware",0.05,1,"rawunearn_p",">",0.00651,34
+"Delaware",0.1,1,"rawgrinc_p",">",0.237,34
+"Delaware",0.1,1,"rawrent_p","<=",0.876,34
+"Delaware",0.1,1,"rawunearn_p",">",0.00651,34
+"Delaware",0.1,2,"rawearn_p","<=",0.456,23
+"Delaware",0.1,2,"rawgrinc_p",">",0.255,23
+"Delaware",0.1,3,"rawunearn_p",">=",0.414,6
+"District of Columbia",0.05,1,"rawearn_p",">",0.00935,20
+"District of Columbia",0.05,1,"rawgrinc_p","<=",0.866,20
+"District of Columbia",0.05,3,"rawearn_p",">",0.00935,2
+"District of Columbia",0.1,1,"rawearn_p",">",0.00935,20
+"District of Columbia",0.1,1,"rawgrinc_p","<=",0.866,20
+"District of Columbia",0.1,4,"rawgrinc_p","<=",0.899,33
+"District of Columbia",0.1,4,"rawunearn_p","<=",0.0688,33
+"District of Columbia",0.1,5,"rawmedded_p","<=",0.107,3
+"District of Columbia",0.1,7,"rawearn_p",">",0.00467,1
+"Florida",0.1,4,"rawearn_p","<=",0.127,9
+"Florida",0.1,5,"rawrent_p",">",0.489,15
+"Georgia",0.05,2,"rawunearn_p",">",0.0757,19
+"Georgia",0.05,3,"rawearn_p",">",0.0827,1
+"Georgia",0.05,4,"rawearn_p",">",0.361,2
+"Georgia",0.05,5,"rawunearn_p","<=",0.597,2
+"Georgia",0.1,2,"rawunearn_p",">",0.0757,19
+"Georgia",0.1,3,"rawearn_p",">",0.0658,13
+"Georgia",0.1,3,"rawgrinc_p",">",0.294,13
+"Georgia",0.1,5,"rawrent_p",">",0.909,7
+"Idaho",0.05,2,"rawrent_p",">",0.0952,5
+"Idaho",0.05,3,"rawunearn_p","<=",0.127,18
+"Idaho",0.05,4,"rawunearn_p",">",0.0651,1
+"Idaho",0.05,5,"rawrent_p",">",0.085,3
+"Idaho",0.05,5,"rawunearn_p","<=",0.143,3
+"Idaho",0.1,2,"rawrent_p",">",0.0952,5
+"Idaho",0.1,3,"rawunearn_p","<=",0.127,18
+"Idaho",0.1,6,"rawgrinc_p","<",0.177,15
+"Idaho",0.1,7,"rawearn_p","<=",0.0192,1
+"Idaho",0.1,7,"rawgrinc_p",">",0.0883,1
+"Idaho",0.1,8,"rawrent_p",">",0.085,1
+"Idaho",0.1,8,"rawunearn_p","<=",0.143,1
+"Illinois",0.05,1,"rawmedded_p",">",0.0413,14
+"Illinois",0.05,3,"rawunearn_p",">",0.659,13
+"Illinois",0.05,4,"rawrent_p","<=",0.589,3
+"Illinois",0.1,1,"rawmedded_p",">",0.0413,14
+"Illinois",0.1,3,"rawunearn_p",">",0.659,13
+"Illinois",0.1,4,"rawrent_p","<",0.774,17
+"Illinois",0.1,7,"rawunearn_p",">=",0.879,5
+"Illinois",0.1,8,"rawrent_p","<=",0.589,3
+"Illinois",0.1,10,"rawmedded_p",">",0.0413,1
+"Illinois",0.1,10,"rawrent_p","<=",0.619,1
+"Indiana",0.05,1,"rawunearn_p","<=",0.307,18
+"Indiana",0.1,1,"rawunearn_p","<=",0.307,18
+"Indiana",0.1,3,"rawearn_p",">",0.00159,10
+"Indiana",0.1,3,"rawrent_p","<=",0.529,10
+"Indiana",0.1,4,"rawrent_p","<=",0.92,13
+"Indiana",0.1,5,"rawearn_p","<=",0.463,5
+"Indiana",0.1,7,"rawearn_p","<=",0.441,1
+"Indiana",0.1,8,"rawcsded_p","<=",0.125,11
+"Iowa",0.05,2,"rawgrinc_p","<=",0.526,16
+"Iowa",0.05,3,"rawgrinc_p",">",0.268,6
+"Iowa",0.05,4,"rawearn_p",">=",0.0189,2
+"Iowa",0.05,5,"rawgrinc_p",">=",0.271,2
+"Iowa",0.05,5,"rawunearn_p","<",0.483,2
+"Iowa",0.1,2,"rawgrinc_p","<=",0.526,16
+"Iowa",0.1,3,"rawearn_p",">",0.155,14
+"Iowa",0.1,3,"rawrent_p",">",0.65,14
+"Iowa",0.1,7,"rawgrinc_p",">",0.268,6
+"Iowa",0.1,8,"rawearn_p",">=",0.0189,2
+"Iowa",0.1,9,"rawearn_p","<=",0.555,18
+"Iowa",0.1,9,"rawgrinc_p",">",0.246,18
+"Iowa",0.1,10,"rawgrinc_p","<=",0.46,5
+"Iowa",0.1,10,"rawunearn_p",">",0.575,5
+"Kansas",0.05,1,"rawgrinc_p",">",0.416,14
+"Kansas",0.05,2,"rawgrinc_p",">",0.416,12
+"Kansas",0.05,2,"rawmedded_p","<=",0.755,12
+"Kansas",0.05,4,"rawgrinc_p",">",0.406,13
+"Kansas",0.1,1,"rawgrinc_p",">",0.416,14
+"Kansas",0.1,2,"rawgrinc_p",">",0.416,12
+"Kansas",0.1,2,"rawmedded_p","<=",0.755,12
+"Kansas",0.1,3,"rawearn_p",">=",0.567,19
+"Kansas",0.1,4,"rawgrinc_p",">",0.406,14
+"Kansas",0.1,5,"rawrent_p",">",0.0282,22
+"Kansas",0.1,6,"rawearn_p",">=",0.597,2
+"Kansas",0.1,7,"rawunearn_p",">",0.18,4
+"Kentucky",0.05,2,"rawearn_p","<=",0.943,12
+"Kentucky",0.05,3,"rawearn_p",">",0.00192,14
+"Kentucky",0.05,4,"rawgrinc_p","<=",0.56,10
+"Kentucky",0.1,2,"rawearn_p","<=",0.943,12
+"Kentucky",0.1,3,"rawearn_p",">",0.00192,14
+"Kentucky",0.1,4,"rawunearn_p",">=",0.18,18
+"Kentucky",0.1,7,"rawdepded_p","<=",0.635,13
+"Kentucky",0.1,7,"rawgrinc_p",">",0.425,13
+"Louisiana",0.05,1,"rawgrinc_p",">",0.304,15
+"Louisiana",0.05,1,"rawrent_p","<=",0.517,15
+"Louisiana",0.05,2,"rawrent_p",">=",0.186,13
+"Louisiana",0.05,2,"rawunearn_p","<",0.71,13
+"Louisiana",0.05,6,"rawearn_p",">",0.238,1
+"Louisiana",0.05,6,"rawgrinc_p","<=",0.659,1
+"Louisiana",0.05,6,"rawrent_p","<=",0.885,1
+"Louisiana",0.05,7,"rawrent_p",">=",0.222,2
+"Louisiana",0.05,8,"rawrent_p",">=",0.222,1
+"Louisiana",0.1,1,"rawgrinc_p",">",0.304,15
+"Louisiana",0.1,1,"rawrent_p","<=",0.517,15
+"Louisiana",0.1,2,"rawrent_p",">=",0.186,13
+"Louisiana",0.1,2,"rawunearn_p","<",0.71,13
+"Louisiana",0.1,4,"rawrent_p",">",0.221,9
+"Louisiana",0.1,7,"rawearn_p",">",0.238,2
+"Louisiana",0.1,7,"rawgrinc_p","<=",0.659,2
+"Louisiana",0.1,7,"rawrent_p","<=",0.885,2
+"Louisiana",0.1,8,"rawrent_p",">=",0.222,1
+"Louisiana",0.1,9,"rawrent_p",">=",0.222,1
+"Maine",0.05,1,"rawgrinc_p","<=",0.762,23
+"Maine",0.05,3,"rawearn_p",">",0.597,13
+"Maine",0.05,4,"rawearn_p",">",0.158,2
+"Maine",0.05,4,"rawgrinc_p",">",0.322,2
+"Maine",0.05,4,"rawgrinc_p","<=",0.683,2
+"Maine",0.1,1,"rawgrinc_p","<=",0.762,23
+"Maine",0.1,4,"rawgrinc_p",">",0.171,16
+"Maine",0.1,5,"rawrent_p",">",0.246,13
+"Maine",0.1,5,"rawrent_p","<=",0.836,13
+"Maine",0.1,6,"rawrent_p",">",0.906,19
+"Maine",0.1,7,"rawgrinc_p","<=",0.762,2
+"Maryland",0.05,1,"rawrent_p","<=",0.877,22
+"Maryland",0.05,1,"rawunearn_p","<=",0.18,22
+"Maryland",0.1,1,"rawrent_p","<=",0.877,22
+"Maryland",0.1,1,"rawunearn_p","<=",0.18,22
+"Maryland",0.1,2,"rawgrinc_p",">",0.347,18
+"Maryland",0.1,3,"rawearn_p",">",0.402,6
+"Maryland",0.1,4,"rawrent_p","<=",0.879,1
+"Maryland",0.1,6,"rawgrinc_p","<",0.654,1
+"Maryland",0.1,8,"rawrent_p",">",0.0842,1
+"Massachusetts",0.05,1,"rawgrinc_p","<=",0.882,29
+"Massachusetts",0.05,1,"rawrent_p",">",0.779,29
+"Massachusetts",0.05,2,"rawgrinc_p",">=",0.639,2
+"Massachusetts",0.1,1,"rawcsded_p","<=",0.522,50
+"Massachusetts",0.1,1,"rawunearn_p","<=",0.906,50
+"Massachusetts",0.1,2,"rawgrinc_p","<=",0.882,7
+"Massachusetts",0.1,2,"rawrent_p",">",0.779,7
+"Massachusetts",0.1,3,"rawgrinc_p",">=",0.335,16
+"Massachusetts",0.1,4,"rawgrinc_p",">=",0.639,2
+"Michigan",0.05,1,"rawunearn_p",">",0.203,12
+"Michigan",0.05,3,"rawearn_p",">",0.293,7
+"Michigan",0.1,1,"rawunearn_p",">",0.203,12
+"Michigan",0.1,5,"rawearn_p",">",0.293,6
+"Michigan",0.1,6,"rawrent_p",">",0.137,7
+"Michigan",0.1,7,"rawearn_p",">",0.377,2
+"Michigan",0.1,8,"rawgrinc_p",">",0.343,2
+"Minnesota",0.05,1,"rawgrinc_p",">",0.211,15
+"Minnesota",0.05,1,"rawrent_p","<=",0.0166,15
+"Minnesota",0.05,2,"rawrent_p",">",0.421,4
+"Minnesota",0.05,3,"rawmedded_p","<=",0.439,7
+"Minnesota",0.05,3,"rawrent_p","<=",0.0209,7
+"Minnesota",0.05,4,"rawunearn_p",">=",0.192,3
+"Minnesota",0.1,1,"rawgrinc_p",">",0.211,15
+"Minnesota",0.1,1,"rawrent_p","<=",0.0166,15
+"Minnesota",0.1,2,"rawrent_p",">",0.421,4
+"Minnesota",0.1,3,"rawunearn_p",">=",0.192,3
+"Minnesota",0.1,4,"rawrent_p","<=",0.108,17
+"Minnesota",0.1,5,"rawrent_p",">",0.447,7
+"Minnesota",0.1,5,"rawrent_p","<=",0.769,7
+"Minnesota",0.1,6,"rawunearn_p","<=",0.901,8
+"Minnesota",0.1,7,"rawearn_p","<=",0.381,11
+"Minnesota",0.1,8,"rawgrinc_p",">",0.196,14
+"Mississippi",0.05,1,"rawgrinc_p","<=",0.706,15
+"Mississippi",0.05,4,"rawgrinc_p","<",0.699,14
+"Mississippi",0.05,5,"rawrent_p","<",0.385,4
+"Mississippi",0.1,1,"rawgrinc_p","<=",0.706,15
+"Mississippi",0.1,3,"rawgrinc_p","<",0.699,14
+"Mississippi",0.1,6,"rawgrinc_p","<=",0.821,11
+"Mississippi",0.1,7,"rawrent_p","<",0.385,2
+"Mississippi",0.1,9,"rawgrinc_p",">",0.499,6
+"Mississippi",0.1,10,"rawcsded_p","<=",0.5,9
+"Missouri",0.05,1,"rawgrinc_p",">",0.423,9
+"Missouri",0.05,3,"rawrent_p","<=",0.933,13
+"Missouri",0.05,4,"rawgrinc_p",">",0.382,1
+"Missouri",0.05,4,"rawrent_p","<=",0.998,1
+"Missouri",0.1,1,"rawgrinc_p",">",0.423,9
+"Missouri",0.1,4,"rawmedded_p","<=",0.321,9
+"Missouri",0.1,5,"rawearn_p","<=",0.323,16
+"Missouri",0.1,7,"rawrent_p","<=",0.547,1
+"Montana",0.05,1,"rawmedded_p","<=",0.167,3
+"Montana",0.05,2,"rawrent_p","<",0.0895,18
+"Montana",0.05,3,"rawdepded_p","<=",0.0429,6
+"Montana",0.1,1,"rawmedded_p","<=",0.167,3
+"Montana",0.1,2,"rawrent_p","<",0.0895,18
+"Montana",0.1,4,"rawdepded_p","<=",0.257,9
+"Montana",0.1,5,"rawdepded_p","<=",0.0429,3
+"Nebraska",0.05,1,"rawgrinc_p","<",0.587,7
+"Nebraska",0.05,2,"rawrent_p","<=",0.819,3
+"Nebraska",0.05,3,"rawrent_p",">",0.5,20
+"Nebraska",0.1,1,"rawgrinc_p","<",0.587,7
+"Nebraska",0.1,2,"rawrent_p","<=",0.819,3
+"Nebraska",0.1,3,"rawrent_p",">",0.5,20
+"Nebraska",0.1,5,"rawrent_p",">",0.531,21
+"Nevada",0.05,1,"rawdepded_p","<=",0.242,8
+"Nevada",0.05,3,"rawearn_p",">",0.497,8
+"Nevada",0.05,4,"rawgrinc_p",">",0.838,5
+"Nevada",0.05,4,"rawrent_p",">",0.807,5
+"Nevada",0.05,6,"rawrent_p",">",0.803,4
+"Nevada",0.1,1,"rawdepded_p","<=",0.242,8
+"Nevada",0.1,3,"rawearn_p",">",0.497,8
+"Nevada",0.1,5,"rawunearn_p","<=",0.82,10
+"Nevada",0.1,6,"rawrent_p",">",0.526,12
+"Nevada",0.1,7,"rawdepded_p","<=",0.179,5
+"New Hampshire",0.05,1,"rawgrinc_p",">",0.211,11
+"New Hampshire",0.05,1,"rawunearn_p","<=",0.984,11
+"New Hampshire",0.05,2,"rawearn_p",">",0.0201,12
+"New Hampshire",0.05,3,"rawgrinc_p",">",0.252,2
+"New Hampshire",0.05,4,"rawgrinc_p",">=",0.245,5
+"New Hampshire",0.1,1,"rawgrinc_p",">",0.211,11
+"New Hampshire",0.1,1,"rawunearn_p","<=",0.984,11
+"New Hampshire",0.1,2,"rawearn_p",">",0.0201,12
+"New Hampshire",0.1,4,"rawearn_p","<=",0.958,10
+"New Hampshire",0.1,4,"rawgrinc_p",">",0.178,10
+"New Hampshire",0.1,5,"rawgrinc_p",">=",0.245,5
+"New Jersey",0.05,2,"rawgrinc_p","<=",0.664,11
+"New Jersey",0.1,2,"rawearn_p",">",0.101,26
+"New Jersey",0.1,2,"rawunearn_p","<=",0.778,26
+"New Jersey",0.1,3,"rawearn_p","<=",0.714,16
+"New Jersey",0.1,3,"rawgrinc_p",">",0.447,16
+"New Mexico",0.05,1,"rawearn_p","<=",0.61,16
+"New Mexico",0.05,2,"rawearn_p","<",0.753,29
+"New Mexico",0.1,1,"rawearn_p","<=",0.61,16
+"New Mexico",0.1,2,"rawearn_p","<",0.753,29
+"New Mexico",0.1,3,"rawdepded_p","<=",0.782,24
+"New Mexico",0.1,3,"rawgrinc_p",">",0.635,24
+"New Mexico",0.1,4,"rawunearn_p","<=",0.673,18
+"New York",0.05,1,"rawcsded_p","<=",0.75,14
+"New York",0.05,1,"rawgrinc_p",">",0.421,14
+"New York",0.05,1,"rawunearn_p",">",0.0389,14
+"New York",0.05,2,"rawgrinc_p",">",0.43,15
+"New York",0.05,2,"rawrent_p","<=",0.945,15
+"New York",0.05,2,"rawunearn_p","<=",0.638,15
+"New York",0.05,3,"rawunearn_p",">",0.0484,1
+"New York",0.05,4,"rawunearn_p",">",0.0496,2
+"New York",0.1,1,"rawcsded_p","<=",0.75,14
+"New York",0.1,1,"rawgrinc_p",">",0.421,14
+"New York",0.1,1,"rawunearn_p",">",0.0389,14
+"New York",0.1,2,"rawgrinc_p",">",0.43,15
+"New York",0.1,2,"rawrent_p","<=",0.945,15
+"New York",0.1,2,"rawunearn_p","<=",0.638,15
+"New York",0.1,5,"rawunearn_p",">",0.0484,1
+"New York",0.1,6,"rawgrinc_p",">",0.326,2
+"New York",0.1,7,"rawearn_p","<",0.592,1
+"New York",0.1,7,"rawgrinc_p",">=",0.422,1
+"New York",0.1,9,"rawunearn_p",">",0.0484,1
+"North Carolina",0.05,1,"rawunearn_p","<",0.375,22
+"North Carolina",0.05,2,"rawgrinc_p",">",0.208,1
+"North Carolina",0.05,4,"rawrent_p",">=",0.388,5
+"North Carolina",0.05,4,"rawunearn_p","<",0.502,5
+"North Carolina",0.05,5,"rawgrinc_p",">",0.521,9
+"North Carolina",0.05,5,"rawrent_p",">",0.318,9
+"North Carolina",0.1,1,"rawunearn_p","<",0.375,22
+"North Carolina",0.1,2,"rawgrinc_p",">",0.208,1
+"North Carolina",0.1,3,"rawrent_p",">",0.787,32
+"North Carolina",0.1,3,"rawunearn_p","<=",0.834,32
+"North Carolina",0.1,4,"rawearn_p","<",0.728,9
+"North Carolina",0.1,5,"rawgrinc_p",">",0.521,10
+"North Carolina",0.1,5,"rawrent_p",">",0.318,10
+"North Carolina",0.1,7,"rawearn_p",">",0.413,7
+"North Carolina",0.1,7,"rawgrinc_p","<=",0.799,7
+"North Carolina",0.1,8,"rawearn_p","<=",0.832,1
+"North Carolina",0.1,9,"rawrent_p",">=",0.388,1
+"North Carolina",0.1,9,"rawunearn_p","<",0.502,1
+"North Dakota",0.05,1,"rawgrinc_p","<=",0.659,10
+"North Dakota",0.05,1,"rawunearn_p","<=",0.391,10
+"North Dakota",0.05,2,"rawrent_p",">",0.276,8
+"North Dakota",0.1,1,"rawgrinc_p","<=",0.659,10
+"North Dakota",0.1,1,"rawunearn_p","<=",0.391,10
+"North Dakota",0.1,2,"rawrent_p",">",0.276,8
+"North Dakota",0.1,3,"rawunearn_p","<=",0.146,17
+"North Dakota",0.1,4,"rawgrinc_p",">",0.109,7
+"Ohio",0.1,3,"rawgrinc_p",">",0.438,20
+"Ohio",0.1,6,"rawgrinc_p",">",0.438,2
+"Oklahoma",0.05,2,"rawrent_p",">",0.851,16
+"Oklahoma",0.05,3,"rawearn_p","<=",0.608,5
+"Oklahoma",0.05,4,"rawearn_p","<=",0.567,1
+"Oklahoma",0.1,2,"rawrent_p",">",0.851,16
+"Oklahoma",0.1,3,"rawearn_p","<=",0.608,5
+"Oklahoma",0.1,4,"rawcsded_p","<=",0.5,16
+"Oklahoma",0.1,4,"rawrent_p",">",0.222,16
+"Oklahoma",0.1,5,"rawcsded_p","<=",0.575,20
+"Oklahoma",0.1,5,"rawunearn_p",">",0.334,20
+"Oklahoma",0.1,6,"rawrent_p",">",0.853,1
+"Oklahoma",0.1,6,"rawunearn_p",">",0.107,1
+"Oklahoma",0.1,7,"rawrent_p",">",0.525,12
+"Oklahoma",0.1,7,"rawunearn_p",">",0.155,12
+"Oregon",0.05,1,"rawunearn_p","<=",0.917,17
+"Oregon",0.1,1,"rawunearn_p","<=",0.917,17
+"Oregon",0.1,4,"rawearn_p","<=",0.62,17
+"Oregon",0.1,5,"rawgrinc_p","<=",0.655,3
+"Pennsylvania",0.05,1,"rawcsded_p","<=",0.286,21
+"Pennsylvania",0.05,1,"rawrent_p",">",0.65,21
+"Pennsylvania",0.05,2,"rawearn_p","<=",0.497,14
+"Pennsylvania",0.05,2,"rawrent_p",">",0.0163,14
+"Pennsylvania",0.1,1,"rawcsded_p","<=",0.286,21
+"Pennsylvania",0.1,1,"rawrent_p",">",0.65,21
+"Pennsylvania",0.1,2,"rawearn_p","<=",0.497,14
+"Pennsylvania",0.1,2,"rawrent_p",">",0.0163,14
+"Pennsylvania",0.1,4,"rawdepded_p","<=",0.125,8
+"Pennsylvania",0.1,4,"rawgrinc_p","<=",0.597,8
+"Pennsylvania",0.1,5,"rawgrinc_p",">=",0.288,17
+"Rhode Island",0.05,1,"rawgrinc_p",">",0.554,32
+"Rhode Island",0.05,2,"rawunearn_p",">=",0.679,6
+"Rhode Island",0.1,1,"rawgrinc_p",">",0.554,32
+"Rhode Island",0.1,2,"rawunearn_p",">",0.203,28
+"Rhode Island",0.1,3,"rawearn_p","<=",0.789,9
+"Rhode Island",0.1,3,"rawrent_p",">",0.639,9
+"Rhode Island",0.1,4,"rawunearn_p",">",0.583,1
+"Rhode Island",0.1,5,"rawunearn_p",">",0.539,2
+"Rhode Island",0.1,7,"rawgrinc_p",">",0.554,1
+"Rhode Island",0.1,8,"rawrent_p",">",0.883,7
+"South Carolina",0.05,1,"rawrent_p",">",0.484,19
+"South Carolina",0.05,1,"rawunearn_p","<=",0.6,19
+"South Carolina",0.1,1,"rawrent_p",">",0.484,19
+"South Carolina",0.1,1,"rawunearn_p","<=",0.6,19
+"South Dakota",0.05,1,"rawearn_p","<=",0.613,16
+"South Dakota",0.05,1,"rawgrinc_p",">",0.461,16
+"South Dakota",0.05,2,"rawcsded_p","<=",0.395,6
+"South Dakota",0.05,2,"rawgrinc_p","<=",0.637,6
+"South Dakota",0.05,3,"rawearn_p","<=",0.609,1
+"South Dakota",0.05,3,"rawunearn_p","<=",0.311,1
+"South Dakota",0.05,4,"rawunearn_p","<=",0.297,2
+"South Dakota",0.05,5,"rawearn_p",">",0.252,1
+"South Dakota",0.05,5,"rawearn_p","<=",0.595,1
+"South Dakota",0.05,6,"rawgrinc_p",">",0.125,1
+"South Dakota",0.05,6,"rawunearn_p","<=",0.303,1
+"South Dakota",0.1,1,"rawearn_p","<=",0.613,16
+"South Dakota",0.1,1,"rawgrinc_p",">",0.461,16
+"South Dakota",0.1,2,"rawcsded_p","<=",0.395,6
+"South Dakota",0.1,2,"rawgrinc_p","<=",0.637,6
+"South Dakota",0.1,3,"rawcsded_p","<=",0.0263,11
+"South Dakota",0.1,3,"rawgrinc_p","<=",0.628,11
+"South Dakota",0.1,3,"rawunearn_p","<=",0.98,11
+"South Dakota",0.1,5,"rawearn_p","<=",0.609,1
+"South Dakota",0.1,5,"rawunearn_p","<=",0.311,1
+"South Dakota",0.1,6,"rawunearn_p","<=",0.297,2
+"South Dakota",0.1,8,"rawdepded_p","<=",0.159,2
+"South Dakota",0.1,9,"rawearn_p",">",0.241,1
+"South Dakota",0.1,9,"rawunearn_p","<=",0.98,1
+"Tennessee",0.05,1,"rawgrinc_p","<=",0.497,16
+"Tennessee",0.05,2,"rawearn_p",">",0.198,13
+"Tennessee",0.05,3,"rawgrinc_p",">",0.219,9
+"Tennessee",0.05,4,"rawgrinc_p","<=",0.273,2
+"Tennessee",0.1,1,"rawgrinc_p","<=",0.497,16
+"Tennessee",0.1,2,"rawearn_p",">",0.198,13
+"Tennessee",0.1,3,"rawgrinc_p",">",0.207,12
+"Tennessee",0.1,3,"rawrent_p",">",0.263,12
+"Tennessee",0.1,5,"rawgrinc_p",">",0.207,22
+"Tennessee",0.1,8,"rawgrinc_p","<=",0.273,1
+"Texas",0.05,1,"rawunearn_p",">",0.524,29
+"Texas",0.1,1,"rawunearn_p",">",0.524,29
+"Texas",0.1,3,"rawgrinc_p","<=",0.977,31
+"Texas",0.1,3,"rawrent_p",">",0.502,31
+"Texas",0.1,4,"rawrent_p",">",0.113,3
+"Utah",0.05,1,"rawearn_p","<=",0.303,25
+"Utah",0.05,1,"rawunearn_p","<=",0.898,25
+"Utah",0.05,2,"rawunearn_p",">",0.756,10
+"Utah",0.1,1,"rawearn_p","<=",0.303,25
+"Utah",0.1,1,"rawunearn_p","<=",0.898,25
+"Utah",0.1,2,"rawunearn_p",">",0.756,10
+"Utah",0.1,4,"rawrent_p","<=",0.391,16
+"Utah",0.1,4,"rawunearn_p",">",0.128,16
+"Utah",0.1,6,"rawrent_p",">",0.684,20
+"Utah",0.1,7,"rawrent_p",">",0.507,6
+"Vermont",0.05,1,"rawunearn_p","<=",0.66,14
+"Vermont",0.05,2,"rawearn_p",">",0.166,2
+"Vermont",0.05,2,"rawmedded_p","<=",0.00459,2
+"Vermont",0.05,3,"rawdepded_p","<=",0.105,14
+"Vermont",0.05,3,"rawearn_p",">",0.198,14
+"Vermont",0.05,3,"rawgrinc_p","<=",0.744,14
+"Vermont",0.05,4,"rawunearn_p","<=",0.844,1
+"Vermont",0.1,1,"rawunearn_p","<=",0.66,14
+"Vermont",0.1,2,"rawdepded_p","<=",0.105,14
+"Vermont",0.1,2,"rawearn_p",">",0.198,14
+"Vermont",0.1,2,"rawgrinc_p","<=",0.744,14
+"Vermont",0.1,3,"rawunearn_p","<=",0.136,12
+"Vermont",0.1,4,"rawearn_p",">",0.166,2
+"Vermont",0.1,4,"rawmedded_p","<=",0.00459,2
+"Vermont",0.1,5,"rawdepded_p","<=",0.143,2
+"Vermont",0.1,5,"rawgrinc_p",">",0.22,2
+"Vermont",0.1,5,"rawrent_p",">",0.295,2
+"Vermont",0.1,6,"rawunearn_p","<",0.653,6
+"Vermont",0.1,7,"rawgrinc_p","<=",0.639,12
+"Vermont",0.1,8,"rawunearn_p","<=",0.844,1
+"Virginia",0.05,1,"rawearn_p",">",0.568,21
+"Virginia",0.05,2,"rawearn_p",">",0.0703,11
+"Virginia",0.05,2,"rawgrinc_p","<=",0.678,11
+"Virginia",0.1,1,"rawearn_p",">",0.568,21
+"Virginia",0.1,2,"rawearn_p",">",0.051,17
+"Virginia",0.1,3,"rawearn_p",">",0.0703,11
+"Virginia",0.1,3,"rawgrinc_p","<=",0.678,11
+"Virginia",0.1,5,"rawearn_p",">",0.22,13
+"Virginia",0.1,5,"rawgrinc_p","<=",0.865,13
+"Virginia",0.1,6,"rawearn_p","<=",0.703,3
+"Virginia",0.1,7,"rawearn_p",">",0.194,1
+"Washington",0.05,2,"rawmedded_p","<=",0.17,14
+"Washington",0.1,3,"rawrent_p",">",0.244,9
+"Washington",0.1,5,"rawgrinc_p",">",0.707,16
+"Washington",0.1,5,"rawrent_p",">",0.542,16
+"West Virginia",0.05,1,"rawgrinc_p",">",0.06,4
+"West Virginia",0.05,1,"rawunearn_p","<=",0.143,4
+"West Virginia",0.1,1,"rawgrinc_p",">",0.06,4
+"West Virginia",0.1,1,"rawunearn_p","<=",0.143,4
+"West Virginia",0.1,3,"rawgrinc_p","<",0.804,17
+"Wisconsin",0.05,1,"rawearn_p",">",0.223,7
+"Wisconsin",0.05,1,"rawgrinc_p","<=",0.467,7
+"Wisconsin",0.05,2,"rawunearn_p","<=",0.292,13
+"Wisconsin",0.05,3,"rawrent_p","<=",0.475,12
+"Wisconsin",0.05,4,"rawgrinc_p",">",0.377,11
+"Wisconsin",0.05,5,"rawearn_p",">",0.223,1
+"Wisconsin",0.05,5,"rawrent_p","<=",0.939,1
+"Wisconsin",0.05,6,"rawdepded_p","<=",0.762,2
+"Wisconsin",0.1,1,"rawearn_p",">",0.223,7
+"Wisconsin",0.1,1,"rawgrinc_p","<=",0.467,7
+"Wisconsin",0.1,2,"rawunearn_p","<=",0.292,13
+"Wisconsin",0.1,3,"rawrent_p","<=",0.475,12
+"Wisconsin",0.1,4,"rawgrinc_p",">",0.377,11
+"Wisconsin",0.1,7,"rawunearn_p",">",0.0792,4
+"Wisconsin",0.1,9,"rawcsded_p","<=",0.0833,9
+"Wisconsin",0.1,9,"rawgrinc_p","<=",0.497,9
+"Wisconsin",0.1,10,"rawearn_p",">",0.223,1
+"Wisconsin",0.1,10,"rawrent_p","<=",0.939,1
+"Wisconsin",0.1,11,"rawdepded_p","<=",0.762,1

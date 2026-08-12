@@ -43,6 +43,7 @@ row(s) here.
 | Claim | Status | Scope tested | Source |
 |---|---|---|---|
 | Admission = Benjamini-Hochberg at FDR 10% vs the stratum base rate AND n >= 30 flagged training cases; the two guards do different jobs and neither replaces the other | settled default (v2.3.0) | two eras at the 5% budget | §19 |
+| The BH call is ONE joint pass across the frame's candidate rules with per-stratum base rates inside the p-values; running BH per stratum is a different multiplicity correction that admits a different set (smoke: any-error pool 393 vs 436 rules) | hazard, caught in review before the 2026-08-09 state re-mine launched (that run's results were later deleted; the catch stands on its own) | smoke-measured, 2026-08-09 | methods/state_remine_review_2026-08-09.md |
 | Floorless admission (BH without the n >= 30 floor) | retired (0.335 fell to 0.284) | one era, 18 states | §19 |
 | Tightening FDR 10% to 5% changes delivered lists (it removes mid-ranking rules; budgets deploy the top ~16-27) | retired: median within-state difference 0.000 | one era, 18 states, exploratory | §25 |
 | Raising the support floor above 30 helps a bigger search | retired: precision falls monotonically (0.3345 to 0.2826 at floor 778); lowering to ~15 also loses | one era, 18 states, exploratory | §26 |
@@ -60,6 +61,7 @@ row(s) here.
 | Hybrid internal + national blend at a real state | open (documented, untested; blocked on an engagement) | none | §10, RESUME.md |
 | Evaluate deployment at review budgets (5% / 10% of caseload), not filter floors | settled method | §12 onward | §12, §14 |
 | Frozen lists under-fill their budget (median fill 0.855 at 5%); buffer rules close the gap; the scorecard scores core only | settled caution | 49 states, FY2024 | RESUME.md 2026-08-02 correction |
+| Typed-frame mining at state scale, pooled across household sizes (support preservation; findings 17's typed retirement is national-scope) | design argument from the remine proposal; untested for delivered performance. The 2026-08-10 state pools built on it were DELETED 2026-08-11 (their vocabulary runoff used the wrong percentile construction); state pools will be rebuilt after the new §37 exploratory study | design argument only | remine proposal |
 
 ## Vocabulary, frames, strata, features
 
@@ -75,6 +77,19 @@ row(s) here.
 | Engine pair xgboost + ranger, depth 4, mtry 2, eta 0.02; the engine is worth ~1 point; the leverage is strict filtering and any-error scoring | settled | grid + year-swap | §2, §4, §13 |
 | subsample 0.20 is "as good as anything, not proven best" (the low-beats-high edge failed the year-swap) | settled | year-swap | §4, §13 |
 | Mine big, filter stringently: a big pool at the 99% bound matches a small pool's operating point with a much longer usable list | settled | §5 + year-swap | §5, §13 |
+| Feature vectors must be verified against frame column names before mining: `prep_features()` drops unknown names silently (the finder's three `raw*_by_hh_size` names never existed in the frame, so every v2 mine has used 16 features, not the listed 19) | hazard | discovered 2026-08-08 (Gate-1 session) | §35 |
+
+The 2026-08-08/09 vocabulary comparisons (26-feature package, shelter
+percentile, per-size vs frozen-percentile representation; "frozen" =
+percentile cutoffs fit on the train years only and applied unchanged to
+the test year, per §35 - not Ben's pooled-years as-built `_p` columns) are
+EXPLORATORY and deliberately carry no ledger rows: one era, ten evaluation
+states.
+They inform the open v2.5.0 vocabulary decision (see Open work) and are
+recorded with full numbers and limits in §§35-36; do not cite them as
+established findings. The 2026-08-10 state-scale runoff and its pools were
+DELETED 2026-08-11: the percentile arm used the frozen construction, not
+Ben's pooled-years design, so it tested the wrong thing.
 
 ## Data and munging
 
@@ -85,7 +100,7 @@ row(s) here.
 | FY2020/FY2021 are excluded by decision; the reconciliation filter is a validity guard and additive-only on the six kept years | settled | relax-and-measure study | §24 |
 | Multi-element error cases are kept; deduction-field NAs are zero-filled, not dropped | settled | frame rebuild | §10 |
 | Public data shows a state 43-91% of its own errors (ineligible cases are invisible) | settled | FY22-24, per state | §10 |
-| rawben_rel_max just below 1 is a reconstruction artifact; 88 delivered rules take 76.7% of their flags from artifact rows (median 6.3% of a 5% list's cases) | settled diagnostic; the at_max_benefit feature fix is open and needs a full re-mine | FY2022-24 frame + all delivered lists | §28 |
+| rawben_rel_max just below 1 is a reconstruction artifact; 88 delivered rules take 76.7% of their flags from artifact rows (median 6.3% of a 5% list's cases) | settled diagnostic; the 2026-08-08 rebuild's $0-tolerance recreation removed most of the band (in-band errors 537 to 227; strict-band share of flags 2-3% in both §35 arms at benchmark-level numbers, so performance no longer runs through the band itself). NOT established: freedom from artifact CORRELATES (near-boundary rel_max shapes still top the rankings), and pre-vs-post-fix level comparisons are unpaired (different frame and panel) | FY2022-24 frame + all delivered lists; rebuilt-frame arms §35 | §28, §35 |
 | Nature codes 56, 57, 33, 58 exist only from FY2024; cross-year nature comparisons must account for the recode | settled | FY2022-24 | §29 |
 | AGENCY 26 is not a fault code ("change not required to be reported or acted on"); 1.4% of error-case variances | settled | FY2024 tech doc + data | §29 |
 | Rule characterization: group shares are reliable (0.72-0.94) and state-stable for WHAT fields; the modal element is uninformative and fragile and is not reported; profile distinctiveness falls with rule support | settled | 543 rules, FY2022-24, split-half | §29, §6 |
@@ -107,11 +122,12 @@ row(s) here.
 
 | Item | Status | Source |
 |---|---|---|
+| v2.5.0 re-mine vocabulary: the per-size candidate (16 + gross/earned/unearned per size) vs alternatives | open - Eric's call at regen time. The inputs are EXPLORATORY only: §§35-36 (frozen-construction arms, ten states) and §37 (Ben's as-built within-state percentiles, additive, 48 states, single seed: precision a wash at 5% with two-sided redistribution, -0.004 at 10%, dollars +0.006 at 10%; of 495 deployed `_p` conditions only 2 are high-tail - the miner uses them as mid-scale encodings and zero/absence flags, not outlier detectors). Also deferred (2026-08-11, not important enough now): the 49-state walk readout of the §36 frozen-percentile contrast from cache | §35-§37; features.R |
 | family_id labeled-substitutes column (design decided, not built) | open | RESUME.md roadmap |
 | Characterization columns on delivery lists (built, staged for the next list build; MINOR bump is Eric's call) | open | RESUME.md roadmap; §29 |
 | A1-F1 pipeline upgrade (rule_id, admit_bh helper, finder upgrades; de-OOM before any heavy regen) | open | RESUME.md next-session plan |
 | Case-overlap pre-registered bar landed between its thresholds (0.325/0.435 vs bars 0.3/0.5) | resolved by §31's seed-only decomposition: the reachable error set is stable, budget-depth lists are not, under any single draw | §30, §31 |
-| Per-stratum outlier features (value above the within-stratum 99th percentile on shelter, deductions, income fields) as rule inputs; the issue reports 26% error among extreme-shelter HH-3 cases vs the ~11% base | open (Ben, issue #7, 2026-08-05); a vocabulary change needing a full re-mine, same class as the at_max_benefit feature, and a candidate to ride the same regen mine | GitHub #7 |
+| Per-stratum outlier features (value above the within-stratum 99th percentile on shelter, deductions, income fields) as rule inputs; the issue reports 26% error among extreme-shelter HH-3 cases vs the ~11% base | the continuous-percentile route is now measured: four of the five variables are expressible by the package percentiles, which failed do-no-harm (§35), and the fifth (shelter) failed its positive bar despite passing its standalone pre-screen (§36). Ben's BINARY outlier-indicator construction with its own pre-screen is a different construction and remains open (issue #7); the frozen train-only percentile plumbing (§35) is its validated cutoff template | GitHub #7; §35, §36 |
 | Representing ineligible households in the modeling frame; the public file omits them entirely and only per-state/year counts exist (additional_data/snap_qc_exclusion_all_years.csv), no case records; the issue conjectures many of the largest errors are FSBEN = $0 cases | open discussion (Ben, issue #8, 2026-08-05); bears directly on the §10 visibility limit; no method proposed yet | GitHub #8; §10 |
 
 ## Process rules (always in force)
@@ -130,3 +146,22 @@ row(s) here.
   within-state mean and the harmed-tail count (paired change worse than
   -0.05) beside the decision median; a median win contradicted by both
   companions does not ship.
+- Attribution readouts additionally carry per-state same-sign paired-cell
+  counts and per-arm seed spread (2026-08-09, from §35's results review:
+  the sign counts catch redistribution that the median/mean/harmed-tail
+  trio missed, and a vocabulary that widens seed instability is a cost
+  even at equal precision).
+- Formality is proportional to the question (2026-08-11, Eric, from §35).
+  Pre-registration, bars, and verdict language are for research claims
+  headed for the recommended workflow. Feature-set membership and similar
+  pipeline choices that end in a judgment call are technical explorations:
+  measure, report the companions, and decide - do not bind them to
+  adoption bars that later have to be reasoned around. Before designing
+  any study, ask whether the answer would change a decision; if not, it
+  is not worth a study.
+- The ledger carries only established claims someone can count on
+  (2026-08-11, Eric, from §36). Exploratory results - one era, small
+  evaluation panels, single-seed, or otherwise half-baked - stay in the
+  findings docs marked EXPLORATORY and get no ledger row and no GUIDANCE
+  point. If an exploratory result matters to a pending decision, it is
+  referenced from an Open-work row, not promoted to a claim.
