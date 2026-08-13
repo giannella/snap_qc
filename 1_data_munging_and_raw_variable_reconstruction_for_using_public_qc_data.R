@@ -278,7 +278,7 @@ for (v in vars) {
 # Recalculate raw income formula
 calculate_raw_benefits <- function(mydata) {
   
-  mydata$rawernded <- mydata$rawearn * 0.2
+  mydata$rawernded <- floor(mydata$rawearn * 0.2)
   mydata$rawgrinc <- mydata$rawearn + mydata$rawunearn
   mydata$rawnet_before_shelter <- mydata$rawgrinc - (
     mydata$rawernded +
@@ -290,13 +290,11 @@ calculate_raw_benefits <- function(mydata) {
   mydata$rawnet_adjusted_half <- pmax(mydata$rawnet_before_shelter * 0.5, 0)
   mydata$rawsltexp <- mydata$rawrent + mydata$rawutil
   mydata$rawsltded_uncapped <- mydata$rawsltexp - mydata$rawnet_adjusted_half
-  mydata$rawsltded_uncapped <- floor(mydata$rawsltded_uncapped)
   mydata$rawsltded <- ifelse(
     is.infinite(mydata$max_shelter_deduction),
     pmax(mydata$rawsltded_uncapped, 0),
     pmin(pmax(mydata$rawsltded_uncapped, 0), mydata$max_shelter_deduction)
   )
-  mydata$rawsltded <- floor(mydata$rawsltded)
   mydata$rawnet_allow_negative = mydata$rawnet_before_shelter - (
     mydata$rawsltded +
       mydata$rawhomeless_ded
@@ -308,8 +306,6 @@ calculate_raw_benefits <- function(mydata) {
   mydata$rawben_recreated <- pmin(mydata$rawben_recreated, mydata$rawbenmax)
   mydata$rawnet_capped = pmax(mydata$rawnet_allow_negative, 0) 
   mydata$unc_rawben_rel_max <- mydata$rawben_uncapped / mydata$rawbenmax
-  mydata$at_max <- (mydata$rawben_uncapped + 5) >= mydata$rawbenmax
-  
   mydata
   
 }
