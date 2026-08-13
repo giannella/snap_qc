@@ -22,6 +22,16 @@ failure rate 27% FY22-23 falling to 18% FY24 vs a ~2.3% floor elsewhere;
 half are error cases) - the population that made the near-max features
 minable-but-misleading (findings §28, §35).
 
+**Post-fix (Ben's smoothing fix, frame rebuilt 2026-08-12 evening):**
+within-$1 agreement 92.5% -> 95.6% overall, 95.6% -> 97.5% clean-case;
+recorded-at-max cases reconstructing below max 3,935 -> 492 (9.0% ->
+1.1%, err rate of the remnant 0.715); clean mismatches 4,470 -> 2,584;
+the quantized-gap groups shrank (-9: 108->18, -15: 97->28, -39: 81->16).
+Illinois's +$2/3 family is UNCHANGED (477 rows, now ~18% of remaining
+clean mismatches) - a separate defect from the smoothing. NOTE: frames
+built after 2026-08-12 carry the file benefit difference as
+`total_error_amount` (absbendiff was renamed); the scripts handle both.
+
 Caveats: the field named `RAWNET` is CORRECTED net income despite its name
 (Eric, 2026-08-12) - do not debug against it as agency-side truth. The
 munging AMTERR filter already dropped rows whose benefit difference does

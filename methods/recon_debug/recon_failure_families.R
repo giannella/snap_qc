@@ -15,7 +15,7 @@ mc  <- abs(gap) > 1 & clean
 # benefit difference (absbendiff > 0, sub-threshold on clean cases) that
 # our un-correction failed to reverse, or does the file show NO difference
 # while our recreation still drifts (a pure formula/component bug)?
-gapA <- d$absbendiff                     # |RAWBEN - FSBEN| per the file
+gapA <- if ("absbendiff" %in% names(d)) d$absbendiff else d$total_error_amount  # |RAWBEN - FSBEN|; renamed total_error_amount in frames built after 2026-08-12
 a_fail <- !is.na(gapA) & gapA > 1        # file says raw and corrected differ
 gapB <- gap                              # our recreated - recorded (the mismatch itself)
 b_fail <- abs(gapB) > 1
