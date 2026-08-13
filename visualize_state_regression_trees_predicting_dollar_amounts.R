@@ -19,7 +19,7 @@ features <- c(
   "elderly_disabled_i",       # combined indicator
   "deductions_by_hh_size",          # deductions by HH size
   "expedited_i",                  # expedited service
-  "cat_elig",                     # categorical eligibility 
+  "bbce_state_i",                 # state runs BBCE (replaced cat_elig 2026-08-13; FY2024 recode) 
   "rawben_rel_max",
   "medical_deductions",
   "shelter_expenses",
@@ -57,7 +57,7 @@ for (state in states) {
     filter(state == !!state)
   
   if (nrow(subset_data) == 0) {
-    cat("  No cases for", state, "— skipping\n")
+    cat("  No cases for", state, "â€” skipping\n")
     next
   }
   
@@ -76,7 +76,7 @@ for (state in states) {
   cat(sprintf("  Predictors: %d variables\n", length(predictor_vars)))
   
   if (length(predictor_vars) == 0) {
-    cat("  No valid predictors — skipping\n")
+    cat("  No valid predictors â€” skipping\n")
     next
   }
   

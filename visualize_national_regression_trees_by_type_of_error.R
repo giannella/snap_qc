@@ -28,7 +28,7 @@ income_and_clean_data %>%
   print()
 
 
-# ── Define predictor variables ────────────────────────────────────────────────
+# â”€â”€ Define predictor variables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 features <- c(
   "cert_HH_size_FS_n",            # certified household size
@@ -37,7 +37,7 @@ features <- c(
   "elderly_disabled_i",          # combined indicator (was elderly_or_disabled_i)
   "deductions_by_hh_size",          # deductions by HH size
   "expedited_i",                  # expedited service
-  "cat_elig",                     # categorical eligibility
+  "bbce_state_i",                 # state runs BBCE (replaced cat_elig 2026-08-13; FY2024 recode)
   "rawben_rel_max",
   "medical_deductions",           # was med_expenses
   "shelter_expenses",
@@ -67,9 +67,9 @@ error_types <- c("earned_overissuance", "underissuance", "unearned_overissuance"
 
 for (error_type in error_types) {
   
-  #cat("\n\n══════════════════════════════════════════════════════════════════\n")
+  #cat("\n\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n")
   #cat("Processing:", error_type, "\n")
-  #cat("══════════════════════════════════════════════════════════════════\n\n")
+  #cat("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n\n")
   
   # Filter to this error type + clean cases only
   # Excludes other income error types and non-income errors
@@ -81,7 +81,7 @@ for (error_type in error_types) {
     filter(error_status == error_type | status == 1)
   
   if (nrow(subset_data) == 0) {
-    cat("  No cases for", error_type, "— skipping\n")
+    cat("  No cases for", error_type, "â€” skipping\n")
     next
   }
   
@@ -163,7 +163,7 @@ for (error_type in error_types) {
   
   plot_pooled_tree(
     tree_model = tree_model,
-    main_title = paste("Regression Tree —", 
+    main_title = paste("Regression Tree â€”", 
                        gsub("_", " ", tools::toTitleCase(error_type)),
                        "Errors"),
     predictor_vars = predictor_vars,

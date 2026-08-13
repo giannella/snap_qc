@@ -41,7 +41,7 @@ suppressWarnings(suppressMessages({
 `%||%` <- function(a, b) if (is.null(a) || is.na(a) || !nzchar(a)) b else a
 envc  <- function(k) { v <- Sys.getenv(k); if (nzchar(v)) v else NULL }
 
-## ── Locate inputs (robust to running from a git worktree) ─────────────────────
+## â”€â”€ Locate inputs (robust to running from a git worktree) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # rule_mining_helpers.R is tracked, so it sits next to us; reg_model_data.rds is
 # gitignored, so in a worktree it lives back in the primary checkout (/workspace).
 find_first <- function(cands) { for (p in cands) if (nzchar(p) && file.exists(p)) return(p); NA_character_ }
@@ -73,7 +73,7 @@ reg_model_data <- readRDS(data_rds)
 cat(sprintf("driver: reg_model_data loaded: %d rows, %d cols\n",
             nrow(reg_model_data), ncol(reg_model_data)))
 
-## ── Config mirrored from INCL_find_inclusion_rules_by_hh_size_v2.R ─────────────
+## â”€â”€ Config mirrored from INCL_find_inclusion_rules_by_hh_size_v2.R â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 set.seed(117)
 YEAR_COL        <- "fiscal_year"
 TARGET_IS_ERROR <- quote(!is.na(over_threshold) & over_threshold != 0)
@@ -86,7 +86,7 @@ hh_group_of <- function(n) {
 }
 features <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
-  "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
+  "expedited_i", "bbce_state_i",  # bbce_state_i replaced cat_elig 2026-08-13 (FY2024 recode made 1-vs-2 splits era-markers) "rawben_rel_max", "medical_deductions",
   "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
   "rawearn_by_hh_size", "rawunearn_by_hh_size", "rawgross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max",
@@ -120,7 +120,7 @@ targets_of <- function(df) {
   list(ie = ie, ed = ifelse(ie, abs(amt), 0))
 }
 
-## ── The real five stages ──────────────────────────────────────────────────────
+## â”€â”€ The real five stages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 pf  <- prep_features(frame_df, features)
 pfu <- prep_features(universe, features)
 fdf <- pf$data; pv <- pf$features; univ <- pfu$data
@@ -169,7 +169,7 @@ rule_eval <- bind_cols(rules_df,
 shortlist <- rule_eval %>% filter(precision_train_lcb >= MIN_PRECISION)
 shortlist <- shortlist[collapse_ladders(shortlist, shortlist$precision_train_lcb), , drop = FALSE]
 
-## ── What the three skills read off ────────────────────────────────────────────
+## â”€â”€ What the three skills read off â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 cat("\n================= WINNER'S CURSE (senior-statistician) =================\n")
 wc <- rule_eval %>%
   summarise(

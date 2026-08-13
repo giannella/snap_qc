@@ -1,12 +1,12 @@
 # Constraints: see methods/known_constraints.md#excl-finder
 # Pairing: clean-rate 99% LCB x workload-cut. One statistic-goal module on
 # the shared evidence core; other pairings: README "Statistics and goal metrics".
-# ──────────────────────────────────────────────────────────────────────────────
-# EXCLUSION rules v2 — no {pre}, no lasso, no nets.
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# EXCLUSION rules v2 â€” no {pre}, no lasso, no nets.
 #
 # Mirror image of INCL v2: rules flag SAFE cases to EXCLUDE from an existing
 # review pile. One frame (all cases, any error type), stratified by household
-# size 1 / 2-3 / 4+. The pipeline is identical — the target is inverted:
+# size 1 / 2-3 / 4+. The pipeline is identical â€” the target is inverted:
 #
 #   "precision"  -> CLEAN RATE  = share of flagged (excluded) cases with no
 #                   over-threshold error of ANY type
@@ -21,7 +21,7 @@
 #
 # Expects `reg_model_data` in the environment. Logic lives in
 # rule_mining_helpers.R. Outputs land in exclusion_rules_by_hh_size_v2/.
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 library(dplyr)
 library(ggplot2)
@@ -30,7 +30,7 @@ library(xgboost)
 source("rule_mining_helpers.R")
 set.seed(117)
 
-## ── 0. Config ─────────────────────────────────────────────────────────────────
+## â”€â”€ 0. Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 YEAR_COL      <- "fiscal_year"
 TRAIN_YEARS   <- c("2022", "2024")
@@ -48,7 +48,7 @@ hh_group_of <- function(n) {
 
 features <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
-  "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
+  "expedited_i", "bbce_state_i",  # bbce_state_i replaced cat_elig 2026-08-13 (FY2024 recode made 1-vs-2 splits era-markers) "rawben_rel_max", "medical_deductions",
   "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
   "rawearn_by_hh_size", "rawunearn_by_hh_size", "rawgross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max",
@@ -85,7 +85,7 @@ RETENTION_MARKS   <- c(0.97, 0.99)  # console: best workload cut at these dollar
 out_dir <- "exclusion_rules_by_hh_size_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
-## ── 1. Data: one frame, all error types ───────────────────────────────────────
+## â”€â”€ 1. Data: one frame, all error types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 frame_df <- reg_model_data %>%
   filter(.data[[YEAR_COL]] %in% c(TRAIN_YEARS, HOLDOUT_YEARS))
@@ -113,7 +113,7 @@ cat(sprintf("Train %s: %d rows (%.1f%% clean) | Holdout %s: %d rows (%.1f%% clea
             paste(TRAIN_YEARS, collapse = "/"), nrow(train), 100 * mean(tg_tr$is_clean),
             paste(HOLDOUT_YEARS, collapse = "/"), nrow(hold), 100 * mean(tg_h$is_clean)))
 
-## ── 2. Generate per stratum ───────────────────────────────────────────────────
+## â”€â”€ 2. Generate per stratum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Trees are fit on the SAME error-vs-clean target as INCL (splits are symmetric
 # for a binary outcome); the clean-rate screen below keeps the safe-direction
 # rules instead of the error-direction ones.
@@ -140,7 +140,7 @@ rules_df <- bind_rows(lapply(HH_LEVELS, function(h) {
   group_by(hh, rule) %>%
   summarise(source = paste(sort(unique(source)), collapse = "+"), .groups = "drop")
 
-## ── 3. Screen on train clean rate, dedup ──────────────────────────────────────
+## â”€â”€ 3. Screen on train clean rate, dedup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 idx_tr <- flags_for_rules(rules_df, train, strata_tr, label = "train")
 n_tr   <- lengths(idx_tr)
@@ -166,7 +166,7 @@ rules_df <- rules_df[!drop_dom, , drop = FALSE]; idx_tr <- idx_tr[!drop_dom]
 cat(sprintf("dedup: -%d exact-coverage, -%d dominated -> %d rules\n",
             sum(drop_cov), sum(drop_dom), nrow(rules_df)))
 
-## ── 4. Hold-out evaluation ────────────────────────────────────────────────────
+## â”€â”€ 4. Hold-out evaluation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 idx_h <- flags_for_rules(rules_df, hold, strata_h, label = "holdout")
 
@@ -202,7 +202,7 @@ cat(sprintf("shortlist (relative standard): %d rules | median holdout clean rate
             nrow(shortlist), median(shortlist$clean_rate_holdout, na.rm = TRUE)))
 print(table(shortlist$hh))
 
-## ── 5. Clean-rate LCB sweep: workload cut vs dollars retained ─────────────────
+## â”€â”€ 5. Clean-rate LCB sweep: workload cut vs dollars retained â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 stat   <- rules_df$clean_rate_train_lcb
 usable <- !is.na(stat)
@@ -239,9 +239,9 @@ save_png(p, file.path(out_dir, "exclusion_lcb_sweep.png"), 8, 5)
 
 cat(sprintf("\nWrote exclusion outputs to %s/\n", out_dir))
 
-## ── Notes ─────────────────────────────────────────────────────────────────────
+## â”€â”€ Notes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # - Errors here are ANY over-threshold error (all types), so an excluded case
-#   is only "safe" if it carries no error at all — no frame-relative blind spot.
+#   is only "safe" if it carries no error at all â€” no frame-relative blind spot.
 # - The sweep's union is the set of cases excluded by AT LEAST ONE qualifying
 #   rule; a clean case excluded by several rules counts once, so workload cut
 #   is never overstated, mirroring the INCL recall logic.

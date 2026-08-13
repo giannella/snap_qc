@@ -55,7 +55,7 @@ PAIRING_TAG <- if (identical(PAIRING, DEFAULT_PAIRING)) "" else paste0("_", PAIR
 # "dpf_workloadfill" (one line, e.g. in a runner before source()) to instead rank
 # by error dollars per flagged case: an audition-only alternative that was modestly
 # higher on dollar recall but stayed below the adoption bar (modeling_findings.md
-# §21). Ranking by dollars needs a fresh pool cache, since the statistic is
+# Â§21). Ranking by dollars needs a fresh pool cache, since the statistic is
 # computed at pool-build time (delete POOL_CACHE once to switch).
 RANK_STAT <- if (identical(PAIRING, "dpf_workloadfill")) "dollars_per_flag_train" else "precision_train_lcb"
 
@@ -112,7 +112,7 @@ hh_group_of <- function(n) {
 }
 features <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
-  "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
+  "expedited_i", "bbce_state_i",  # bbce_state_i replaced cat_elig 2026-08-13 (FY2024 recode made 1-vs-2 splits era-markers) "rawben_rel_max", "medical_deductions",
   "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
   "rawearn_by_hh_size", "rawunearn_by_hh_size", "rawgross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max",

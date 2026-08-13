@@ -1,4 +1,4 @@
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # STATE threshold grid search + hold-out test (v2 stack)
 #
 # Takes a per-frame selection of the national rules (up to MAX_RULES_PER_FRAME
@@ -9,29 +9,29 @@
 #      years. A variant QUALIFIES if it flags >= MIN_STATE_FLAGGED state-train
 #      cases at raw precision >= MIN_STATE_PRECISION; among qualifiers the
 #      tuned variant is the one capturing the most error DOLLARS (precision
-#      adequate, then maximize reach). No LCB at state level — the support
+#      adequate, then maximize reach). No LCB at state level â€” the support
 #      floor bounds the noise and the hold-out year is the honest judge;
 #   2. tests on the state's hold-out year, reporting each rule under BOTH its
 #      tuned and national thresholds;
 #   3. compares three unions on the hold-out: tuned thresholds (qualified
 #      rules), national thresholds (same qualified rules), and the FULL
-#      national selection as-is (no local qualification) — the fallback a
+#      national selection as-is (no local qualification) â€” the fallback a
 #      small state would deploy when its sample can't support local tuning.
 #
 # Scored against ANY over-threshold error (state samples are too thin for
 # typed evaluation; reviews find whatever error is present). Tuned-variant
-# selection happens on state-train, so train stats are optimistic — only the
+# selection happens on state-train, so train stats are optimistic â€” only the
 # hold-out columns count.
 #
 # Expects `reg_model_data`. Reads inclusion_rules_by_hh_size_v2/*_rules_all.csv.
 # Outputs one CSV per state plus a cross-state summary in state_rules_v2/.
-# ──────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 library(dplyr)
 source("rule_mining_helpers.R")
 set.seed(117)
 
-## ── 0. Config ─────────────────────────────────────────────────────────────────
+## â”€â”€ 0. Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 STATES <- c("Washington", "Connecticut", "North Carolina", "Louisiana",
             "Michigan", "Virginia", "Arizona")
@@ -64,13 +64,13 @@ MAX_VARIANTS   <- 700
 
 # State qualification. Two modes, both followed by the same tuned-variant
 # selection (maximize error dollars captured on state-train among qualifiers):
-#   "lcb"           — variant's Wilson LCB (STATE_LCB_Z) of state-train
+#   "lcb"           â€” variant's Wilson LCB (STATE_LCB_Z) of state-train
 #                     precision >= MIN_STATE_PRECISION, support >=
 #                     MIN_STATE_FLAGGED_LCB (support scales with precision).
 #                     DEFAULT: in the 2026-07 three-way comparison this hybrid
 #                     (LCB gate + dollar-max selection) dominated the simple
 #                     floor in Arizona and was the middle ground elsewhere.
-#   "support_floor" — variant flags >= MIN_STATE_FLAGGED state-train cases at
+#   "support_floor" â€” variant flags >= MIN_STATE_FLAGGED state-train cases at
 #                     raw precision >= MIN_STATE_PRECISION (simpler to explain;
 #                     more reach, less precision)
 QUALIFY_MODE          <- "lcb"             # or "support_floor"
@@ -83,7 +83,7 @@ out_dir <- "state_rules_v2"
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 stopifnot(QUALIFY_MODE %in% c("support_floor", "lcb"))
 
-## ── 1. National rules + data prep ─────────────────────────────────────────────
+## â”€â”€ 1. National rules + data prep â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 cat("national rule selection (per-frame floor + quota):\n")
 national <- bind_rows(lapply(names(FRAME_FLOORS), function(fr) {
@@ -100,7 +100,7 @@ cat(sprintf("national selection: %d rules total\n", nrow(national)))
 
 features <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
-  "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
+  "expedited_i", "bbce_state_i",  # bbce_state_i replaced cat_elig 2026-08-13 (FY2024 recode made 1-vs-2 splits era-markers) "rawben_rel_max", "medical_deductions",
   "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
   "rawearn_by_hh_size", "rawunearn_by_hh_size", "rawgross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max",
@@ -120,7 +120,7 @@ targets_of <- function(df) {
   list(ie = ie, ed = ifelse(ie, abs(amt), 0))
 }
 
-## ── 2. Rule threshold variants ────────────────────────────────────────────────
+## â”€â”€ 2. Rule threshold variants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 # uniq: per-variable sorted unique observed values (from the STATE's train
 # data). Scaled thresholds are kept only if they induce a DIFFERENT partition
@@ -170,7 +170,7 @@ eval_rule_on <- function(rule, df, stratum_rows) {
   intersect(which(v), stratum_rows)
 }
 
-## ── 3. Per-state pipeline ─────────────────────────────────────────────────────
+## â”€â”€ 3. Per-state pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 run_state <- function(st) {
   sdf <- adf[as.character(adf[[STATE_COL]]) == st, , drop = FALSE]
@@ -284,7 +284,7 @@ cat("\n===== cross-state summary =====\n")
 print(as.data.frame(state_summaries), row.names = FALSE)
 cat(sprintf("\nWrote state outputs to %s/\n", out_dir))
 
-## ── Notes ─────────────────────────────────────────────────────────────────────
+## â”€â”€ Notes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # - Qualification is raw (support + precision floors), not LCB-based: n >= 20
 #   bounds the noise, the criterion is transparent to states, and the hold-out
 #   year is the honest judge. Tuned variants maximize TRAIN dollar recall among
