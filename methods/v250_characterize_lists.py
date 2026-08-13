@@ -30,8 +30,17 @@ import rule_error_profiles as rep  # noqa: E402
 STAGE_DIR = os.environ.get(
     "V250_STAGE_DIR", os.path.join(ROOT, "methods", "v250_candidate_lists"))
 YEARS = ["2022", "2023", "2024"]
-FEATURES19 = rep.FEATURES + ["gross_by_hh_size", "earned_by_hh_size",
-                             "unearned_by_hh_size"]
+# the CURRENT mining vocabulary (do not reuse rep.FEATURES: that constant
+# describes the shipped v2.4.0 lists, which still carried cat_elig; the
+# 2026-08-13 vocabulary replaces it with bbce_state_i)
+FEATURES19 = [
+    "HH_size_n", "children_i", "elderly_disabled_i",
+    "total_deductions_by_hh_size", "expedited_i", "bbce_state_i",
+    "rawben_rel_max", "medical_deductions", "shelter_expenses_by_hh_size",
+    "utilities", "married", "homeless", "percent_abawd",
+    "unc_rawben_rel_max", "months_since_cert_n", "count_divisible_by_100",
+    "gross_by_hh_size", "earned_by_hh_size", "unearned_by_hh_size",
+]
 
 
 def main():

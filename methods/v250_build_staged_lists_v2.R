@@ -1,13 +1,13 @@
-# v2.5.0 CANDIDATE build - STAGED, not shipped. Eric's instruction 2026-08-11:
+# v2.5.0 CANDIDATE build - STAGED, not shipped. Specified 2026-08-11:
 # for each state, blend the per-size (19-variable) state any-error rules with
 # the national rules mined on the same vocabulary, deliver frozen budget lists
 # with characterization columns (joined by step 2/3 of the runner).
 #
 # STAGED in methods/v250_candidate_lists/. Promotion to state_delivery_lists/
-# plus CHANGELOG and version bump is Eric's decision after review; nothing
+# plus CHANGELOG and version bump is decided at review; nothing
 # here touches the shipped v2.4.0 deliverable.
 #
-# Recipe (all rulings Eric's, 2026-08-11): mine FRESH on ALL public years
+# Recipe (decided 2026-08-11): mine FRESH on ALL public years
 # FY2022-24 (the shipped no-holdout delivery recipe, findings 15-16); the
 # per-size vocabulary (16 shipped-in-practice + gross/earned/unearned per
 # size = 19; the exploratory §§35-37 record informs this choice); any_error
@@ -21,7 +21,7 @@
 # is empirical-only at small pool scale; gaps reported per phase, never a
 # crash). No outcome data enters the walk. Seed 117.
 #
-# ARTIFACT CHECK (2026-08-12, statistician's thresholds under Eric's
+# ARTIFACT CHECK (2026-08-12, statistician's thresholds under our
 # dominance/displacement/removal-invariance criterion): every rule is
 # scored for its train-flag and train-error concentration on
 # reconstruction-failure rows ("mismatch rows": recorded benefit at or
@@ -40,9 +40,9 @@
 # two smoke misfires (statistician rulings, 2026-08-12): pool-share gate
 # on FLAG-tagged rules per pool; head gates (top40/top10, either tag) on
 # the NATIONAL pool and each state's shadow BLEND head only.
-# ILLINOIS HOLD (Eric 2026-08-12): Illinois's own state pool is mined and
-# cached but NOT blended - its lists are national-rules-only until Ben's
-# Illinois reconstruction fix (477 clean cases recreated +$2-3 high
+# ILLINOIS HOLD (decided 2026-08-12): Illinois's own state pool is mined and
+# cached but NOT blended - its lists are national-rules-only until the
+# Illinois reconstruction fix lands (477 clean cases recreated +$2-3 high
 # distort its state-scale rel_max denominators).
 #
 # SMOKE=1: 3 states + national, tiny ensembles, own output dir.
@@ -70,12 +70,18 @@ EXPECT_ERRS  <- 13161L     # (verified on the 2026-08-12 rebuilt frame)
 
 BASE_FEATURES <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
-  "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
+  "expedited_i", "bbce_state_i", "rawben_rel_max", "medical_deductions",
   "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
   "percent_abawd", "unc_rawben_rel_max", "months_since_cert_n",
   "count_divisible_by_100")
+# bbce_state_i replaces the raw 4-level cat_elig (decided 2026-08-13): the
+# FY2024 codebook recode made 1-vs-2 splits era-markers; the state-level
+# Broad-Based Categorical Eligibility flag is the era-stable regime signal
 PS_FEATURES <- c("gross_by_hh_size", "earned_by_hh_size", "unearned_by_hh_size")
 VOCAB19 <- c(BASE_FEATURES, PS_FEATURES)
+# 0/1 indicators canonicalized to "var >= 1" / "var <= 0" at mine time
+BINARY_FEATURES <- c("children_i", "elderly_disabled_i", "expedited_i",
+                     "married", "homeless", "bbce_state_i")
 
 OUT_DIR <- "methods/v250_candidate_lists"
 if (!exists("RESUME_FROM_CHECKPOINT")) RESUME_FROM_CHECKPOINT <- FALSE
@@ -117,7 +123,7 @@ MM_TAG_SHARE  <- 0.25   # identification bar (either flags or errors)
 MM_POOL_MAX   <- 0.02   # displacement: max tagged share of any admitted pool
 MM_TOP40_MAX  <- 1L     # displacement: max tagged in national top 40 by LCB
 MM_TOP10_MAX  <- 0L     # displacement: none in the national top 10
-HOLD_STATE_POOLS <- c("Illinois")   # Eric 2026-08-12: national-only blend
+HOLD_STATE_POOLS <- c("Illinois")   # decided 2026-08-13: national-only blend
 
 STATES <- sort(unique(st))
 if (SMOKE) STATES <- c("Washington", "Maine", "Mississippi", "Illinois")
@@ -174,7 +180,7 @@ tag_and_gate <- function(adm, unit, head_gate = FALSE) {
         if (any(err_only)) sprintf("%.3f", median(adm$mm_inflation[err_only])) else "-",
         top40, top10, if (head_gate) " [head-gated]" else " [report only]")
   if (mean(adm$artifact_i) > 0.10)
-    stamp("  [%s] WARNING: total tagged share %.1f%% exceeds 10%% - mismatch behaves differently at this scale; head gates and invariance still protect, but flag for Eric",
+    stamp("  [%s] WARNING: total tagged share %.1f%% exceeds 10%% - mismatch behaves differently at this scale; head gates and invariance still protect, but flag for review",
           unit, 100 * mean(adm$artifact_i))
   head_breach <- head_gate && (top40 > MM_TOP40_MAX || top10 > MM_TOP10_MAX)
   if (share_flag > MM_POOL_MAX || head_breach)
@@ -218,7 +224,8 @@ if (RESUME_FROM_CHECKPOINT && file.exists(nat_fn)) {
   rdf <- mine_rule_vocabulary(
     adf, list(any_error = list(rows = seq_len(nrow(adf)), ie = ie_all)),
     strata_nat, VOCAB19, xgb = XGB, rf = RF,
-    signif_digits = SIGNIF_DIGITS, seed = SEED, verbose = TRUE)
+    signif_digits = SIGNIF_DIGITS, seed = SEED, verbose = TRUE,
+    binary_features = BINARY_FEATURES)
   stamp("national raw rules: %d; scoring via the chunked reducer ...", nrow(rdf))
   sc <- reduce_flags_for_rules(
     rdf, adf, strata_nat,
@@ -258,7 +265,8 @@ for (state in STATES) {
     rdf <- mine_rule_vocabulary(
       trs, list(any_error = list(rows = seq_len(nrow(trs)), ie = ie_s)),
       strata_s, VOCAB19, xgb = XGB, rf = RF,
-      signif_digits = SIGNIF_DIGITS, seed = SEED, verbose = FALSE)
+      signif_digits = SIGNIF_DIGITS, seed = SEED, verbose = FALSE,
+      binary_features = BINARY_FEATURES)
     own <- NULL
     if (!is.null(rdf) && nrow(rdf)) {
       fl <- flags_for_rules(rdf, trs, strata_s, label = "")
@@ -280,7 +288,7 @@ for (state in STATES) {
   own <- tag_and_gate(own, state)
   il_hold <- state %in% HOLD_STATE_POOLS
   if (il_hold && nrow(own))
-    stamp("  [%s] STATE POOL HELD (Eric 2026-08-12): %d rules mined+cached but not blended; lists are national-only",
+    stamp("  [%s] STATE POOL HELD (decided 2026-08-12): %d rules mined+cached but not blended; lists are national-only",
           state, nrow(own))
   if (nrow(own)) own$pool <- "state"
 

@@ -29,7 +29,9 @@ or changes a constraint.
   callers must go through `reduce_flags_for_rules()`, the chunked reducer
   (RESUME.md, 2026-07-22 builder fix).
 - After ANY change to this file, run
-  `Rscript methods/test_rule_mining_helpers.R` and get 27 of 27 PASS.
+  `Rscript methods/test_rule_mining_helpers.R` and get 29 of 29 PASS
+  (27 through 2026-08-12; +2 on 2026-08-13 covering per-element threshold
+  formatting and binary-indicator normalization).
 
 ## INCL_find_inclusion_rules_by_hh_size_v2.R {#incl-finder}
 

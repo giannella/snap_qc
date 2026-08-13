@@ -25,15 +25,17 @@ if (!identical(rc, 0L)) {
 }
 
 ## ---- step 3: join CURATED characterization columns onto the lists -----------
-# Eric's selection (2026-08-11): the readable headlines plus five shares and
+# Our selection (2026-08-11): the readable headlines plus five shares and
 # one support column. The FULL ~150-column sheet stays separate
 # (rule_characterization_v250.csv) for anyone who wants to join the rest.
-# cause_client dropped (Eric, 2026-08-11): near-complement of cause_agency
+# cause_client dropped (decided 2026-08-11): near-complement of cause_agency
 # (median sum 0.968, correlation -0.982 on the smoke rules); the exact value
 # stays in the full sheet
 CURATED <- c("n_error_cases", "element_groups_to_75", "nature_groups_to_75",
              "found_in_case_record", "share_overissuance",
              "timing_at_certification", "cause_agency")
+# delivered as n_error_cases_national (decided 2026-08-13): the count is the
+# 49-state support behind the shares, not the state's own count
 cat(sprintf("[%s] step 3: joining curated characterization columns ...\n",
             format(Sys.time(), "%H:%M:%S")))
 suppressMessages(library(dplyr))
@@ -45,7 +47,8 @@ stopifnot(length(lists) > 0)
 n_joined <- 0L
 for (fn in lists) {
   lst <- read.csv(fn, check.names = FALSE)
-  if ("n_error_cases" %in% names(lst)) next   # already joined (rerun)
+  if (any(c("n_error_cases", "n_error_cases_national") %in% names(lst)))
+    next   # already joined (rerun)
   # merge the FULL sheet so the integrity guards can see every field,
   # then deliver only the curated block
   merged <- merge(lst, prof, by = c("hh", "rule"), all.x = TRUE, sort = FALSE)
@@ -60,6 +63,7 @@ for (fn in lists) {
                 merged$n_cases_flagged[natl_rows]))
   # shipped column order first, curated characterization block after
   merged <- merged[, c(names(lst), CURATED)]
+  names(merged)[names(merged) == "n_error_cases"] <- "n_error_cases_national"
   write.csv(merged, fn, row.names = FALSE)
   n_joined <- n_joined + 1L
 }

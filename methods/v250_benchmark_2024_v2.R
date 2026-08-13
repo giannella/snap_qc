@@ -1,5 +1,5 @@
 # One-year-ahead benchmark for the v2.5.0 candidate recipe, on the
-# 2026-08-12 rebuilt frame (Ben's smoothing fix). Mines FRESH (the earlier
+# 2026-08-12 rebuilt frame (the reconstruction smoothing fix). Mines FRESH (the earlier
 # cached pools died with the frame rebuild): national + 49 state any-error
 # pools on FY2022-23, per-size 19-feature vocabulary, joint BH + n >= 30,
 # 99% LCB; blend per state (shipped semantics); fill FY2022-23 to 5%/10%
@@ -31,7 +31,7 @@
 # - per-state paired deltas carry a binomial SE of ~0.068 at a median
 #   state's 5% budget (findings 30); read the 49-state aggregates.
 # - dollar recall now uses total_error_amount = the file's recorded
-#   raw-vs-corrected benefit difference (Eric 2026-08-12), aligned with
+#   raw-vs-corrected benefit difference (decided 2026-08-12), aligned with
 #   the error flag; v2.4.0's dollar columns were built from AMTERR.
 #   Bounded within $5 per case by the reconciliation filter, but the
 #   dollar deltas carry this definitional shift.
@@ -68,12 +68,16 @@ EXPECT_TEST_ROWS  <- 39528L; EXPECT_TEST_ERRS  <- 4764L
 
 BASE_FEATURES <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
-  "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
+  "expedited_i", "bbce_state_i", "rawben_rel_max", "medical_deductions",
   "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
   "percent_abawd", "unc_rawben_rel_max", "months_since_cert_n",
   "count_divisible_by_100")
+# bbce_state_i replaces cat_elig (decided 2026-08-13; see the staged
+# builder's header for the recode rationale)
 VOCAB19 <- c(BASE_FEATURES,
              "gross_by_hh_size", "earned_by_hh_size", "unearned_by_hh_size")
+BINARY_FEATURES <- c("children_i", "elderly_disabled_i", "expedited_i",
+                     "married", "homeless", "bbce_state_i")
 
 V240_SCORECARD <- "methods/anyerror_blended_holdout_2024/holdout_metrics.json"
 MM_TAG_SHARE <- 0.25; MM_POOL_MAX <- 0.02
@@ -159,7 +163,7 @@ tag_and_gate <- function(adm, unit, head_gate = FALSE) {
         if (any(err_only)) min(which(err_only)) else "-", top40, top10,
         if (head_gate) " [head-gated]" else " [report only]")
   if (mean(adm$artifact_i) > 0.10)
-    stamp("  [%s] WARNING: total tagged share %.1f%% exceeds 10%% - flag for Eric",
+    stamp("  [%s] WARNING: total tagged share %.1f%% exceeds 10%% - flag for review",
           unit, 100 * mean(adm$artifact_i))
   head_breach <- head_gate && (top40 > MM_TOP40_MAX || top10 > MM_TOP10_MAX)
   if (share_flag > MM_POOL_MAX || head_breach)
@@ -259,7 +263,8 @@ if (RESUME_FROM_CHECKPOINT && file.exists(nat_fn)) {
   rdf <- mine_rule_vocabulary(
     trn, list(any_error = list(rows = seq_len(nrow(trn)), ie = ie_tr)),
     strata_tr_nat, VOCAB19, xgb = XGB, rf = RF,
-    signif_digits = SIGNIF_DIGITS, seed = SEED, verbose = TRUE)
+    signif_digits = SIGNIF_DIGITS, seed = SEED, verbose = TRUE,
+    binary_features = BINARY_FEATURES)
   stamp("national raw rules: %d; scoring via the chunked reducer ...", nrow(rdf))
   sc <- reduce_flags_for_rules(
     rdf, trn, strata_tr_nat,
@@ -302,7 +307,8 @@ for (state in STATES) {
     rdf <- mine_rule_vocabulary(
       trs, list(any_error = list(rows = seq_len(nrow(trs)), ie = ie_s)),
       strata_trs, VOCAB19, xgb = XGB, rf = RF,
-      signif_digits = SIGNIF_DIGITS, seed = SEED, verbose = FALSE)
+      signif_digits = SIGNIF_DIGITS, seed = SEED, verbose = FALSE,
+      binary_features = BINARY_FEATURES)
     own <- NULL
     if (!is.null(rdf) && nrow(rdf)) {
       fl <- flags_for_rules(rdf, trs, strata_trs, label = "")

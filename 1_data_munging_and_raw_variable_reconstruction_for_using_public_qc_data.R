@@ -909,6 +909,21 @@ reg_model_data <- reg_model_data %>%
          total_deductions_by_hh_size = total_deductions / HH_size_n,
          homeless = as.factor(homeded!=1))
 
+# State-level regime flag replacing the raw cat_elig as a mining feature
+# (decided 2026-08-13). bbce_state_i = the state runs Broad-Based
+# Categorical Eligibility (BBCE) in that fiscal year, derived as the
+# state-year share of cases with cat_elig >= 1 reaching 0.5 - the share
+# distribution is bimodal (non-BBCE states ~0.1-0.25, BBCE states ~1.0)
+# with no state flipping across 2022-24. The raw 4-level cat_elig stays
+# in the frame for diagnostics but must NOT be a mining feature: the
+# FY2024 codebook recode moved the mass of eligible units from code 1 to
+# code 2, so any 1-vs-2 split encodes the reporting era, and code 3
+# exists only from FY2024.
+reg_model_data <- reg_model_data %>%
+  group_by(state_name, fiscal_year) %>%
+  mutate(bbce_state_i = mean(cat_elig >= 1, na.rm = TRUE) >= 0.5) %>%
+  ungroup()
+
 
 # ── Income type variables ─────────────────────────────────────────────────────
 income_vars <- c(

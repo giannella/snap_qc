@@ -52,14 +52,33 @@ hh_group_of <- function(n) {
   ifelse(is.na(n), NA_character_, ifelse(n <= 1, "1", ifelse(n <= 3, "2-3", "4+")))
 }
 
+# Vocabulary updated 2026-08-13:
+# - the three raw*_by_hh_size names never existed in the frame and were
+#   silently dropped by prep_features() (findings 35) - replaced by the
+#   real per-size income columns (earned/unearned/gross_by_hh_size);
+# - bbce_state_i (state runs Broad-Based Categorical Eligibility that
+#   year) replaces the raw 4-level cat_elig, whose FY2024 codebook recode
+#   made 1-vs-2 splits era-markers rather than household traits.
 features <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
-  "expedited_i", "cat_elig", "rawben_rel_max", "medical_deductions",
+  "expedited_i", "bbce_state_i", "rawben_rel_max", "medical_deductions",
   "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
-  "rawearn_by_hh_size", "rawunearn_by_hh_size", "rawgross_by_hh_size",
+  "earned_by_hh_size", "unearned_by_hh_size", "gross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max",
   "months_since_cert_n", "count_divisible_by_100"
 )
+# 0/1 indicators: canonicalized to "var >= 1" / "var <= 0" at mine time so
+# a binary cannot appear under many equivalent threshold texts
+BINARY_FEATURES <- c("children_i", "elderly_disabled_i", "expedited_i",
+                     "married", "homeless", "bbce_state_i")
+# structural guard against the findings-35 silent-drop hazard: every listed
+# feature must survive prep, or the run stops naming the missing ones
+assert_features_present <- function(pf, wanted) {
+  miss <- setdiff(wanted, pf$features)
+  if (length(miss))
+    stop("features missing after prep (findings 35 hazard): ",
+         paste(miss, collapse = ", "))
+}
 
 # Engines, at the 2026-07-05 tuned settings: "mine big, filter stringently".
 # xgboost: 1000 slow rounds, low subsample (0.15-0.30 indistinguishable; 0.20
@@ -124,6 +143,8 @@ run_frame <- function(frame_df, frame_name, universe) {
   cat(sprintf("\n============ FRAME: %s ============\n", frame_name))
   pf   <- prep_features(frame_df, features)
   pfu  <- prep_features(universe, features)
+  assert_features_present(pf, features)
+  assert_features_present(pfu, features)
   fdf  <- pf$data; pv <- pf$features; univ <- pfu$data
 
   yr    <- as.character(fdf[[YEAR_COL]])
@@ -144,7 +165,7 @@ run_frame <- function(frame_df, frame_name, universe) {
   rules_df <- mine_rule_vocabulary(
     train, setNames(list(list(rows = seq_len(nrow(train)), ie = tg_tr$ie)),
                     frame_name),
-    strata_tr, pv, xgb = XGB, rf = RF,
+    strata_tr, pv, xgb = XGB, rf = RF, binary_features = BINARY_FEATURES,
     signif_digits = SIGNIF_DIGITS, seed = 117)
   if (is.null(rules_df) || nrow(rules_df) == 0) return(invisible(NULL))
   rules_df$source <- rules_df$engines

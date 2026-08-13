@@ -58,6 +58,24 @@ ok("contradiction dropped", is.na(canonicalize_rule("x1 <= 2 & x1 > 5")))
 ok("ordering canonical",
    canonicalize_rule("x2 > 1 & x1 <= 3") == canonicalize_rule("x1 <= 3 & x2 > 1"))
 ok("rounding to 3 signif", grepl("0.123", canonicalize_rule("x1 <= 0.1234567"), fixed = TRUE))
+# per-element threshold formatting (2026-08-13): a condition's text must be
+# identical whatever other thresholds share the rule (the old vector-format
+# padded to common width within a rule, fragmenting exact-text dedup)
+ok("condition text stable across rules of different widths",
+   identical(strsplit(canonicalize_rule("x1 <= 1 & x2 <= 22345"), " & ")[[1]][1],
+             strsplit(canonicalize_rule("x1 <= 1 & x2 <= 2"), " & ")[[1]][1]))
+# binary indicator normalization (2026-08-13, opt-in): every flag-equivalent
+# split on a 0/1 feature collapses to one of two texts; always-true bounds
+# drop; an always-false bound means the rule flags nothing
+ok("binary normalization collapses equivalent splits",
+   canonicalize_rule("b1 > 0.5 & x1 <= 3", binary_features = "b1") ==
+     canonicalize_rule("b1 >= 0.7 & x1 <= 3", binary_features = "b1") &&
+   grepl("b1 >= 1", canonicalize_rule("b1 > 0.5 & x1 <= 3",
+                                      binary_features = "b1"), fixed = TRUE) &&
+   canonicalize_rule("b1 < 0.5 & x1 <= 3", binary_features = "b1") ==
+     canonicalize_rule("b1 <= 0.99 & x1 <= 3", binary_features = "b1") &&
+   is.na(canonicalize_rule("b1 > 1.5 & x1 <= 3", binary_features = "b1")) &&
+   canonicalize_rule("b1 <= 1 & x1 <= 3", binary_features = "b1") == "x1 <= 3")
 
 rules <- canonicalize_rules(c(rr, rx), signif_digits = 3)
 cat(sprintf("canonical pooled rules: %d\n", length(rules)))

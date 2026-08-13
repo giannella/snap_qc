@@ -185,7 +185,8 @@ generate_rules_rpart <- function(df, is_error, features,
 mine_rule_vocabulary <- function(train, frames, strata_idx, features,
                                  xgb, rf, signif_digits = 3,
                                  min_rows = 100, min_errors = 10,
-                                 seed = 117, verbose = TRUE) {
+                                 seed = 117, verbose = TRUE,
+                                 binary_features = NULL) {
   parts <- list()
   for (fn in names(frames)) {
     fr <- frames[[fn]]
@@ -199,12 +200,12 @@ mine_rule_vocabulary <- function(train, frames, strata_idx, features,
         generate_rules_xgboost(sub, ie_s, features, nrounds = xgb$nrounds,
                                max_depth = xgb$max_depth, eta = xgb$eta,
                                subsample = xgb$subsample, seed = seed),
-        signif_digits)
+        signif_digits, binary_features = binary_features)
       rr <- canonicalize_rules(
         generate_rules_ranger(sub, ie_s, features, num_trees = rf$num_trees,
                               max_depth = rf$max_depth, mtry = rf$mtry,
                               min_node_size = rf$min_node_size, seed = seed),
-        signif_digits)
+        signif_digits, binary_features = binary_features)
       if (verbose)
         cat(sprintf("  [mine %s | HH %s] %d rows, %d errors -> xgboost %d, ranger %d rules\n",
                     fn, h, length(ix), sum(ie_s), length(rx), length(rr)))
@@ -250,11 +251,39 @@ mine_rule_vocabulary <- function(train, frames, strata_idx, features,
              stringsAsFactors = FALSE)
 }
 
-canonicalize_rule <- function(rule, signif_digits = 3) {
+canonicalize_rule <- function(rule, signif_digits = 3, binary_features = NULL) {
   p <- .parse_rule(rule)
   if (is.null(p)) return(NA_character_)
   p$thr <- signif(p$thr, signif_digits)
   p$dir <- ifelse(p$op %in% c("<", "<="), "upper", "lower")
+
+  # 0/1 indicator normalization (opt-in, 2026-08-13): a tree can split a
+  # binary variable at any cutpoint in (0, 1), producing many texts for the
+  # same two logical conditions. Normalize every flag-equivalent form to
+  # "var >= 1" (has the trait) or "var <= 0" (does not); drop always-true
+  # conditions; a rule with an always-false condition flags nothing -> NA.
+  if (!is.null(binary_features) && any(p$var %in% binary_features)) {
+    drop_row <- rep(FALSE, nrow(p))
+    for (i in which(p$var %in% binary_features)) {
+      t <- p$thr[i]; o <- p$op[i]
+      if (o %in% c(">", ">=")) {
+        always_true  <- (o == ">" && t < 0)  || (o == ">=" && t <= 0)
+        always_false <- (o == ">" && t >= 1) || (o == ">=" && t > 1)
+        if (always_true)  { drop_row[i] <- TRUE; next }
+        if (always_false) return(NA_character_)
+        p$op[i] <- ">="; p$thr[i] <- 1
+      } else {
+        always_true  <- (o == "<" && t > 1)  || (o == "<=" && t >= 1)
+        always_false <- (o == "<" && t <= 0) || (o == "<=" && t < 0)
+        if (always_true)  { drop_row[i] <- TRUE; next }
+        if (always_false) return(NA_character_)
+        p$op[i] <- "<="; p$thr[i] <- 0
+      }
+    }
+    p <- p[!drop_row, , drop = FALSE]
+    if (!nrow(p)) return(NA_character_)
+    p$dir <- ifelse(p$op %in% c("<", "<="), "upper", "lower")
+  }
 
   keep <- rep(TRUE, nrow(p))
   for (g in unique(paste(p$var, p$dir))) {
@@ -277,13 +306,18 @@ canonicalize_rule <- function(rule, signif_digits = 3) {
   }
 
   p <- p[order(p$var, p$dir), , drop = FALSE]
-  paste(sprintf("%s %s %s", p$var, p$op, format(p$thr, digits = 15, scientific = FALSE)),
-        collapse = " & ")
+  # thresholds formatted ONE AT A TIME (2026-08-13): format() on the vector
+  # pads to a common width within the rule, so the same condition got
+  # different texts in different rules, fragmenting exact-text dedup and
+  # the condition index
+  thr_txt <- vapply(p$thr, function(t)
+    format(t, digits = 15, scientific = FALSE, trim = TRUE), "")
+  paste(sprintf("%s %s %s", p$var, p$op, thr_txt), collapse = " & ")
 }
 
-canonicalize_rules <- function(rules, signif_digits = 3) {
+canonicalize_rules <- function(rules, signif_digits = 3, binary_features = NULL) {
   out <- vapply(rules, canonicalize_rule, "", signif_digits = signif_digits,
-                USE.NAMES = FALSE)
+                binary_features = binary_features, USE.NAMES = FALSE)
   unique(out[!is.na(out)])
 }
 
