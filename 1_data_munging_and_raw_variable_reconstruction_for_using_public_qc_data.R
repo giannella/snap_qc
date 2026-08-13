@@ -218,6 +218,14 @@ mydata$medicare_part_b_premium <- medicare_part_b_premium_by_year[as.character(m
 # Adjust minimum ben (it should be $0 for households >2)
 mydata$fsminimum_ben <- ifelse(mydata$FSUSIZE < 3, mydata$MINIMUM_BEN, 0)
 
+# Standardize child support treatment options (always DEDUCT)
+mydata <- mydata %>%
+  mutate(
+    cs_exclusion_state = coalesce(FSCSDED == 0 & FSCSEXP > 0, FALSE),
+    FSCSDED = if_else(cs_exclusion_state, FSCSEXP, FSCSDED),
+    FSGRINC = if_else(cs_exclusion_state, FSEARN + FSUNEARN, FSGRINC)
+  )
+
 # Recalculate FSBEN uncapped
 mydata$fsnet_before_shelter <- mydata$FSGRINC - (
   mydata$FSERNDED +
