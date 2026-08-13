@@ -22,11 +22,6 @@ reg_model_data.csv
 methods/state_similarity_v2/era_validation_train1718_test19/raw_vocab/
 methods/delivery_pools_2022_2024_v3/
 
-# Source PDFs for the SNAP State Options panel: ~31 MB of public FNS reports.
-# Not tracked, to keep them out of git history. Download them from the link in
-# additional_data/README.md; snap_state_options_pipeline.R expects them here.
-additional_data/state options reports/
-
 # Claude Code personal/local
 .claude/settings.local.json
 # Session working memory, kept local. The durable public record of findings is
@@ -41,3 +36,5 @@ desktop.ini
 .DS_Store
 snap_qc.Rproj
 .RDataTmp
+.RDataTmp1
+Untitled.R

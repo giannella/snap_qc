@@ -219,6 +219,14 @@ mydata$medicare_part_b_premium <- medicare_part_b_premium_by_year[as.character(m
 # Adjust minimum ben (it should be $0 for households >2)
 mydata$fsminimum_ben <- ifelse(mydata$FSUSIZE < 3, mydata$MINIMUM_BEN, 0)
 
+# Standardize child support treatment options (always DEDUCT)
+mydata <- mydata %>%
+  mutate(
+    cs_exclusion_state = coalesce(FSCSDED == 0 & FSCSEXP > 0, FALSE),
+    FSCSDED = if_else(cs_exclusion_state, FSCSEXP, FSCSDED),
+    FSGRINC = if_else(cs_exclusion_state, FSEARN + FSUNEARN, FSGRINC)
+  )
+
 # Recalculate FSBEN uncapped
 mydata$fsnet_before_shelter <- mydata$FSGRINC - (
   mydata$FSERNDED +
@@ -279,7 +287,7 @@ for (v in vars) {
 # Recalculate raw income formula
 calculate_raw_benefits <- function(mydata) {
   
-  mydata$rawernded <- mydata$rawearn * 0.2
+  mydata$rawernded <- floor(mydata$rawearn * 0.2)
   mydata$rawgrinc <- mydata$rawearn + mydata$rawunearn
   mydata$rawnet_before_shelter <- mydata$rawgrinc - (
     mydata$rawernded +
@@ -291,13 +299,11 @@ calculate_raw_benefits <- function(mydata) {
   mydata$rawnet_adjusted_half <- pmax(mydata$rawnet_before_shelter * 0.5, 0)
   mydata$rawsltexp <- mydata$rawrent + mydata$rawutil
   mydata$rawsltded_uncapped <- mydata$rawsltexp - mydata$rawnet_adjusted_half
-  mydata$rawsltded_uncapped <- floor(mydata$rawsltded_uncapped)
   mydata$rawsltded <- ifelse(
     is.infinite(mydata$max_shelter_deduction),
     pmax(mydata$rawsltded_uncapped, 0),
     pmin(pmax(mydata$rawsltded_uncapped, 0), mydata$max_shelter_deduction)
   )
-  mydata$rawsltded <- floor(mydata$rawsltded)
   mydata$rawnet_allow_negative = mydata$rawnet_before_shelter - (
     mydata$rawsltded +
       mydata$rawhomeless_ded
@@ -309,10 +315,8 @@ calculate_raw_benefits <- function(mydata) {
   mydata$rawben_recreated <- pmin(mydata$rawben_recreated, mydata$rawbenmax)
   mydata$rawnet_capped = pmax(mydata$rawnet_allow_negative, 0) 
   mydata$unc_rawben_rel_max <- mydata$rawben_uncapped / mydata$rawbenmax
-  mydata$at_max <- (mydata$rawben_uncapped + 5) >= mydata$rawbenmax
-  
   mydata
-  
+
 }
 
 # Corrected variable notes 
@@ -345,23 +349,32 @@ get_max_allotment <- function(hh_size, fiscal_year) {
 
 # Read in the standard deductions based on unit size
 standard_deductions <- read.csv(paste0(folder, "additional_data/standard_deductions.csv"))
+std_ded_size_cols <- grep("^X[0-9]+$", names(standard_deductions), value = TRUE)
 standard_deductions_long <- reshape(
-  standard_deductions,
-  varying = names(standard_deductions)[-1],
-  v.names = "rawstdded",
-  timevar = "hh_size",
-  times = as.integer(gsub("X", "", names(standard_deductions)[-1])),
+  standard_deductions[, c("year", std_ded_size_cols)],
+  varying   = std_ded_size_cols,
+  v.names   = "rawstdded",
+  timevar   = "hh_size",
+  times     = as.integer(gsub("X", "", std_ded_size_cols)),
   direction = "long"
 )
 standard_deductions_long <- standard_deductions_long[, c("year", "hh_size", "rawstdded")]
 
-get_standard_deduction <- function(hh_size, fiscal_year) {
+il_stdded_offsets <- standard_deductions[, c("year", "IL_OFFSET")]
+get_standard_deduction <- function(state_name, hh_size, fiscal_year) {
   result <- standard_deductions_long[
-    standard_deductions_long$hh_size == hh_size & 
-      standard_deductions_long$year == fiscal_year, 
+    standard_deductions_long$hh_size == hh_size &
+      standard_deductions_long$year == fiscal_year,
     "rawstdded"
   ]
   if(length(result) == 0) return(NA)
+
+  if (!is.na(state_name) && state_name == "Illinois") {
+    off <- il_stdded_offsets$IL_OFFSET[il_stdded_offsets$year == fiscal_year]
+    stopifnot(length(off) == 1, !is.na(off))
+    result <- result - off
+  }
+
   return(result)
 }
 
@@ -419,6 +432,7 @@ if (correct_variables) {
 if (correct_variables) {
   mydata$rawstdded <- mapply(
     get_standard_deduction,
+    state_name = mydata$state_name,
     hh_size = mydata$rawusize,
     fiscal_year = mydata$fiscal_year
   )
