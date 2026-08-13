@@ -708,82 +708,51 @@ overthr <- round(overthr_num / overthr_den * 100, 4)
 overall
 cat(overthr_num, "of", overthr_den, "=", overthr, "%\n")
 
-### Variable smoothing - chart to remove 1.0 spikes
+# Save data as a checkpoint
+saveRDS(mydata, paste0(folder, "corrected.rds"))
+mydata <- readRDS(paste0(folder, "corrected.rds"))
 
-# Function to see what percent at max and chart
-at_max <- function(data, tolerance = 0.01) {
-  subset_data <- data[data$rawusize == 3, ]
-  print(mean(subset_data$unc_rawben_rel_max >= (1 - tolerance) &
-               subset_data$unc_rawben_rel_max <= (1 + tolerance), na.rm = TRUE) * 100)
-  
-  x_var <- "unc_rawben_rel_max"
-  hh_size <- 3
-  min_obs <- 30
-  
-  chart_data <- mydata %>%
-    filter(rawusize == hh_size, .data[[x_var]] >= 0) %>%
-    mutate(bin = round(.data[[x_var]] / 0.02) * 0.02) %>%
-    group_by(bin) %>%
-    summarise(
-      error_rate = mean(over_threshold == 1, na.rm = TRUE),
-      n = n()
-    ) %>%
-    filter(n > min_obs) %>%
-    mutate(fraction = n / sum(n))
-  
-  ggplot(chart_data, aes(x = bin)) +
-    geom_line(aes(y = error_rate, color = "Error Rate")) +
-    geom_point(aes(y = error_rate, color = "Error Rate")) +
-    geom_line(aes(y = fraction, color = "Fraction of Cases")) +
-    geom_point(aes(y = fraction, color = "Fraction of Cases")) +
-    scale_y_continuous(labels = scales::percent) +
-    scale_color_manual(values = c("Error Rate" = "black", "Fraction of Cases" = "blue")) +
-    labs(
-      title = paste0("Error Rate vs Fraction of Cases\n(Household Size = ", hh_size, ")"),
-      x = paste0("Ratio of Uncapped Benefit to Max Benefit", "\n(2% Bins; Min ", min_obs, " Obs)"),
-      y = "Percent",
-      color = ""
-    ) +
-    theme_minimal() +
-    theme(legend.position = "bottom")
-}
-mydata <- calculate_raw_benefits(mydata)
-at_max(mydata) # 5.83
+# Create a flag for at_max_benefit
+mydata$at_max_ben <- as.integer(mydata$rawben_uncapped >= mydata$rawbenmax)
 
+### Variable smoothing
 # If we reduced earned income down by over 75%, and at max, set it to $0
 if (apply_correction_smoothing) {
   mydata$rawearn <- ifelse(
     mydata$correctednotes == "earn_down" &
-      mydata$at_max &
+      mydata$at_max_ben &
       abs(mydata$correctedamount) > 0.75 * mydata$FSEARN,
     0,
     mydata$rawearn
   )
   mydata <- calculate_raw_benefits(mydata)
-  at_max(mydata) # 5.43
 }
 
 # If we reduced unearned income down by over 75%, and at max, set it to $0
 if (apply_correction_smoothing) {
   mydata$rawunearn <- ifelse(
     mydata$correctednotes == "unearn_down" &
-      mydata$at_max &
+      mydata$at_max_ben &
       abs(mydata$correctedamount) > 0.75 * mydata$FSUNEARN,
     0,
     mydata$rawunearn
   )
   mydata <- calculate_raw_benefits(mydata)
-  at_max(mydata) # 5.29
 }
 
 # Scale deduction variables to match mean values for other households
 # that are at max or above (e.g. make the data equally represent)
 scale_by_ratio <- function(data, notes_value, col_name) {
   
+  # Direction the adjust_* loop already moved this variable
+  suffix <- sub("^.*_", "", notes_value)
+  
+  data$at_max_ben <- as.integer(data$rawben_uncapped >= data$rawbenmax)
+  
   # Calculate comparison and ratios
   comparison <- data %>%
     filter(correctednotes %in% c(notes_value, "no_change"),
-           at_max,
+           at_max_ben == 1,
            .data[[col_name]] != 0) %>%
     group_by(rawusize, correctednotes) %>%
     summarise(mean_val = mean(.data[[col_name]], na.rm = TRUE),
@@ -794,15 +763,17 @@ scale_by_ratio <- function(data, notes_value, col_name) {
   ratios <- comparison %>%
     select(rawusize, correctednotes, mean_val) %>%
     tidyr::pivot_wider(names_from = correctednotes, values_from = mean_val) %>%
-    mutate(ratio = .data[[notes_value]] / no_change)
+    # so smoothing can only move in the direction already applied
+    mutate(ratio = no_change / .data[[notes_value]],
+           ratio = if (suffix == "up") pmax(ratio, 1) else pmin(ratio, 1))
   
   print(ratios)
   
   # Apply scaling
   target_rows <- !is.na(data$correctednotes) & 
     data$correctednotes == notes_value & 
-    !is.na(data$at_max) &
-    data$at_max
+    !is.na(data$at_max_ben) &
+    data$at_max_ben == 1
   
   data[[col_name]][target_rows] <- sapply(which(target_rows), function(i) {
     size <- data$rawusize[i]
@@ -818,25 +789,16 @@ scale_by_ratio <- function(data, notes_value, col_name) {
 if (apply_correction_smoothing) {
   mydata <- scale_by_ratio(mydata, "dep_up", "rawdepded")
   mydata <- calculate_raw_benefits(mydata)
-  at_max(mydata) # 5.23
   mydata <- scale_by_ratio(mydata, "cs_up", "rawcsded")
   mydata <- calculate_raw_benefits(mydata)
-  at_max(mydata) # 5.21
-  mydata <- scale_by_ratio(mydata, "util_up", "rawsltded")
-  mydata <- calculate_raw_benefits(mydata)
-  at_max(mydata) # 4.70
   mydata <- scale_by_ratio(mydata, "rent_up", "rawsltded")
   mydata <- calculate_raw_benefits(mydata)
-  at_max(mydata) # 4.70
   mydata <- scale_by_ratio(mydata, "med_up", "rawmedded")
   mydata <- calculate_raw_benefits(mydata)
-  at_max(mydata) # 4.69
   mydata <- scale_by_ratio(mydata, "earn_down", "rawearn")
   mydata <- calculate_raw_benefits(mydata)
-  at_max(mydata) # 3.33
   mydata <- scale_by_ratio(mydata, "unearn_down", "rawunearn")
   mydata <- calculate_raw_benefits(mydata)
-  at_max(mydata) # 2.23
 }
 
 mydata <- mydata %>% mutate(raw_total_deductions = rawdepded + rawcsded +
@@ -845,34 +807,6 @@ mydata <- mydata %>% mutate(raw_total_deductions = rawdepded + rawcsded +
 #### Add additional features from features.R
 source("features.R")
 mydata <- add_features(mydata)
-
-#### Misc calculations for write up ####
-
-# How often states included a second error element
-# "0% - 50%"
-table(mydata$pct_element2)
-
-# Elements that could not be corrected
-mydata %>%
-  filter(abs(RAWBEN - rawben_recreated) > 5, over_threshold == 1, correctednotes == "no_change") %>%
-  count(ELEMENT1) %>%
-  arrange(desc(n)) %>%
-  print(n = Inf)
-
-# Correlation between element 2 reporting and correction errors
-# "p-value = 0.0001086"
-result <- mydata %>%
-  group_by(state_name) %>%
-  summarise(
-    n_errors     = sum(grepl("error", correctednotes, ignore.case = TRUE)),
-    n_total      = n(),
-    ratio        = n_errors / n_total,
-    pct_element2 = first(pct_element2)
-  ) %>%
-  arrange(desc(ratio))
-
-cor(result$ratio, result$pct_element2, use = "complete.obs")
-cor.test(result$ratio, result$pct_element2)
 
 # Save data
 #write_sav(mydata, paste0(folder, "final.sav"))
@@ -944,7 +878,7 @@ reg_model_data <- df %>%
          gross_inc_to_poverty_FS = tpov, #"Gross income/poverty level ratio"
          raw_benefit_amount = rawben_recreated, #"Reported SNAP benefit received"
          maximum_benefit_for_HH_size = rawbenmax, #Maximum benefit amount
-         total_error_amount = amterr, #"Amount of benefit in error"
+         total_error_amount = absbendiff, #"Amount of benefit in error"
          children_i = children_present,
          elderly_i = elderly_present,
          months_since_cert_n = lastcert, #Months since last SNAP certification
