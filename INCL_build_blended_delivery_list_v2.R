@@ -55,7 +55,7 @@ PAIRING_TAG <- if (identical(PAIRING, DEFAULT_PAIRING)) "" else paste0("_", PAIR
 # "dpf_workloadfill" (one line, e.g. in a runner before source()) to instead rank
 # by error dollars per flagged case: an audition-only alternative that was modestly
 # higher on dollar recall but stayed below the adoption bar (modeling_findings.md
-# Â§21). Ranking by dollars needs a fresh pool cache, since the statistic is
+# §21). Ranking by dollars needs a fresh pool cache, since the statistic is
 # computed at pool-build time (delete POOL_CACHE once to switch).
 RANK_STAT <- if (identical(PAIRING, "dpf_workloadfill")) "dollars_per_flag_train" else "precision_train_lcb"
 

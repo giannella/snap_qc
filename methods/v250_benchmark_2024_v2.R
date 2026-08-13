@@ -35,9 +35,9 @@
 #   the error flag; v2.4.0's dollar columns were built from AMTERR.
 #   Bounded within $5 per case by the reconciliation filter, but the
 #   dollar deltas carry this definitional shift.
-# - ILLINOIS's paired delta additionally includes losing its state pool:
-#   the v2.4.0 baseline blended IL state rules, tonight's IL list is
-#   national-only (the hold) - read IL's row with that in mind.
+# - ILLINOIS blends its state pool again (hold lifted 2026-08-13 after
+#   the IL standard-deduction offset fix); its paired delta vs v2.4.0 is
+#   read like any other state's.
 # - mismatch definition (conservative >=): rawben >= benmax with
 #   rawben_uncapped < benmax; 568 of 44,029 at-or-above-max rows on the
 #   rebuilt frame (strict == variant: 492), asserted < 1000 at runtime.
@@ -82,7 +82,7 @@ BINARY_FEATURES <- c("children_i", "elderly_disabled_i", "expedited_i",
 V240_SCORECARD <- "methods/anyerror_blended_holdout_2024/holdout_metrics.json"
 MM_TAG_SHARE <- 0.25; MM_POOL_MAX <- 0.02
 MM_TOP40_MAX <- 1L;   MM_TOP10_MAX <- 0L
-HOLD_STATE_POOLS <- c("Illinois")
+HOLD_STATE_POOLS <- character(0)  # Illinois hold LIFTED 2026-08-13 (the IL standard-deduction offset fix landed and is verified by the recon diagnostics)
 
 OUT_DIR <- "methods/v250_benchmark_2024"
 if (!exists("RESUME_FROM_CHECKPOINT")) RESUME_FROM_CHECKPOINT <- FALSE

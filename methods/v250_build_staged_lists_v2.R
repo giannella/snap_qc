@@ -40,10 +40,11 @@
 # two smoke misfires (statistician rulings, 2026-08-12): pool-share gate
 # on FLAG-tagged rules per pool; head gates (top40/top10, either tag) on
 # the NATIONAL pool and each state's shadow BLEND head only.
-# ILLINOIS HOLD (decided 2026-08-12): Illinois's own state pool is mined and
-# cached but NOT blended - its lists are national-rules-only until the
-# Illinois reconstruction fix lands (477 clean cases recreated +$2-3 high
-# distort its state-scale rel_max denominators).
+# ILLINOIS: the 2026-08-12 state-pool hold was LIFTED 2026-08-13 - the
+# Illinois standard-deduction offset fix landed (IL applies $7, $4 from
+# FY2025, below the federal table; the source of its +$2-3 recreated-high
+# drift on 26% of clean cases). HOLD_STATE_POOLS is empty; Illinois
+# blends like every other state.
 #
 # SMOKE=1: 3 states + national, tiny ensembles, own output dir.
 # Expects `reg_model_data`. Outputs -> methods/v250_candidate_lists/.
@@ -123,7 +124,7 @@ MM_TAG_SHARE  <- 0.25   # identification bar (either flags or errors)
 MM_POOL_MAX   <- 0.02   # displacement: max tagged share of any admitted pool
 MM_TOP40_MAX  <- 1L     # displacement: max tagged in national top 40 by LCB
 MM_TOP10_MAX  <- 0L     # displacement: none in the national top 10
-HOLD_STATE_POOLS <- c("Illinois")   # decided 2026-08-13: national-only blend
+HOLD_STATE_POOLS <- character(0)  # Illinois hold LIFTED 2026-08-13 (the IL standard-deduction offset fix landed and is verified by the recon diagnostics)
 
 STATES <- sort(unique(st))
 if (SMOKE) STATES <- c("Washington", "Maine", "Mississippi", "Illinois")
