@@ -340,23 +340,32 @@ get_max_allotment <- function(hh_size, fiscal_year) {
 
 # Read in the standard deductions based on unit size
 standard_deductions <- read.csv(paste0(folder, "additional_data/standard_deductions.csv"))
+std_ded_size_cols <- grep("^X[0-9]+$", names(standard_deductions), value = TRUE)
 standard_deductions_long <- reshape(
-  standard_deductions,
-  varying = names(standard_deductions)[-1],
-  v.names = "rawstdded",
-  timevar = "hh_size",
-  times = as.integer(gsub("X", "", names(standard_deductions)[-1])),
+  standard_deductions[, c("year", std_ded_size_cols)],
+  varying   = std_ded_size_cols,
+  v.names   = "rawstdded",
+  timevar   = "hh_size",
+  times     = as.integer(gsub("X", "", std_ded_size_cols)),
   direction = "long"
 )
 standard_deductions_long <- standard_deductions_long[, c("year", "hh_size", "rawstdded")]
 
-get_standard_deduction <- function(hh_size, fiscal_year) {
+il_stdded_offsets <- standard_deductions[, c("year", "IL_OFFSET")]
+get_standard_deduction <- function(state_name, hh_size, fiscal_year) {
   result <- standard_deductions_long[
     standard_deductions_long$hh_size == hh_size & 
       standard_deductions_long$year == fiscal_year, 
     "rawstdded"
   ]
   if(length(result) == 0) return(NA)
+  
+  if (!is.na(state_name) && state_name == "Illinois") {
+    off <- il_stdded_offsets$IL_OFFSET[il_stdded_offsets$year == fiscal_year]
+    stopifnot(length(off) == 1, !is.na(off))
+    result <- result - off
+  }
+  
   return(result)
 }
 
@@ -414,6 +423,7 @@ if (correct_variables) {
 if (correct_variables) {
   mydata$rawstdded <- mapply(
     get_standard_deduction,
+    state_name = mydata$state_name,
     hh_size = mydata$rawusize,
     fiscal_year = mydata$fiscal_year
   )
