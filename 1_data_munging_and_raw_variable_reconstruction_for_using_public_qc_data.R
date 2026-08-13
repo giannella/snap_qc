@@ -883,7 +883,7 @@ reg_model_data <- df %>%
          gross_inc_to_poverty_FS = tpov, #"Gross income/poverty level ratio"
          raw_benefit_amount = rawben_recreated, #"Reported SNAP benefit received"
          maximum_benefit_for_HH_size = rawbenmax, #Maximum benefit amount
-         total_error_amount = amterr, #"Amount of benefit in error"
+         total_error_amount = absbendiff, #"Amount of benefit in error"
          children_i = children_present,
          elderly_i = elderly_present,
          months_since_cert_n = lastcert, #Months since last SNAP certification
