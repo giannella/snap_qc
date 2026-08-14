@@ -1689,3 +1689,66 @@ percentile arm's pooled fit includes FY2024, so the flat result leans
 against it if anything.
 
 *Full tables, the condition inventory, and the review record: [detailed record](modeling_findings_detailed.md#37-exploratory-bens-within-state-percentiles-at-state-scale---precision-a-wash-and-the-miner-does-not-use-them-as-outlier-detectors-2026-08-11), §37.*
+
+## 38. The benefit-reconstruction defect repaired at the source; the residual gated out of the builds
+
+> **Takeaway: about the data.** The reconstruction defect behind section
+> 28's near-maximum artifact was repaired in the munging code, not
+> papered over in the features: "mismatch rows" (cases whose recorded
+> benefit sits at or above the household's maximum allotment while the
+> reconstructed uncapped benefit lands below it - the failure signature
+> rules were learning) fell from **4,011 to 571** on FY2022-24, and
+> clean-case within-$1 agreement between the recorded and reconstructed
+> raw benefit rose from **95.6% to 97.9%**. The residual 571 rows still
+> run an error rate of **0.750** against the frame's 0.114, so delivery
+> builds now tag and drop rules that lean on them and verify by re-walk
+> that dropping the rest changes nothing: median re-walk precision change
+> **0.000** at both budgets, zero states worse than -0.05.
+
+The repairs (2026-08-12/13): the earned-income deduction now floors the
+way the recorded field does, two shelter-deduction floors that did not
+match the files were removed, child-support fields are standardized
+before use, and Illinois's $7 standard-deduction offset is subtracted
+(its clean-case disagreement fell from 27.0% to 5.2%). Error flags and
+row counts are identical across the fix; only reconstructed features
+moved. The acceptance criterion was practical, not purity: artifact
+rules may exist if removing them changes nothing, and may not dominate
+heads or displace clean rules. Measured against that: 21 of 60,920
+national rules (0.03%) trip the flag-share tag, zero tagged rules sit
+in any list's top 10, and re-walking every list without the tagged
+rules moves the median state by exactly 0.000.
+
+*The failure families, gate definitions, and full gate record: [detailed record](modeling_findings_detailed.md#38-the-benefit-reconstruction-defect-repaired-at-the-source-the-residual-gated-out-of-the-builds-2026-08-13), §38.*
+
+## 39. v2.5.0: the corrected-frame re-mine beats the shipped v2.4.0 lists a year ahead
+
+> **Takeaway: about our pipeline.** The v2.5.0 recipe - fresh mines on
+> the reconstruction-fixed frame, the per-size 19-feature vocabulary
+> with the state-level BBCE regime flag in place of the recoded
+> case-level `cat_elig`, state + national pools blended, the fresh-share
+> walk, and the section 38 artifact gates - was mined on FY2022-23 and
+> walked on each state's FY2024. Against the shipped v2.4.0 lists on the
+> same paired one-year-ahead test it delivers median precision
+> **0.3182 vs 0.2861** at the 5% budget (paired median **+0.0232**, mean
+> +0.0124; 8 of 49 states worse than -0.05, 14 better than +0.05) and
+> **0.2976 vs 0.2671** at 10% (paired **+0.0300**, mean +0.0227; 3
+> worse, 15 better), with paired dollar recall up at both budgets
+> (median +0.0092 / +0.0169). This is a package-level comparison
+> (vocabulary + pools + build walk + frame together); the walk alone is
+> worth ~+0.0118 of it at 5% (section 34). Promoted to
+> `state_delivery_lists/` as v2.5.0 on 2026-08-14.
+
+Two full cycles a day apart also priced this week's correctness changes
+(the BBCE swap, indicator-text canonicalization, the Illinois fix) at
+exactly zero: paired run-to-run median +0.0000 at both budgets. The
+`cat_elig` case-level code was dropped because the FY2024 file recoded
+it (code 1 falls 32,502 to 11,033 across 2023-24 while code 2 jumps
+1,972 to 23,194); the regime flag that replaced it is stable (41 BBCE /
+8 non-BBCE states, zero flips 2022-24, 98 of 98 state-years agree with
+the USDA options file). Illinois, held out of run 1 pending its fix, is
+blended like every other state (0.375 at the 5% budget vs 0.325
+national-only, inside the ~0.068 per-state SE). Single seed, one era;
+per-state deltas are unreadable individually (SE ~0.068 at a median
+state's 5% budget) - read the 49-state aggregates.
+
+*Design, scorecard, paired tables, and caveats: [detailed record](modeling_findings_detailed.md#39-v250-the-corrected-frame-re-mine-beats-the-shipped-v240-lists-a-year-ahead-2026-08-13), §39.*

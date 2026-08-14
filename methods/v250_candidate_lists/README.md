@@ -1,15 +1,16 @@
-# v2.5.0 CANDIDATE delivery lists - STAGED, not shipped
+# v2.5.0 delivery lists - build staging area (PROMOTED 2026-08-14)
 
 One ranked rule list per state and review budget (5% / 10% of caseload),
 built 2026-08-13 by `methods/v250_build_staged_lists_v2.R` on the
-2026-08-12 rebuilt frame (the reconstruction fix). These are staged for
-review; the shipped deliverable remains `state_delivery_lists/`
-(v2.4.0) until promotion is decided. Recipe: per-size 19-feature
-vocabulary, any-error mining, state + national pools blended on one
-99%-LCB scale, fresh-share walk (f = 0.50), measurement-contaminated
-rules dropped before the fill (see the mm_ columns). Illinois's state
-pool is HELD (its lists are national-rules-only) pending a further
-Illinois-specific reconstruction fix.
+2026-08-13 rebuilt frame (the reconstruction fix, including the
+Illinois offset fix; Illinois's state pool is included like every
+other state's). These lists were promoted to `state_delivery_lists/`
+as the v2.5.0 release on 2026-08-14; that folder and its README are
+now the shipped copy, and this folder is retained as build provenance.
+Recipe: per-size 19-feature vocabulary, any-error mining,
+state + national pools blended on one 99%-LCB scale, fresh-share walk
+(f = 0.50), measurement-contaminated rules dropped before the fill
+(see the mm_ columns).
 
 The one-year-ahead performance benchmark for this recipe is
 `methods/v250_benchmark_2024/` (same recipe mined on FY2022-23, walked
@@ -54,7 +55,10 @@ them noise. Caution from the same record: the discovery / cause / timing
 fields carry real state-to-state variation beyond sampling, so a
 national share will be somewhat off for any one state; the element and
 nature fields travel well. The FULL characterization sheet - every share
-with its Wilson interval, ~150 columns - is
-`rule_characterization_v250.csv` in this folder, joinable on (hh, rule).
-`build_summary.csv` records per-list pool sizes, state-rule counts,
-artifact-rule drops, and fill gaps.
+with its Wilson interval, ~150 columns - ships as
+`state_delivery_lists/rule_characterization.csv`, joinable on (hh, rule);
+its build-time copy here (`rule_characterization_v250.csv`) and the
+per-state list copies are local build provenance, untracked because they
+duplicate the shipped folder byte for byte. `build_summary.csv` (tracked)
+records per-list pool sizes, state-rule counts, artifact-rule drops, and
+fill gaps.

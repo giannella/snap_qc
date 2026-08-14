@@ -148,13 +148,35 @@ below all mean this statistic.
   and a state that prefers rules it can act on has room to impose that
   preference at depth; whether preference-based reordering preserves precision
   is not yet tested. *(settled, one era, national pools)*
-- **Check your list's exposure to the near-max-benefit reconstruction
-  artifact.** Some delivered rules earn their rank on households our public
-  reconstruction places just below the benefit maximum, a band your own file
-  may not reproduce: a median 6.3% of a 5% list's delivered cases (16.3% at
-  the most exposed state) come from such rules. Exposure must be measured, not
-  read off the rule text, which overstates it about fivefold (§28). A feature
-  fix is designed but not yet validated. *(settled diagnostic; fix open)*
+- **The v2.5.0 lists (current) were re-mined on a corrected frame and beat
+  the previous lists a year ahead.** The benefit reconstruction behind the
+  near-max artifact (§28) was repaired at the source: its failure signature
+  fell from 4,011 cases to 571 on FY2022-24, and clean-case agreement with
+  the recorded benefit rose from 95.6% to 97.9% (§38). Re-mined on the
+  corrected data with a per-size 19-feature vocabulary, the lists deliver a
+  median precision of 0.3182 at the 5% budget (2.75x lift) and 0.2976 at
+  10% (2.49x) on the mined-2022-23 / scored-2024 test, beating the v2.4.0
+  lists paired per state by +0.0232 and +0.0300 median with dollar recall
+  also up (§39). *(settled, one era, package-level comparison)*
+- **Rules leaning on the residual reconstruction defect are dropped, and
+  every list carries audit columns so you can verify.** The 571 remaining
+  failure cases still run a 75% error rate, so any rule taking at least a
+  quarter of its flags or caught errors from them is removed before your
+  list is built (0.03% of national rules trip the flag test; none sits in
+  any list's top 10), and `mm_share_flags` / `mm_share_errors` /
+  `mm_inflation` on each row show what remains. Re-walking every list
+  without the tagged rules moves the median state by exactly 0.000 (§38).
+  *(settled, 49 states)*
+- **Each rule now tells you what it finds, so you can choose rules you can
+  act on.** Every list carries national-scope characterization columns: the
+  error elements and error-nature groups behind the rule's catches, how
+  often the QC reviewer found the variance in the case record, the
+  overissuance share, timing at certification, and the agency-caused share
+  (definitions and scope warnings in `state_delivery_lists/README.md`; the
+  full sheet with confidence intervals ships alongside). Group shares are
+  reliable and state-stable for the what-happened fields; discovery, cause,
+  and timing vary more by state, so read those as national tendencies
+  (§29). *(settled, 543-rule reliability study)*
 
 ## Know your data
 

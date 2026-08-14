@@ -1,6 +1,6 @@
 # Raw-benefit reconstruction: debugging diagnostics (2026-08-12)
 
-Read-only diagnostics behind the reconstruction clues sent to Ben.
+Read-only diagnostics behind the reconstruction clues for the reconstruction investigation.
 "Clean" throughout means cases QC marked error-free, where the error label
 cannot explain a recreated-vs-recorded discrepancy. All scripts read
 `reg_model_data.rds` from the repo root and print to console; nothing is
@@ -22,7 +22,7 @@ failure rate 27% FY22-23 falling to 18% FY24 vs a ~2.3% floor elsewhere;
 half are error cases) - the population that made the near-max features
 minable-but-misleading (findings §28, §35).
 
-**Post-fix (Ben's smoothing fix, frame rebuilt 2026-08-12 evening):**
+**Post-fix (the reconstruction smoothing fix, frame rebuilt 2026-08-12 evening):**
 within-$1 agreement 92.5% -> 95.6% overall, 95.6% -> 97.5% clean-case;
 recorded-at-max cases reconstructing below max 3,935 -> 492 (9.0% ->
 1.1%, err rate of the remnant 0.715); clean mismatches 4,470 -> 2,584;
@@ -33,7 +33,7 @@ built after 2026-08-12 carry the file benefit difference as
 `total_error_amount` (absbendiff was renamed); the scripts handle both.
 
 Caveats: the field named `RAWNET` is CORRECTED net income despite its name
-(Eric, 2026-08-12) - do not debug against it as agency-side truth. The
+(decided 2026-08-12) - do not debug against it as agency-side truth. The
 munging AMTERR filter already dropped rows whose benefit difference does
 not reconcile with the reported error amount. Success metric for a fix:
 the clean-case within-$1 agreement rate, overall and per state.

@@ -392,7 +392,7 @@ write.csv(inv, file.path(OUT_DIR, "invariance_check.csv"), row.names = FALSE)
 if (requireNamespace("jsonlite", quietly = TRUE))
   jsonlite::write_json(
     list(built = "recipe benchmark: fresh mines train FY2022-23, walk FY2024, seed 117, rebuilt frame 2026-08-12",
-         recipe = "v2.5.0 candidate (per-size 19-var, state + national blend, fresh-share walk f=0.50, artifact check, Illinois state pool held)",
+         recipe = "v2.5.0 candidate (per-size 19-var, state + national blend, fresh-share walk f=0.50, artifact check; holds per HOLD_STATE_POOLS, see records$state_pool_held)",
          v240_comparison_note = "paired deltas span vocabulary + pool source + build walk (~+0.0118 median at 5% for fresh-share, findings 34) + pool dedup + the frame rebuild; error flags identical across frames, error dollars redefined (absbendiff)",
          records = bench),
     file.path(OUT_DIR, "v250_benchmark_2024.json"),

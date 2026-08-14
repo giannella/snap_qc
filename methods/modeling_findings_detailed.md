@@ -265,6 +265,17 @@ we learned is recoverable. Each points to its numbered section.
   stratum-evaluation bug caught and fixed pre-launch; the walk's
   exact-refill assertion shown empirical-only at state scale (tolerated,
   reported gaps; max 2 cases).
+- **08-12/13**: The benefit reconstruction repaired at the source
+  (mismatch rows 4,011 to 571 on FY2022-24; Illinois offset family 477
+  to 11); artifact tag/drop/head-gate/re-walk system built into the
+  delivery builds and passed everywhere (#38). Full re-mine cycle:
+  benchmark (mined FY2022-23, walked FY2024) beats the shipped v2.4.0
+  lists paired per state (+0.0232 median at 5%, +0.0300 at 10%); the
+  correctness package (BBCE regime flag for the recoded `cat_elig`,
+  indicator canonicalization, Illinois fix) priced at zero run-to-run
+  (#39). Production lists built on all of FY2022-24 with
+  characterization + audit columns; promoted to `state_delivery_lists/`
+  as v2.5.0 on 2026-08-14.
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -3518,3 +3529,221 @@ percentile-to-value map with distinct-value counts). Script:
 `methods/state_percentile_runoff_v2.R` + `runners/run_state_percentile_runoff.R`.
 Log: pctl_runoff.log (untracked). Review record: in the design note's
 addendum.
+
+## 38. The benefit-reconstruction defect repaired at the source; the residual gated out of the builds (2026-08-13)
+
+> **Takeaway: about the data.** The reconstruction defect behind section
+> 28's near-maximum artifact was repaired in the munging code, not
+> papered over in the features: "mismatch rows" (cases whose recorded
+> benefit sits at or above the household's maximum allotment while the
+> reconstructed uncapped benefit lands below it - the failure signature
+> rules were learning) fell from **4,011 to 571** on FY2022-24, and
+> clean-case within-$1 agreement between the recorded and reconstructed
+> raw benefit rose from **95.6% to 97.9%**. The residual 571 rows still
+> run an error rate of **0.750** against the frame's 0.114, so delivery
+> builds now tag and drop rules that lean on them and verify by re-walk
+> that dropping the rest changes nothing: median re-walk precision change
+> **0.000** at both budgets, zero states worse than -0.05.
+
+The defect (section 28 recap, terms defined there): `rawben` - the
+pre-correction benefit reconstructed from reported income and deduction
+components - failed on a subset of cases in a way correlated with error
+status, so `rawben_rel_max` just under 1 was partly a reconstruction
+signature, not a case property, and mined rules keyed on it.
+
+**The repair.** Diagnosed 2026-08-12 by decomposing the mismatch rows
+into failure families with quantized benefit gaps (the debugging trail,
+per-family signatures, and the post-fix residual audit are in
+`methods/recon_debug/`); repaired in the munging/reconstruction code
+2026-08-12/13 (merge c48448d): the earned-income deduction now floors
+the way the recorded field does, two shelter-deduction floors that did
+not match the files were removed, the child-support deduction and
+exclusion fields are standardized before use, and Illinois's
+standard-deduction offset ($7 below the federal table through FY2024) is
+subtracted for Illinois cases via an `IL_OFFSET` column in
+`additional_data/standard_deductions.csv`.
+
+**Measured effect (current frame vs the archived pre-fix frame,
+FY2022-24; verification script in the session scratchpad, numbers
+re-derived from `reg_model_data.rds` vs
+`archive_data/reg_model_data_pre_benfix_2026-08-12.rds`):**
+
+| quantity | pre-fix | post-fix |
+|---|---|---|
+| mismatch rows | 4,011 | 571 |
+| clean-case within-$1 agreement (recorded vs reconstructed raw benefit) | 0.9563 | 0.9790 |
+| error-case within-$1 agreement | 0.6838 | 0.8102 |
+| Illinois clean-case disagreement rate | 0.270 | 0.052 |
+| Illinois clean-case gaps of exactly +$2/+$3 (the offset family) | 477 | 11 |
+| error rate on mismatch rows | 0.511 | 0.750 |
+
+Row count (115,559) and error flags (13,161) are identical across the
+two frames: the repair touches reconstructed features only. Error
+dollars use the file's recorded raw-vs-corrected benefit difference
+(decided 2026-08-12), so they are also untouched by reconstruction.
+
+**The residual, and the gate system.** 571 rows at error rate 0.750 is
+still a magnet a tree can find. The promotion criterion we set
+(2026-08-12): artifact-driven rules are acceptable if they can be
+removed post hoc without moving results; they are not acceptable if they
+dominate list heads or displace clean rules at mining, admission, or
+ranking. Implemented in the v2.5.0 builder and benchmark as:
+
+- **Tagging**: a rule is tagged when at least 25% of its training flags
+  (`mm_share_flags`) OR of its caught errors (`mm_share_errors`) fall on
+  mismatch rows; every list carries these plus `mm_inflation` (mismatch
+  errors / flags, the additive precision inflation) as audit columns.
+- **Drop before the fill**: tagged rules are removed from each pool
+  before blend dedup. A halt threshold (flag-share-tagged rules above 2%
+  of a pool) would stop the build; a soft 10% threshold on TOTAL tagged
+  share (flag- or error-share) logs a warning only.
+- **Head gates** on the national pool and each blended head: no tagged
+  rule in any top 10, at most one in a top 40.
+- **Removal invariance**: every benchmark list re-walked with the
+  remaining tagged rules removed; the delivered numbers must not move.
+
+**Gate outcomes (v250_cycle2.log; build_summary.csv;
+invariance_check.csv):** production national pool: 21 of 60,920 admitted
+rules flag-share-tagged (0.03%), 1,864 more error-share-only (best rank
+133, max LCB 0.378, median inflation 0.074); benchmark national pool: 11
+(0.02%) and 1,210 (best rank 416). Blended-pool drops: median 1,893 per
+state (range 1,885-3,268) of a median 74,147-rule blend, about 2.7%,
+nearly all on the error-share trigger. State pools: median 8 tagged,
+maximum 1,383 (District of Columbia). Heads: zero tagged rules in any
+top 10; one tagged rule at blend rank 38 (District of Columbia, within
+the at-most-one-in-40 tolerance; logged with its statistics). Soft-
+threshold warnings, report-only: Iowa 14.3% and New York 11.2% total
+tagged share. Removal-invariance re-walk across all 49 states: median
+precision change 0.000 at both budgets, mean +0.0007 at 10%, minimum
+0.000, zero states worse than -0.05 - the criterion's direct test.
+
+Caveats: the gates stay on in every future build until the residual is
+gone; the 571 remaining rows are unexplained (the two diagnosed families
+are mostly, not fully, closed), and per-state residual disagreement is
+uneven (the recon_debug audit lists the current worst states). The
+pre-vs-post agreement comparison is within one frame lineage and does
+not claim the reconstruction is now correct - only that it now matches
+the recorded values far more often and that what remains cannot steer
+the deliverable (the re-walk number).
+
+Artifacts: `archive_data/reg_model_data_pre_benfix_2026-08-12.rds` (and
+`_pre_bbce_2026-08-13.rds`, `_pre_ilfix_2026-08-13.rds` for the
+intermediate steps), `methods/recon_debug/` (diagnosis scripts + README
+with post-fix numbers), `methods/v250_candidate_lists/build_summary.csv`,
+`methods/v250_benchmark_2024/invariance_check.csv`, `v250_cycle2.log`
+(untracked). Scripts: the munging script,
+`methods/v250_build_staged_lists_v2.R`,
+`methods/v250_benchmark_2024_v2.R`.
+
+## 39. v2.5.0: the corrected-frame re-mine beats the shipped v2.4.0 lists a year ahead (2026-08-13)
+
+> **Takeaway: about our pipeline.** The v2.5.0 recipe - fresh mines on
+> the reconstruction-fixed frame, the per-size 19-feature vocabulary
+> with the state-level BBCE regime flag in place of the recoded
+> case-level `cat_elig`, state + national pools blended, the fresh-share
+> walk, and the section 38 artifact gates - was mined on FY2022-23 and
+> walked on each state's FY2024. Against the shipped v2.4.0 lists on the
+> same paired one-year-ahead test it delivers median precision
+> **0.3182 vs 0.2861** at the 5% budget (paired median **+0.0232**, mean
+> +0.0124; 8 of 49 states worse than -0.05, 14 better than +0.05) and
+> **0.2976 vs 0.2671** at 10% (paired **+0.0300**, mean +0.0227; 3
+> worse, 15 better), with paired dollar recall up at both budgets
+> (median +0.0092 / +0.0169). This is a package-level comparison
+> (vocabulary + pools + build walk + frame together); the walk alone is
+> worth ~+0.0118 of it at 5% (section 34). Promoted to
+> `state_delivery_lists/` as v2.5.0 on 2026-08-14.
+
+**Design.** Recipe benchmark, seed 117, single seed: national pool and
+each state's own pool mined fresh on FY2022-23 (any-error frame, coarse
+HH strata, xgboost + ranger, joint BH admission at FDR 10% with
+per-stratum base rates AND n >= 30, 99%-LCB ordering); section 38
+tagging and head gates applied; lists built with the shipped fresh-share
+walk (f = 0.50) to 5%/10% core + 3x buffer on FY2022-23, frozen, then
+walked in delivered order on FY2024 to that year's cap, outcome-free.
+The v2.4.0 arm is the shipped recipe's own mined-2022-23 / walked-2024
+scorecard (bench lists built 2026-08-02 with the legacy floor-0 refill
+walk). Pre-stated reading limits (in the script header): the paired
+delta spans vocabulary, pool source, the build walk (~+0.0118 median at
+5% for fresh-share on this era, section 34), pool dedup, and the frame
+rebuild - right for pricing the release package, wrong for attributing
+any single component; per-state deltas carry a binomial SE of ~0.068 at
+a median state's 5% budget (section 30), so read the 49-state
+aggregates; error dollars are redefined onto the recorded
+raw-vs-corrected difference (2026-08-12), so dollar LEVELS are not
+comparable to pre-rebuild readouts.
+
+**Scorecard (49 states, FY2024, any-error precision on the union of
+flagged cases):**
+
+| budget | median precision | mean | median lift | median dollar recall | min precision | states below base rate |
+|---|---|---|---|---|---|---|
+| 5% | 0.3182 | 0.3215 | 2.75x | 0.1405 | 0.083 | 0 |
+| 10% | 0.2976 | 0.2914 | 2.49x | 0.2654 | 0.093 | 0 |
+
+**Paired vs the shipped v2.4.0 lists (same states, same year):**
+
+| budget | median v2.5.0 | median v2.4.0 | paired d precision median / mean | harmed (< -0.05) | helped (> +0.05) | paired d dollars median / mean |
+|---|---|---|---|---|---|---|
+| 5% | 0.3182 | 0.2861 | +0.0232 / +0.0124 | 8 | 14 | +0.0092 / +0.0069 |
+| 10% | 0.2976 | 0.2671 | +0.0300 / +0.0227 | 3 | 15 | +0.0169 / +0.0174 |
+
+(v2.4.0 median dollar recall 0.1430 at 5% / 0.2519 at 10%; the paired
+dollar median is positive at 5% even though the two arms' unpaired
+medians are close, because the median of within-state differences is
+not the difference of medians.)
+
+**The correctness package priced at zero.** Two full cycles of this
+benchmark ran a day apart: run 1 on the 2026-08-12 frame with the
+case-level `cat_elig` feature and pre-canonicalization rule text
+(archived in `methods/v250_benchmark_2024/run1_catelig_2026-08-13/`),
+run 2 with the `bbce_state_i` swap, binary-condition canonicalization,
+and the Illinois offset fix. Paired per state, run 2 - run 1: median
+precision change **+0.0000** at both budgets (mean -0.0015 at 5%,
++0.0003 at 10%; 10 harmed / 7 helped at 5%, 4 / 3 at 10%), dollar
+median -0.0042 / -0.0003. The package's value is correctness and
+interpretability; it costs nothing on held-out performance.
+
+**Why `cat_elig` left the vocabulary.** The case-level categorical-
+eligibility code was recoded in the FY2024 public file: on the current
+frame, code 1 falls from 32,502 (FY2023) to 11,033 (FY2024) while code
+2 jumps from 1,972 to 23,194, and code 3 exists only in FY2024 (557
+cases). A case-level feature with that break reads the data era, not
+the case. The replacement `bbce_state_i` (does the state run broad-based
+categorical eligibility: the state-year share of cases with
+`cat_elig >= 1` reaching 0.5) is bimodal and stable - 41 BBCE / 8
+non-BBCE states (Arkansas, Kansas, Mississippi, Missouri, South Dakota,
+Tennessee, Utah, Wyoming), zero states flip across FY2022-24, and it
+agrees with the USDA state-options file in 98 of 98 checkable
+state-years (`methods/state_options_regime/bbce_crosscheck.csv`). 127
+of the 2,824 delivered rules use it.
+
+**Illinois**, whose state pool was held in run 1 pending the offset fix
+(section 38), is blended like every other state in run 2: 10,440-rule
+state pool, 2 state rules in the 5% core and 4 at 10%; FY2024 precision
+0.375 at 5% (run 1 national-only: 0.325) and 0.321 at 10% (run 1:
+0.383). Both moves are inside the ~0.068 per-state SE; no artifact
+signature (zero tagged rules in its head, own-pool top-40 clean).
+
+**The shipped build** (mined on all of FY2022-24, the promotion copy):
+60,920 national rules admitted; 23 of 49 states contribute their own
+rules to at least one core list (median 2 core state rules when any);
+zero fill gaps across all 98 lists; every list carries the section 29
+characterization columns (national scope, support column
+`n_error_cases_national`) and the section 38 audit columns. Column
+dictionary: `state_delivery_lists/README.md`.
+
+Caveats: single seed (section 31: budget-depth list membership is
+seed-unstable even when the reachable error set is not); one era; the
+package-attribution limit above. The benchmark JSON's `recipe` string
+predates the Illinois hold lift - the per-record `state_pool_held`
+column (FALSE everywhere) is authoritative.
+
+Artifacts: `methods/v250_benchmark_2024/` (scorecard CSV + JSON,
+`v250_vs_v240_paired.csv`, `invariance_check.csv`, run 1 archive; the
+`cache/` pool checkpoints are local-only), `methods/v250_candidate_lists/`
+(build staging: `build_summary.csv` tracked; the per-list CSVs and
+characterization sheet are local-only duplicates of the shipped folder),
+`state_delivery_lists/` (the promoted copy, including
+`rule_characterization.csv`). Scripts:
+`methods/v250_benchmark_2024_v2.R`, `methods/v250_build_staged_lists_v2.R`,
+`runners/run_v250_cycle.R`. Log: `v250_cycle2.log` (untracked).

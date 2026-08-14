@@ -32,3 +32,9 @@ Cross-fitting is the more promising route
 
 # Retired 2026-08-06 (findings 17): unconditional typed-union delivery advice
 Mine per error type AND pooled, then combine
+
+# Superseded 2026-08-14 (findings 38): the reconstruction defect was repaired at
+# the source and the residual is gated; the old "fix pending" framing must not
+# be stated as current:
+A feature fix is designed but not yet validated
+

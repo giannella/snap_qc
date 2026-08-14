@@ -10,8 +10,75 @@ moved or behaves differently.
 
 ## [Unreleased]
 
-(Planned for v2.5.0: the re-mine bundle — vocabulary additions, `rule_id`,
-and the rule-characterization columns; see `methods/remine_proposal_2026-08.md`.)
+## [2.5.0] - 2026-08-14
+
+If you use the ready-built lists, re-download them: every list was rebuilt
+from a fresh mine on corrected data. Filenames are unchanged; every
+previous column is still present with its previous name and meaning, with
+new columns appended and `rank`/`role` moved to the front.
+
+### Fixed
+- **The benefit-reconstruction defect behind the near-maximum artifact**
+  (findings section 28) was repaired in the munging script: unreversed
+  sub-threshold benefit corrections, an earned-income deduction flooring
+  difference, two shelter-deduction floors, and an Illinois-specific
+  standard-deduction offset. Cases where the recorded benefit sits at or
+  above the maximum while the reconstruction lands below (the failure
+  signature) fell from 4,011 to 571 on 2022-24, and clean-case agreement
+  within $1 rose from 95.6% to 97.9% (findings section 38). The frame,
+  and everything mined from it, is rebuilt on the corrected code.
+
+### Changed
+- **All 49 states' delivery lists rebuilt with a fresh 2022-24 mine on
+  the corrected frame.** On the one-year-ahead benchmark (recipe mined on
+  2022-23, walked on each state's 2024), the new lists beat the shipped
+  v2.4.0 lists paired per state: median delivered precision +0.0232 at
+  the 5% review budget (mean +0.0124; 8 of 49 states worse than -0.05,
+  14 better than +0.05) and +0.0300 at 10% (mean +0.0227; 3 worse, 15
+  better), with dollar recall also up at both budgets (findings
+  section 39).
+- **The mining vocabulary adds per-household-size income amounts and
+  replaces the case-level categorical-eligibility code with a state-level
+  BBCE regime flag** (`bbce_state_i`: does the state run broad-based
+  categorical eligibility). The case-level code was recoded in the
+  FY2024 public file, which made rules built on it read the data era
+  instead of the case; the regime flag is stable across 2022-24 and
+  agrees with the USDA state-options file in 98 of 98 state-years.
+- **Rules that key on the remaining reconstruction-failure cases are
+  dropped before the fill.** Any rule with at least 25% of its training
+  flags or caught errors on those cases is removed: 21 of 60,920
+  national rules (0.03%) trip the flag-share trigger, 1,864 more the
+  caught-errors trigger, about 2.7% of the median blended pool in all.
+  No tagged rule reaches any list's top 10; re-walking every list with
+  the tagged rules removed changes the median state's benchmark
+  precision by 0.000 (findings section 38).
+- Indicator-variable conditions in rule text are canonicalized to
+  `>= 1` / `<= 0` (previously they rendered with arbitrary split points
+  such as `>= 0.5030899`), collapsing 194 cosmetic variants of the same
+  conditions.
+
+### Added
+- **Rule-characterization columns on every delivery list** (findings
+  section 29): what each rule's error cases look like nationally --
+  `n_error_cases_national`, element and nature group headlines,
+  `found_in_case_record`, `share_overissuance`,
+  `timing_at_certification`, `cause_agency`. The full sheet (every share
+  with its Wilson interval) ships alongside as
+  `state_delivery_lists/rule_characterization.csv`, joinable on
+  (`hh`, `rule`).
+- Measurement-artifact audit columns on every list (`mm_share_flags`,
+  `mm_share_errors`, `mm_inflation`), so the residue of the
+  reconstruction defect stays visible per rule.
+- Findings 38-39: the reconstruction fix and artifact-gate record, and
+  the v2.5.0 benchmark behind this release.
+
+### Notes
+- The state pools are mined per household-size stratum on the same
+  19-feature vocabulary as the national pool; 23 of 49 states contribute
+  their own rules to at least one core list.
+- As with v2.4.0, the lists are one fresh mine of the current recipe
+  (findings 31: the deep pool is stable across mining draws; the top of
+  any one list is one of many near-equivalent orderings).
 
 ## [2.4.0] - 2026-08-07
 

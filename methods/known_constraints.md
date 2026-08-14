@@ -87,6 +87,13 @@ or changes a constraint.
 - `state_delivery_lists/` is a public, user-consumed artifact. Any schema,
   filename, or content change is a MINOR version bump and Eric's decision;
   present it, do not push it (VERSIONING.md; CLAUDE.md).
+- Every delivery build must keep the reconstruction-artifact gates on until
+  the residual mismatch rows are gone (571 rows at error rate 0.750 as of
+  the 2026-08-13 frame): tag at >= 0.25 mm-share of flags or errors, drop
+  tagged rules from each pool before blend dedup, head gates (no tagged
+  rule in a top 10, at most one in a top 40) on the national pool and blend
+  heads, and the removal-invariance re-walk. The mm_ audit columns stay on
+  the lists (§38).
 
 ## 1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R {#munging}
 
@@ -100,6 +107,16 @@ or changes a constraint.
   (`ded_fields_imputed`), not dropped (§10).
 - Paths resolve through `here()`; no hardcoded machine paths
   (RESUME.md, 2026-07-27 merge).
+- The 2026-08-12/13 reconstruction repairs are load-bearing: the
+  earned-income deduction floors like the recorded field, the two removed
+  shelter floors stay removed, child-support fields are standardized before
+  use, and Illinois's standard-deduction offset comes from the `IL_OFFSET`
+  column of `additional_data/standard_deductions.csv`. Reintroducing any of
+  them re-opens the mismatch families (4,011 rows pre-fix vs 571 post; §38).
+- `cat_elig` is a valid frame column but must NOT be a mining feature: the
+  FY2024 file recoded it, so rules on it read the data era. The mining
+  feature is `bbce_state_i`, computed here as the state-year share of
+  `cat_elig >= 1` reaching 0.5 (§39).
 - **`reg_model_data.rds` is the source of truth; the CSV export is lossy**
   (15 significant digits, does not round-trip; Eric's ruling 2026-08-06).
   Threshold comparisons against `reg_model_data.csv` flipped rule flags on
