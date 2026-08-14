@@ -10,6 +10,15 @@ moved or behaves differently.
 
 ## [Unreleased]
 
+### Added
+- **National-only delivery lists** (`national_delivery_<State>_2022_2024_budgetXX.csv`)
+  in `state_delivery_lists/`, for the 43 states (5% budget; 36 at 10%)
+  where a three-arm one-year-ahead evaluation showed the national pool
+  alone matching or beating the blend. Same schema, walk, artifact
+  gates, and characterization columns as the blended lists; the folder
+  README documents the selection rule and its single-test-year limit.
+  Blended lists are unchanged and remain the default.
+
 ## [2.5.0] - 2026-08-14
 
 If you use the ready-built lists, re-download them: every list was rebuilt

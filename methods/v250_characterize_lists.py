@@ -59,7 +59,8 @@ def main():
     df["fiscal_year"] = df["fiscal_year"].astype(str)
     df = df.reset_index(drop=True)
 
-    lists = sorted(glob.glob(os.path.join(STAGE_DIR, "blended_delivery_*.csv")))
+    lists = sorted(glob.glob(os.path.join(
+        STAGE_DIR, os.getenv("V250_LIST_GLOB", "blended_delivery_*.csv"))))
     assert lists, "no staged lists found in %s" % STAGE_DIR
     dep = pd.concat([pd.read_csv(p, usecols=["hh", "rule"]) for p in lists],
                     ignore_index=True)

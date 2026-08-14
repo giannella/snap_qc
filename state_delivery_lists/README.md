@@ -70,6 +70,30 @@ or 10% of the caseload. A different goal (for example, prioritizing error
 dollars) is a different pairing and ships with its own label only after it
 passes the same validation.
 
+## National-only lists (`national_delivery_*`)
+
+For the states where the one-year-ahead test shows the national pool
+alone matching or beating the blend, the folder also carries
+
+```
+national_delivery_<State>_2022_2024_budget05.csv
+```
+
+built from the national pool only (every row has `pool = national`),
+with the same columns, walk, artifact gates, and characterization as the
+blended lists. Selection (2026-08-14): a state x budget cell gets a
+national-only file when the three-arm evaluation (all three list types
+mined on FY2022-23, frozen, walked on the state's FY2024 cases;
+`methods/threearm_2024/threearm_results_2024.csv`, selection table
+`methods/national_only_lists/selection_2024.csv`) shows national
+precision at or above blended precision, ties included - where the
+blend deployed no state rules the two lists coincide and the national
+file is an explicit copy. That is 43 of 49 states at the 5% budget and
+36 at 10%, so some states carry a national-only file at one budget
+only. The selection rests on a single test year and one mining draw; a
+state's own internal validation on newer data remains the deciding test
+between its blended and national-only list.
+
 ## Columns
 
 A rule's mining frame is provenance only; every rule is scored, filtered,
