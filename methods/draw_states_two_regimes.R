@@ -1,59 +1,57 @@
-# Reconstructed generating script for presentation_figures/states_two_regimes.png.
-# The original was never committed AND its only committed data source is a superseded
-# per-state tuning run whose story contradicts the figure. This rebuilds the same
-# message ("using your own state's data is boom-or-bust") from the CURRENT, non-
-# superseded deployment benchmark (findings section 14): rules mined on 2022-23,
-# scored on each state's 2024 cases, filled to a review budget.
+# Generating script for presentation_figures/states_two_regimes.png.
+# Three frozen lists per state - the state's own pool, the national pool,
+# and the blend (99% bound) - all built on the state's 2022-23 caseload and
+# walked to identical review volume on its 2024 cases (findings sections
+# 15-16). Neutral presentation: no verdict coloring, alphabetical states,
+# one condensed caption.
 #
 # Data: methods/state_similarity_v2/transfer_benchmark_train2223_test24/
-#       deployment_menu_train2223_test24.csv  (committed)
+#       frozen_list_results.csv, frozen_own_list_results.csv,
+#       blended_frozen_results.csv  (committed)
 #
 #   Rscript methods/draw_states_two_regimes.R
 suppressMessages({library(ggplot2); library(dplyr)})
 source("rule_mining_helpers.R")
 
 BUDGET <- 0.10
-d <- read.csv("methods/state_similarity_v2/transfer_benchmark_train2223_test24/deployment_menu_train2223_test24.csv",
-              check.names = FALSE) %>%
-  filter(budget == BUDGET, approach %in% c("own_state", "national_all"))
+src <- "methods/state_similarity_v2/transfer_benchmark_train2223_test24"
 
-own  <- d %>% filter(approach == "own_state") %>%
-  select(target, own_state = precision, target_base_rate)
-natl <- d %>% filter(approach == "national_all") %>%
-  select(target, national_all = precision)
-wide <- merge(own, natl, by = "target") %>%
-  mutate(state = target,
-         verdict = case_when(
-           own_state < target_base_rate ~ "own-state FAILS (below random review)",
-           own_state > national_all     ~ "own-state beats national",
-           TRUE                         ~ "own-state trails national")) %>%
-  arrange(own_state - national_all) %>%
-  mutate(state = factor(state, levels = state))
+natl <- read.csv(file.path(src, "frozen_list_results.csv")) %>%
+  transmute(target, budget, list = "national", precision = precision_deployed,
+            target_base_rate)
+own <- read.csv(file.path(src, "frozen_own_list_results.csv")) %>%
+  transmute(target, budget, list = "state's own", precision = precision_deployed)
+bl <- read.csv(file.path(src, "blended_frozen_results.csv")) %>%
+  filter(variant == "lcb99") %>%
+  transmute(target, budget, list = "blended", precision)
 
-cols <- c("own-state beats national" = "#2E7D32",
-          "own-state trails national" = "#8A8A8A",
-          "own-state FAILS (below random review)" = "#C0392B")
+d <- bind_rows(bl, natl %>% select(-target_base_rate), own) %>%
+  filter(budget == BUDGET) %>%
+  mutate(target = factor(target, levels = rev(sort(unique(target)))),
+         list = factor(list, levels = c("blended", "national", "state's own")))
+base <- natl %>% filter(budget == BUDGET) %>%
+  mutate(target = factor(target, levels = levels(d$target)))
 
-p <- ggplot(wide) +
-  geom_segment(aes(y = state, yend = state, x = national_all, xend = own_state),
-               colour = "grey70", linewidth = 0.9) +
-  geom_point(aes(y = state, x = target_base_rate), shape = 124, size = 5,
-             colour = "grey45") +
-  geom_point(aes(y = state, x = national_all), size = 3.4, colour = "#34568B") +
-  geom_point(aes(y = state, x = own_state, colour = verdict), size = 3.8) +
-  scale_colour_manual(values = cols, name = NULL) +
+p <- ggplot(d, aes(x = precision, y = target)) +
+  geom_line(aes(group = target), colour = "grey80", linewidth = 0.5) +
+  geom_point(data = base, aes(x = target_base_rate), shape = 124, size = 4.5,
+             colour = "grey55") +
+  geom_point(aes(shape = list, colour = list), size = 3.2, stroke = 1.0) +
+  scale_shape_manual(values = c("blended" = 16, "national" = 17, "state's own" = 1),
+                     name = NULL) +
+  scale_colour_manual(values = c("blended" = "black", "national" = "#34568B",
+                                 "state's own" = "grey35"), name = NULL) +
   scale_x_continuous(labels = scales::percent) +
-  labs(
-    title = "Mining on your own state's data is boom-or-bust; the national list is the safe default",
-    subtitle = paste0("Precision on the state's 2024 cases at a ", scales::percent(BUDGET),
-                      " review budget (rules mined on 2022-23).\n",
-                      "Blue = national list; coloured dot = own-state rules; grey tick = the state's ",
-                      "base error rate.\nOwn-state has the biggest wins and the worst failures ",
-                      "(below the base rate = worse than random review)."),
-    x = "Share of flagged cases that have an error (2024)", y = NULL) +
+  labs(title = "State, national, and blended rule lists, tested on 2024",
+       x = NULL, y = NULL,
+       caption = paste0("Precision at a ", scales::percent(BUDGET), " review budget on the state's 2024 cases; ",
+                        "all three lists frozen on the state's 2022-23\ncaseload and walked to identical review volume. ",
+                        "Grey tick = the state's 2024 base error rate.")) +
   theme_minimal(base_size = 13) +
   theme(legend.position = "top", panel.grid.minor = element_blank(),
-        panel.grid.major.y = element_blank())
+        panel.grid.major.y = element_blank(),
+        plot.caption = element_text(hjust = 0, size = 10.5, colour = "grey30"))
 
-save_png(p, "presentation_figures/states_two_regimes.png", 11.0, 6.6)
-cat(sprintf("wrote states_two_regimes.png (%d states, %s budget)\n", nrow(wide), scales::percent(BUDGET)))
+save_png(p, "presentation_figures/states_two_regimes.png", 8.6, 6.4)
+cat(sprintf("wrote states_two_regimes.png (%d states, %s budget)\n",
+            length(unique(d$target)), scales::percent(BUDGET)))
