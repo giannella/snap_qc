@@ -2,7 +2,7 @@
 
 **Written 2026-08-06, before any distance-outcome number existed. Amended
 2026-08-06 after a fresh senior-statistician review of the first draft and
-Eric's direction, before any result existed; the amendment history is at the
+the direction given then, before any result existed; the amendment history is at the
 bottom.** Descriptive diagnostic on existing artifacts, no mining, roughly an
 hour of compute plus one fresh profile pass.
 
@@ -182,11 +182,11 @@ machinery reconciles against `methods/rule_error_profiles/` conventions.
   senior-statistician review (required: national-caseload outcome, since
   per-state catch sets are 0-2 errors for 84% of deployed rules;
   distance-to-predecessors co-primary; head-to-head of instruments; the
-  no-arm gate with detection arithmetic) and per Eric's direction (goal
+  no-arm gate with detection arithmetic) and per direction (goal
   restated on the 43%-of-capacity problem; instrument menu widened to
   spectral co-firing, naive-Bayes feature divergence, and an explicit
   deferral of supervised similarity).
-- 2026-08-06 second amendment, still before any result existed, per Eric's
+- 2026-08-06 second amendment, still before any result existed, per the
   robustness direction: the split-half stability certificate as an
   eligibility gate for every instrument; spectral stability judged on
   distances (rotation-invariant) with rule families reported descriptively;

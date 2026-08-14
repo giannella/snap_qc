@@ -1,16 +1,16 @@
 # Design note: EXPLORATORY state-scale percentile runoff (2026-08-11)
 
-The new S37. Every design decision below was made interactively by Eric on
+The new S37. Every design decision below was made interactively on
 2026-08-11 (this note records them; it is not a proposal). EXPLORATORY per
 the formality-proportionality rule: no pre-registered bars, no winner rule,
-no ledger rows; the readout goes to Eric with the standard companions and
+no ledger rows; the readout goes to the project lead with the standard companions and
 any vocabulary decision is his. Replaces the deleted 2026-08-10 state
 re-mine, whose percentile arm used the frozen train-only construction and
-therefore did not test Ben's idea.
+therefore did not test the intended design.
 
-## 1. The question (one sentence, Eric's framing)
+## 1. The question (one sentence)
 
-Are within-state percentiles - Ben's as-built `_p` features (features.R:
+Are within-state percentiles - the as-built `_p` features (features.R:
 CPI-deflated dollars ranked within state x household-size cells, all six
 frame years pooled: 2017-19 and 2022-24, zeros pinned to 0) - better than
 the per-size variables for identifying outliers, measured as delivered
@@ -20,8 +20,8 @@ within-state FY2024 budget-list performance?
 
 - **persize**: the 16 shipped-in-practice features + the 3 per-size income
   features (19). (The 16 already carries 2 per-size fields.)
-- **benp**: persize + Ben's 7 as-built percentile features (26). ADDITIVE
-  by Eric's ruling; only the variables Ben defined; NO percentile override
+- **benp**: persize + the 7 as-built percentile features (26). ADDITIVE
+  by decision; only the as-built variables; NO percentile override
   anywhere - the frame's columns are used as built.
 
 Held fixed: rebuilt 2026-08-08 frame (231,619 rows, asserted); any_error
@@ -32,7 +32,7 @@ per-stratum base rates in the p-values (the 2026-08-09 review catch) AND
 n >= 30; 99%-LCB ordering; the SHIPPED v2.4.0 fresh-share walk (f = 0.50,
 walk2 semantics with the capacity assertion), fill FY2022-23 to 5%/10%
 core + 3x buffer, freeze, walk FY2024 in delivered order to that year's
-cap, outcome-free; seed 117, single seed (Eric's ruling; the paired
+cap, outcome-free; seed 117, single seed (by decision; the paired
 49-state design averages state noise, NOT mining noise - a standing
 reading limit).
 
@@ -56,14 +56,15 @@ and per-arm states-admitting counts.
 - Virginia hazard: single-state mining collapses without the n >= 30
   floor - the floor is on.
 - §§35-36 (EXPLORATORY): tested the FROZEN percentile construction, not
-  Ben's; nothing there pre-judges this run.
+  the pooled-years construction; nothing there
+  pre-judges this run.
 - Findings 31 / §36: state-level readings sit inside mining seed noise;
   aggregates are the readable layer. Single seed is accepted as an
-  exploratory limit by Eric's ruling.
+  exploratory limit by decision.
 
 ## Pre-stated reading limits (encoded in the script header and readout)
 
-1. **Information asymmetry**: Ben's pooled fit includes FY2024, so benp
+1. **Information asymmetry**: the pooled fit includes FY2024, so benp
    train features carry (weak) test-year information persize's do not.
    Faithful to deployment-on-current-caseload; a small benp win could be
    the pooling rather than the representation. Standing limit, not a
@@ -72,18 +73,18 @@ and per-arm states-admitting counts.
    the flag-profile layer (where benp's flagged cases sit on the
    percentile scales vs the caseload and vs error cases, at >p90 / >p99)
    reports what percentile rules actually catch. The senior-statistician
-   review is asked to shape this layer (Eric's instruction).
+   review is asked to shape this layer (by instruction).
 3. **Small-cell degeneracy is a property of the construction at public
    state scale**, quantified in
    `methods/state_percentile_runoff_v2/percentile_value_map_fy2024.csv`
-   (n_distinct per state x size x variable, per Eric). A null is "the
+   (n_distinct per state x size x variable, requested 2026-08-11). A null is "the
    construction did not help HERE", not "the idea is wrong".
 4. **Redistribution pre-named**: flat median + large two-sided tails is
    described as redistribution, not equivalence (the §35 lesson).
    Companions: median, mean, harmed tail (< -0.05), helped (> +0.05),
    paired-state count, dollar recall, absolute levels, base rates,
    deployed `_p`-rule counts.
-5. **No winner automation**: the script selects nothing; Eric decides on
+5. **No winner automation**: the script selects nothing; the project lead decides on
    the readout (the deleted run's winner rule is how a wrong construction
    reached production).
 

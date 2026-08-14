@@ -1,6 +1,6 @@
 # Reading notes for the exploratory percentile-runoff outputs
 
-EXPLORATORY (Eric, 2026-08-11): no bars, no winner, no ledger rows. The
+EXPLORATORY (2026-08-11): no bars, no winner, no ledger rows. The
 design and its pre-stated reading limits:
 `methods/design_note_state_pctl_runoff_2026-08-11.md` (with addendum).
 

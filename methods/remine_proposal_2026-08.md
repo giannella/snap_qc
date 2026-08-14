@@ -1,6 +1,6 @@
 # Proposal: one re-mine to settle the open vocabulary questions
 
-**Status: proposal seeking feedback from Eric and Ben (2026-08-05). Nothing
+**Status: proposal circulated for feedback (2026-08-05). Nothing
 here is scheduled.** A run happens only after both have weighed in, the
 four-item pre-run design note is approved, and the study script passes the
 fresh senior-statistician review (`methods/known_constraints.md#routing`).
@@ -17,7 +17,7 @@ together pays for that night once:
    Findings 31 raised the priority: two of three independent mining seeds put
    a `rel_max`-band rule at the very top of the national ranking, so the
    artifact is not a tail problem, it sits at rank 1.
-2. **Per-stratum outlier features** (issue #7). Ben's measurement: household
+2. **Per-stratum outlier features** (issue #7). The issue-7 measurement: household
    size 3 cases above the within-stratum 99th percentile on shelter expense
    run 26.0% error (69 of 265) against the roughly 11% base rate, with
    19.6 to 23.8% on capped shelter, medical, earned and unearned income. The
@@ -41,7 +41,7 @@ together pays for that night once:
    quoting its full condition string, and so lists regenerated from the
    same vocabulary carry the same IDs.
 
-   **family_id, defined (operative proposal; Eric to confirm the grouping
+   **family_id, defined (operative proposal; grouping key to be confirmed
    rule):** a label grouping substitutable rules within a stratum, so a
    state vetoing a rule can see its alternates. Proposed grouping: connected
    components of build-caseload flag overlap (pairwise Jaccard >= 0.5)
@@ -51,7 +51,7 @@ together pays for that night once:
    are the measured alternative basis; the fresh-share floor makes families
    operationally meaningful, since the walk now skips within-family
    redundancy by design. family_id remains deferred from this release per
-   the 2026-08-05 decision unless Eric says otherwise.
+   the 2026-08-05 decision unless decided otherwise.
 
 Memory prerequisite, scoped precisely: the chunked reducer
 (`reduce_flags_for_rules()`) already exists in the helpers and has scored
@@ -69,7 +69,7 @@ helper (ledger hazard row; RESUME.md A1-F1 caveat).
 - `at_max_benefit`: indicator for `rawben == benmax`, the honest split the
   reconstruction currently smears into the [0.987, 1) band (findings 28
   defines the artifact; the feature gives the miner the true boundary).
-- Outlier indicators for Ben's five: `rawsltexp`, `rawcsded`, `rawmeded`,
+- Outlier indicators for the five issue-7 variables: `rawsltexp`, `rawcsded`, `rawmeded`,
   `rawearn`, `rawunearn`, each as "above the within-stratum 99th percentile."
   Two design constraints for deployability and validity:
   - Percentile cutoffs computed on the TRAINING years only and frozen as
@@ -81,7 +81,7 @@ helper (ledger hazard row; RESUME.md A1-F1 caveat).
   inconsistent); no change to the target, strata, engines, admission, or
   ordering (all settled rows; findings 4, 11, 19, 20).
 
-**Pre-screen for the outlier indicators (added 2026-08-07, Eric): each of
+**Pre-screen for the outlier indicators (added 2026-08-07): each of
 the five is tested individually before any mining.** Two mining-free
 screens, an afternoon of compute: (1) standalone - each indicator evaluated
 as a single-condition rule on FY2022-23 (n, k, precision, 99% LCB, shipped
@@ -91,7 +91,7 @@ deployed coverage - among cases NOT flagged by each state's deployed core
 the constraint), does the indicator run above the base rate? Indicators
 passing both screens enter the re-mine arm; failures are dropped from its
 vocabulary; if all five fail, the outliers arm is skipped. Results posted
-to issue #7 for Ben.
+to issue #7.
 
 Question for both reviewers: is anything else worth adding while we are
 paying for the mine? A feature added later costs another full night; that is
@@ -100,7 +100,7 @@ the one-shot economics of this proposal.
 ## Evaluation design (sketch; the design note will pin it)
 
 Attribution needs arms, because adding both feature groups at once cannot say
-which one earned any change. Four arms, the full factorial (decided by Eric
+which one earned any change. Four arms, the full factorial (decided
 2026-08-05: it judges the outlier features independently of at_max and
 detects any interaction between them, since both touch benefit-boundary and
 shelter cases):
@@ -133,14 +133,14 @@ If the attribution run clears its bars, the follow-on is the full five-frame
 regen with the winning feature set, which is also where the queued
 deliverable changes ride: rule_id and the characterization columns (findings
 29) ship in the same MINOR bump as the vocabulary; the family_id substitutes
-column waits for a later bump (decided by Eric 2026-08-05: it is not yet
+column waits for a later bump (decided 2026-08-05: it is not yet
 built, and holding the bump for it buys nothing). One regen, not two: the
 A1-F1 code upgrades and the feature change land together rather than
 regenerating twice. Anything that reaches `state_delivery_lists/` is a MINOR
-version bump and Eric's decision at ship time; nothing in this proposal
+version bump decided at ship time; nothing in this proposal
 ships by itself.
 
-## State-side arm: typed mining within states, unstratified (added 2026-08-06, Eric)
+## State-side arm: typed mining within states, unstratified (added 2026-08-06)
 
 Question: does adding each state's own typed-frame rules, mined WITHOUT
 household strata, to the state side of the blend improve that state's
@@ -172,7 +172,7 @@ pre-registered bar, riding the same overnight window. Mining cost is small
 (49 states x 4 typed frames at state scale); evaluation reuses the delivery
 builder machinery.
 
-## The fresh-share floor rides this release (added 2026-08-07, Eric)
+## The fresh-share floor rides this release (added 2026-08-07)
 
 Findings 33-34: the fresh-share floor is two-era validated (era 1 blended
 +0.0118 vs a +0.010 bar; era 2 +0.0070 vs a +0.005 bar; two-era pooled
@@ -187,11 +187,11 @@ existing grid runs {0.25, 0.40, 0.50, 0.60, 0.75}; the fine step adds
 {0.55, 0.65, 0.70} on all three harnesses (era-1 blended, era-1
 national-only bridge, era-2), re-walk only, no mining, roughly 1.5-2 hours.
 The mechanism is validated; this is dose-finding on an engineering
-parameter, per the engineering-artifacts rule. Selection rule, fixed 2026-08-07 (Eric): choose the f
+parameter, per the engineering-artifacts rule. Selection rule, fixed 2026-08-07: choose the f
 in {0.40 ... 0.75 at 0.05 steps} maximizing the MINIMUM of the two eras'
 5%-budget medians (era-1 blended and era-2), subject to the dollar guard
 (>= -0.005) at the 5% BUDGET ONLY, on both eras; ties break toward the
-lower f. Rationale, Eric's: states are most likely capacity-bound at 5% of
+lower f. Rationale: states are most likely capacity-bound at 5% of
 cases, so the optimization targets it; every candidate's 10%-budget
 precision and dollar-recall readings are reported as companions on all
 three harnesses for states that want to test deeper internally, and the
@@ -200,7 +200,7 @@ two-era pooled median at the chosen f, never the winning grid cell. The
 fine-grid rerun recomputes the already-recorded grid cells, which must
 reproduce the committed values exactly (a free drift anchor).
 
-Builder knobs, names decided by Eric 2026-08-07:
+Builder knobs, names decided 2026-08-07:
 
 ```r
 SORT_WALK_USE_FRESH_SHARE <- TRUE   # FALSE restores the legacy walk and
@@ -221,13 +221,13 @@ single v2.5.0 regeneration carries everything.
 
 ## Feedback requested
 
-- **Ben**: the outlier feature definitions. Which variables, the 99th
+- On the outlier feature definitions: which variables, the 99th
   percentile against alternatives, within-stratum vs overall, and whether
   frozen train-year dollar cutoffs published in the dictionary work for how
   states would evaluate the rules. Also whether issue #8's ineligible-case
   question should shape any feature here or stays separate (our read:
   separate; the public file has no feature rows for those cases to mine).
-- **Eric**: decided 2026-08-05, sequencing corrected 2026-08-06. Four
+- Decided 2026-08-05, sequencing corrected 2026-08-06. Four
   national arms (full factorial) plus the state-side typed arm; the
   attribution run is not gated on any code fix and goes first, the finder
   de-OOM happens before the follow-on five-frame regen; the bump carries

@@ -35,7 +35,7 @@ the source of the bench lists' national slots), 99%-LCB order, budgets 5%/10%
 of the state's FY2022-23 caseload, buffer to 3x, core-only scoring on FY2024,
 all 49 states, f = 0.50 vs f = 0 baseline.
 
-**Eric's expectation, recorded as his hypothesis:** the state-rule slots were
+**The expectation, recorded in advance as a hypothesis:** the state-rule slots were
 DILUTING the floor's benefit, so the bridge effect at the 5% budget should be
 at least the blended +0.0118. The result is reported against this number and
 the verdict on the hypothesis is logged whichever way it goes.
@@ -53,7 +53,7 @@ interpretable.
 **Branches, pre-stated:** bridge median >= +0.005 at the 5% budget, era 2
 proceeds under this plan. Bridge median < +0.005, era 2 is NOT run under this
 plan; the finding logged is that the floor's benefit is concentrated in the
-interaction with state-rule slots, Eric's dilution hypothesis is refuted in
+interaction with state-rule slots, the dilution hypothesis is refuted in
 writing, and any re-scoped era-2 design (the era cache holds state mines for
 18 states only) requires a fresh pre-registration.
 
@@ -195,12 +195,12 @@ Checked before any counterfactual number is read; any failure aborts.
 ## Consequences, pre-stated
 
 - **Bridge held and confirmatory cleared (guards held):** the fresh-share
-  floor is validated on two eras and goes to Eric as a MINOR-bump promotion
+  floor is validated on two eras and goes to the project lead as a MINOR-bump promotion
   decision for `INCL_build_blended_delivery_list_v2.R`. The shipping
   threshold is 0.50 unless the challenger's four-condition compound rule was
-  met, in which case 0.60 goes to Eric as the proposed threshold. Either way
-  the decision, the CHANGELOG entry, and the version bump are Eric's, not
-  this study's.
+  met, in which case 0.60 goes forward as the proposed threshold. Either way
+  the decision, the CHANGELOG entry, and the version bump are the project
+  lead's, not this study's.
 - **Confirmatory failed (or its guard failed):** the section 20 pattern. The
   era-1 result stands as recorded in section 33; the floor does not ship;
   the ledger row closes the line at public-data scale in writing, open at

@@ -1,7 +1,7 @@
 # Design note: state re-mine — representation runoff, then the state pools
 # (2026-08-09, chained after the national factorial tonight)
 
-Eric's instruction (2026-08-09 evening): with hours to spare after the
+Instruction (2026-08-09 evening): with hours to spare after the
 factorial, launch the state re-mining. First a runoff between the
 _by_hh_size and _p vocabularies ON THE TYPED (specific-error) MINING at
 state scale; then, with the winner, mine each state's full pool: the four
@@ -40,7 +40,7 @@ Stage 2 mines with the winner only: 4 typed frames (pooled sizes,
 resumed from stage 1's winner-side cache — identical config) plus
 any_error x the three HH strata, per state. Output: admitted pools per
 state, cached and summarized. NO delivery lists are built tonight
-(promotion and blending are Eric's decisions; ledger: state-scale
+(promotion and blending are project-lead decisions; ledger: state-scale
 tuning is winner's-curse territory, the n >= 30 floor stands).
 
 **Pre-stated decision rule (stage 1 -> stage 2), fixed before any
@@ -74,7 +74,7 @@ prints rows AND events per state x frame x stratum before mining.
   vocabulary and says nothing about state pools; findings 11 validated
   coarse strata for national mining; dropping strata for state typed
   frames is support preservation (both scoping arguments verbatim from
-  the remine proposal, which Eric approved as the coordinating doc).
+  the remine proposal, approved as the coordinating doc).
 - Virginia hazard (CLAUDE.md 2026-07-06): single-state mining collapses
   without the n >= 30 floor — the floor is on everywhere here.
 - Findings 14-16: the state's own pool is a fallback/blend component;

@@ -100,13 +100,13 @@ Check, in order, quoting `methods/findings_ledger.md` rows by claim:
    run of the old design.
 4. **Readable results.** Review budgets (5% / 10%) evaluated, any-error
    beside frame-relative, both endpoints of every comparison planned - and
-   every shipping bar carries its mandatory companions (Eric, 2026-08-07):
+   every shipping bar carries its mandatory companions (2026-08-07):
    the within-state MEAN and the HARMED-TAIL count (paired change worse
    than -0.05) beside the decision median. A median win contradicted by
    both companions does not ship; a plan whose bars lack the companions
    fails this check. (Origin: the 0.60 threshold's median win concealed a
    doubled harmed tail; findings 34 addendum.)
-5. **Engineering artifacts are not failure modes** (Eric's rule, 2026-08-06).
+5. **Engineering artifacts are not failure modes** (project rule, 2026-08-06).
    Every pre-stated bar or guard must test the analytical question. If an
    outcome can be prevented by a design change or an incremental engineering
    parameter that does not overturn the approach under test (fill completion,
@@ -118,7 +118,7 @@ Check, in order, quoting `methods/findings_ledger.md` rows by claim:
    reviewers never run dry.
 
 Verdict is one of: **approve**, or **revise** with the failing check, the
-reason, and the ledger citation. The verdict goes to Eric with the design
+reason, and the ledger citation. The verdict goes to the project lead with the design
 note. Do not soften a revise into a suggestion.
 
 ## How you write a finding

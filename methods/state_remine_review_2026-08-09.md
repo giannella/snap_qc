@@ -2,7 +2,7 @@
 
 Fresh-context review per the routing rule, of
 `methods/design_note_state_remine_2026-08-09.md` and
-`methods/state_remine_v2.R`. Eric delegated the launch gate; the run
+`methods/state_remine_v2.R`. The launch gate was delegated; the run
 chains after the national factorial exits.
 
 **Verdict: REVISE -> fixed -> chains tonight.**

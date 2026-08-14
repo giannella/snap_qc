@@ -3,7 +3,7 @@
 **Written 2026-08-05, before any result existed.** No overlap number between
 mining seeds has ever been computed on this pipeline (the 2026-08-05 partition
 study, findings section 30, measured half-data partitions, a different and
-larger perturbation). Nothing below was informed by a result. Approved by Eric on
+larger perturbation). Nothing below was informed by a result. Approved on
 2026-08-05 (after two amendments he requested: the five-seed
 union-accumulation extension and the explicit national-only statement); the
 run launches only after the routing-rule review of the implementation.

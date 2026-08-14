@@ -124,8 +124,8 @@ and charts from our own runs, never with authority or intuition. Rules:
 **GitHub issues are the task board** (2026-08-06): operational and code
 follow-ups are filed as issues; research claims and their statuses stay in
 `methods/findings_ledger.md`; RESUME.md points at both. Claude-drafted issues
-and comments post from Eric's account and must say so in the text ("Drafted
-by Claude; posted from Eric's account").
+and comments post from the repo owner's account and must say so in the
+text ("Drafted by Claude; posted from the repo owner's account").
 
 ## Reference documents
 

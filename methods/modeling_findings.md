@@ -1356,7 +1356,7 @@ at-max-benefit feature question before the next delivery-list build.
 > so no marginal statistic has support to stand on at public-data scale; the
 > lower-bound walk stays.
 
-The question, raised by Eric 2026-08-06: the fill walk is overlap-aware in
+The question, raised 2026-08-06: the fill walk is overlap-aware in
 selection (a rule enters only if it adds new cases, section 27) but the test is
 existence, not quality, so a rule adding one error and many clean cases is
 admitted. Does that lower delivered precision, and would a marginal-quality-aware
@@ -1438,7 +1438,7 @@ section). A pairwise diagnostic on existing artifacts precedes any arm.
 > §32 all lost or failed to transfer). The margin over the bar is thin
 > (+0.0018 against a ~0.008 standard error on the median), so the pre-stated
 > second-era replication (train FY2017-18, test FY2019, 18 states) is
-> mandatory before any shipping decision, which is Eric's call as a MINOR
+> mandatory before any shipping decision, which is a project-lead call as a MINOR
 > version bump.
 
 **The chain that produced it, in one paragraph.** Section 32 priced the
@@ -1516,7 +1516,7 @@ threshold was to be tried on this outcome.
 > above 0.50's +0.0070; guard held at -0.0033; its era-1 warning signature did
 > not reproduce), so 0.60 is the proposed shipping threshold, with 0.50 the
 > conservative alternative. The floor is now validated on two eras; shipping
-> it is a MINOR version bump and Eric's call.
+> it is a MINOR version bump and a project-lead call.
 
 Pre-registered in `methods/era2_freshshare_replication_plan_2026-08-06.md`
 (approved with a +0.005 era-2 bar whose power arithmetic is in the plan: SE
@@ -1525,7 +1525,7 @@ two-stage false-positive rate ~5.5%; the shipping claim is therefore a
 "+0.010-scale effect supported by two eras jointly", and the pooled +0.0100
 lands on it).
 
-**The bridge, and the dilution hypothesis.** Eric's pre-stated hypothesis was
+**The bridge, and the dilution hypothesis.** The pre-stated hypothesis was
 that the state-rule slots DILUTED the floor's benefit, predicting a
 national-only bridge effect of at least the blended +0.0118. The bridge read
 +0.011781: formally REFUTED by the pre-stated rule (short of the bar by
@@ -1569,7 +1569,7 @@ on the bridge) shrank to -0.0018 on era 2.
 ## 35. Vocabulary attribution: the 26-feature package has the same performance as 16-feature
 
 > **Takeaway: about our pipeline (a technical exploration, not a research
-> finding - reclassified on Eric's 2026-08-11 review).** Replacing the
+> finding - reclassified on the 2026-08-11 review).** Replacing the
 > 16-feature national any-error mining vocabulary with 26 features (the
 > three per-size income features plus seven FROZEN train-year percentiles)
 > left FY2024 budget-list performance unchanged beyond seed noise: median
@@ -1578,7 +1578,7 @@ on the bridge) shrank to -0.0018 on era 2.
 > means the percentile cutoffs were fit once on the training years
 > FY2022-23 (per state x household-size cell, on CPI-deflated dollars) and
 > applied unchanged to FY2024 - a construction this study introduced as a
-> leakage guard. It is NOT Ben's as-built `_p` columns, which rank a case
+> leakage guard. It is NOT the as-built `_p` columns, which rank a case
 > within all six frame years pooled (2017-19 and 2022-24), and it is
 > unrelated to the frozen delivery LIST of §15. The miner
 > used the new features heavily (median 85.8% of deployed candidate rules)
@@ -1611,11 +1611,11 @@ vectors - three names never existed in the frame and were dropped silently.
 
 > **Takeaway: about our pipeline (EXPLORATORY - not an established finding
 > and deliberately carrying no ledger row; it informs the open v2.5.0
-> vocabulary decision and nothing else. Reframed on Eric's 2026-08-11
+> vocabulary decision and nothing else. Reframed on the 2026-08-11
 > review).** The exploratory reading: replacing the per-size
 > (`_by_hh_size`) representation of the dollar fields with FROZEN
 > train-year percentiles (`_p`; the frozen construction defined in §35 -
-> cutoffs fit on FY2022-23 only, NOT Ben's pooled-years design) costs a
+> cutoffs fit on FY2022-23 only, NOT the pooled-years design) costs a
 > moderate, sign-consistent
 > amount in aggregate - measured on the TEN-STATE evaluation panel only (a
 > compute-driven §35 design choice; the mining is national, the walk
@@ -1647,19 +1647,19 @@ feature took a quarter of the deployed list in the base+shelter arm (median
 evaluation states, three seeds - thin for an effect whose 5% form is a
 four-state harmed tail; the panel was a compute trade-off, not a power
 calculation. Note also that the percentile arm tested the FROZEN
-train-only construction, not Ben's pooled-years within-state design (the
+train-only construction, not the pooled-years within-state design (the
 new §37 exploratory study tests that). The cached pools make a 49-state
-walk readout of this contrast an evaluation-only rerun - deferred by Eric
+walk readout of this contrast an evaluation-only rerun - deferred
 2026-08-11 as not important enough right now. No second era has been run.
 
 *All six arms, the contrast tables, per-seed aggregates, and sign consistency: [detailed record](modeling_findings_detailed.md#36-the-vocabulary-factorial-the-percentile-representation-costs-a-moderate-sign-consistent-amount-vs-per-size-a-one-variable-shelter-test-added-nothing-2026-08-09), §36.*
 
 
-## 37. Exploratory: Ben's within-state percentiles at state scale - precision a wash, and the miner does not use them as outlier detectors
+## 37. Exploratory: as-built within-state percentiles at state scale - precision a wash, and the miner does not use them as outlier detectors
 
 > **Takeaway: about our pipeline (EXPLORATORY - no ledger rows; single
 > seed, one era; informs the v2.5.0 vocabulary decision and nothing
-> else).** Adding Ben's seven as-built within-state percentile features
+> else).** Adding the seven as-built within-state percentile features
 > (pooled six-year fit, no override) to the 19-feature per-size vocabulary
 > left within-state FY2024 budget precision a wash across 48 paired
 > states: median paired delta **+0.0000** at the 5% budget (mean +0.0007,
@@ -1688,7 +1688,7 @@ state-pool scale (shortfalls tolerated and reported; max 2 cases across
 percentile arm's pooled fit includes FY2024, so the flat result leans
 against it if anything.
 
-*Full tables, the condition inventory, and the review record: [detailed record](modeling_findings_detailed.md#37-exploratory-bens-within-state-percentiles-at-state-scale---precision-a-wash-and-the-miner-does-not-use-them-as-outlier-detectors-2026-08-11), §37.*
+*Full tables, the condition inventory, and the review record: [detailed record](modeling_findings_detailed.md#37-exploratory-as-built-within-state-percentiles-at-state-scale---precision-a-wash-and-the-miner-does-not-use-them-as-outlier-detectors-2026-08-11), §37.*
 
 ## 38. The benefit-reconstruction defect repaired at the source; the residual gated out of the builds
 

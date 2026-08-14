@@ -34,7 +34,7 @@ row(s) here.
 | Characterization-profile distance (and spectral, NB-divergence, signature, consensus distances) as predictors of marginal quality | resolved NO SIGNAL: all five failed the pre-stated f < 0.99 bar; their apparent signal was the fresh-share structure, not incremental information. Profiles remain the state-facing preference vocabulary (§29), with no recall or precision claim | one era, 49 states, six-instrument pre-registered race | §33 |
 | Fresh-share floor (two-pass walk on core and buffer): TWO-ERA VALIDATED (era 1 blended +0.0118 vs +0.010 bar; era 2 national-only +0.0070 vs +0.005 bar, 47 states; two-era pooled +0.0100; dollar guard 0.0000 everywhere at 0.50; bridge showed the effect indifferent to pool composition, +0.0118 national-only) | SHIPPED in v2.4.0 at threshold 0.50 (the two-era confirmatory point), behind SORT_WALK_USE_FRESH_SHARE / SORT_WALK_MIN_FRESH_SHARE (walk2 verbatim to floor-0 consumed targets, identity 12/12). The fine-grid median rule's 0.60 was adjudicated out by the mandatory companions: means never materially favored it, and it doubled the harmed tail (worse than -0.05) on all six harness-budget readouts | two eras, pre-registered at every stage, one shot each; adjudication 2026-08-07 | §33, §34 + addendum |
 | Depth-indexed fresh-share threshold (e.g. 0.60 to the 5%-budget depth, 0.50 beyond) | frozen pre-registered candidate: coherent in theory (opportunity cost of a skipped slot grows with depth) and the tranche decomposition supports decline on era 1 but NOT era 2, so calibrating today would hard-code era 1's profile (the §20 failed-hint shape). Awaits a genuinely unread test bed: the FY2025 public file or a state's internal data | tranche decomposition on all three harnesses | §34 addendum |
-| Eric's dilution hypothesis (state-rule slots dilute the floor's benefit) | refuted as stated (bridge +0.011781 vs the >= +0.0118 rule); substantively: no dilution and no amplification, the effect is a property of the walk. Carries the dedup caveat | era 1, 49 states, national-only bridge | §34 |
+| The dilution hypothesis (state-rule slots dilute the floor's benefit) | refuted as stated (bridge +0.011781 vs the >= +0.0118 rule); substantively: no dilution and no amplification, the effect is a property of the walk. Carries the dedup caveat | era 1, 49 states, national-only bridge | §34 |
 | Seed-to-seed variation of the shipped pipeline: deep coverage is seed-stable (pairwise error-case Jaccard 0.959-0.965 at depth 20,000, every pool covers all 4,803 FY2024 errors, one mine saturates reach) but budget-depth lists are not (errors-caught overlap 0.531 at 5%, 0.666 at 10%); the instability is ordering, not vocabulary | settled 2026-08-05, pre-registered bar cleared by every pair | one era (FY2022-23 to FY2024), national pools only, no dedup machinery | §31 |
 | Preference-based reordering of the deep pool (state promotes rules via §29 characterization fields): does it preserve precision? | open; unlocked by §31 (coverage is seed-stable at depth, the necessary condition) | none | §31; §29 |
 
@@ -87,21 +87,21 @@ row(s) here.
 The 2026-08-08/09 vocabulary comparisons (26-feature package, shelter
 percentile, per-size vs frozen-percentile representation; "frozen" =
 percentile cutoffs fit on the train years only and applied unchanged to
-the test year, per §35 - not Ben's pooled-years as-built `_p` columns) are
+the test year, per §35 - not the pooled-years as-built `_p` columns) are
 EXPLORATORY and deliberately carry no ledger rows: one era, ten evaluation
 states.
 They informed the v2.5.0 vocabulary decision (made 2026-08-13; see the
 Vocabulary section and §39) and are recorded with full numbers and limits
 in §§35-36; do not cite them as established findings. The 2026-08-10 state-scale runoff and its pools were
 DELETED 2026-08-11: the percentile arm used the frozen construction, not
-Ben's pooled-years design, so it tested the wrong thing.
+the pooled-years design, so it tested the wrong thing.
 
 ## Data and munging
 
 | Claim | Status | Scope tested | Source |
 |---|---|---|---|
 | reg_model_data.rds is saved by the munging script only (one code path writes the frame); results predating the 2026-07-07 rebuild were mined on the single-element frame, ~31% of errors excluded | hazard | 2026-07-07 rebuild | §10; CLAUDE.md |
-| reg_model_data.rds is the source of truth; the CSV export is lossy at 15 significant digits and pandas' default parser lands 1 ULP low, which flipped rule flags on threshold-straddling cases (four §29 artifact flag counts were off by one; corrected 2026-08-06). CSV consumers must parse round-trip or read the rds | hazard | full-universe cross-evaluator check, 543 rules, 2026-08-06 | methods/known_constraints.md#munging; Eric's ruling 2026-08-06 |
+| reg_model_data.rds is the source of truth; the CSV export is lossy at 15 significant digits and pandas' default parser lands 1 ULP low, which flipped rule flags on threshold-straddling cases (four §29 artifact flag counts were off by one; corrected 2026-08-06). CSV consumers must parse round-trip or read the rds | hazard | full-universe cross-evaluator check, 543 rules, 2026-08-06 | methods/known_constraints.md#munging; ruling of 2026-08-06 |
 | FY2020/FY2021 are excluded by decision; the reconciliation filter is a validity guard and additive-only on the six kept years | settled | relax-and-measure study | §24 |
 | Multi-element error cases are kept; deduction-field NAs are zero-filled, not dropped | settled | frame rebuild | §10 |
 | Public data shows a state 43-91% of its own errors (ineligible cases are invisible) | settled | FY22-24, per state | §10 |
@@ -134,21 +134,21 @@ Ben's pooled-years design, so it tested the wrong thing.
 | Characterization columns on delivery lists | SHIPPED in v2.5.0 (7 curated columns on every list, full sheet alongside as `state_delivery_lists/rule_characterization.csv`) | §29, §39; state_delivery_lists/README.md |
 | A1-F1 pipeline upgrade (rule_id, admit_bh helper, finder upgrades; de-OOM before any heavy regen) | open | RESUME.md next-session plan |
 | Case-overlap pre-registered bar landed between its thresholds (0.325/0.435 vs bars 0.3/0.5) | resolved by §31's seed-only decomposition: the reachable error set is stable, budget-depth lists are not, under any single draw | §30, §31 |
-| Per-stratum outlier features (value above the within-stratum 99th percentile on shelter, deductions, income fields) as rule inputs; the issue reports 26% error among extreme-shelter HH-3 cases vs the ~11% base | the continuous-percentile route is now measured: four of the five variables are expressible by the package percentiles, which failed do-no-harm (§35), and the fifth (shelter) failed its positive bar despite passing its standalone pre-screen (§36). Ben's BINARY outlier-indicator construction with its own pre-screen is a different construction and remains open (issue #7); the frozen train-only percentile plumbing (§35) is its validated cutoff template | GitHub #7; §35, §36 |
-| Representing ineligible households in the modeling frame; the public file omits them entirely and only per-state/year counts exist (additional_data/snap_qc_exclusion_all_years.csv), no case records; the issue conjectures many of the largest errors are FSBEN = $0 cases | open discussion (Ben, issue #8, 2026-08-05); bears directly on the §10 visibility limit; no method proposed yet | GitHub #8; §10 |
+| Per-stratum outlier features (value above the within-stratum 99th percentile on shelter, deductions, income fields) as rule inputs; the issue reports 26% error among extreme-shelter HH-3 cases vs the ~11% base | the continuous-percentile route is now measured: four of the five variables are expressible by the package percentiles, which failed do-no-harm (§35), and the fifth (shelter) failed its positive bar despite passing its standalone pre-screen (§36). The issue-7 BINARY outlier-indicator construction with its own pre-screen is a different construction and remains open (issue #7); the frozen train-only percentile plumbing (§35) is its validated cutoff template | GitHub #7; §35, §36 |
+| Representing ineligible households in the modeling frame; the public file omits them entirely and only per-state/year counts exist (additional_data/snap_qc_exclusion_all_years.csv), no case records; the issue conjectures many of the largest errors are FSBEN = $0 cases | open discussion (issue #8, 2026-08-05); bears directly on the §10 visibility limit; no method proposed yet | GitHub #8; §10 |
 
 ## Process rules (always in force)
 
 - Nothing enters the recommended workflow without held-out-year validation,
   ideally two eras; failures are retired in writing.
-- Before any run that costs a night, the four-item design note goes to Eric:
+- Before any run that costs a night, the four-item design note goes to the project lead:
   the question in one sentence; what varies with exactly one component varying;
   support after the split, computed; what this ledger and the findings already
   say, cited.
 - An invalid design is never filed as refuted; record the scope, keep the
   question open.
 - Study outputs stay in `methods/`; no writes to `state_delivery_lists/`, no
-  CHANGELOG entry, no version bump without Eric's decision.
+  CHANGELOG entry, no version bump without a project-lead decision.
 - Shipping readouts carry mandatory companions (2026-08-07): the
   within-state mean and the harmed-tail count (paired change worse than
   -0.05) beside the decision median; a median win contradicted by both
@@ -158,7 +158,7 @@ Ben's pooled-years design, so it tested the wrong thing.
   the sign counts catch redistribution that the median/mean/harmed-tail
   trio missed, and a vocabulary that widens seed instability is a cost
   even at equal precision).
-- Formality is proportional to the question (2026-08-11, Eric, from §35).
+- Formality is proportional to the question (2026-08-11, from §35).
   Pre-registration, bars, and verdict language are for research claims
   headed for the recommended workflow. Feature-set membership and similar
   pipeline choices that end in a judgment call are technical explorations:
@@ -167,7 +167,7 @@ Ben's pooled-years design, so it tested the wrong thing.
   any study, ask whether the answer would change a decision; if not, it
   is not worth a study.
 - The ledger carries only established claims someone can count on
-  (2026-08-11, Eric, from §36). Exploratory results - one era, small
+  (2026-08-11, from §36). Exploratory results - one era, small
   evaluation panels, single-seed, or otherwise half-baked - stay in the
   findings docs marked EXPLORATORY and get no ledger row and no GUIDANCE
   point. If an exploratory result matters to a pending decision, it is

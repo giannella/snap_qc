@@ -1,6 +1,6 @@
 # Design note: vocabulary attribution re-mine (2026-08-08, overnight)
 
-Eric delegated tonight's cycle (2026-08-08): "have the senior-statistician and
+Tonight's cycle was delegated (2026-08-08): "have the senior-statistician and
 PDS sort things out and at least get it running in the next hour or two."
 Decisions normally his are marked below; anything that clears its bar is a
 recommendation, not a ship — promotion stays his call (VERSIONING.md).
@@ -8,7 +8,7 @@ recommendation, not a ship — promotion stays his call (VERSIONING.md).
 ## 1. The question (one sentence)
 
 Does replacing the shipped 16-feature national any-error mining vocabulary
-with the Eric-confirmed 26-feature vocabulary (the 3 name-fixed per-size
+with the confirmed 26-feature vocabulary (the 3 name-fixed per-size
 income features plus the 7 frozen train-year percentile features) change
 delivered budget-list performance on a true future year (FY2024) beyond seed
 noise?
@@ -23,8 +23,8 @@ noise?
   session).
 - candidate arm: those 16 plus `gross_by_hh_size`, `earned_by_hh_size`,
   `unearned_by_hh_size`, `rawgrinc_p`, `rawearn_p`, `rawunearn_p`,
-  `rawrent_p`, `rawmedded_p`, `rawcsded_p`, `rawdepded_p`. Confirmed by Eric
-  2026-08-08. Excluded by Eric's sign-off the same day: `unc_fsben_rel_max`
+  `rawrent_p`, `rawmedded_p`, `rawcsded_p`, `rawdepded_p`. Confirmed
+  2026-08-08. Excluded by sign-off the same day: `unc_fsben_rel_max`
   (leakage pair with `unc_rawben_rel_max`: "ratios differ" has precision
   0.244 vs 0.010 and captures 94.7% of errors — the review outcome, not a
   household trait), `at_max_ben` (re-expression of `unc_rawben_rel_max > 1`),
@@ -34,7 +34,7 @@ noise?
 **Held fixed, both arms, all seeds:**
 
 - Frame: `reg_model_data.rds` rebuilt 2026-08-08 on the merged munging script
-  (231,619 rows; Ben's MFIP/SSI-CAP exclusions, rawusize!=0 drop, $1-step /
+  (231,619 rows; the MFIP/SSI-CAP exclusions, rawusize!=0 drop, $1-step /
   $0-tolerance recreation). Both arms mine the SAME frame, so the frame
   change is not in the contrast.
 - Engines and params as shipped: xgboost nrounds 1000 / eta 0.02 / subsample
@@ -52,10 +52,10 @@ noise?
 - Seeds paired across arms: 117, 20260805, 31415 (§31's seeds). Six mines.
 - Percentile features: re-fit on FY2022-23 only and FROZEN (per-cell
   state × reported-HH-size empirical CDFs of CPI-deflated values, zeros
-  pinned to 0, ranked among non-zero; Ben's construction with the train-only
+  pinned to 0, ranked among non-zero; the features.R construction with the train-only
   fit), applied unchanged to FY2024. The frame's as-built `_p` columns rank
   across all years and are overwritten for this study; the leakage fix was
-  flagged to Eric 2026-08-08 ("got it").
+  flagged and acknowledged 2026-08-08.
 
 ## 3. Support after the split (rows AND events per unit), computed
 
@@ -95,7 +95,7 @@ Virginia 2026-07-06) does not apply.
   Substitute: the frame invariants above are hard assertions, and the
   baseline arm becomes the new-frame reference.
 
-## Deviations decided without Eric tonight (delegated)
+## Deviations decided under delegation tonight
 
 (a) **Legacy §31 walk, not the v2.4.0 fresh-share walk.** The seed-noise
 yardstick (§31) was measured on this walk; using it keeps the noise
@@ -118,7 +118,7 @@ recall at both budgets, plus the within-arm across-seed spread as the noise
 reference. The candidate vocabulary is recommended for the v2.5.0 re-mine
 if the median delta is >= 0 at the 5% budget, not contradicted by both
 companions, and new-vocabulary rules actually appear in the deployed lists
-(usage table). Anything else -> report as measured; Eric arbitrates
+(usage table). Anything else -> report as measured; the project lead arbitrates
 tomorrow.
 
 ## Mechanics

@@ -11,7 +11,7 @@ modelling frame and reports.
 the household size. In state data a household at the maximum would carry exactly
 1. In our reconstruction some of them fall a little short. A rule whose clauses
 confine the ratio to just below 1 would then flag those households here and flag
-nothing in a state's own file. Ben raised this on the Alabama 5% list.
+nothing in a state's own file. Raised on the Alabama 5% list (issue #1).
 
 ## Terms, used the same way throughout
 
@@ -41,7 +41,7 @@ imply an interval; the labels above come from that interval.
 | of truly-at-max households, share with `unc_rawben_rel_max > 1` | 95.72% |
 
 The last line is why `unc_rawben_rel_max <= 0.997` acts as an at-max *exclusion*
-rather than an at-max selector, which is the mechanism in Ben's first example.
+rather than an at-max selector, which is the mechanism in the issue's first example.
 
 ## How much of the delivered vocabulary is exposed
 
@@ -88,7 +88,7 @@ is not a claim that those cases vanish in state data: whether a state's own
 reconstruction lands at exactly 1 is a question about the state's file, and this
 repo cannot answer it.
 
-## Ben's three examples
+## The three examples from issue #1
 
 All three behave as he described. Frame counts are FY2022-24 within the rule's
 own household-size stratum.
@@ -97,7 +97,7 @@ own household-size stratum.
 
 Flags 54 cases, 35 of them errors. **45 of the 54 (83%) are artifact rows.** It
 does not bound `rawben_rel_max` above at all — the at-max exclusion comes
-entirely from the `unc_rawben_rel_max <= 0.997` clause, exactly as Ben read it.
+entirely from the `unc_rawben_rel_max <= 0.997` clause, exactly as the issue read it.
 
 **2.** `rawben_rel_max >= 0.987 & rawben_rel_max < 0.997 & shelter_expenses_by_hh_size >= 850.000 & utilities < 576.000` (stratum 1, in 67 list rows)
 

@@ -1,9 +1,9 @@
 # Design note: v2.5.0 CANDIDATE build, staged (2026-08-11, 22:00 launch)
 
-Not a study: a PRODUCTION-CANDIDATE build, staged for Eric's review. All
-decisions below are Eric's, made interactively 2026-08-11 (train years,
+Not a study: a PRODUCTION-CANDIDATE build, staged for review. All
+decisions below were made interactively 2026-08-11 (train years,
 state-side scope, and staging destination confirmed by explicit ruling).
-No pre-registered bars; no findings entry until Eric reviews the lists.
+No pre-registered bars; no findings entry until the lists are reviewed.
 
 ## 1. What is built (one sentence)
 
@@ -20,7 +20,7 @@ onto every list.
   one-year-ahead benchmark). 115,559 rows / 13,161 any-error events,
   asserted.
 - Vocabulary: the per-size 19 (16 shipped-in-practice + gross/earned/
-  unearned per size). Chosen by Eric with the exploratory record §§35-37
+  unearned per size). Chosen with the exploratory record §§35-37
   in view (percentile additions a wash; frozen percentiles retired
   unadopted; the silent-drop hazard guarded by an explicit
   features-after-prep assertion).
@@ -51,7 +51,7 @@ onto every list.
   characterization row onto every list CSV by (hh, rule).
 - Destination: methods/v250_candidate_lists/ - STAGED. No writes to
   state_delivery_lists/, no CHANGELOG entry, no version bump; promotion
-  is Eric's decision after reviewing the lists (ask-before-user-facing
+  is decided after reviewing the lists (ask-before-user-facing
   rule).
 
 ## 2b. Recorded deviations from the shipped builder (review 2026-08-11)
@@ -69,7 +69,7 @@ are skipped by both walks); on exact-coverage ties this build delivers the
 alphabetically-first rule text rather than the fewest-conditions variant.
 Column order also differs (rank/role first) - a schema change to state
 explicitly at promotion. Characterization on the lists is the CURATED
-block (Eric's selection, 2026-08-11 evening): n_error_cases,
+block (selected 2026-08-11 evening): n_error_cases,
 element_groups_to_75, nature_groups_to_75, found_in_case_record,
 share_overissuance, timing_at_certification, cause_agency - 20 columns
 per list in all (cause_client dropped as a near-complement of

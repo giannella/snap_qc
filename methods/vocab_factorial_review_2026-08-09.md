@@ -2,7 +2,7 @@
 
 Fresh-context review per the routing rule, of
 `methods/design_note_vocab_factorial_2026-08-09.md` and
-`methods/vocab_factorial_v2.R`. Eric delegated the launch gate to this
+`methods/vocab_factorial_v2.R`. The launch gate was delegated to this
 review; launch scheduled 18:00 (Task Scheduler
 `snapqc_vocab_factorial_20260809`).
 

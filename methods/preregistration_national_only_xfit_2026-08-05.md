@@ -77,7 +77,7 @@ across the pool as a whole; and self-scored admission passes about 11% more rule
 
 **The question.** Given that the top of the ranking is nearly partition-specific,
 do the resulting lists flag the same cases through different rules, or different
-cases? Raised by Eric, and it decides whether the instability matters at all.
+cases? Raised in review, and it decides whether the instability matters at all.
 
 **Design.** Out-of-fold arm only, 10 states spanning a range of caseload sizes and
 base rates, both budgets. Record the actual FY2024 cases flagged and errors caught

@@ -1,13 +1,13 @@
 # Design note: national vocabulary factorial, 2x2 (2026-08-09, evening run)
 
 Follows `methods/design_note_vocab_attribution_2026-08-08.md` (the two-arm
-study) and its results (`methods/vocab_attribution_v2/README.md`). Eric's
+study) and its results (`methods/vocab_attribution_v2/README.md`). The
 decisions of 2026-08-09, made interactively: the 26-feature package is
 adopted on artifact-independence grounds (its deployment cost ruled worth
 it); tonight runs the NATIONAL factorial only (the state-typed arm is cut
-from tonight by Eric's instruction); the outlier arm reduces to ONE
+from tonight by instruction); the outlier arm reduces to ONE
 variable, `shelter_expenses_p`, because the package already carries
-continuous percentiles for four of Ben's five issue-7 outlier variables
+continuous percentiles for four of the five issue-7 outlier variables
 and a depth-4 tree expresses ">= p99" on a continuous percentile by
 itself.
 
@@ -33,8 +33,8 @@ and/or on top of the adopted 26-feature package?
 The pct_pure arm removes two incumbents AND adds nine columns; that is
 deliberate and still one component: the component under test is the
 NORMALIZATION REPRESENTATION of the same underlying dollar fields
-(divide-by-household-size vs rank-within-state-x-size-cell). Eric
-corrected the earlier additive design on exactly this point (2026-08-09):
+(divide-by-household-size vs rank-within-state-x-size-cell). The earlier
+additive design was corrected on exactly this point (2026-08-09):
 the 16 already carries two per-size features, so an additive percentile
 arm would compare percentiles-on-top-of-per-size, not the
 representations as options. `total_deductions_p` is new, built by the
@@ -45,8 +45,8 @@ Pre-registered contrasts, paired by seed: (1) base_slt - base and
 free same-seed replication of last night; (4) ps_pure - base isolates
 the per-size income additions; (5) pct_pure - base tests the full
 percentile representation as a replacement; (6) pct_pure - ps_pure is
-the head-to-head between the two normalization PACKAGES (Eric's
-request). Pre-stated before results exist (delta review flag 1,
+the head-to-head between the two normalization PACKAGES (a
+requested contrast). Pre-stated before results exist (delta review flag 1,
 2026-08-09): this contrast is packages, not representation per se —
 pct_pure additionally carries four component-level percentiles
 (rawrent_p, rawmedded_p, rawcsded_p, rawdepded_p) with no per-size
@@ -96,7 +96,7 @@ collapse); every stratum clears n >= 30. Gate passed.
 Everything cited in the 2026-08-08 note carries over (findings 19, 20,
 27, 28, 31, 33-34; hazard rows). New since: the two-arm result
 (redistribution inside a flat median; package adopted on
-artifact-independence grounds, Eric 2026-08-09); the results-review
+artifact-independence grounds, 2026-08-09); the results-review
 recommendations now encoded here - per-state SIGN-CONSISTENCY counts and
 per-arm seed spread join the mandatory companions in the readout, and
 the shelter feature (which extends the per-state cutoff tables) must

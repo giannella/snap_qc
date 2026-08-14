@@ -62,10 +62,10 @@ Files: `vocab_attribution_run_info.csv` (pools),
 `vocab_attribution_window_usage_all_features.csv` (per-feature share of the
 top-20k window, both arms, incumbents and new).
 
-## Additional considerations based on prompting (Eric + results review, 2026-08-09)
+## Additional considerations from the results review (2026-08-09)
 
-**1. The artifact fix did not cost performance — a win (Eric's
-conclusion, and the headline reading of this study).** The baseline is
+**1. The artifact fix did not cost performance — a win (the headline
+reading of this study).** The baseline is
 artificially high because of the artifact: its top-ranked rule is a
 near-boundary rel_max shape in all three seeds, so the bar the candidate
 arm was measured against still carries residual artifact-correlate
@@ -133,7 +133,7 @@ of equal delivered performance.
   are a real cost). One correction to `methods/remine_proposal_2026-08.md`:
   its baseline arm says "current 19 features" - the true shipped
   vocabulary is 16 (the three raw*_by_hh_size names never existed in the
-  frame). This result does NOT pre-judge Ben's binary outlier-indicator
+  frame). This result does NOT pre-judge the issue-7 binary outlier-indicator
   arm: a different construction with its own pre-screen, which stands.
   The frozen train-only percentile plumbing built here is validated and
   is the template for the outlier arm's cutoffs.
@@ -149,7 +149,7 @@ contrast. The remine proposal's four national factorial arms and the
 state-typed arm remain pending; their results are unknown, and their
 design note should incorporate the recommendations above.
 
-**4. Eric's ruling on the Massachusetts baseline (2026-08-09).**
+**4. The Massachusetts-baseline ruling (2026-08-09).**
 Precision at the 0.55-0.58 level is what artifact-driven mining
 produced: the pre-fix era's results were inflated by the reconstruction
 artifact (findings 28), and with the artifact diminished by the

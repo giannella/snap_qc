@@ -49,13 +49,13 @@ or changes a constraint.
   on FY2022-23 only, applied unchanged to FY2024; defined in §35) cost a
   moderate, sign-consistent amount (mean negative in every seed, both
   budgets, ten evaluation states); `shelter_expenses_p` added nothing.
-  Ben's pooled-years within-state percentile construction (features.R,
+  The pooled-years within-state percentile construction (features.R,
   the as-built `_p` columns) was NOT what those arms tested; §37 tested
   it 2026-08-11 (EXPLORATORY, 48 states, single seed): precision a wash
   at 5%, and of 495 deployed `_p` conditions only 2 are high-tail - the
   miner does not use the construction as an outlier detector. The
   per-size vocabulary (16 + gross/earned/unearned per size) is the
-  v2.5.0 re-mine candidate, Eric's call at regen time (§35-§37).
+  v2.5.0 re-mine candidate, a regen-time decision (§35-§37; made in v2.5.0, §39).
 - This script calls the flag evaluator 3x per frame x 5 frames x 3 strata.
   Before any heavy regeneration it must use the chunked reducer or it OOMs
   (RESUME.md A1-F1 caveat).
@@ -85,7 +85,7 @@ or changes a constraint.
 - The national pool must be scored through `reduce_flags_for_rules()`
   (RESUME.md, 2026-07-22; the unpatched path OOM'd this host).
 - `state_delivery_lists/` is a public, user-consumed artifact. Any schema,
-  filename, or content change is a MINOR version bump and Eric's decision;
+  filename, or content change is a MINOR version bump and a project-lead decision;
   present it, do not push it (VERSIONING.md; CLAUDE.md).
 - Every delivery build must keep the reconstruction-artifact gates on until
   the residual mismatch rows are gone (571 rows at error rate 0.750 as of
@@ -118,7 +118,7 @@ or changes a constraint.
   feature is `bbce_state_i`, computed here as the state-year share of
   `cat_elig >= 1` reaching 0.5 (§39).
 - **`reg_model_data.rds` is the source of truth; the CSV export is lossy**
-  (15 significant digits, does not round-trip; Eric's ruling 2026-08-06).
+  (15 significant digits, does not round-trip; ruling of 2026-08-06).
   Threshold comparisons against `reg_model_data.csv` flipped rule flags on
   cases sitting 1-2 ULP from a rule literal, and pandas' default float
   parser lands 1 ULP low on many 17-digit decimals. Any consumer comparing
@@ -144,7 +144,7 @@ or changes a constraint.
   study scripts are written under that framing (routing rule below).
 - Read `methods/findings_ledger.md` before designing; check the retired and
   hazard rows for every component the study touches.
-- The four-item design note goes to Eric before any run that costs a night:
+- The four-item design note goes to the project lead before any run that costs a night:
   the question in one sentence; what varies with exactly one component
   varying; support after the split (rows AND events per unit), computed; what
   the ledger and findings already say, cited.
@@ -154,9 +154,9 @@ or changes a constraint.
 - Evaluate at review budgets (5% / 10% of caseload) as well as filter floors
   (§12, §14), and quote any-error precision beside frame-relative (§6).
 - Study outputs stay in `methods/`: no writes to `state_delivery_lists/`, no
-  CHANGELOG entry, no version bump. Promotion is Eric's decision
+  CHANGELOG entry, no version bump. Promotion is a project-lead decision
   (VERSIONING.md).
-- **Mandatory shipping companions** (Eric, 2026-08-07): the pre-registered
+- **Mandatory shipping companions** (2026-08-07): the pre-registered
   decision statistic stays the within-state MEDIAN, and every shipping
   readout must carry two companions: the within-state MEAN and the
   HARMED-TAIL count (states whose paired change is worse than -0.05). A
@@ -164,7 +164,7 @@ or changes a constraint.
   0.60-vs-0.50 threshold adjudication (findings 34 addendum), where the
   median lens alone would have shipped a threshold that doubled the harmed
   tail on all six harness-budget readouts.
-- **Engineering artifacts are not failure modes** (Eric, 2026-08-06): a
+- **Engineering artifacts are not failure modes** (2026-08-06): a
   pre-stated bar or guard must test the analytical question. Any outcome
   preventable by a design change or an incremental engineering parameter
   that does not overturn the approach under test is a design requirement
@@ -195,4 +195,4 @@ this ceremony.
   frame-relative. The reviewer is fresh-context on purpose: an author
   reviewing its own script inherits the assumptions that produced the
   mistake. The review verdict (approve, or revise with reasons and ledger
-  citations) goes to Eric with the design note.
+  citations) goes to the project lead with the design note.

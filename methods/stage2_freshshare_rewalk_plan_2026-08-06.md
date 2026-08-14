@@ -30,7 +30,7 @@ core alone):
 Capacity consumption is therefore identical to the baseline BY CONSTRUCTION
 (asserted in the harness; a deviation is a bug that halts the run, never a
 result). The design principle this encodes, standing for all future plans
-(Eric, 2026-08-06): an outcome preventable by a design change or an
+(2026-08-06): an outcome preventable by a design change or an
 incremental engineering parameter, without overturning the analytical
 approach under test, is a design requirement, not a failure mode. Running
 out of qualifying rules is an engineering artifact of a one-pass walk; in
@@ -157,7 +157,7 @@ small to show +0.010 across 49 states is not worth a pipeline change.
 
 - **Bar and guards cleared:** the fresh-share floor becomes a validated
   selection-refinement CANDIDATE for `INCL_build_blended_delivery_list_v2.R`.
-  Promotion into shipped lists is a MINOR bump and Eric's call, and per the
+  Promotion into shipped lists is a MINOR bump and a project-lead call, and per the
   section 20 discipline it additionally requires replication on the second era
   before shipping: the cached train FY2017-18 / test FY2019 harness
   (`methods/state_similarity_v2/era_validation_train1718_test19/`, national

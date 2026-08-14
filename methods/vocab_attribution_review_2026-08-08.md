@@ -2,7 +2,7 @@
 
 Fresh-context review per the routing rule (`methods/known_constraints.md#routing`),
 of `methods/design_note_vocab_attribution_2026-08-08.md` and
-`methods/vocab_attribution_v2.R`. Eric delegated tonight's launch authority to
+`methods/vocab_attribution_v2.R`. Tonight's launch authority was delegated to
 this review (2026-08-08, away overnight).
 
 **Verdict: APPROVE WITH FLAGS — launched 2026-08-08 21:21.**
@@ -36,6 +36,6 @@ semantics on the frozen fit); paired-delta and seed-noise logic verified.
    clear the cache or add a config hash first.
 
 Notes: the ten-state × three-seed panel supports a recommendation only —
-ledger promotion needs Eric and eventually a second era; the legacy-walk
+ledger promotion needs a project-lead sign-off and eventually a second era; the legacy-walk
 deviation cannot touch the contrast (identical across arms); the fresh-share
 49-state scorecard is the follow-up for the winning vocabulary.

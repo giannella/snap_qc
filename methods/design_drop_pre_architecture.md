@@ -66,7 +66,7 @@ b. **Exact coverage**: two rules flagging the *same training cases* are one
    conditions. Complement removal is unnecessary: an EXCLUDE-direction
    complement fails the INCLUDE screen on its own.
 
-c. **Same-structure dominance** (the new piece, per Eric's ask): group rules
+c. **Same-structure dominance** (the new piece, per the design ask): group rules
    by *signature* = the set of (variable, direction) pairs plus any categorical
    conditions. Within a signature family, members differ only in thresholds,
    so coverage is nested (or partially ordered for multi-bound rules).
@@ -77,7 +77,7 @@ c. **Same-structure dominance** (the new piece, per Eric's ask): group rules
    family's precision ladder: tighter/higher-precision members (matter at high
    floors) and looser/lower-precision members (add recall at low floors).
    This prunes pointless subset/superset variants while preserving the
-   redundancy Eric wants ACROSS different variable combinations — states still
+   redundancy we want ACROSS different variable combinations — states still
    get substitutes, just not ten thresholds of the same rule.
    Implementation: the INCL script's `.rule_struct`/`.is_superset` already do
    the structure matching; add the precision comparison.
@@ -171,7 +171,7 @@ Design consequences:
   0.25, 46/68 holding >= 0.20 (vs the raw shortlist's 1,403 rules with median
   0.10 frame precision).
 - If a hard support floor is kept anyway, 30-50 is better than 10.
-- DECIDED (Eric, 2026-07-04): include `other_error` for completeness, knowing
+- DECIDED (2026-07-04): include `other_error` for completeness, knowing
   the category is heterogeneous/tricky. Two complementary mechanisms:
   (a) a fourth mining frame (`other_error` + `no_error`);
   (b) an "any-error" scoring pass — evaluate every final rule union against ALL
