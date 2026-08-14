@@ -14,7 +14,8 @@ CHART_SCRIPTS <- c(
   "methods/visualize_blend_vs_regimes_v2.R",          # blend vs national vs own
   "methods/visualize_state_adaptation_v2.R",          # four adaptation arms per state
   "methods/visualize_mtry_frontier_v2.R",             # constrained-RF (mtry) frontier
-  "methods/visualize_two_regime_choice_v2.R"          # two-regime best-of chart
+  "methods/visualize_two_regime_choice_v2.R",         # two-regime best-of chart
+  "methods/visualize_v250_benchmark_v2.R"             # v2.5.0 49-state benchmark dotplots
 )
 for (f in CHART_SCRIPTS) {
   cat(sprintf("\n== %s ==\n", f))
