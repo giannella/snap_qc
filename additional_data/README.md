@@ -165,3 +165,5 @@ validated against, and is also not an input.
 | `qc_elements.csv` | QC element code to description |
 | `qc_natures.csv` | QC nature-of-error code to description |
 | `snap_qc_exclusion_all_years.csv` | per state, month and stratum: sampling interval, sample sizes, SNAP units, ineligible and failing units, and the derived weights and rates |
+| `fns_payment_error_rates_fy2024.csv` | official FY2024 over-, under- and total payment error rates by jurisdiction, transcribed from `snap-fy24QC-PER.pdf` (FNS, dated June 30, 2025) |
+| `fns_state_issuance_fy2024.csv` | FY2024 annual SNAP benefits issued, in dollars, by jurisdiction (53 jurisdictions; no Puerto Rico, American Samoa or CNMI). From the FY24 workbook in the FNS SNAP data tables state-level zip (`snap-zip-fy69tocurrent-7.zip`, National Data Bank, data as of July 10, 2026); each value is the state's fiscal-year Total cost row. Sums to $93.5B |
