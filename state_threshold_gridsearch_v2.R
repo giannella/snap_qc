@@ -100,9 +100,10 @@ cat(sprintf("national selection: %d rules total\n", nrow(national)))
 
 features <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
-  "expedited_i", "bbce_state_i",  # bbce_state_i replaced cat_elig 2026-08-13 (FY2024 recode made 1-vs-2 splits era-markers) "rawben_rel_max", "medical_deductions",
+  # bbce_state_i replaced cat_elig 2026-08-13 (FY2024 recode made 1-vs-2 splits era-markers)
+  "expedited_i", "bbce_state_i", "rawben_rel_max", "medical_deductions",
   "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
-  "rawearn_by_hh_size", "rawunearn_by_hh_size", "rawgross_by_hh_size",
+  "earned_by_hh_size", "unearned_by_hh_size", "gross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max",
   "months_since_cert_n", "count_divisible_by_100"
 )
