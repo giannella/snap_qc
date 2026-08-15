@@ -373,7 +373,8 @@ def main():
 
     shutil.copy(a.live_workbook, a.out)
     wb = openpyxl.load_workbook(a.out)
-    wb['Dashboard'].sheet_state = 'visible'   # rule tuner: hidden in v2, wanted here
+    # the Dashboard (per-rule threshold tuner) stays hidden: engine plumbing;
+    # unhide it in Excel to tune thresholds interactively
     dat = wb['Data']
     NROW = dat.max_row
     assert NROW - 1 == len(raw), f'workbook has {NROW-1} cases, extract {len(raw)}'

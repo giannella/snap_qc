@@ -5,8 +5,9 @@ What changes
   Data          becomes an Excel Table (sheet keeps its name), so pasting more
                 rows extends every reference automatically, and columns are
                 bound by NAME rather than by position.
-  Summary       per-rule metrics and the combined rows become COUNTIFS/SUMIFS
-  (National)    over that table; the hard-coded denominators go live too.
+  Rules tabs    per-rule metrics and the combined rows on State-Tuned Rules,
+                Blended Rules and National Rules become COUNTIFS/SUMIFS over
+                that table; the hard-coded denominators go live too.
   Dashboard     its fixed Data!$X$2:$X$3000 ranges become table references.
   Tuning Audit  deliberately untouched — it records a past decision, not a
                 measurement, and must not silently follow new data.
@@ -71,33 +72,38 @@ def main():
     shutil.copy(a.workbook, out)
 
     wb = openpyxl.load_workbook(out)
-    dat, summ = wb['Data'], wb['Summary']
-    nat = wb['Summary (National)'] if 'Summary (National)' in wb.sheetnames else None
+    dat, summ = wb['Data'], wb['State-Tuned Rules']
+    nat = wb['Blended Rules'] if 'Blended Rules' in wb.sheetnames else None
+    natl = wb['National Rules'] if 'National Rules' in wb.sheetnames else None
     hdr = [c.value for c in next(dat.iter_rows(min_row=1, max_row=1))]
     NROW, NCOL = dat.max_row, len(hdr)
     print(f'Data: {NROW-1} cases x {NCOL} columns')
 
     # ── 1. read the rules straight out of the Conditions columns ─────────────
     S0, N0 = 15, 11
-    sm_rules, nt_rules = [], []
+    sm_rules = []
     r = S0
     while summ.cell(row=r, column=1).value:
         sm_rules.append((parse(summ.cell(row=r, column=14).value),
                          summ.cell(row=r, column=2).value))
         r += 2
-    if nat:
-        r = N0
-        while nat.cell(row=r, column=1).value:
-            nt_rules.append((parse(nat.cell(row=r, column=13).value),
-                             nat.cell(row=r, column=2).value))
-            r += 1
-    print(f'rules: {len(sm_rules)} deployed, {len(nt_rules)} national')
+
+    def read_delivery_tab(ws):
+        out_, r_ = [], N0
+        while ws is not None and ws.cell(row=r_, column=1).value:
+            out_.append((parse(ws.cell(row=r_, column=13).value),
+                         ws.cell(row=r_, column=2).value))
+            r_ += 1
+        return out_
+    nt_rules, nl_rules = read_delivery_tab(nat), read_delivery_tab(natl)
+    print(f'rules: {len(sm_rules)} deployed, {len(nt_rules)} blended, '
+          f'{len(nl_rules)} national-only')
 
     # ── 2. hidden per-case hit columns, inside the table so they auto-fill ───
     # The selection vector's column order is NOT the order rules appear on the
     # sheets, so read the mapping out of RuleFlags row 2 rather than assuming it.
     rf = wb['RuleFlags']
-    sel_by_row = {'Summary': {}, 'Summary (National)': {}}
+    sel_by_row = {'State-Tuned Rules': {}, 'Blended Rules': {}, 'National Rules': {}}
     for cc in range(2, rf.max_column + 1):
         v = rf.cell(row=2, column=cc).value
         if not isinstance(v, str):
@@ -108,11 +114,15 @@ def main():
         sheet = m.group(1) or m.group(2)
         if sheet in sel_by_row:
             sel_by_row[sheet][int(m.group(3))] = f'RuleFlags!${CL(cc)}$2'
-    print('selection columns found: %d deployed, %d national'
-          % (len(sel_by_row['Summary']), len(sel_by_row['Summary (National)'])))
-    sel_s = lambda i: sel_by_row['Summary'][S0 + 2 * i]
-    sel_n = lambda i: sel_by_row['Summary (National)'][N0 + i]
-    blocks = [('sum', sm_rules, sel_s)] + ([('nat', nt_rules, sel_n)] if nat else [])
+    print('selection columns found: %d deployed, %d blended, %d national-only'
+          % (len(sel_by_row['State-Tuned Rules']), len(sel_by_row['Blended Rules']),
+             len(sel_by_row['National Rules'])))
+    sel_s = lambda i: sel_by_row['State-Tuned Rules'][S0 + 2 * i]
+    sel_n = lambda i: sel_by_row['Blended Rules'][N0 + i]
+    sel_l = lambda i: sel_by_row['National Rules'][N0 + i]
+    blocks = [('sum', sm_rules, sel_s)] \
+        + ([('nat', nt_rules, sel_n)] if nat else []) \
+        + ([('nl', nl_rules, sel_l)] if natl else [])
     newcols = {}
     c = NCOL
     for tag, rules, sel in blocks:
@@ -157,7 +167,8 @@ def main():
                 f'{TABLE}[over_threshold],1)' if hh != 'all'
                 else f'SUMIFS({TABLE}[total_error_amount],{TABLE}[over_threshold],1)')
 
-    HITS = {'sum': f'{TABLE}[_hit_sum]', 'nat': f'{TABLE}[_hit_nat]'}
+    HITS = {'sum': f'{TABLE}[_hit_sum]', 'nat': f'{TABLE}[_hit_nat]',
+            'nl': f'{TABLE}[_hit_nl]'}
     OV, AMT = f'{TABLE}[over_threshold]', f'{TABLE}[total_error_amount]'
 
     def combined(ws, row, hh, tag, cols):
@@ -181,6 +192,8 @@ def main():
         combined(summ, 6 + i, hh, 'sum', SM)
         if nat:
             combined(nat, 6 + i, hh, 'nat', NT)
+        if natl:
+            combined(natl, 6 + i, hh, 'nl', NT)
 
     # ── 4. per-rule rows ─────────────────────────────────────────────────────
     def rule_row(ws, row, conds, hh, cols):
@@ -205,6 +218,8 @@ def main():
         rule_row(summ, S0 + 2 * i + 1, nc, hh, SM)         # national comparison
     for i, (conds, hh) in enumerate(nt_rules):
         rule_row(nat, N0 + i, conds, hh, NT)
+    for i, (conds, hh) in enumerate(nl_rules):
+        rule_row(natl, N0 + i, conds, hh, NT)
 
     # ── 5. Dashboard: fixed ranges -> table references ───────────────────────
     swapped = 0

@@ -57,6 +57,10 @@ def _default_entry(abbr):
         'years': _YEARS,
         'delivery_csv': (f'state_delivery_lists/blended_delivery_'
                          f'{name_us}_{FY0}_{FY1}_{_BUDGET}.csv'),
+        # the national-only list exists for 39 of the 49 states (2026-08-16);
+        # the builder skips the National Rules tab when the file is absent
+        'national_csv': (f'state_delivery_lists/national_delivery_'
+                         f'{name_us}_{FY0}_{FY1}_{_BUDGET}.csv'),
         'qc_files': _QC_FILES,
         'role_filter': 'core',      # which delivery rules to implement
     }

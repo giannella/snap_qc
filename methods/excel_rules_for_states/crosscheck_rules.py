@@ -1,20 +1,21 @@
 """
-Test that the rules as shown in the workbook's Summary (National) tab match an
-independent R implementation of the same rules over the same years of
-reg_model_data.rds.
+Test that the rules as shown in the workbook's Blended Rules and National
+Rules tabs match an independent R implementation of the same rules over the
+same years of reg_model_data.rds.
 
     python crosscheck_rules.py WA [--workbook path.xlsx]
 
-Runs crosscheck_rules.R (which re-parses the delivery CSV, re-applies every
-rule in R with the miner's own prep_features(), and scores it) and compares,
-per rule: n flagged, errors caught, error dollars, precision, recall, dollar
-recall, workload — plus the all-rules union, recomputed from the workbook's
-RuleFlags hit matrix, overall and per household-size stratum.
+For each tab, runs crosscheck_rules.R (which re-parses the delivery CSV,
+re-applies every rule in R with the miner's own prep_features(), and scores
+it) and compares, per rule: n flagged, errors caught, error dollars,
+precision, recall, dollar recall, workload — plus the all-rules union,
+recomputed from the workbook's RuleFlags hit matrix, overall and per
+household-size stratum.
 
-Exit code 0 = everything matches. Run it against the BUILT workbook (the plain
-snap_qc_dashboard_<ABBR>.xlsx): its Summary (National) values are static, so
-they can be read without Excel. The LIVE/RECON variants hold the same numbers
-as formulas; verify those by opening in Excel.
+Exit code 0 = everything matches. Run it against the PLAIN build in
+.build/out_<ABBR>/ (the default): its rules-tab values are static, so they
+can be read without Excel. The delivered workbook holds the same numbers as
+formulas; verify those by opening it in Excel (make_state.py does).
 """
 import argparse
 import os
@@ -57,52 +58,39 @@ def rscript():
     raise SystemExit('Rscript not found; set RSCRIPT')
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument('state', nargs='?', default='WA')
-    ap.add_argument('--workbook')
-    a = ap.parse_args()
-    cfg = STATE_REGISTRY.get(a.state.upper())
-    repo = find_repo(PKG)
-    base = os.path.dirname(PKG)
-    wbp = a.workbook or os.path.join(PKG, 'state_workbooks', cfg['abbr'],
-                                     f'snap_qc_dashboard_{cfg["abbr"]}.xlsx')
-    cases_csv = os.path.join(os.path.dirname(wbp),
-                             f'{cfg["abbr"].lower()}_cases.csv')
-    delivery = os.path.join(repo, cfg['delivery_csv'])
-    if not os.path.isfile(delivery):
-        delivery = os.path.join(base, cfg['delivery_csv'])
-
-    tmp = tempfile.mkdtemp(prefix='crosscheck_')
-    r_out = os.path.join(tmp, 'r_rules.csv')
+def run_r(cfg, repo, csv_path, tmp, tag):
+    r_out = os.path.join(tmp, f'r_rules_{tag}.csv')
     cmd = [rscript(), os.path.join(PKG, 'crosscheck_rules.R'),
-           '--state', cfg['name'], '--csv', delivery, '--out', r_out,
+           '--state', cfg['name'], '--csv', csv_path, '--out', r_out,
            '--years', ','.join(str(y) for y in cfg.get('years', (2022, 2023, 2024))),
            '--repo', repo, '--role', cfg['role_filter']]
     print('$ ' + ' '.join(cmd))
     if subprocess.run(cmd, cwd=repo).returncode != 0:
         raise SystemExit('crosscheck_rules.R failed')
-    r_rules = pd.read_csv(r_out)
-    r_union = pd.read_csv(r_out.replace('.csv', '_union.csv'))
+    return (pd.read_csv(r_out),
+            pd.read_csv(r_out.replace('.csv', '_union.csv')))
 
-    wb = openpyxl.load_workbook(wbp)
-    nat = wb['Summary (National)']
+
+def check_tab(wb, sheet_name, r_rules, r_union, mask_col0, cases):
+    """Per-rule static values on `sheet_name` vs R, plus the union recomputed
+    from the RuleFlags mask block starting at column `mask_col0`."""
+    ws = wb[sheet_name]
     NR = len(r_rules)
     fails = 0
     for j in range(NR):
         r = NAT_ROW0 + j
-        rk = int(str(nat.cell(row=r, column=1).value).split()[-1])
+        rk = int(str(ws.cell(row=r, column=1).value).split()[-1])
         rr = r_rules[r_rules['rank'] == rk]
-        assert len(rr) == 1, f'rank {rk} missing from the R output'
+        assert len(rr) == 1, f'{sheet_name}: rank {rk} missing from the R output'
         rr = rr.iloc[0]
-        vals = [('hh', nat.cell(row=r, column=2).value, rr['hh'], None),
-                ('precision', nat.cell(row=r, column=4).value, rr['precision'], 5e-5),
-                ('recall', nat.cell(row=r, column=5).value, rr['recall'], 5e-5),
-                ('dollar_recall', nat.cell(row=r, column=6).value, rr['dollar_recall'], 5e-5),
-                ('n_flagged', nat.cell(row=r, column=7).value, rr['n_flagged'], 0),
-                ('errors', nat.cell(row=r, column=8).value, rr['errors'], 0),
-                ('dollars', nat.cell(row=r, column=9).value, rr['dollars'], 0.51),
-                ('workload', nat.cell(row=r, column=10).value, rr['workload'], 5e-5)]
+        vals = [('hh', ws.cell(row=r, column=2).value, rr['hh'], None),
+                ('precision', ws.cell(row=r, column=4).value, rr['precision'], 5e-5),
+                ('recall', ws.cell(row=r, column=5).value, rr['recall'], 5e-5),
+                ('dollar_recall', ws.cell(row=r, column=6).value, rr['dollar_recall'], 5e-5),
+                ('n_flagged', ws.cell(row=r, column=7).value, rr['n_flagged'], 0),
+                ('errors', ws.cell(row=r, column=8).value, rr['errors'], 0),
+                ('dollars', ws.cell(row=r, column=9).value, rr['dollars'], 0.51),
+                ('workload', ws.cell(row=r, column=10).value, rr['workload'], 5e-5)]
         for name, got, want, tol in vals:
             if tol is None:
                 ok = str(got) == str(want)
@@ -111,20 +99,18 @@ def main():
                 ok = abs(float(got) - round(float(want), 4)) <= max(tol, 1e-9)
             if not ok:
                 fails += 1
-                print(f'MISMATCH rule {rk} {name}: workbook={got!r} R={want!r}')
-    print(f'per-rule: {NR} rules x 8 fields checked, {fails} mismatches')
+                print(f'MISMATCH {sheet_name} rule {rk} {name}: '
+                      f'workbook={got!r} R={want!r}')
+    print(f'{sheet_name}: {NR} rules x 8 fields checked, {fails} mismatches')
 
-    # union via the RuleFlags original-threshold hit block
     rf = wb['RuleFlags']
-    ndata = int(r_union.loc[r_union.scope == 'all', 'tot_cases'].iat[0])
+    ndata = len(cases)
     hit = np.zeros(ndata, dtype=int)
     for j in range(NR):
-        col = 3 + NR + j
+        col = mask_col0 + j
         for i in range(ndata):
             if rf.cell(row=FLAG0 + i, column=col).value == 1:
                 hit[i] = 1
-    cases = pd.read_csv(cases_csv)
-    assert len(cases) == ndata, 'cases CSV row count differs from the R frame'
     is_err = (cases['over_threshold'] == 1).values
     ed = np.where(is_err, cases['total_error_amount'].fillna(0).values, 0)
     ufails = 0
@@ -136,12 +122,50 @@ def main():
         want = (int(u['flagged']), int(u['errors']), float(u['dollars']))
         if got != want:
             ufails += 1
-            print(f"UNION MISMATCH scope {u['scope']}: workbook={got} R={want}")
+            print(f"UNION MISMATCH {sheet_name} scope {u['scope']}: "
+                  f"workbook={got} R={want}")
         else:
-            print(f"union scope {u['scope']:>3}: flagged {got[0]}, errors {got[1]}, "
-                  f"dollars {got[2]:.0f}  == R")
-    print(f'union: {ufails} mismatches')
-    sys.exit(1 if (fails or ufails) else 0)
+            print(f"{sheet_name} union scope {u['scope']:>3}: flagged {got[0]}, "
+                  f"errors {got[1]}, dollars {got[2]:.0f}  == R")
+    print(f'{sheet_name} union: {ufails} mismatches')
+    return fails + ufails
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('state', nargs='?', default='WA')
+    ap.add_argument('--workbook')
+    a = ap.parse_args()
+    cfg = STATE_REGISTRY.get(a.state.upper())
+    repo = find_repo(PKG)
+    wbp = a.workbook or os.path.join(PKG, '.build', f'out_{cfg["abbr"]}',
+                                     f'snap_qc_dashboard_{cfg["abbr"]}.xlsx')
+    cases = pd.read_csv(os.path.join(os.path.dirname(wbp),
+                                     f'{cfg["abbr"].lower()}_cases.csv'))
+
+    def resolve(rel):
+        p = os.path.join(repo, rel)
+        return p if os.path.isfile(p) else None
+
+    wb = openpyxl.load_workbook(wbp)
+    tmp = tempfile.mkdtemp(prefix='crosscheck_')
+    total = 0
+
+    blended, blended_u = run_r(cfg, repo, resolve(cfg['delivery_csv']), tmp, 'blended')
+    NRB = len(blended)
+    # RuleFlags layout (build_workbook_v2): delivered-threshold masks for the
+    # blended list start at column 3+NR; the national-only block at 10+3*NR
+    total += check_tab(wb, 'Blended Rules', blended, blended_u, 3 + NRB, cases)
+
+    if 'National Rules' in wb.sheetnames:
+        nat_csv = resolve(cfg.get('national_csv', ''))
+        assert nat_csv, 'workbook has a National Rules tab but no national CSV found'
+        natl, natl_u = run_r(cfg, repo, nat_csv, tmp, 'national')
+        total += check_tab(wb, 'National Rules', natl, natl_u, 10 + 3 * NRB, cases)
+    else:
+        print('no National Rules tab (no national-only list for this state)')
+
+    sys.exit(1 if total else 0)
 
 
 if __name__ == '__main__':

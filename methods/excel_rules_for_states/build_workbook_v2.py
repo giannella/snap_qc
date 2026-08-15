@@ -30,8 +30,9 @@ Sheets produced:
   Tuning Audit       the split, the tier decision, and every admission test
   Dashboard          one tuning block per rule + PR chart      (hidden engine)
   Grid Search        bracket-bounded threshold search          (hidden engine)
-  Summary            deployed vs national thresholds per rule, mixable via Include?
-  Summary (National) delivery thresholds as-is, no tuning
+  State-Tuned Rules  deployed vs delivered thresholds per rule, mixable via Include?
+  Blended Rules      the blended delivery list (state + national pools), as-is
+  National Rules     the national-only delivery list, as-is (where the repo has one)
   Error Cases        live list of rules catching errors + the cases they catch
   RuleFlags          case x rule hit matrices                  (hidden engine)
 
@@ -208,22 +209,42 @@ MAX_ROW = max(MAX_ROW, len(df) + 101)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 2. PARSE THE DELIVERY RULES
+#
+# Two rule lists ship per state: the BLENDED list (the state's own mined rules
+# merged into the national pool — the deployment deliverable, and what the
+# tuner runs on) and, where the repo carries one, the NATIONAL-only list. Each
+# gets its own tab; the blended list additionally feeds the tuned deployment.
 # ══════════════════════════════════════════════════════════════════════════════
-rules_df = pd.read_csv(DELIVERY_CSV)
-rules_df = rules_df[rules_df['role'] == ROLE_FILTER].sort_values('rank').reset_index(drop=True)
 COND_PAT = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\s*(>=|<=|>|<|==)\s*(-?[0-9.]+)')
 
-RULES = []
-for _, rr in rules_df.iterrows():
-    conds = [{'var': v, 'op': op, 'thr': float(t)} for v, op, t in COND_PAT.findall(rr['rule'])]
-    assert 1 <= len(conds) <= NSLOTS, rr['rule']
-    RULES.append({'num': int(rr['rank']), 'hh': str(rr['hh']), 'conds': conds,
-                  'prec_train': float(rr['precision_train']),
-                  'prec_lcb': float(rr['precision_train_lcb']),
-                  'engine': rr['engines'], 'frame': rr['mined_frames']})
-print('rules implemented:', len(RULES))
 
-RULE_VARS = sorted({c['var'] for r in RULES for c in r['conds']})
+def parse_delivery(csv_path):
+    rdf = pd.read_csv(csv_path)
+    rdf = rdf[rdf['role'] == ROLE_FILTER].sort_values('rank').reset_index(drop=True)
+    out = []
+    for _, rr in rdf.iterrows():
+        conds = [{'var': v, 'op': op, 'thr': float(t)}
+                 for v, op, t in COND_PAT.findall(rr['rule'])]
+        assert 1 <= len(conds) <= NSLOTS, rr['rule']
+        out.append({'num': int(rr['rank']), 'hh': str(rr['hh']), 'conds': conds,
+                    'prec_train': float(rr['precision_train']),
+                    'prec_lcb': float(rr['precision_train_lcb']),
+                    'engine': rr['engines'], 'frame': rr['mined_frames']})
+    return out
+
+
+RULES = parse_delivery(DELIVERY_CSV)
+print('blended rules implemented:', len(RULES))
+
+NAT_RULES = None
+if _cfg.get('national_csv'):
+    try:
+        NAT_RULES = parse_delivery(_find_delivery(_cfg['national_csv']))
+        print('national-only rules implemented:', len(NAT_RULES))
+    except SystemExit:
+        print('no national-only list for this state; National Rules tab skipped')
+
+RULE_VARS = sorted({c['var'] for r in RULES + (NAT_RULES or []) for c in r['conds']})
 for v in RULE_VARS:
     assert v in df.columns, f'missing variable: {v}'
 
@@ -888,12 +909,18 @@ opt_masks  = [rule_mask_full(r, rule_best_thr[ri]) if rule_best_thr[ri] is not N
               for ri, r in enumerate(RULES)]
 orig_masks = [rule_mask_full(r, [c['thr'] for c in r['conds']]) for r in RULES]
 
+# the national-only list, delivered thresholds as-is (no tuner runs on it)
+NR2 = len(NAT_RULES or [])
+nat_masks  = [rule_mask_full(r, [c['thr'] for c in r['conds']]) for r in (NAT_RULES or [])]
+nat_scores = [py_score(df[df['hh_group'] == r['hh']], r['conds'],
+                       [c['thr'] for c in r['conds']]) for r in (NAT_RULES or [])]
+
 # ── hidden RuleFlags sheet: case x rule 0/1 matrices + live union columns ─────
-# row 1 rule nums | row 2 selected (from Summary Include? col) | row 3 has-optimal
-# row 4 target stratum | rows FLAG0.. one per Data case (only 1s written)
+# row 1 rule nums | row 2 selected (from the rules tabs' Include? cols)
+# row 3 has-optimal | row 4 target stratum | rows FLAG0.. one per Data case
 NR, NDATA = len(RULES), len(df)
-RULE_ROW0 = 15                 # Summary row of the first rule's "deployed" line
-NAT_ROW0  = 11                 # Summary (National) row of the first rule (delivery-rank order)
+RULE_ROW0 = 15                 # State-Tuned Rules row of the first rule's "deployed" line
+NAT_ROW0  = 11                 # Blended Rules / National Rules row of the first rule
 FLAG0 = 5
 
 # Individual rules are listed by expected error $ per flagged case, best first;
@@ -915,13 +942,13 @@ set_cell(ws_f,1,1,'rule num'); set_cell(ws_f,2,1,'selected')
 set_cell(ws_f,3,1,'deployed'); set_cell(ws_f,4,1,'stratum')
 for j, rule in enumerate(RULES):
     set_cell(ws_f,1,2+j, rule['num'])
-    set_cell(ws_f,2,2+j, formula=f'=IF(Summary!$M${rule_row[j]}=TRUE,1,0)')
+    set_cell(ws_f,2,2+j, formula=f"=IF('State-Tuned Rules'!$M${rule_row[j]}=TRUE,1,0)")
     if rule_best_thr[j] is not None:
         set_cell(ws_f,3,2+j, 1)
     set_cell(ws_f,4,2+j, rule['hh'])
     set_cell(ws_f,1,3+NR+j, rule['num'])
     set_cell(ws_f,2,9+2*NR+j,
-             formula=f"=IF('Summary (National)'!$L${NAT_ROW0+j}=TRUE,1,0)")
+             formula=f"=IF('Blended Rules'!$L${NAT_ROW0+j}=TRUE,1,0)")
 for j in range(NR):
     if opt_masks[j] is not None:
         for i in np.flatnonzero(opt_masks[j]):
@@ -941,7 +968,27 @@ for i in range(NDATA):
     ws_f.cell(row=r, column=7+2*NR).value = (
         f'=IF(SUMPRODUCT({NATSEL},${fcol_orig(0)}{r}:${fcol_orig(NR-1)}{r})>0,1,0)')
 
-ws_s = wb.create_sheet('Summary', 1)
+# fourth region: the national-only list's masks, selection vector and union
+if NAT_RULES:
+    NL0 = 10 + 3*NR
+    nlcol  = lambda j: get_column_letter(NL0 + j)
+    nlsel  = lambda j: get_column_letter(NL0 + NR2 + j)
+    NLUCOL = get_column_letter(NL0 + 2*NR2 + 1)
+    for j, rule in enumerate(NAT_RULES):
+        set_cell(ws_f,1,NL0+j, rule['num'])
+        set_cell(ws_f,4,NL0+j, rule['hh'])
+        set_cell(ws_f,2,NL0+NR2+j,
+                 formula=f"=IF('National Rules'!$L${NAT_ROW0+j}=TRUE,1,0)")
+        for i in np.flatnonzero(nat_masks[j]):
+            ws_f.cell(row=FLAG0+int(i), column=NL0+j).value = 1
+    NLSEL = f'${nlsel(0)}$2:${nlsel(NR2-1)}$2'
+    NLHH  = f'${nlcol(0)}$4:${nlcol(NR2-1)}$4'
+    for i in range(NDATA):
+        r = FLAG0 + i
+        ws_f.cell(row=r, column=NL0+2*NR2+1).value = (
+            f'=IF(SUMPRODUCT({NLSEL},${nlcol(0)}{r}:${nlcol(NR2-1)}{r})>0,1,0)')
+
+ws_s = wb.create_sheet('State-Tuned Rules', 1)
 ws_s.sheet_view.showGridLines = False
 for col_letter, width in {'A':9,'B':9,'C':10,'D':9,'E':11,'F':10,'G':11,
                           'H':10,'I':9,'J':13,'K':11,'L':13,'M':9,'N':115}.items():
@@ -949,7 +996,7 @@ for col_letter, width in {'A':9,'B':9,'C':10,'D':9,'E':11,'F':10,'G':11,
 _TIER_WORDS = {0: 'Tier 0, no tuning: the delivered rules at their delivered thresholds',
                1: 'Tier 1, re-filtered and re-ranked on your data; rule text unchanged',
                2: 'Tier 2, thresholds tuned inside ±25% of their delivered values'}
-merge(ws_s,1,1,1,12, value=f'Summary — Deployed Rule List for {STATE_NAME} '
+merge(ws_s,1,1,1,12, value=f'State-Tuned Rules — Deployed Rule List for {STATE_NAME} '
                            f'({_TIER_WORDS[RES.tier].split(",")[0]})',
       fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
 ws_s.row_dimensions[1].height = 32
@@ -1072,90 +1119,120 @@ for rng_ in (f'A5:L{LAST_ROW}', f'N5:N{LAST_ROW}'):
         FormulaRule(formula=['AND($C5="national",$M$2<>TRUE)'],
                     font=Font(name=FONT, color='FFFFFF'), stopIfTrue=True))
 ws_s.freeze_panes = 'A5'
-CHECKBOX_CELLS = {'Summary': ['M2'] + [f'M{rule_row[j]}' for j in range(NR)]}
+CHECKBOX_CELLS = {'State-Tuned Rules': ['M2'] + [f'M{rule_row[j]}' for j in range(NR)]}
+
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 7. SUMMARY (NATIONAL) — delivery thresholds as-is, no grid search
+# 7. THE AS-DELIVERED RULE TABS — thresholds as-is, no tuning
+#
+# One tab per delivery list the repo carries for this state: the BLENDED list
+# (the state's own mined rules merged into the national pool — the deployment
+# deliverable and the Tier 0 baseline) and, where available, the NATIONAL-only
+# list (built purely from the national pool).
 # ══════════════════════════════════════════════════════════════════════════════
-ws_n = wb.create_sheet('Summary (National)', 2)
-ws_n.sheet_view.showGridLines = False
-for col_letter, width in {'A':9,'B':9,'C':11,'D':11,'E':11,'F':11,'G':10,'H':10,
-                          'I':14,'J':12,'K':21,'L':9,'M':115}.items():
-    ws_n.column_dimensions[col_letter].width = width
-merge(ws_n,1,1,1,13, value=f'Summary (National Thresholds) — {STATE_NAME} FY{FY_LABEL}',
-      fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
-ws_n.row_dimensions[1].height = 32
-merge(ws_n,2,1,2,13,
-      value='This tab reports the delivery rules exactly as mined on national QC data: thresholds are '
-            f'used AS-IS, with no state-level search or tuning. Every metric below is computed on all '
-            f'{STATE_NAME} QC cases in the Data tab. This is the Tier 0 list, and it is what the tiered '
-            f'procedure has to beat on a held-out year before any tuning is deployed (Tuning Audit tab).',
-      fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
-merge(ws_n,3,1,3,13,
-      value='Recall, $ Recall and Workload % are measured within each rule\'s own household-size '
-            'stratum. Expected error $ by case = error dollars caught / cases flagged. Rules are listed '
-            'in delivery-list rank order, exactly as delivered. Tick or untick Include? to add or '
-            'remove a rule from the combined rows above.',
-      fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
-for col, txt in enumerate(['Rule','HH size','Rules count','Precision','Recall','$ Recall',
-                           'Flagged','Errors','Error $ caught','Workload %',
-                           'Expected error $ by case','Include?',
-                           'Conditions (national thresholds, as delivered)'], 1):
-    set_cell(ws_n,4,col,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
+def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
+                      sel_rng, hh_rng, union_col, intro):
+    ws = wb.create_sheet(sheet_name, position)
+    ws.sheet_view.showGridLines = False
+    for col_letter, width in {'A':9,'B':9,'C':11,'D':11,'E':11,'F':11,'G':10,'H':10,
+                              'I':14,'J':12,'K':21,'L':9,'M':115}.items():
+        ws.column_dimensions[col_letter].width = width
+    merge(ws,1,1,1,13, value=f'{sheet_name} — {STATE_NAME} FY{FY_LABEL}',
+          fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
+    ws.row_dimensions[1].height = 32
+    merge(ws,2,1,2,13, value=intro,
+          fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
+    merge(ws,3,1,3,13,
+          value='Recall, $ Recall and Workload % are measured within each rule\'s own household-size '
+                'stratum. Expected error $ by case = error dollars caught / cases flagged. Rules are '
+                'listed in delivery-list rank order, exactly as delivered. Tick or untick Include? to '
+                'add or remove a rule from the combined rows above.',
+          fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
+    for col, txt in enumerate(['Rule','HH size','Rules count','Precision','Recall','$ Recall',
+                               'Flagged','Errors','Error $ caught','Workload %',
+                               'Expected error $ by case','Include?',
+                               'Conditions (delivered thresholds, as-is)'], 1):
+        set_cell(ws,4,col,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
 
-merge(ws_n,5,1,5,13,
-      value='All rules combined (a case is flagged if ANY Include?-checked rule flags it, '
-            'at national thresholds)',
-      fill=BLUE_LIGHT, font=bold_font(10), align=left)
-NAT_RNG = f'RuleFlags!${NATU}${FLAG0}:${NATU}${FLAG0+NDATA-1}'
-for i, (scope_hh, sel) in enumerate([('all', np.ones(len(df), bool))] +
-                                    [(lbl, (df['hh_group'] == lbl).values) for lbl in STRATA]):
-    r = 6 + i
-    tot_err = max(int((is_err_all & sel).sum()), 1)
-    tot_ed  = round(float(ed_all[sel].sum()), 2) or 1
-    tot_n   = max(int(sel.sum()), 1)
-    sterm = '' if scope_hh == 'all' else f'*({D_HH}="{scope_hh}")'
-    f_cnt = (f'=SUM(RuleFlags!{NATSEL})' if scope_hh == 'all'
-             else f'=SUMPRODUCT((RuleFlags!{NATSEL})*(RuleFlags!{HHRNG}="{scope_hh}"))')
-    set_cell(ws_n,r,1,'All rules', align=center, border=thin(), fill=GREEN)
-    set_cell(ws_n,r,2,scope_hh, align=center, border=thin(), fill=GREEN)
-    set_cell(ws_n,r,3,formula=f_cnt, align=center, border=thin(), fill=GREEN, number_format='0')
-    for col, f, fmt in [
-        (4, f'=IF($G{r}=0,0,$H{r}/$G{r})',                            '0.0%'),
-        (5, f'=$H{r}/{tot_err}',                                      '0.0%'),
-        (6, f'=$I{r}/{tot_ed}',                                       '0.0%'),
-        (7, f'=SUMPRODUCT(({NAT_RNG}){sterm})',                       '#,##0'),
-        (8, f'=SUMPRODUCT(({NAT_RNG}){sterm}*({D_OV}))',              '#,##0'),
-        (9, f'=SUMPRODUCT(({NAT_RNG}){sterm}*({D_OV})*({D_AM}))',     '$#,##0'),
-        (10,f'=$G{r}/{tot_n}',                                        '0.0%'),
-        (11,f'=IFERROR(IF($G{r}=0,"",$I{r}/$G{r}),"")',               '$#,##0'),
-    ]:
-        set_cell(ws_n,r,col,formula=f, align=center, border=thin(),
-                 number_format=fmt, fill=GREEN)
-    set_cell(ws_n,r,12,None, align=center, border=thin(), fill=GREEN)
-    set_cell(ws_n,r,13,'union of the checked rules at their national thresholds',
-             align=left, font=Font(name=FONT,size=10))
+    merge(ws,5,1,5,13,
+          value='All rules combined (a case is flagged if ANY Include?-checked rule flags it, '
+                'at delivered thresholds)',
+          fill=BLUE_LIGHT, font=bold_font(10), align=left)
+    u_rng = f'RuleFlags!${union_col}${FLAG0}:${union_col}${FLAG0+NDATA-1}'
+    for i, (scope_hh, sel) in enumerate([('all', np.ones(len(df), bool))] +
+                                        [(lbl, (df['hh_group'] == lbl).values) for lbl in STRATA]):
+        r = 6 + i
+        tot_err = max(int((is_err_all & sel).sum()), 1)
+        tot_ed  = round(float(ed_all[sel].sum()), 2) or 1
+        tot_n   = max(int(sel.sum()), 1)
+        sterm = '' if scope_hh == 'all' else f'*({D_HH}="{scope_hh}")'
+        f_cnt = (f'=SUM(RuleFlags!{sel_rng})' if scope_hh == 'all'
+                 else f'=SUMPRODUCT((RuleFlags!{sel_rng})*(RuleFlags!{hh_rng}="{scope_hh}"))')
+        set_cell(ws,r,1,'All rules', align=center, border=thin(), fill=GREEN)
+        set_cell(ws,r,2,scope_hh, align=center, border=thin(), fill=GREEN)
+        set_cell(ws,r,3,formula=f_cnt, align=center, border=thin(), fill=GREEN, number_format='0')
+        for col, f, fmt in [
+            (4, f'=IF($G{r}=0,0,$H{r}/$G{r})',                            '0.0%'),
+            (5, f'=$H{r}/{tot_err}',                                      '0.0%'),
+            (6, f'=$I{r}/{tot_ed}',                                       '0.0%'),
+            (7, f'=SUMPRODUCT(({u_rng}){sterm})',                         '#,##0'),
+            (8, f'=SUMPRODUCT(({u_rng}){sterm}*({D_OV}))',                '#,##0'),
+            (9, f'=SUMPRODUCT(({u_rng}){sterm}*({D_OV})*({D_AM}))',       '$#,##0'),
+            (10,f'=$G{r}/{tot_n}',                                        '0.0%'),
+            (11,f'=IFERROR(IF($G{r}=0,"",$I{r}/$G{r}),"")',               '$#,##0'),
+        ]:
+            set_cell(ws,r,col,formula=f, align=center, border=thin(),
+                     number_format=fmt, fill=GREEN)
+        set_cell(ws,r,12,None, align=center, border=thin(), fill=GREEN)
+        set_cell(ws,r,13,'union of the checked rules at their delivered thresholds',
+                 align=left, font=Font(name=FONT,size=10))
 
-merge(ws_n,10,1,10,13, value='Individual rules — national thresholds, no tuning',
-      fill=BLUE_LIGHT, font=bold_font(10), align=left)
-for j, rule in enumerate(RULES):                      # RULES is already in delivery-rank order
-    r = NAT_ROW0 + j
-    sc, cond = summary_rows[2*j+1][2], summary_rows[2*j+1][3]
-    set_cell(ws_n,r,1,f'Rule {rule["num"]}', align=center, border=thin(), fill=GREEN)
-    set_cell(ws_n,r,2,rule['hh'], align=center, border=thin(), fill=GREEN)
-    set_cell(ws_n,r,3,None, align=center, border=thin(), fill=GREEN)
-    for col, key, fmt in [(4,'prec','0.0%'),(5,'rec','0.0%'),(6,'drec','0.0%'),
-                          (7,'n','#,##0'),(8,'tp','#,##0'),(9,'dollars','$#,##0')]:
-        set_cell(ws_n,r,col,round(float(sc[key]),4), align=center, border=thin(),
-                 number_format=fmt, fill=GREEN)
-    set_cell(ws_n,r,10,round(sc['n']/cases_by[rule['hh']],4), align=center, border=thin(),
-             number_format='0.0%', fill=GREEN)
-    set_cell(ws_n,r,11,(round(sc['dollars']/sc['n'], 2) if sc['n'] else '—'),
-             align=center, border=thin(), number_format='$#,##0', fill=GREEN)
-    set_cell(ws_n,r,12,True, fill=YELLOW, align=center, border=thin(), font=Font(name=FONT))
-    set_cell(ws_n,r,13,cond, align=left, font=Font(name=FONT,size=10))
-ws_n.freeze_panes = 'A5'
-CHECKBOX_CELLS['Summary (National)'] = [f'L{NAT_ROW0+j}' for j in range(NR)]
+    merge(ws,10,1,10,13, value='Individual rules — delivered thresholds, no tuning',
+          fill=BLUE_LIGHT, font=bold_font(10), align=left)
+    for j, rule in enumerate(rules_list):        # already in delivery-rank order
+        r = NAT_ROW0 + j
+        sc = scores[j]
+        set_cell(ws,r,1,f'Rule {rule["num"]}', align=center, border=thin(), fill=GREEN)
+        set_cell(ws,r,2,rule['hh'], align=center, border=thin(), fill=GREEN)
+        set_cell(ws,r,3,None, align=center, border=thin(), fill=GREEN)
+        for col, key, fmt in [(4,'prec','0.0%'),(5,'rec','0.0%'),(6,'drec','0.0%'),
+                              (7,'n','#,##0'),(8,'tp','#,##0'),(9,'dollars','$#,##0')]:
+            set_cell(ws,r,col,round(float(sc[key]),4), align=center, border=thin(),
+                     number_format=fmt, fill=GREEN)
+        set_cell(ws,r,10,round(sc['n']/cases_by[rule['hh']],4), align=center, border=thin(),
+                 number_format='0.0%', fill=GREEN)
+        set_cell(ws,r,11,(round(sc['dollars']/sc['n'], 2) if sc['n'] else '—'),
+                 align=center, border=thin(), number_format='$#,##0', fill=GREEN)
+        set_cell(ws,r,12,True, fill=YELLOW, align=center, border=thin(), font=Font(name=FONT))
+        set_cell(ws,r,13,conds_text[j], align=left, font=Font(name=FONT,size=10))
+    ws.freeze_panes = 'A5'
+    CHECKBOX_CELLS[sheet_name] = [f'L{NAT_ROW0+j}' for j in range(len(rules_list))]
+    return ws
+
+
+ws_n = delivery_list_tab(
+    'Blended Rules', 2, RULES,
+    scores=[summary_rows[2*j+1][2] for j in range(NR)],
+    conds_text=[summary_rows[2*j+1][3] for j in range(NR)],
+    sel_rng=NATSEL, hh_rng=HHRNG, union_col=NATU,
+    intro=('The BLENDED delivery list: the state\'s own mined rules merged into the national '
+           'pool on a common ranking scale, filled to the review budget against this state\'s '
+           'caseload. Thresholds are used AS-IS, with no state-level search or tuning; every '
+           f'metric is computed on all {STATE_NAME} QC cases in the Data tab. This is the Tier 0 '
+           'list the tiered procedure has to beat on a held-out year before any tuning is '
+           'deployed (Tuning Audit tab).'))
+
+if NAT_RULES:
+    delivery_list_tab(
+        'National Rules', 3, NAT_RULES,
+        scores=nat_scores,
+        conds_text=[' & '.join(f'{c["var"]} {c["op"]} {c["thr"]:g}' for c in r['conds'])
+                    for r in NAT_RULES],
+        sel_rng=NLSEL, hh_rng=NLHH, union_col=NLUCOL,
+        intro=('The NATIONAL-only delivery list: built purely from the pool mined on all-state '
+               'QC data, with no rules from this state\'s own mine. Thresholds are used AS-IS; '
+               f'every metric is computed on all {STATE_NAME} QC cases in the Data tab. Compare '
+               'against the Blended Rules tab to see what merging the state\'s own rules adds.'))
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 7b. TUNING AUDIT — the split, the tier decision, and every test behind it
@@ -1165,7 +1242,7 @@ CHECKBOX_CELLS['Summary (National)'] = [f'L{NAT_ROW0+j}' for j in range(NR)]
 # made on, how many distinct combinations were compared, and how each arm did on
 # a year no selection step ever saw.
 # ══════════════════════════════════════════════════════════════════════════════
-ws_a = wb.create_sheet('Tuning Audit', 3)
+ws_a = wb.create_sheet('Tuning Audit', 4 if NAT_RULES else 3)
 ws_a.sheet_view.showGridLines = False
 for col_letter, width in {'A':30,'B':13,'C':13,'D':13,'E':13,'F':13,'G':13,'H':13,
                           'I':13,'J':13,'K':13,'L':13,'M':13,'N':13,'O':90}.items():
@@ -1326,7 +1403,7 @@ for txt in [
     'are not adjustable in the delivered build.',
     'Expect roughly a third off the tuning-year precision when this list meets a future year. The '
     'held-out column in the arms table above already shows that deflation on your own data; quote it, '
-    'not the Summary tab.',
+    'not the State-Tuned Rules tab.',
     'Scored against ANY over-threshold error, not the error type a rule was mined for: a review finds '
     'whatever error is present, and state samples are too thin to score by type.',
 ] + [f'Run note: {n}' for n in RES.notes]:
@@ -1338,7 +1415,7 @@ for txt in [
 # ══════════════════════════════════════════════════════════════════════════════
 # 8. ERROR CASES — live list of rules catching errors + the cases they catch
 # ══════════════════════════════════════════════════════════════════════════════
-ws_e = wb.create_sheet('Error Cases', 4)
+ws_e = wb.create_sheet('Error Cases', 5 if NAT_RULES else 4)
 ws_e.sheet_view.showGridLines = False
 NCOL   = len(DCOLS)
 G0     = 3                                   # first grid column (C)
