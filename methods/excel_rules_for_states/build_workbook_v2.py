@@ -36,7 +36,7 @@ Sheets produced:
   RuleFlags          case x rule hit matrices                  (hidden engine)
 
 Pick the state with the SNAP_STATE environment variable (default WA); add new
-states in states.py.  Run through make_state.py --v2 so the native checkboxes
+states in states.py.  Run through make_state.py so the native checkboxes
 get injected and the result is verified in Excel.
 """
 import os

@@ -75,15 +75,6 @@ EXCLUDE = {
 
 STATES = {a: {**_default_entry(a), **OVERRIDES.get(a, {})} for a in _STATES}
 
-# ── v1 tuning floors (build_workbook.py only) ─────────────────────────────────
-# These mirror the R optimizer's config and apply to every state. They are the
-# UNGUARDED search: no held-out year, no multiplicity adjustment, and a support
-# floor well below the n >= 30 the state-scale evidence requires. Kept so the
-# original workbooks stay reproducible; prefer build_workbook_v2.py.
-PREC_FLOOR = 0.25      # precision floor            (R: PRECISION_TARGET)
-MIN_FLAGGED = 10       # ignore combos flagging fewer cases   (R: MIN_FLAGGED)
-RECALL_FLOOR = 0.02    # min share of error $ a combo must catch (R: RECALL_FLOOR)
-
 # ── v2 tuning contract (build_workbook_v2.py) ─────────────────────────────────
 # Overrides for tuning.TuningConfig; anything omitted keeps that dataclass's
 # default. The defaults are the validated ones (methods/tuning_principles.md) and

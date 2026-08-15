@@ -4,10 +4,10 @@ Builds the SNAP QC inclusion-rule dashboard workbook for a state, in one command
 No macros, no manual steps — the output opens cleanly in any recent Excel.
 
 ```bash
-python methods/excel_rules_for_states/make_state.py WA --v2            # tiered, guarded tuning
-python methods/excel_rules_for_states/make_state.py WA --v2 --recon    # + live table + raw-FNS-field Data tab
-python methods/excel_rules_for_states/make_state.py all --v2 --recon   # every state with a delivery list
-python methods/excel_rules_for_states/make_state.py WA --v2 --refresh  # re-export the frame after a munging rebuild
+python methods/excel_rules_for_states/make_state.py WA            # tiered, guarded tuning
+python methods/excel_rules_for_states/make_state.py WA --recon    # + live table + raw-FNS-field Data tab
+python methods/excel_rules_for_states/make_state.py all --recon   # every state with a delivery list
+python methods/excel_rules_for_states/make_state.py WA --refresh  # re-export the frame after a munging rebuild
 ```
 
 Every state with a blended delivery list in the snap_qc repo's tracked
@@ -71,16 +71,14 @@ mismatches. Run it against the plain build (static values); the LIVE/RECON
 variants hold the same numbers as formulas, so verify those by opening them in
 Excel once.
 
-## Two builders
+## The tiered tuning
 
-**Use `--v2` for anything a state will act on.** v1 (`build_workbook.py`)
-searches every threshold over the 2nd-to-98th percentile of the state's own
-data, keeps whatever maximises error dollars at raw precision >= 25% with
->= 10 cases flagged, and judges it on the same rows it searched. That is the
-winner's curse with nothing holding it back.
-
-v2 (`build_workbook_v2.py` + `tuning.py`) implements the tiered procedure and
-guards in `snap_qc/methods/tuning_principles.md`:
+`build_workbook_v2.py` + `tuning.py` implement the tiered procedure and
+guards in `snap_qc/methods/tuning_principles.md`. (The original v1 builder,
+whose unguarded in-sample search these replaced, is retired to
+`custom_one_off/legacy_dashboard/`; `--v2` is accepted as a no-op for old
+command lines, and CHANGES_AND_RATIONALE.md records the measured case against
+v1.)
 
 | Tier | What may change | Gate |
 |---|---|---|

@@ -1,14 +1,17 @@
 """
 Build a state's SNAP QC dashboard end to end.
 
-    python make_state.py                    # default state (WA), v1 builder
-    python make_state.py VA --v2            # tiered, guarded tuning
-    python make_state.py WA --v2 --recon    # + live table + raw-FNS-field Data tab
-    python make_state.py all --v2 --recon   # every state with a delivery list
-    python make_state.py WA --v2 --refresh  # re-export the frame from the rds first
+    python make_state.py                 # default state (WA)
+    python make_state.py VA              # any state with a delivery list
+    python make_state.py WA --recon      # + live table + raw-FNS-field Data tab
+    python make_state.py all --recon     # every state with a delivery list
+    python make_state.py WA --refresh    # re-export the frame from the rds first
+
+(--v2 is accepted as a no-op: the v2 builder is the only one; the retired v1
+lives in custom_one_off/legacy_dashboard.)
 
 Stages:
-  1. build_workbook.py / build_workbook_v2.py   every sheet, formula and value
+  1. build_workbook_v2.py   every sheet, formula and value
   2. make_live.py       (--live/--recon)  Data becomes an Excel table; Summary
                         tabs recompute from it, so pasted rows flow through
   3. make_recon.py      (--recon)  the Data tab's inputs become the raw
@@ -101,15 +104,13 @@ def build_one(state, builder, want_live, want_recon, refresh, verify):
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('-')]
     target = (args[0] if args else 'WA').upper()
-    builder = 'build_workbook_v2.py' if '--v2' in sys.argv else 'build_workbook.py'
+    # the v1 builder is retired (custom_one_off/legacy_dashboard); --v2 is
+    # accepted as a no-op for old command lines
+    builder = 'build_workbook_v2.py'
     want_recon = '--recon' in sys.argv
     want_live = '--live' in sys.argv or want_recon
     refresh = '--refresh' in sys.argv
     verify = '--no-verify' not in sys.argv
-
-    if want_recon and builder != 'build_workbook_v2.py':
-        raise SystemExit('--recon requires --v2 (the v1 Data tab is not '
-                         'the munged-frame layout make_recon expects)')
 
     if target == 'ALL':
         import states as STATE_REGISTRY
