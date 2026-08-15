@@ -94,6 +94,15 @@ only. The selection rests on a single test year and one mining draw; a
 state's own internal validation on newer data remains the deciding test
 between its blended and national-only list.
 
+Four additional cells carry a national-only file even though the
+current evaluation favors their blend: Michigan (both budgets),
+California (10%), and Maine (10%). For these the strict
+national-vs-blended verdict REVERSED between the July study and the
+current evaluation (`methods/national_only_lists/selection_flips_2024.csv`),
+so the verdict is not stable and both list types ship. Two states
+flipped the other way (Connecticut and Missouri at 5%) and already
+carry national-only files under the benchmark rule.
+
 ## Columns
 
 A rule's mining frame is provenance only; every rule is scored, filtered,

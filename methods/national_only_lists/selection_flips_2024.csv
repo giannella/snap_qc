@@ -1,0 +1,7 @@
+"state","budget","natl_old","blend_old","p_national","p_blended","v_old","v_new"
+"Connecticut",0.05,0.3409,0.3864,0.3409,0.3182,"blended","national"
+"Michigan",0.05,0.3488,0.2791,0.381,0.4048,"national","blended"
+"Michigan",0.1,0.2791,0.2442,0.3095,0.3214,"national","blended"
+"California",0.1,0.2593,0.2469,0.3086,0.3704,"national","blended"
+"Maine",0.1,0.2935,0.25,0.2391,0.2717,"national","blended"
+"Missouri",0.05,0.3243,0.3514,0.3243,0.2703,"blended","national"

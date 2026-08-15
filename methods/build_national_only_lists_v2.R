@@ -56,19 +56,32 @@ hh_group_of <- function(n) {
 stamp <- function(...) cat(sprintf("[%s] %s\n", format(Sys.time(), "%H:%M:%S"),
                                    sprintf(...)))
 
-## ---- selection from the three-arm benchmark ---------------------------------
-stopifnot(file.exists(THREEARM))
-ta <- read.csv(THREEARM)
-sel_tbl <- ta %>%
-  filter(arm %in% c("national", "blended")) %>%
-  select(state, arm, budget, precision, dollar_recall) %>%
-  tidyr::pivot_wider(names_from = arm,
-                     values_from = c(precision, dollar_recall)) %>%
-  mutate(selected = precision_national >= precision_blended)
-write.csv(sel_tbl, file.path(OUT_DIR, "selection_2024.csv"), row.names = FALSE)
-sel_cells <- sel_tbl %>% filter(selected)
-stamp("selection: %d of %d state x budget cells (%d distinct states); ties included",
-      nrow(sel_cells), nrow(sel_tbl), length(unique(sel_cells$state)))
+## ---- selection --------------------------------------------------------------
+# Default: the three-arm benchmark rule (national >= blended, ties
+# included). A caller may instead pre-set SELECT_OVERRIDE (data.frame
+# with state, budget) to build a specific cell set - used 2026-08-14 for
+# the flip states (verdict reversed between the July study and the
+# current evaluation); the override runner writes its own provenance.
+if (exists("SELECT_OVERRIDE")) {
+  sel_cells <- SELECT_OVERRIDE
+  SUMMARY_FN <- "build_summary_national_only_override.csv"
+  stamp("selection OVERRIDE: %d state x budget cells (%d distinct states)",
+        nrow(sel_cells), length(unique(sel_cells$state)))
+} else {
+  stopifnot(file.exists(THREEARM))
+  ta <- read.csv(THREEARM)
+  sel_tbl <- ta %>%
+    filter(arm %in% c("national", "blended")) %>%
+    select(state, arm, budget, precision, dollar_recall) %>%
+    tidyr::pivot_wider(names_from = arm,
+                       values_from = c(precision, dollar_recall)) %>%
+    mutate(selected = precision_national >= precision_blended)
+  write.csv(sel_tbl, file.path(OUT_DIR, "selection_2024.csv"), row.names = FALSE)
+  sel_cells <- sel_tbl %>% filter(selected)
+  SUMMARY_FN <- "build_summary_national_only.csv"
+  stamp("selection: %d of %d state x budget cells (%d distinct states); ties included",
+        nrow(sel_cells), nrow(sel_tbl), length(unique(sel_cells$state)))
+}
 
 ## ---- frame (mirrors the v2.5.0 production build) ----------------------------
 stopifnot(nrow(reg_model_data) == 231619L)
@@ -190,8 +203,7 @@ for (state in unique(sel_cells$state)) {
   rm(trs, idx_tr); invisible(gc())
 }
 bs <- bind_rows(build_summary)
-write.csv(bs, file.path(OUT_DIR, "build_summary_national_only.csv"),
-          row.names = FALSE)
+write.csv(bs, file.path(OUT_DIR, SUMMARY_FN), row.names = FALSE)
 nz <- bs$fill_gap_total[bs$fill_gap_total > 0]
 stamp("national-only build done -> %s | %d lists | fill gaps: %d of %d cells > 0 (max %d)",
       OUT_DIR, nrow(bs), length(nz), nrow(bs), if (length(nz)) max(nz) else 0L)

@@ -1,0 +1,5 @@
+"state","budget","n_pool","n_core","n_buffer","fill_cases","fill_gap_core","fill_gap_total","cap_buf"
+"Michigan",0.05,59035,40,93,381,0,0,381
+"Michigan",0.1,59035,89,159,762,0,0,762
+"California",0.1,59035,63,153,699,0,0,699
+"Maine",0.1,59035,98,178,818,0,0,818

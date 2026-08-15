@@ -17,7 +17,11 @@ moved or behaves differently.
   alone matching or beating the blend. Same schema, walk, artifact
   gates, and characterization columns as the blended lists; the folder
   README documents the selection rule and its single-test-year limit.
-  Blended lists are unchanged and remain the default.
+  Four more cells (Michigan at both budgets, California and Maine at
+  10%) carry one because their national-vs-blended verdict reversed
+  between the July study and the current evaluation - not stable, so
+  both list types ship. Blended lists are unchanged and remain the
+  default.
 
 ## [2.5.0] - 2026-08-14
 
