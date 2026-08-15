@@ -1,5 +1,7 @@
 # snap_qc
 
+![Map: how many times more payment errors the delivered rule lists catch than random review at a 10% review budget, by state; 2.4x nationwide](presentation_figures/state_lift_map_budget10.png)
+
 Code and data for modeling SNAP payment errors as interpretable, easy-to-implement decision rules.
 
 Released under the Apache 2.0 license: use and build on the code, ideas, or results freely.
