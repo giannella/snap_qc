@@ -1,0 +1,6 @@
+# build products and caches; the code, README and requirements are tracked
+.build/
+.frames/
+state_workbooks/
+__pycache__/
+.Rhistory

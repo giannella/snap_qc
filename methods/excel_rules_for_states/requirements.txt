@@ -1,0 +1,9 @@
+# openpyxl 3.1+ is required (ArrayFormula support)
+openpyxl>=3.1
+pandas>=2.0
+numpy>=1.24
+pyreadstat>=1.2      # v1 only; v2 reads the munged frame instead of the .sav files
+
+# v2 additionally needs R on the path (or RSCRIPT set) and reg_model_data.rds
+# in the snap_qc repo: export_state_frame.R pulls the state's rows from the
+# munged frame so features match the ones the rules were mined on.
