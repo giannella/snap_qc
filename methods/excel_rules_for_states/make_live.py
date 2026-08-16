@@ -199,7 +199,9 @@ def main():
                      col='total_error_amount', fn='SUMIFS')
         put = lambda k, f: ws.cell(row=row, column=cols[k], value='=' + f)
         put('flagged', n); put('errors', e); put('dollars', d)
-        put('prec', f'IFERROR(${E}{row}/${F}{row},0)')
+        # below 10 flagged cases a percentage misleads; show the counts
+        put('prec', f'IF(${F}{row}<10,${E}{row}&" errors of "&${F}{row}'
+                    f'&" cases flagged",IFERROR(${E}{row}/${F}{row},0))')
         put('rec',  f'IFERROR(${E}{row}/{denom(hh,"errors")},0)')
         put('drec', f'IFERROR(${D}{row}/{denom(hh,"dollars")},0)')
         put('work', f'IFERROR(${F}{row}/{denom(hh,"cases")},0)')

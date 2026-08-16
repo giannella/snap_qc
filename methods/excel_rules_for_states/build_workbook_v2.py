@@ -231,7 +231,7 @@ PLAIN_VARS = {
     'elderly_disabled_i':         ('elderly or disabled member', 'i'),
     'total_deductions_by_hh_size': ('total deductions per person', '$'),
     'expedited_i':                ('expedited service', 'i'),
-    'bbce_state_i':               ('broad-based categorical eligibility in effect', 'i'),
+    'bbce_state_i':               ('rule applies to BBCE states', 'i'),
     'rawben_rel_max':             ('benefit relative to the maximum', 'n'),
     'medical_deductions':         ('medical deduction', '$'),
     'shelter_expenses_by_hh_size': ('shelter costs per person', '$'),
@@ -246,6 +246,10 @@ PLAIN_VARS = {
     'months_since_cert_n':        ('months since certification', 'n'),
     'count_divisible_by_100':     ('number of round-$100 amounts', 'n'),
 }
+
+
+# negation phrasings that read better than 'not <phrase>'
+PLAIN_NEG = {'bbce_state_i': 'rule applies to non-BBCE states'}
 
 
 def _plain_val(v, kind):
@@ -270,7 +274,7 @@ def render_plain(conds):
             up = cs[0]['op'] in ('>=', '>')
             thr = cs[0]['thr']
             yes = (up and thr > 0) or (not up and thr >= 1)
-            parts.append(phrase if yes else f'not {phrase}')
+            parts.append(phrase if yes else PLAIN_NEG.get(v, f'not {phrase}'))
             continue
         los = [c for c in cs if c['op'] in ('>', '>=')]
         his = [c for c in cs if c['op'] in ('<', '<=')]
@@ -1016,7 +1020,9 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     ws.sheet_view.showGridLines = False
     ws.sheet_properties.tabColor = '2F5496'
     LASTC = 13 + len(CHAR_COLS)          # ..., Include?(12), char block, Exact expression
-    for col_letter, width in {'A':9,'B':9,'C':60,'D':11,'E':11,'F':11,'G':10,'H':10,
+    # D is wide because below 10 flagged cases the live build shows text
+    # ('2 errors of 9 cases flagged') instead of a percentage
+    for col_letter, width in {'A':9,'B':9,'C':60,'D':26,'E':11,'F':11,'G':10,'H':10,
                               'I':14,'J':12,'K':21,'L':9}.items():
         ws.column_dimensions[col_letter].width = width
     for ci, (_, _, _, w) in enumerate(CHAR_COLS, 13):
