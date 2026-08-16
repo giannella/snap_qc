@@ -32,13 +32,13 @@ plain frame-values build and the LIVE table build) land in
 
 ### The tabs
 
+The rules tabs each present a POTENTIAL rule list for the state to evaluate; nothing is deployed anywhere by this workbook, and nothing in it tunes or modifies the rules.
+
 | Tab | What it shows |
 |---|---|
-| **State-Tuned Rules** | The tiered tuning's deployed list (Tier 0/1/2, with the tier and its reason in the header) vs the delivered thresholds, per rule. Tick **Include?** to mix rules; the combined rows recompute live. |
-| **Blended Rules** | The BLENDED delivery list — the state's own mined rules merged into the national pool, filled to the 10% review budget — at delivered thresholds, as-is. This is the deployment deliverable and the Tier 0 baseline. Its own Include? selection. |
+| **Blended Rules** | The BLENDED delivery list — the state's own mined rules merged into the national pool, filled to the 10% review budget — at delivered thresholds, as-is. Its own Include? selection. |
 | **National Rules** | The NATIONAL-only delivery list (built purely from the all-state pool), where the repo carries one — 39 of 49 states as of 2026-08-16. Compare against Blended Rules to see what merging the state's own rules adds. |
-| **Tuning Audit** | The year split, the tier decision and why, how many things were compared, each arm's held-out performance, every per-rule admission test. Deliberately static: it records a past decision. |
-| **Error Cases** | Rules currently catching errors, sorted; the grid shows the true-error cases the selected rule flags. Sized to the build's row count. |
+| **View error cases by rule** | Rules currently catching errors, sorted; the grid shows the true-error cases the selected rule flags. Sized to the build's row count. |
 | Data | Raw FNS fields (amber, values — what a state pastes) + model features (blue, formulas). |
 | Dashboard, Grid Search, RuleFlags, FederalTables | Hidden engines: the per-rule threshold tuner, the bracket-bounded threshold search, the case × rule hit matrices, and the federal parameter tables. Unhide the Dashboard to tune thresholds interactively. |
 
@@ -85,62 +85,31 @@ and DE (35 blended, no national list) all matched with zero mismatches. It
 reads the plain build in `.build/out_<ABBR>/`; the delivered workbook holds
 the same numbers as formulas, verified by the open-in-Excel stage.
 
-## The tiered tuning
+## Why the workbook carries no tuning
 
-`build_workbook_v2.py` + `tuning.py` implement the tiered procedure and
-guards in `snap_qc/methods/tuning_principles.md`. (The original v1 builder,
-whose unguarded in-sample search these replaced, is retired to
-`custom_one_off/legacy_dashboard/`; CHANGES_AND_RATIONALE.md records the
-measured case against it.)
+The workbook measures the delivered rule lists; it does not modify them
+(decision 2026-08-16). Two measured reasons. First, at public-QC sample sizes
+the guarded tuning in `tuning.py` (methods/tuning_principles.md) can never
+act: on Washington's 92-rule list the widest rule flags 33 tuning-year cases
+against an n >= 30 support floor, threshold moves were zero at every floor
+swept, and every tuned arm failed its held-out gate — so a tuning tab only
+ever displayed a refusal. Second, the tuning runs in Python at build time:
+when a state pastes its own data, the rules tabs recompute but a tuning tab
+could not, so it would permanently show a result computed on the public
+sample. The unguarded search this replaced (the v1 builder, retired to
+`custom_one_off/legacy_dashboard/`) delivered 0.048 precision where the
+untouched list held 0.364 — CHANGES_AND_RATIONALE.md records the full case.
 
-| Tier | What may change | Gate |
-|---|---|---|
-| 0 (default) | nothing; the delivered list re-filled against the state's caseload | none needed, uses no outcomes |
-| 1 | which rules are used and in what order; rule text frozen | Benjamini-Hochberg at FDR 10% vs the state's own stratum base rate, n >= 30 |
-| 2 | numeric thresholds, inside ±25% of their delivered values | Tier 1 admission, plus a Wilson bound whose confidence rises with the number of combinations searched |
-
-The guards: the split is by fiscal year with the most recent held out (never
-random), the n >= 30 support floor applies to the variant actually deployed,
-Tier 2 is refused below 30 admitted rules, and the held-out year decides one
-pre-declared comparison **per tier** rather than one per rule. The untuned
-arm is always computed beside the tuned one, and the number of distinct
-threshold combinations evaluated is printed and written to the workbook.
-
-`tuning.py` carries its own regression test, which needs no state data:
-
-```bash
-python methods/excel_rules_for_states/tuning.py --selfcheck
-```
-
-Expect Tier 0 on public data: a budget-filled delivery list is made of
-narrow rules. On the 2026-08-13 frame, Washington's 92-rule 10% list has
-exactly one rule clearing n >= 30 on the tuning years (widest flags 33); it
-is admitted by BH but the one-rule Tier 1 arm flags nothing on the holdout,
-so Tier 0 deploys. Tier 0 itself: 60 rules fit the 10% budget; on held-out
-FY2024 they flagged 31 cases at 0.419 precision against a 9.0% base rate,
-catching 21.3% of errors and 27.1% of error dollars at 4.6% workload.
-
-## Checking a verdict against a different year split
-
-```bash
-python methods/excel_rules_for_states/compare_splits.py WA   # run the builder first
-```
-
-On the 2026-08-13 frame the verdict replicates across splits: Tier 0 both
-ways. Forward (tune 2022+2023, hold out 2024): 1 rule clears the floor, 60
-deployed, held-out precision 0.419 on 31 flagged. Year swap (tune 2022+2024,
-hold out 2023): 0 clear, 74 deployed, held-out precision 0.258 on 62
-flagged — labelled INTERPOLATED because the held-out year sits between the
-tuning years. The precision figures are not comparable across splits
-(different list lengths and workloads, 13 and 16 caught errors); read the
-verdict rows. `support_floor_sweep.py` reproduces the support-floor table in
-CHANGES_AND_RATIONALE.md.
+`tuning.py` stays in the package for pipeline-side use on a state's internal
+data, with its own regression test (`python tuning.py --selfcheck`), and
+`compare_splits.py` / `support_floor_sweep.py` reproduce the studies behind
+the removal decision.
 
 ## How it works
 
 | Stage | Script | Does |
 |---|---|---|
-| 1 | `build_workbook_v2.py` | Exports the state's rows from `reg_model_data.rds` (via `export_state_frame.R` + the miner's `prep_features()`), parses the blended and national delivery lists, runs the tiered tuning (`tuning.py`), writes every sheet. |
+| 1 | `build_workbook_v2.py` | Exports the state's rows from `reg_model_data.rds` (via `export_state_frame.R` + the miner's `prep_features()`), parses the blended and national delivery lists, scores every rule at its delivered thresholds, writes every sheet. |
 | 2 | `make_live.py` | Data becomes an Excel table; the three rules tabs and the Dashboard recompute from it by column NAME, so pasted rows flow through. |
 | 3 | `make_recon.py` | Appends the raw FNS block + benefit-chain helpers, turns every feature column into a formula, validates the formulas against the frame, adds FederalTables. |
 | 4 | `postprocess_workbook.py` | Native Excel-365 checkboxes; drops the stale calc chain. Applied to every stage's output. |
@@ -175,9 +144,8 @@ frame lost 2.4%.
   overwrite the new file. `make_state.py` checks and refuses.
 - **Do not repoint an existing workbook at another state by pasting into
   Data.** Rebuild instead.
-- Error Cases and the RuleFlags hit matrices are sized to the build's case
-  count; the rules tabs do follow pasted rows (they read the Data table),
-  Error Cases does not.
+- View error cases by rule and the RuleFlags hit matrices are sized to the build's case
+  count; the rules tabs do follow pasted rows (they read the Data table); the error-case viewer does not.
 - The munged frame restores each field to its pre-QC-process value
   (`correct_variables <- TRUE`); scoring rules against raw `.sav` values
   kills about a fifth of the rules (see CHANGES_AND_RATIONALE.md for the v1

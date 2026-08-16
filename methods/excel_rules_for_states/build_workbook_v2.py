@@ -1,39 +1,24 @@
 """
-Stage 1 (v2) — build a state's SNAP QC dashboard under the TIERED, GUARDED
-tuning procedure of methods/tuning_principles.md.
+Stage 1 (v2) — build a state's SNAP QC rules workbook: the delivery rule
+lists, measured against the state's QC cases, with no tuning of any kind.
 
-What differs from build_workbook.py (v1): v1 searched every threshold over the
-2nd-to-98th percentile of the state's own data and kept whatever maximised error
-dollars at raw precision >= 25% with >= 10 cases flagged, judged on the same
-rows it searched. That is the winner's curse with no brake on it. v2 replaces
-that single unconstrained search with three tiers and the guards that make the
-chosen tier's numbers mean something:
-
-  Tier 0  the shipped rules at shipped thresholds, re-filled against the state's
-          own caseload. No selection, no outcomes. The default.
-  Tier 1  re-filter and re-rank: rule text untouched, admission by
-          Benjamini-Hochberg at FDR 10% against the state's own stratum base
-          rate with n >= 30, ordering by the state's own 99% Wilson bound.
-  Tier 2  thresholds move only inside +/-25% of the shipped value, only to cuts
-          that partition the state's data differently, and only for rules that
-          already cleared Tier 1.
-
-Guards (all in tuning.py, all reported on the Tuning Audit sheet): time-based
-split with the most recent fiscal year held out, hard n >= 30 support floor,
-the within-rule search paid for by a Bonferroni-adjusted bound, Tier 2 refused
-below 30 admitted rules, and ONE pre-declared holdout comparison per tier
-rather than one per rule. The untuned arm is always computed beside the tuned
-one, and the count of distinct threshold combinations evaluated is printed.
+No search or tuning runs here (decision 2026-08-16). The original v1 builder's
+unconstrained in-sample search was the winner's curse with no brake on it
+(retired to custom_one_off/legacy_dashboard); its guarded tiered replacement
+in tuning.py never fires at public-QC sample sizes and cannot re-run inside
+Excel on a state's pasted data, so the workbook no longer carries it. The
+workbook measures the delivered lists; it does not modify them. tuning.py
+stays in the package for pipeline-side use on a state's internal data
+(methods/tuning_principles.md).
 
 Sheets produced:
-  Data               reconstructed state QC case data, with the tune/holdout split
-  Tuning Audit       the split, the tier decision, and every admission test
-  Dashboard          one tuning block per rule + PR chart      (hidden engine)
+  Blended Rules             the blended delivery list (state + national pools), as-is
+  National Rules            the national-only delivery list, as-is (where available)
+  Both present POTENTIAL rule lists for the state to evaluate.
+  View error cases by rule  live list of rules catching errors + the cases they catch
+  Data               reconstructed state QC case data, with a year-split label
+  Dashboard          one threshold block per rule + PR chart   (hidden engine)
   Grid Search        bracket-bounded threshold search          (hidden engine)
-  State-Tuned Rules  deployed vs delivered thresholds per rule, mixable via Include?
-  Blended Rules      the blended delivery list (state + national pools), as-is
-  National Rules     the national-only delivery list, as-is (where the repo has one)
-  Error Cases        live list of rules catching errors + the cases they catch
   RuleFlags          case x rule hit matrices                  (hidden engine)
 
 Pick the state with the SNAP_STATE environment variable (default WA); add new
@@ -213,7 +198,7 @@ MAX_ROW = max(MAX_ROW, len(df) + 101)
 # Two rule lists ship per state: the BLENDED list (the state's own mined rules
 # merged into the national pool — the deployment deliverable, and what the
 # tuner runs on) and, where the repo carries one, the NATIONAL-only list. Each
-# gets its own tab; the blended list additionally feeds the tuned deployment.
+# gets its own tab.
 # ══════════════════════════════════════════════════════════════════════════════
 COND_PAT = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\s*(>=|<=|>|<|==)\s*(-?[0-9.]+)')
 
@@ -445,7 +430,7 @@ for bi, rule in enumerate(RULES):
 
 # precision-recall chart (79 points; labels off — identify via the table)
 chart = ScatterChart()
-chart.title = 'Precision vs Recall (tuned thresholds)'
+chart.title = 'Precision vs Recall (current Dashboard thresholds)'
 chart.x_axis.title = 'Recall'; chart.y_axis.title = 'Precision'
 chart.x_axis.numFmt = '0%';   chart.y_axis.numFmt = '0%'
 chart.width, chart.height = 15, 12
@@ -752,7 +737,7 @@ for s, lbl in enumerate(STRATA):
                      align=center, border=thin(), number_format=fmt)
 
 NOTES = [
-    f'This sheet is an EXPLORATION aid. The authoritative Tier-2 search is the one reported on Tuning Audit: it runs on the tuning years only ({", ".join(str(y) for y in TUNE_YEARS)}), drops threshold cuts that partition the data identically, and is judged on the held-out year ({", ".join(str(y) for y in HOLD_YEARS)}). This sheet searches all years at once.',
+    f'This sheet is an EXPLORATION aid, searching all years at once. Nothing in this workbook adopts what it finds: at public-QC sample sizes a searched threshold is mostly noise (the delivered thresholds always sit in the grid, and "leave it alone" is the expected outcome).',
     f'Each threshold is searched only inside {TCFG.factors_fine[0]:g}x-{TCFG.factors_fine[-1]:g}x its delivered value ({TCFG.factors_coarse[0]:g}x-{TCFG.factors_coarse[-1]:g}x for rules with more than {TCFG.fine_max_conds} conditions). Variables, operators, condition count and stratum never move: this perturbs an already-validated rule, it does not search for a new one.',
     'The stratum matching the rule\'s "HH" tag is the one the delivery list targets.',
     f'Qualification is the precision BOUND (column L, hidden) at a confidence set from the search alpha divided by the number of combinations searched, plus n_flagged >= the support floor. Raw precision on searched rows is optimistic by construction and is not the gate.',
@@ -830,18 +815,15 @@ ws_g.freeze_panes = 'A21'
 wb.calculation.fullCalcOnLoad = True
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 6. THE TIERED TUNING RUN, then the SUMMARY SHEET
+# 6. SCORE THE DELIVERY LISTS, delivered thresholds as-is
 #
-# All of the statistics live in tuning.py (methods/tuning_principles.md). This
-# section only turns its result into sheets. v1 searched here, unconstrained and
-# in-sample; nothing in this file selects a threshold any more.
+# No tuning runs here or anywhere in the workbook (decision 2026-08-16): on a
+# public QC sample the tiered tuning's support floor is never reachable, so it
+# always refused, and it could not re-run inside Excel on a state's pasted
+# data anyway. The workbook measures the delivered lists; it does not modify
+# them. The tuning machinery stays in tuning.py for pipeline-side use on a
+# state's internal data (methods/tuning_principles.md).
 # ══════════════════════════════════════════════════════════════════════════════
-print('\n' + '=' * 78)
-RES = tuning.run(df, RULES, TCFG)
-print('=' * 78 + '\n')
-
-TAB = RES.rules_table.set_index('rule_idx')
-
 def py_score(dd, conds, thresholds):
     is_err = (dd['over_threshold'] == 1).values
     ed = np.where(is_err, dd['total_error_amount'].fillna(0).values, 0)
@@ -858,40 +840,6 @@ def py_score(dd, conds, thresholds):
             'drec': ed[m].sum() / max(ed.sum(), 1e-9), 'n': n, 'tp': tp,
             'dollars': ed[m].sum()}
 
-def why_not(ri):
-    """Plain-language reason a shipped rule is not in the deployed list. Tier 0
-    deploys every rule that fits the budget, so admission is not the reason
-    there; at Tier 1 and above the admission tests come first."""
-    r = TAB.loc[ri]
-    budget_msg = (f'not deployed: adding it at its rank would exceed the '
-                  f'{TCFG.budget:.0%} review budget')
-    if RES.tier == 0:
-        return budget_msg
-    if not r.support_ok:
-        return (f'not deployed: flags {int(r.tune_n)} tuning-year cases, below the '
-                f'{TCFG.min_support}-case support floor')
-    if not r.admitted:
-        return (f'not deployed: {int(r.tune_k)}/{int(r.tune_n)} errors is not distinguishable '
-                f'from the {r.base_rate:.1%} base rate at FDR {TCFG.fdr_alpha:.0%}')
-    return budget_msg
-
-summary_rows = []
-rule_best_thr = {}   # rule index -> deployed thresholds (None if not deployed)
-for ri, rule in enumerate(RULES):
-    dd = df[df['hh_group'] == rule['hh']]
-    shipped = tuple(float(c['thr']) for c in rule['conds'])
-    thr = RES.deployed_thresholds[ri]
-    on = bool(RES.deployed[ri])
-    rule_best_thr[ri] = thr if on else None
-    dep_cond = (' & '.join(f'{c["var"]} {c["op"]} {t:g}' for c, t in zip(rule['conds'], thr))
-                + ('' if tuple(thr) == shipped else '   [threshold moved from '
-                   + ', '.join(f'{s:g}' for s in shipped) + ']')) if on else why_not(ri)
-    nat_cond = ' & '.join(f'{c["var"]} {c["op"]} {c["thr"]:g}' for c in rule['conds'])
-    summary_rows.append((rule, 'deployed', py_score(dd, rule['conds'], thr) if on else None,
-                         dep_cond))
-    summary_rows.append((rule, 'national', py_score(dd, rule['conds'], shipped), nat_cond))
-
-# ── union of all rules (a case is flagged if ANY rule flags it on its stratum) ─
 def rule_mask_full(rule, thresholds):
     m = (df['hh_group'] == rule['hh']).values.copy()
     for c, t in zip(rule['conds'], thresholds):
@@ -903,74 +851,50 @@ def rule_mask_full(rule, thresholds):
         m &= np.where(np.isnan(xv), False, cm)
     return m
 
+def score_list(rules_list):
+    masks = [rule_mask_full(r, [c['thr'] for c in r['conds']]) for r in rules_list]
+    scores = [py_score(df[df['hh_group'] == r['hh']], r['conds'],
+                       [c['thr'] for c in r['conds']]) for r in rules_list]
+    conds = [' & '.join(f'{c["var"]} {c["op"]} {c["thr"]:g}' for c in r['conds'])
+             for r in rules_list]
+    return masks, scores, conds
+
 is_err_all = (df['over_threshold'] == 1).values
 ed_all = np.where(is_err_all, df['total_error_amount'].fillna(0).values, 0)
-opt_masks  = [rule_mask_full(r, rule_best_thr[ri]) if rule_best_thr[ri] is not None else None
-              for ri, r in enumerate(RULES)]
-orig_masks = [rule_mask_full(r, [c['thr'] for c in r['conds']]) for r in RULES]
-
-# the national-only list, delivered thresholds as-is (no tuner runs on it)
+orig_masks, blended_scores, blended_conds = score_list(RULES)
 NR2 = len(NAT_RULES or [])
-nat_masks  = [rule_mask_full(r, [c['thr'] for c in r['conds']]) for r in (NAT_RULES or [])]
-nat_scores = [py_score(df[df['hh_group'] == r['hh']], r['conds'],
-                       [c['thr'] for c in r['conds']]) for r in (NAT_RULES or [])]
+nat_masks, nat_scores, nat_conds = score_list(NAT_RULES or [])
 
-# ── hidden RuleFlags sheet: case x rule 0/1 matrices + live union columns ─────
+# ── hidden RuleFlags sheet: case x rule 0/1 hit matrices + live union columns ─
 # row 1 rule nums | row 2 selected (from the rules tabs' Include? cols)
-# row 3 has-optimal | row 4 target stratum | rows FLAG0.. one per Data case
+# row 4 target stratum | rows FLAG0.. one per Data case (only 1s written)
 NR, NDATA = len(RULES), len(df)
-RULE_ROW0 = 15                 # State-Tuned Rules row of the first rule's "deployed" line
-NAT_ROW0  = 11                 # Blended Rules / National Rules row of the first rule
+NAT_ROW0 = 11                  # Blended Rules / National Rules row of the first rule
 FLAG0 = 5
 
-# Individual rules are listed by expected error $ per flagged case, best first;
-# rules with no floor-compliant combination sink to the bottom.
-def _exp_per_case(j):
-    sc = summary_rows[2*j][2]
-    return (sc['dollars'] / sc['n']) if (sc and sc['n']) else None
-rule_order = sorted(range(NR), key=lambda j: (0 if _exp_per_case(j) is not None else 1,
-                                              -(_exp_per_case(j) or 0), RULES[j]['num']))
-rule_row = {j: RULE_ROW0 + 2*pos for pos, j in enumerate(rule_order)}   # rule idx -> Summary row
 ws_f = wb.create_sheet('RuleFlags')
 ws_f.sheet_state = 'hidden'
-fcol_opt  = lambda j: get_column_letter(2 + j)            # optimal block B..
-fcol_orig = lambda j: get_column_letter(3 + NR + j)       # original block (1 col gap)
-UCOL, VCOL = get_column_letter(4 + 2*NR), get_column_letter(5 + 2*NR)
-NATU  = get_column_letter(7 + 2*NR)                       # union under the National selection
-natsel = lambda j: get_column_letter(9 + 2*NR + j)        # National selection vector (row 2)
-set_cell(ws_f,1,1,'rule num'); set_cell(ws_f,2,1,'selected')
-set_cell(ws_f,3,1,'deployed'); set_cell(ws_f,4,1,'stratum')
+fcol = lambda j: get_column_letter(2 + j)                 # blended mask block B..
+bsel = lambda j: get_column_letter(3 + NR + j)            # blended selection vector
+NATU = get_column_letter(4 + 2*NR)                        # union under the Blended selection
+set_cell(ws_f,1,1,'rule num'); set_cell(ws_f,2,1,'selected'); set_cell(ws_f,4,1,'stratum')
 for j, rule in enumerate(RULES):
     set_cell(ws_f,1,2+j, rule['num'])
-    set_cell(ws_f,2,2+j, formula=f"=IF('State-Tuned Rules'!$M${rule_row[j]}=TRUE,1,0)")
-    if rule_best_thr[j] is not None:
-        set_cell(ws_f,3,2+j, 1)
     set_cell(ws_f,4,2+j, rule['hh'])
-    set_cell(ws_f,1,3+NR+j, rule['num'])
-    set_cell(ws_f,2,9+2*NR+j,
+    set_cell(ws_f,2,3+NR+j,
              formula=f"=IF('Blended Rules'!$L${NAT_ROW0+j}=TRUE,1,0)")
-for j in range(NR):
-    if opt_masks[j] is not None:
-        for i in np.flatnonzero(opt_masks[j]):
-            ws_f.cell(row=FLAG0+int(i), column=2+j).value = 1
     for i in np.flatnonzero(orig_masks[j]):
-        ws_f.cell(row=FLAG0+int(i), column=3+NR+j).value = 1
-SELRNG = f'$B$2:${fcol_opt(NR-1)}$2'
-HASRNG = f'$B$3:${fcol_opt(NR-1)}$3'
-HHRNG  = f'$B$4:${fcol_opt(NR-1)}$4'
-NATSEL = f'${natsel(0)}$2:${natsel(NR-1)}$2'
+        ws_f.cell(row=FLAG0+int(i), column=2+j).value = 1
+HHRNG  = f'$B$4:${fcol(NR-1)}$4'
+NATSEL = f'${bsel(0)}$2:${bsel(NR-1)}$2'
 for i in range(NDATA):
     r = FLAG0 + i
     ws_f.cell(row=r, column=4+2*NR).value = (
-        f'=IF(SUMPRODUCT({SELRNG},$B{r}:${fcol_opt(NR-1)}{r})>0,1,0)')
-    ws_f.cell(row=r, column=5+2*NR).value = (
-        f'=IF(SUMPRODUCT({SELRNG},${fcol_orig(0)}{r}:${fcol_orig(NR-1)}{r})>0,1,0)')
-    ws_f.cell(row=r, column=7+2*NR).value = (
-        f'=IF(SUMPRODUCT({NATSEL},${fcol_orig(0)}{r}:${fcol_orig(NR-1)}{r})>0,1,0)')
+        f'=IF(SUMPRODUCT({NATSEL},$B{r}:${fcol(NR-1)}{r})>0,1,0)')
 
-# fourth region: the national-only list's masks, selection vector and union
+# second region: the national-only list's masks, selection vector and union
 if NAT_RULES:
-    NL0 = 10 + 3*NR
+    NL0 = 6 + 2*NR
     nlcol  = lambda j: get_column_letter(NL0 + j)
     nlsel  = lambda j: get_column_letter(NL0 + NR2 + j)
     NLUCOL = get_column_letter(NL0 + 2*NR2 + 1)
@@ -988,147 +912,20 @@ if NAT_RULES:
         ws_f.cell(row=r, column=NL0+2*NR2+1).value = (
             f'=IF(SUMPRODUCT({NLSEL},${nlcol(0)}{r}:${nlcol(NR2-1)}{r})>0,1,0)')
 
-ws_s = wb.create_sheet('State-Tuned Rules', 1)
-ws_s.sheet_view.showGridLines = False
-for col_letter, width in {'A':9,'B':9,'C':10,'D':9,'E':11,'F':10,'G':11,
-                          'H':10,'I':9,'J':13,'K':11,'L':13,'M':9,'N':115}.items():
-    ws_s.column_dimensions[col_letter].width = width
-_TIER_WORDS = {0: 'Tier 0, no tuning: the delivered rules at their delivered thresholds',
-               1: 'Tier 1, re-filtered and re-ranked on your data; rule text unchanged',
-               2: 'Tier 2, thresholds tuned inside ±25% of their delivered values'}
-merge(ws_s,1,1,1,12, value=f'State-Tuned Rules — Deployed Rule List for {STATE_NAME} '
-                           f'({_TIER_WORDS[RES.tier].split(",")[0]})',
-      fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
-ws_s.row_dimensions[1].height = 32
-
-_JUDGED = (f'Rules were selected on FY{"+".join(str(y) for y in TUNE_YEARS)} and the tier was chosen '
-           f'on FY{"+".join(str(y) for y in HOLD_YEARS)}, which no selection step saw.'
-           if RES.comparisons['holdout'] > 0 else
-           f'No tuned list was built, so nothing was selected on your data and '
-           f'FY{"+".join(str(y) for y in HOLD_YEARS)} was not needed to decide.')
-merge(ws_s,2,1,2,12,
-      value=f'Reading guide: "deployed" = {_TIER_WORDS[RES.tier]}. '
-            f'{RES.tier_reason[0].upper() + RES.tier_reason[1:]}. {_JUDGED} '
-            f'See the Tuning Audit tab for every test behind that decision.',
-      fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
-merge(ws_s,3,1,3,12,
-      value='"national" = the delivered thresholds on the same data, for comparison; dashes mean the rule '
-            'is not in the deployed list (the Conditions column says why). CAUTION: every figure on this '
-            'tab is computed over ALL years in the Data tab, including the years used to select, so it is '
-            'optimistic. The held-out figures are on Tuning Audit and are the ones to quote. '
-            'Check/uncheck Include? to add/remove a rule — the combined rows recompute live. '
-            'Individual rules are ordered by expected error $ per flagged case.',
-      fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
-
-set_cell(ws_s,2,13,False, fill=YELLOW, align=center, border=thin(), font=Font(name=FONT))
-set_cell(ws_s,2,14,'← check to show the "national" comparison rows (hidden by default)',
-         font=Font(name=FONT,size=9,color='808080'), align=left)
-
-for col, txt in enumerate(['Rule','HH size','Version','Rules count','Precision','Recall',
-                           '$ Recall','Flagged','Errors','Error $ caught','Workload %',
-                           'Expected error $ by case','Include?','Conditions'], 1):
-    set_cell(ws_s,4,col,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
-
+# shared by the delivery tabs
 cases_by = {lbl: int((df['hh_group'] == lbl).sum()) for lbl in STRATA}
-
-# ── overall block: union of all rules, overall + per stratum ──────────────────
-row = 5
-merge(ws_s,row,1,row,12, value='All rules combined (a case is flagged if ANY '
-      'Include?-checked rule flags it) — recomputes as you tick/untick rules',
-      fill=BLUE_LIGHT, font=bold_font(10), align=left)
-row += 1
-U_RNG = f'RuleFlags!${UCOL}${FLAG0}:${UCOL}${FLAG0+NDATA-1}'
-V_RNG = f'RuleFlags!${VCOL}${FLAG0}:${VCOL}${FLAG0+NDATA-1}'
 D_HH  = f'Data!${dc("hh_group")}$2:${dc("hh_group")}${1+NDATA}'
 D_OV  = f'Data!${dc("over_threshold")}$2:${dc("over_threshold")}${1+NDATA}'
 D_AM  = f'Data!${dc("total_error_amount")}$2:${dc("total_error_amount")}${1+NDATA}'
-scopes = [('Overall', 'all', np.ones(len(df), bool))] + \
-         [(f'HH {lbl}', lbl, (df['hh_group'] == lbl).values) for lbl in STRATA]
-for scope_name, scope_hh, sel in scopes:
-    tot_err = max(int((is_err_all & sel).sum()), 1)
-    tot_ed  = round(float(ed_all[sel].sum()), 2) or 1
-    tot_n   = max(int(sel.sum()), 1)
-    sterm = '' if scope_hh == 'all' else f'*({D_HH}="{scope_hh}")'
-    for kind, flags in [('deployed', U_RNG), ('national', V_RNG)]:
-        is_opt = (kind == 'deployed')
-        fnt = Font(name=FONT) if is_opt else Font(name=FONT, color='808080')
-        fill = GREEN if is_opt else WHITE
-        if scope_hh == 'all':
-            f_cnt = (f'=SUMPRODUCT(RuleFlags!{SELRNG},RuleFlags!{HASRNG})' if is_opt
-                     else f'=SUM(RuleFlags!{SELRNG})')
-        else:
-            hterm = f'*(RuleFlags!{HHRNG}="{scope_hh}")'
-            f_cnt = (f'=SUMPRODUCT((RuleFlags!{SELRNG})*(RuleFlags!{HASRNG}){hterm})' if is_opt
-                     else f'=SUMPRODUCT((RuleFlags!{SELRNG}){hterm})')
-        set_cell(ws_s,row,1,'All rules', font=fnt, align=center, border=thin(), fill=fill)
-        set_cell(ws_s,row,2,scope_hh, font=fnt, align=center, border=thin(), fill=fill)
-        set_cell(ws_s,row,3,kind, font=fnt, align=center, border=thin(), fill=fill)
-        set_cell(ws_s,row,4,formula=f_cnt, font=fnt, align=center, border=thin(), fill=fill,
-                 number_format='0')
-        for col, f, fmt in [
-            (5, f'=IF($H{row}=0,0,$I{row}/$H{row})', '0.0%'),
-            (6, f'=$I{row}/{tot_err}',               '0.0%'),
-            (7, f'=$J{row}/{tot_ed}',                '0.0%'),
-            (8, f'=SUMPRODUCT(({flags}){sterm})',                        '#,##0'),
-            (9, f'=SUMPRODUCT(({flags}){sterm}*({D_OV}))',               '#,##0'),
-            (10,f'=SUMPRODUCT(({flags}){sterm}*({D_OV})*({D_AM}))',      '$#,##0'),
-            (11,f'=$H{row}/{tot_n}',                 '0.0%'),
-            (12,f'=IFERROR(IF($H{row}=0,"",$J{row}/$H{row}),"")', '$#,##0'),
-        ]:
-            set_cell(ws_s,row,col,formula=f, font=fnt, align=center,
-                     border=thin(), number_format=fmt, fill=fill)
-        row += 1
-
-merge(ws_s,row,1,row,12, value='Individual rules',
-      fill=BLUE_LIGHT, font=bold_font(10), align=left)
-row += 1
-assert row == RULE_ROW0, f'first rule row {row} != RULE_ROW0 {RULE_ROW0}'
-for j in rule_order:
-    for off, (rule, kind, sc, cond) in enumerate(summary_rows[2*j:2*j+2]):
-        is_opt = (kind == 'deployed')
-        fnt = Font(name=FONT) if is_opt else Font(name=FONT, color='808080')
-        fill = GREEN if is_opt else WHITE
-        if is_opt:
-            assert row == rule_row[j], f'rule {rule["num"]}: row {row} != {rule_row[j]}'
-            set_cell(ws_s,row,13,rule_best_thr[j] is not None,
-                     fill=YELLOW, align=center, border=thin(), font=Font(name=FONT))
-        set_cell(ws_s,row,1,f'Rule {rule["num"]}', font=fnt, align=center, border=thin(), fill=fill)
-        set_cell(ws_s,row,2,rule['hh'], font=fnt, align=center, border=thin(), fill=fill)
-        set_cell(ws_s,row,3,kind, font=fnt, align=center, border=thin(), fill=fill)
-        set_cell(ws_s,row,4,None, font=fnt, align=center, border=thin(), fill=fill)
-        if sc:
-            for col, key, fmt in [(5,'prec','0.0%'),(6,'rec','0.0%'),(7,'drec','0.0%'),
-                                  (8,'n','#,##0'),(9,'tp','#,##0'),(10,'dollars','$#,##0')]:
-                set_cell(ws_s,row,col,round(float(sc[key]),4), font=fnt, align=center,
-                         border=thin(), number_format=fmt, fill=fill)
-            set_cell(ws_s,row,11,round(sc['n']/cases_by[rule['hh']],4), font=fnt, align=center,
-                     border=thin(), number_format='0.0%', fill=fill)
-            set_cell(ws_s,row,12,(round(sc['dollars']/sc['n'], 2) if sc['n'] else '—'),
-                     font=fnt, align=center, border=thin(), number_format='$#,##0', fill=fill)
-        else:
-            for col in range(5,13):
-                set_cell(ws_s,row,col,'—', font=fnt, align=center, border=thin(), fill=fill)
-        set_cell(ws_s,row,14,cond, align=left,
-                 font=Font(name=FONT,size=10) if is_opt else Font(name=FONT,size=10,color='808080'))
-        row += 1
-
-LAST_ROW = row - 1
-for rng_ in (f'A5:L{LAST_ROW}', f'N5:N{LAST_ROW}'):
-    ws_s.conditional_formatting.add(
-        rng_,
-        FormulaRule(formula=['AND($C5="national",$M$2<>TRUE)'],
-                    font=Font(name=FONT, color='FFFFFF'), stopIfTrue=True))
-ws_s.freeze_panes = 'A5'
-CHECKBOX_CELLS = {'State-Tuned Rules': ['M2'] + [f'M{rule_row[j]}' for j in range(NR)]}
+CHECKBOX_CELLS = {}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 7. THE AS-DELIVERED RULE TABS — thresholds as-is, no tuning
+# 7. THE RULE-LIST TABS — thresholds as-is, no tuning
 #
 # One tab per delivery list the repo carries for this state: the BLENDED list
-# (the state's own mined rules merged into the national pool — the deployment
-# deliverable and the Tier 0 baseline) and, where available, the NATIONAL-only
-# list (built purely from the national pool).
+# (the state's own mined rules merged into the national pool) and, where
+# available, the NATIONAL-only list (built purely from the national pool).
 # ══════════════════════════════════════════════════════════════════════════════
 def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                       sel_rng, hh_rng, union_col, intro):
@@ -1211,211 +1008,32 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
 
 
 ws_n = delivery_list_tab(
-    'Blended Rules', 2, RULES,
-    scores=[summary_rows[2*j+1][2] for j in range(NR)],
-    conds_text=[summary_rows[2*j+1][3] for j in range(NR)],
+    'Blended Rules', 1, RULES,
+    scores=blended_scores,
+    conds_text=blended_conds,
     sel_rng=NATSEL, hh_rng=HHRNG, union_col=NATU,
-    intro=('The BLENDED delivery list: the state\'s own mined rules merged into the national '
-           'pool on a common ranking scale, filled to the review budget against this state\'s '
-           'caseload. Thresholds are used AS-IS, with no state-level search or tuning; every '
-           f'metric is computed on all {STATE_NAME} QC cases in the Data tab. This is the Tier 0 '
-           'list the tiered procedure has to beat on a held-out year before any tuning is '
-           'deployed (Tuning Audit tab).'))
+    intro=('A POTENTIAL rule list. The BLENDED delivery list: the state\'s own mined rules '
+           'merged into the national pool on a common ranking scale, filled to the review '
+           'budget against this state\'s caseload. Thresholds are used AS-IS, with no '
+           f'state-level search or tuning; every metric is computed on all {STATE_NAME} QC '
+           'cases in the Data tab.'))
 
 if NAT_RULES:
     delivery_list_tab(
-        'National Rules', 3, NAT_RULES,
+        'National Rules', 2, NAT_RULES,
         scores=nat_scores,
-        conds_text=[' & '.join(f'{c["var"]} {c["op"]} {c["thr"]:g}' for c in r['conds'])
-                    for r in NAT_RULES],
+        conds_text=nat_conds,
         sel_rng=NLSEL, hh_rng=NLHH, union_col=NLUCOL,
-        intro=('The NATIONAL-only delivery list: built purely from the pool mined on all-state '
-               'QC data, with no rules from this state\'s own mine. Thresholds are used AS-IS; '
-               f'every metric is computed on all {STATE_NAME} QC cases in the Data tab. Compare '
-               'against the Blended Rules tab to see what merging the state\'s own rules adds.'))
-
-# ══════════════════════════════════════════════════════════════════════════════
-# 7b. TUNING AUDIT — the split, the tier decision, and every test behind it
-#
-# This tab exists so the tuning is checkable rather than trusted. It carries the
-# numbers a reviewer needs to reject the result: how much data each decision was
-# made on, how many distinct combinations were compared, and how each arm did on
-# a year no selection step ever saw.
-# ══════════════════════════════════════════════════════════════════════════════
-ws_a = wb.create_sheet('Tuning Audit', 4 if NAT_RULES else 3)
-ws_a.sheet_view.showGridLines = False
-for col_letter, width in {'A':30,'B':13,'C':13,'D':13,'E':13,'F':13,'G':13,'H':13,
-                          'I':13,'J':13,'K':13,'L':13,'M':13,'N':13,'O':90}.items():
-    ws_a.column_dimensions[col_letter].width = width
-
-merge(ws_a,1,1,1,15, value=f'Tuning Audit — {STATE_NAME}: what was searched, and what it was judged on',
-      fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
-ws_a.row_dimensions[1].height = 32
-
-def _abanner(r, txt):
-    merge(ws_a,r,1,r,15, value=txt, fill=BLUE_DARK,
-          font=Font(name=FONT,bold=True,size=12,color='FFFFFF'), align=left)
-    return r + 1
-
-def _akv(r, label, value, note=''):
-    set_cell(ws_a,r,1,label, font=bold_font(10), fill=GRAY, align=left, border=thin())
-    merge(ws_a,r,2,r,5, value=value, fill=BLUE_LIGHT, font=Font(name=FONT), align=left)
-    if note:
-        set_cell(ws_a,r,6,note, font=Font(name=FONT,size=9,color='808080'), align=left)
-    return r + 1
-
-n_tune = int((df['split'] == 'tune').sum())
-n_hold = int((df['split'] == 'holdout').sum())
-err_tune = int(df.loc[df.split == 'tune', 'over_threshold'].sum())
-err_hold = int(df.loc[df.split == 'holdout', 'over_threshold'].sum())
-
-ar = _abanner(3, 'The decision')
-ar = _akv(ar, 'Tier deployed', f'Tier {RES.tier} — {_TIER_WORDS[RES.tier]}')
-ar = _akv(ar, 'Why', RES.tier_reason)
-ar = _akv(ar, 'Tuning years (selection)',
-          f'FY{"+".join(str(y) for y in TUNE_YEARS)}: {n_tune:,} cases, {err_tune:,} errors '
-          f'({err_tune / max(n_tune, 1):.1%})',
-          'every admission and threshold decision was made here')
-ar = _akv(ar, 'Held-out year (judging)',
-          f'FY{"+".join(str(y) for y in HOLD_YEARS)}: {n_hold:,} cases, {err_hold:,} errors '
-          f'({err_hold / max(n_hold, 1):.1%})',
-          'split by fiscal year, never at random: a random split leaks')
-ar = _akv(ar, 'Review budget', f'{TCFG.budget:.0%} of the caseload',
-          'lists are filled in rank order to this capacity, using flag counts only')
-ar = _akv(ar, 'Rules shipped / deployed',
-          f'{len(RULES)} shipped, {sum(RES.deployed.values())} deployed')
-
-ar = _abanner(ar + 1, 'How many things were compared (this is what the winner\'s curse scales with)')
-ar = _akv(ar, 'Tier 1 admission tests', f'{RES.comparisons["tier1_tests"]}',
-          f'rules clearing the {TCFG.min_support}-case support floor; '
-          f'Benjamini-Hochberg at FDR {TCFG.fdr_alpha:.0%} sets the bar from this count')
-ar = _akv(ar, 'Tier 2 threshold combinations', f'{RES.comparisons["tier2_variants"]}',
-          f'distinct after dropping cuts that partition the data identically; '
-          f'at most {RES.comparisons["tier2_max_per_rule"]} for any one rule')
-ar = _akv(ar, 'Held-out comparisons', f'{RES.comparisons["holdout"]}',
-          'one per tier, fixed before the run. No rule was ever kept or dropped '
-          'because of how it did on the held-out year')
-
-ar = _abanner(ar + 1, 'Arms: each list filled to budget on the tuning years, then scored on the held-out year')
-AHEAD = ['Tier','Rules','Tuning precision','Held-out precision','Held-out bound',
-         'Flagged','Errors','Recall','$ Recall','Workload %','Deflation']
-for ci, txt in enumerate(AHEAD, 1):
-    set_cell(ws_a,ar,ci,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
-ar += 1
-for _, a in RES.arms.iterrows():
-    chosen = int(a.tier) == RES.tier
-    fnt = bold_font() if chosen else Font(name=FONT, color='808080')
-    fill = GREEN if chosen else WHITE
-    vals = [(1, f'Tier {int(a.tier)}' + (' (deployed)' if chosen else ''), '@'),
-            (2, int(a.n_rules), '0'),
-            (3, round(float(a.tune_prec), 4), '0.0%'),
-            (4, round(float(a.hold_prec), 4), '0.0%'),
-            (5, round(float(a.hold_prec_lcb), 4), '0.000'),
-            (6, int(a.hold_flagged), '#,##0'),
-            (7, int(a.hold_errors), '#,##0'),
-            (8, round(float(a.hold_rec), 4), '0.0%'),
-            (9, round(float(a.hold_drec), 4), '0.0%'),
-            (10, round(float(a.hold_workload), 4), '0.0%'),
-            (11, (round(float(a.deflation), 3) if np.isfinite(a.deflation) else '—'), '0.000')]
-    for ci, v, fmt in vals:
-        set_cell(ws_a,ar,ci,v, font=fnt, fill=fill, align=center, border=thin(),
-                 number_format=fmt)
-    ar += 1
-set_cell(ws_a,ar,1,'"Held-out bound" is the 90% one-sided Wilson lower bound on that arm\'s held-out '
-                   'precision. A tier is deployed only when its bound clears Tier 0\'s held-out precision '
-                   f'outright, on at least {TCFG.min_holdout_flagged} flagged held-out cases. '
-                   '"Deflation" is held-out precision divided by tuning-year precision: quote the '
-                   'held-out column, not the tuning column.',
-         font=Font(name=FONT,size=9,color='808080'), align=left)
-ar += 2
-
-ar = _abanner(ar, 'Per-rule record: every admission test, in delivery-rank order')
-RHEAD = ['Rule','HH size','Tuning flagged','Errors','Tuning precision','Stratum base rate',
-         'p-value','BH cutoff','Clears support','Admitted','99% bound','Combos searched',
-         'Bound z used','Threshold moved','Deployed','Deployed conditions']
-for ci, txt in enumerate(RHEAD, 1):
-    set_cell(ws_a,ar,ci,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
-hdr_row = ar
-ar += 1
-for ri, rule in enumerate(RULES):
-    t = TAB.loc[ri]
-    on = bool(RES.deployed[ri])
-    fnt = Font(name=FONT) if on else Font(name=FONT, color='808080')
-    fill = GREEN if on else WHITE
-    cells = [
-        (1, f'Rule {rule["num"]}', '@'), (2, rule['hh'], '@'),
-        (3, int(t.tune_n), '#,##0'), (4, int(t.tune_k), '#,##0'),
-        (5, round(float(t.tune_prec), 4), '0.0%'),
-        (6, round(float(t.base_rate), 4), '0.0%'),
-        (7, ('—' if not np.isfinite(t.pvalue) else round(float(t.pvalue), 5)), '0.00000'),
-        (8, ('—' if not np.isfinite(t.bh_crit) else round(float(t.bh_crit), 5)), '0.00000'),
-        (9, 'yes' if t.support_ok else 'no', '@'),
-        (10, 'yes' if t.admitted else 'no', '@'),
-        (11, round(float(t.lcb99), 4), '0.000'),
-        (12, int(t.n_variants), '#,##0'),
-        (13, ('—' if not np.isfinite(t.variant_gate_z) else round(float(t.variant_gate_z), 2)), '0.00'),
-        (14, 'yes' if t.threshold_moved else 'no', '@'),
-        (15, 'yes' if on else 'no', '@'),
-        (16, summary_rows[2 * ri][3], '@'),
-    ]
-    for ci, v, fmt in cells:
-        set_cell(ws_a,ar,ci,v, font=fnt, fill=fill, align=center, border=thin(),
-                 number_format=fmt)
-    ws_a.cell(row=ar, column=16).alignment = left
-    ar += 1
-ws_a.freeze_panes = f'A{hdr_row + 1}'
-last_rule_row = ar - 1
-ar += 1
-
-ar = _abanner(ar, 'Settings, fixed before the run')
-for label, val, note in [
-    ('Tier ceiling', TCFG.max_tier, 'the highest tier this build was allowed to reach'),
-    ('Support floor', TCFG.min_support,
-     'minimum tuning-year cases flagged; non-negotiable (findings §9: at n >= 5, '
-     'state-scale tuning collapsed to zero held-out precision)'),
-    ('Admission', f'Benjamini-Hochberg, FDR {TCFG.fdr_alpha:.0%}',
-     'against the rule\'s own stratum base rate on the tuning years'),
-    ('Ordering statistic', f'{TCFG.lcb_z_rank:g}-sigma Wilson lower bound (99% one-sided)',
-     'never raw precision, and never held-out performance'),
-    ('Search bracket',
-     f'{TCFG.factors_fine[0]:g}x-{TCFG.factors_fine[-1]:g}x for <= {TCFG.fine_max_conds} conditions, '
-     f'{TCFG.factors_coarse[0]:g}x-{TCFG.factors_coarse[-1]:g}x beyond',
-     'variables, operators, condition count and stratum are frozen'),
-    ('Variant bound', f'alpha {TCFG.variant_gate_alpha:g} / combinations searched, '
-     f'precision floor {TCFG.min_variant_precision:.0%}',
-     'a wider search has to clear a higher bar'),
-    ('Selection objective', TCFG.select_objective,
-     'fixed globally before the run, never chosen per rule'),
-    ('Tier 2 minimum admitted', TCFG.min_admitted_for_tier2,
-     'below this, local tuning is refused outright (findings §9 rule of thumb)'),
-    ('Cap on combinations', TCFG.max_variants, 'per rule'),
-]:
-    ar = _akv(ar, label, val, note)
-
-ar = _abanner(ar + 1, 'What to expect in a future year')
-for txt in [
-    'Tuning buys reach, not precision. In the seven-state study, the state with enough support '
-    '(Connecticut, 35 qualifying rules) went from 24.4% of errors caught at 0.228 precision under the '
-    'untouched national list to 43.0% of errors (49.1% of error dollars) at 0.209 precision. Reach '
-    'nearly doubled; precision did not rise.',
-    'Where support was thin, tuning failed outright: Washington fell to 0.048 precision while the '
-    'untouched national list held 0.364. That is why the support floor and the refusal thresholds above '
-    'are not adjustable in the delivered build.',
-    'Expect roughly a third off the tuning-year precision when this list meets a future year. The '
-    'held-out column in the arms table above already shows that deflation on your own data; quote it, '
-    'not the State-Tuned Rules tab.',
-    'Scored against ANY over-threshold error, not the error type a rule was mined for: a review finds '
-    'whatever error is present, and state samples are too thin to score by type.',
-] + [f'Run note: {n}' for n in RES.notes]:
-    merge(ws_a,ar,1,ar,15, value=txt, fill=WHITE,
-          font=Font(name=FONT,size=10), align=left)
-    ws_a.row_dimensions[ar].height = 30
-    ar += 1
+        intro=('A POTENTIAL rule list. The NATIONAL-only delivery list: built purely from the '
+               'pool mined on all-state QC data, with no rules from this state\'s own mine. '
+               f'Thresholds are used AS-IS; every metric is computed on all {STATE_NAME} QC '
+               'cases in the Data tab. Compare against the Blended Rules tab to see what '
+               'merging the state\'s own rules adds.'))
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 8. ERROR CASES — live list of rules catching errors + the cases they catch
 # ══════════════════════════════════════════════════════════════════════════════
-ws_e = wb.create_sheet('Error Cases', 5 if NAT_RULES else 4)
+ws_e = wb.create_sheet('View error cases by rule', 3 if NAT_RULES else 2)
 ws_e.sheet_view.showGridLines = False
 NCOL   = len(DCOLS)
 G0     = 3                                   # first grid column (C)
@@ -1455,7 +1073,7 @@ for k in range(1, LISTN+1):
              align=center, border=thin())
 
 merge(ws_e,1,G0,1,G0+11,
-      value='Error Cases — true errors caught by the selected rule (live Dashboard thresholds)',
+      value='View error cases by rule — true errors caught by the selected rule (live Dashboard thresholds)',
       fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
 merge(ws_e,2,G0,2,G0+NCOL-1,
       value='Pick a rule (the dropdown lists only rules currently catching errors, sorted by errors '
@@ -1529,7 +1147,8 @@ for j in range(NR):
         f'=IF(ROW()-1>${SC_B}$1,"",INDEX({PRESETS},'
         f'{1+NR}-MOD(LARGE(${SC_B}$2:${SC_B}${1+NR},ROW()-1),1000)))')
 wb.defined_names.add(DefinedName('RuleListLive',
-    attr_text=f"OFFSET('Error Cases'!${SC_D}$2,0,0,MAX('Error Cases'!${SC_B}$1,1),1)"))
+    attr_text=(f"OFFSET('View error cases by rule'!${SC_D}$2,0,0,"
+               f"MAX('View error cases by rule'!${SC_B}$1,1),1)")))
 dv_live = DataValidation(type='list', formula1='RuleListLive', allow_blank=False)
 ws_e.add_data_validation(dv_live)
 dv_live.add(f'{get_column_letter(G0+1)}3')

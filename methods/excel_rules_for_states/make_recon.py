@@ -38,7 +38,7 @@ import pandas as pd
 import openpyxl
 import pyreadstat
 from openpyxl.comments import Comment
-from openpyxl.styles import PatternFill, Font
+from openpyxl.styles import Alignment, PatternFill, Font
 from openpyxl.utils import get_column_letter as CL
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
@@ -189,6 +189,208 @@ def federal_tables(wb, holdout_year):
         'MABLK':  f'FederalTables!$F${ma0}:$Y${ma0 + n_ma - 1}',
         'HOLDOUT': 'FederalTables!$B$3',
     }
+
+
+# ── background: what this workbook is, and where it comes from ───────────────
+GITHUB = 'https://github.com/giannella/snap_qc'
+
+
+def background_tab(wb, state_name):
+    ws = wb.create_sheet('Background', 0)
+    ws.sheet_view.showGridLines = False
+    blue = PatternFill('solid', fgColor='2F5496')
+    ws.column_dimensions['A'].width = 118
+    ws.merge_cells('A1:B1')
+    c = ws['A1']; c.value = f'SNAP QC payment-error rule lists — {state_name}'
+    c.fill = blue; c.font = Font(bold=True, size=16, color='FFFFFF')
+    ws.row_dimensions[1].height = 30
+
+    r = 3
+
+    def para(txt, bold=False, height=None):
+        nonlocal r
+        ws.merge_cells(f'A{r}:B{r}')
+        c = ws.cell(row=r, column=1, value=txt)
+        c.font = Font(bold=bold, size=11 if not bold else 12)
+        c.alignment = Alignment(wrap_text=True, vertical='top')
+        ws.row_dimensions[r].height = height or (18 if bold else 60)
+        r += 2
+
+    def link(label, url):
+        nonlocal r
+        c = ws.cell(row=r, column=1, value=label)
+        c.hyperlink = url
+        c.font = Font(color='0563C1', underline='single')
+        r += 1
+
+    para('What this is', bold=True)
+    para('Rule lists for finding SNAP cases at higher risk of a payment error, evaluated '
+         f'against {state_name}\'s cases in the public USDA SNAP Quality Control (QC) files '
+         'for FY2022-2024. Each rule is a short, readable condition on case fields (for '
+         'example: household size, income per person, deductions, benefit relative to the '
+         'maximum). The rules tabs are POTENTIAL lists to evaluate: the blended list '
+         '(national + this state\'s own mined rules) and the national-only list. Nothing in '
+         'this workbook is in use anywhere, and nothing in it tunes or modifies the rules; '
+         'it exists so reviewers can judge the rules on real cases.')
+    para('Why to use internal data, not just the public file', bold=True)
+    para('Everything here is computed on the public QC file, which is a small audit sample '
+         '(roughly one to a few thousand reviewed cases per state per year) and misses '
+         'entire classes of cases: across states, the public files contain only 43-81% of '
+         'each state\'s QC error cases. At that size, most individual rules flag a handful '
+         'of cases, so per-rule figures carry wide uncertainty. Pasting the state\'s own '
+         'internal case data into the Data tab -- the same fields, full caseload -- makes '
+         'every figure recompute on far more cases, so rule performance becomes estimable.')
+    para('How the rule lists were made', bold=True)
+    para('Candidate rules are read off tree ensembles (xgboost and ranger) fitted to the '
+         'national QC frame within household-size strata (1 / 2-3 / 4+), then filtered on a '
+         'conservative lower confidence bound of training precision, admitted by a '
+         'false-discovery-rate test against the stratum base rate, ranked, and filled to a '
+         '10% review budget. The blended list additionally merges rules mined on this '
+         'state\'s own QC rows into the national pool on a common ranking scale. Full '
+         'methods and code:')
+    link('The pipeline that builds these workbooks (GitHub)',
+         f'{GITHUB}/tree/main/methods/excel_rules_for_states')
+    link('The delivery rule lists, one CSV per state (GitHub)',
+         f'{GITHUB}/tree/main/state_delivery_lists')
+    link('The finished state workbooks (GitHub)',
+         f'{GITHUB}/tree/main/methods/excel_rules_for_states/state_workbooks')
+    r += 1
+    para('Where the numbers on the rules tabs come from', bold=True)
+    para('The rules were mined on a research frame whose fields are restored to their '
+         'pre-QC-review values, while this workbook\'s Data tab carries the as-reported '
+         'public values, so figures here can differ from the research pipeline\'s on cases '
+         'the QC review corrected. For a state\'s own as-reported data that gap does not '
+         'exist. The Data Dictionary tab defines every column; the Data tab\'s amber block '
+         'is what a state supplies.')
+    ws.freeze_panes = 'A2'
+    return ws
+
+
+# ── data dictionary: one line per column on the Data tab ─────────────────────
+RAW_DESC = {
+    'YRMONTH':   'review month, YYYYMM',
+    'HHLDNO':    'case / household review number',
+    'FSUSIZE':   'certified SNAP unit size',
+    'CERTHHSZ':  'number of persons in the household at certification',
+    'FSNKID':    'children in the unit',
+    'FSNELDER':  'members aged 60+',
+    'FSNDIS':    'disabled members',
+    'NUM_ABAWD': 'members with ABAWD status (ABWDST1-18 coded 2..5) — compressed from the person-level fields',
+    'MARRIED_I': '1 if any member is a spouse (REL1-16 = 2) — compressed from the person-level fields',
+    'EXPEDSER':  'expedited service code (1, 2 = expedited; 3 = not)',
+    'CAT_ELIG':  'categorical eligibility code (>= 1 = categorically eligible)',
+    'HOMEDED':   'homeless status / homeless deduction code (1 = not homeless)',
+    'LASTCERT':  'months since the last certification',
+    'FSEARN':    'total earned income, $/month',
+    'FSUNEARN':  'total unearned income, $/month',
+    'FSWAGES':   'wages and salaries', 'FSSLFEMP': 'self-employment income',
+    'FSOTHERN':  'other earned income', 'FSSSI': 'SSI benefits',
+    'FSTANF':    'TANF payments', 'FSGA': 'General Assistance benefits',
+    'FSSOCSEC':  'Social Security income', 'FSUNEMP': 'unemployment compensation',
+    'FSVET':     "veterans' benefits", 'FSWCOMP': "workers' compensation",
+    'FSEDLOAN':  'educational grants and loans', 'FSCSUPRT': 'child support income received',
+    'FSDEEM':    'deemed income', 'FSCONT': 'contributions / in-kind income',
+    'FSOTHGOV':  'other government benefits', 'FSOTHUN': 'other unearned income',
+    'FSDIVER':   'state diversion payments', 'FSWGESUP': 'wage supplementation income',
+    'FSENERGY':  'energy assistance income', 'FSEITC': 'earned income tax credit',
+    'FSFOSTER':  'foster care income',
+    'FSSTDDED':  'standard deduction', 'FSERNDED': 'earned income deduction',
+    'FSDEPDED':  'dependent care deduction', 'FSSLTDED': 'excess shelter deduction',
+    'FSMEDDED':  'medical expense deduction', 'FSCSDED': 'child support payment deduction',
+    'HOMELESS_DED': 'homeless household shelter deduction',
+    'RENT':      'rent / mortgage, $/month', 'UTIL': 'utilities, $/month',
+    'ERROR_FLAG': 'QC review outcome: 1 = payment error over the federal threshold',
+    'AMTERR':    'QC review outcome: benefit amount in error, $',
+}
+FEAT_DESC = {
+    'fiscal_year': 'federal fiscal year, from YRMONTH (Oct-Sep)',
+    'split':       'label only: earlier fiscal years vs the most recent one (no tuning uses it)',
+    'hh_size_raw': 'FSUSIZE, unchanged',
+    'hh_group':    'household-size stratum: 1 / 2-3 / 4+ (every rule applies within one stratum)',
+    'HH_size_n':   'FSUSIZE as a number, used inside rules',
+    'bbce_state_i': 'state-year flag: 1 when at least half the year\'s cases have CAT_ELIG >= 1 '
+                    '(the state runs Broad-Based Categorical Eligibility)',
+    'children_i':  '1 if FSNKID > 0',
+    'count_divisible_by_100': 'how many of the 21 income-type and 7 deduction-type fields are a '
+                              'positive exact multiple of $100',
+    'elderly_disabled_i': '1 if FSNELDER + FSNDIS > 0',
+    'expedited_i': '1 if EXPEDSER is 1 or 2',
+    'homeless':    '1 if HOMEDED is present and not 1',
+    'married':     'MARRIED_I, unchanged',
+    'medical_deductions': 'FSMEDDED, unchanged',
+    'months_since_cert_n': 'LASTCERT, unchanged',
+    'percent_abawd': 'NUM_ABAWD / CERTHHSZ',
+    'earned_by_hh_size':   'FSEARN / unit size',
+    'unearned_by_hh_size': 'FSUNEARN / unit size',
+    'gross_by_hh_size':    '(FSEARN + FSUNEARN) / unit size',
+    'rawben_rel_max':      'recomputed benefit / maximum allotment for the unit size '
+                           '(via the hidden benefit-recomputation chain and FederalTables)',
+    'unc_rawben_rel_max':  'recomputed benefit BEFORE the minimum/maximum caps / maximum allotment',
+    'shelter_expenses_by_hh_size': '(RENT + UTIL) / unit size',
+    'total_deductions_by_hh_size': '(dependent care + child support + recomputed shelter + medical '
+                                   '+ earned-income deductions) / unit size',
+    'utilities':   'UTIL, unchanged',
+    'over_threshold':     'ERROR_FLAG, unchanged (what the rules aim to catch)',
+    'total_error_amount': 'ABS(AMTERR), rounded to whole dollars',
+}
+HELPER_NOTE = ('_c_* columns (hidden): the benefit-recomputation chain — fiscal year, '
+               'gross income, earned-income deduction, standard deduction and maximum '
+               'allotment looked up per year x size from the hidden FederalTables sheet, '
+               'net income before and after shelter, the shelter deduction with its '
+               'elderly/disabled uncapping, and the recomputed benefit.')
+
+
+def data_dictionary(wb, hdr):
+    """A visible tab documenting every Data column: the raw FNS input fields a
+    state supplies and the constructed model variables computed from them."""
+    ws = wb.create_sheet('Data Dictionary', wb.sheetnames.index('Data') + 1)
+    ws.sheet_view.showGridLines = False
+    blue = PatternFill('solid', fgColor='2F5496')
+    gray = PatternFill('solid', fgColor='F2F2F2')
+    ws.column_dimensions['A'].width = 30
+    ws.column_dimensions['B'].width = 16
+    ws.column_dimensions['C'].width = 120
+    ws.merge_cells('A1:C1')
+    c = ws['A1']; c.value = 'Data Dictionary — every column on the Data tab'
+    c.fill = blue; c.font = Font(bold=True, size=14, color='FFFFFF')
+    ws.row_dimensions[1].height = 28
+
+    def header(r, txt):
+        ws.merge_cells(f'A{r}:C{r}')
+        c = ws.cell(row=r, column=1, value=txt)
+        c.fill = blue; c.font = Font(bold=True, color='FFFFFF')
+        return r + 1
+
+    def cols(r):
+        for ci, t in enumerate(('column', 'type', 'definition'), 1):
+            c = ws.cell(row=r, column=ci, value=t)
+            c.fill = gray; c.font = Font(bold=True, size=10)
+        return r + 1
+
+    r = header(3, 'Input fields (amber block) — what a state supplies, under the '
+                  'FNS QC-schedule field names it already reports')
+    r = cols(r)
+    for name in RAW_COLS:
+        ws.cell(row=r, column=1, value=name)
+        ws.cell(row=r, column=2, value='input value')
+        ws.cell(row=r, column=3, value=RAW_DESC.get(name, ''))
+        r += 1
+    r = header(r + 1, 'Constructed variables (blue block) — computed by formula from the '
+                      'input fields; the rules reference these. Do not paste over them.')
+    r = cols(r)
+    for name in hdr:
+        if name.startswith('_') or name not in FEAT_DESC:
+            continue
+        ws.cell(row=r, column=1, value=name)
+        ws.cell(row=r, column=2, value='formula')
+        ws.cell(row=r, column=3, value=FEAT_DESC[name])
+        r += 1
+    r += 1
+    ws.merge_cells(f'A{r}:C{r}')
+    c = ws.cell(row=r, column=1, value=HELPER_NOTE)
+    c.font = Font(size=9, color='808080')
+    ws.freeze_panes = 'A2'
+    return ws
 
 
 def T(col):
@@ -456,10 +658,13 @@ def main():
     note = ('Feature columns (blue) are FORMULAS computed from the raw FNS '
             'fields (amber block to the right); do not paste values over them. '
             'A state supplies ONLY the amber columns, using its FNS QC-schedule '
-            'field names, plus the two QC outcome columns.')
+            'field names, plus the two QC outcome columns. See the Data '
+            'Dictionary tab.')
     dat.cell(row=1, column=1).comment = Comment(note, 'snap_dashboard')
     dat.freeze_panes = 'B2'
 
+    data_dictionary(wb, hdr)
+    background_tab(wb, cfg['name'])
     wb.save(a.out)
     print('saved', a.out)
 

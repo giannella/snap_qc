@@ -7,11 +7,12 @@ Build a state's SNAP QC rules workbook end to end.
     python make_state.py WA --refresh    # re-export the frame from the rds first
 
 The deliverable is ONE file per state, state_workbooks/<ABBR>/
-snap_qc_dashboard_<ABBR>.xlsx: raw FNS QC-schedule fields as values, every
-model feature an in-workbook formula, and the three rules tabs (State-Tuned
-Rules, Blended Rules, National Rules where the repo carries a national-only
-list). The intermediate stages land in .build/out_<ABBR>/ and are kept for
-crosscheck_rules.py, which reads the plain build's static values.
+snap_qc_dashboard_<ABBR>.xlsx: raw input fields as values, every model
+feature an in-workbook formula, and the rules tabs (Blended Rules, plus
+National Rules where the repo carries a national-only list). No tuning of
+any kind runs in the workbook. The intermediate stages land in
+.build/out_<ABBR>/ and are kept for crosscheck_rules.py, which reads the
+plain build's static values.
 
 (--v2, --live and --recon are accepted as no-ops for old command lines: the
 full chain is always run, and the v1 builder is retired to
@@ -40,9 +41,8 @@ import sys
 PKG = os.path.dirname(os.path.abspath(__file__))
 BUILD_DIR = os.path.join(PKG, '.build')
 PY = sys.executable
-PROBES = ["State-Tuned Rules!D6", "State-Tuned Rules!H6",
-          "Blended Rules!C6", "Blended Rules!G6",
-          "Error Cases!A1", "Error Cases!A4"]
+PROBES = ["Blended Rules!C6", "Blended Rules!G6", "Blended Rules!H6",
+          "View error cases by rule!A1", "View error cases by rule!A4"]
 
 
 def run(script, *args, env=None):
