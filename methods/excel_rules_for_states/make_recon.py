@@ -215,15 +215,18 @@ def federal_tables(wb, holdout_year):
     }
 
 
-# ── background: what this workbook is, and where it comes from ───────────────
+# ── Start Here: KPIs, how-to, and background ─────────────────────────────────
 GITHUB = 'https://github.com/giannella/snap_qc'
 
 
 def background_tab(wb, state_name):
-    ws = wb.create_sheet('Background', 0)
+    ws = wb.create_sheet('Start Here', 0)
     ws.sheet_view.showGridLines = False
+    ws.sheet_properties.tabColor = '2F5496'
     blue = PatternFill('solid', fgColor='2F5496')
-    ws.column_dimensions['A'].width = 118
+    green = PatternFill('solid', fgColor='E2EFDA')
+    ws.column_dimensions['A'].width = 60
+    ws.column_dimensions['B'].width = 58
     ws.merge_cells('A1:B1')
     c = ws['A1']; c.value = f'SNAP QC payment-error rule lists — {state_name}'
     c.fill = blue; c.font = Font(bold=True, size=16, color='FFFFFF')
@@ -246,6 +249,49 @@ def background_tab(wb, state_name):
         c.hyperlink = url
         c.font = Font(color='0563C1', underline='single')
         r += 1
+
+    # live KPI block: reads the Blended Rules union row, recomputes on paste
+    kpis = [
+        ('Cases in this workbook',
+         f'=COUNTA({TABLE}[CASE_ID])', '#,##0'),
+        ('Flagged by the blended rules',
+         "='Blended Rules'!G6", '#,##0'),
+        ('Precision: share of flagged cases that are true errors',
+         "='Blended Rules'!D6", '0.0%'),
+        ('Base error rate, all cases (compare precision against this)',
+         f'=COUNTIF({TABLE}[over_threshold],1)/COUNTA({TABLE}[CASE_ID])', '0.0%'),
+        ('Error $ caught by the blended rules',
+         "='Blended Rules'!I6", '$#,##0'),
+    ]
+    for label, f, fmt in kpis:
+        ws.cell(row=r, column=1, value=label).font = Font(size=11)
+        c = ws.cell(row=r, column=2)
+        c.value = f
+        c.font = Font(bold=True, size=18)
+        c.number_format = fmt
+        c.fill = green
+        ws.row_dimensions[r].height = 26
+        r += 1
+    r += 1
+
+    para('How to use this workbook', bold=True)
+    for step in [
+        '1.  Read the Blended Rules tab: the combined rows at the top are the headline; '
+        'each row below is one rule, in plain language, with its results here and its '
+        'national evidence.',
+        '2.  Untick Include? on any rule you would never review — every combined figure '
+        'recomputes as you do.',
+        '3.  Paste your own cases into the Data tab\'s amber columns (definitions on the '
+        'Data Dictionary tab) — every figure on this tab and the rules tabs recomputes '
+        'on your data.',
+    ]:
+        ws.merge_cells(f'A{r}:B{r}')
+        c = ws.cell(row=r, column=1, value=step)
+        c.font = Font(size=11)
+        c.alignment = Alignment(wrap_text=True, vertical='top')
+        ws.row_dimensions[r].height = 28
+        r += 1
+    r += 1
 
     para('What this is', bold=True)
     para('Rule lists for finding SNAP cases at higher risk of a payment error, evaluated '
@@ -705,6 +751,25 @@ def main():
 
     data_dictionary(wb, hdr)
     background_tab(wb, cfg['name'])
+
+    # fill the viewer's CASE_ID lead column, now that Data carries CASE_ID
+    vname = 'See cases flagged by a rule'
+    if vname in wb.sheetnames:
+        wsv = wb[vname]
+        hdr10 = {wsv.cell(row=10, column=ci).value: ci for ci in range(1, 200)}
+        cid, drc = hdr10.get('CASE_ID'), hdr10.get('data_row')
+        if cid and drc:
+            cum = f'${CL(drc + 3)}$12:${CL(drc + 3)}${10 + NROW}'
+            for rr in range(11, 71):
+                wsv.cell(row=rr, column=cid).value = (
+                    f'=IFERROR(INDEX({TABLE}[CASE_ID],MATCH(ROW()-10,{cum},0)),"")')
+            print('viewer CASE_ID column wired to the Data table')
+
+    # tab colors: blue = read, amber = supply data
+    for name, color in (('Data', 'C55A11'), ('Data Dictionary', 'C55A11')):
+        if name in wb.sheetnames:
+            wb[name].sheet_properties.tabColor = color
+
     wb.save(a.out)
     print('saved', a.out)
 

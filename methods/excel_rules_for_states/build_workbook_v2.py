@@ -15,7 +15,8 @@ Sheets produced:
   Blended Rules             the blended delivery list (state + national pools), as-is
   National Rules            the national-only delivery list, as-is (where available)
   Both present POTENTIAL rule lists for the state to evaluate.
-  View error cases by rule  live list of rules catching errors + the cases they catch
+  See cases flagged by a rule  pick a rule, list the cases it flags (errors-only
+                               or all flagged, via a toggle)
   Data               reconstructed state QC case data, with a year-split label
   Dashboard          one threshold block per rule + PR chart   (hidden engine)
   Grid Search        bracket-bounded threshold search          (hidden engine)
@@ -214,11 +215,74 @@ CHAR_COLS = [
     ('n_error_cases_national', 'Natl. error cases behind rule',    '#,##0',  13),
     ('element_groups_to_75',   'Error elements caught (to 75%)',   '@',      46),
     ('nature_groups_to_75',    'Error natures caught (to 75%)',    '@',      46),
-    ('found_in_case_record',   'Share findable in case record',    '0%',     13),
     ('share_overissuance',     'Share overissuance',               '0%',     12),
-    ('timing_at_certification','Share at certification',           '0%',     12),
     ('cause_agency',           'Share agency-caused',              '0%',     12),
+    ('found_in_case_record',   'Share discovered in case file',    '0%',     13),
+    ('timing_at_certification','Share at certification',           '0%',     12),
 ]
+
+# ── plain-English rendering of a rule's conditions ────────────────────────────
+# The 19-variable vocabulary, phrased for program staff. Indicators render as
+# the phrase alone (or its negation); paired bounds on one variable collapse
+# to a range. The exact machine expression stays in the tabs' last column.
+PLAIN_VARS = {
+    'HH_size_n':                  ('household size', 'n'),
+    'children_i':                 ('children present', 'i'),
+    'elderly_disabled_i':         ('elderly or disabled member', 'i'),
+    'total_deductions_by_hh_size': ('total deductions per person', '$'),
+    'expedited_i':                ('expedited service', 'i'),
+    'bbce_state_i':               ('broad-based categorical eligibility in effect', 'i'),
+    'rawben_rel_max':             ('benefit relative to the maximum', 'n'),
+    'medical_deductions':         ('medical deduction', '$'),
+    'shelter_expenses_by_hh_size': ('shelter costs per person', '$'),
+    'utilities':                  ('utility costs', '$'),
+    'married':                    ('spouse present', 'i'),
+    'homeless':                   ('homeless', 'i'),
+    'earned_by_hh_size':          ('earned income per person', '$'),
+    'unearned_by_hh_size':        ('unearned income per person', '$'),
+    'gross_by_hh_size':           ('gross income per person', '$'),
+    'percent_abawd':              ('share of members with ABAWD status', 'n'),
+    'unc_rawben_rel_max':         ('uncapped benefit relative to the maximum', 'n'),
+    'months_since_cert_n':        ('months since certification', 'n'),
+    'count_divisible_by_100':     ('number of round-$100 amounts', 'n'),
+}
+
+
+def _plain_val(v, kind):
+    s = f'{v:g}'
+    return f'${s}' if kind == '$' else s
+
+
+def render_plain(conds):
+    """'unc_rawben_rel_max > 0.999 & unc_rawben_rel_max <= 1' ->
+    'uncapped benefit relative to the maximum between 0.999 and 1'."""
+    by_var, order = {}, []
+    for c in conds:
+        if c['var'] not in by_var:
+            by_var[c['var']] = []
+            order.append(c['var'])
+        by_var[c['var']].append(c)
+    parts = []
+    for v in order:
+        phrase, kind = PLAIN_VARS.get(v, (v, 'n'))
+        cs = by_var[v]
+        if kind == 'i' and len(cs) == 1:
+            up = cs[0]['op'] in ('>=', '>')
+            thr = cs[0]['thr']
+            yes = (up and thr > 0) or (not up and thr >= 1)
+            parts.append(phrase if yes else f'not {phrase}')
+            continue
+        los = [c for c in cs if c['op'] in ('>', '>=')]
+        his = [c for c in cs if c['op'] in ('<', '<=')]
+        if len(cs) == 2 and los and his:
+            parts.append(f'{phrase} between {_plain_val(los[0]["thr"], kind)} '
+                         f'and {_plain_val(his[0]["thr"], kind)}')
+            continue
+        for c in cs:
+            word = {'>=': 'at least', '>': 'over',
+                    '<=': 'at most', '<': 'under'}[c['op']]
+            parts.append(f'{phrase} {word} {_plain_val(c["thr"], kind)}')
+    return '; '.join(parts)
 
 
 def parse_delivery(csv_path):
@@ -950,34 +1014,40 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                       sel_rng, hh_rng, union_col, intro):
     ws = wb.create_sheet(sheet_name, position)
     ws.sheet_view.showGridLines = False
-    LASTC = 13 + len(CHAR_COLS)
-    for col_letter, width in {'A':9,'B':9,'C':11,'D':11,'E':11,'F':11,'G':10,'H':10,
-                              'I':14,'J':12,'K':21,'L':9,'M':115}.items():
+    ws.sheet_properties.tabColor = '2F5496'
+    LASTC = 13 + len(CHAR_COLS)          # ..., Include?(12), char block, Exact expression
+    for col_letter, width in {'A':9,'B':9,'C':60,'D':11,'E':11,'F':11,'G':10,'H':10,
+                              'I':14,'J':12,'K':21,'L':9}.items():
         ws.column_dimensions[col_letter].width = width
-    for ci, (_, _, _, w) in enumerate(CHAR_COLS, 14):
+    for ci, (_, _, _, w) in enumerate(CHAR_COLS, 13):
         ws.column_dimensions[get_column_letter(ci)].width = w
+    ws.column_dimensions[get_column_letter(LASTC)].width = 100
     merge(ws,1,1,1,LASTC, value=f'{sheet_name} — {STATE_NAME} FY{FY_LABEL}',
           fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
     ws.row_dimensions[1].height = 32
+    wrapped = Alignment(horizontal='left', vertical='top', wrap_text=True)
     merge(ws,2,1,2,LASTC, value=intro,
-          fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
+          fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=wrapped)
+    ws.row_dimensions[2].height = 30
     merge(ws,3,1,3,LASTC,
           value='Recall, $ Recall and Workload % are measured within each rule\'s own household-size '
                 'stratum. Expected error $ by case = error dollars caught / cases flagged. Rules are '
                 'listed in delivery-list rank order, exactly as delivered. Tick or untick Include? to '
-                'add or remove a rule from the combined rows above. Columns to the right of '
-                'Conditions characterize each rule as mined on NATIONAL data (what error elements '
-                'and natures it catches, who caused them, whether the error was findable in the '
-                'case record); they are fixed context and do not recompute from pasted data.',
-          fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
-    for col, txt in enumerate(['Rule','HH size','Rules count','Precision','Recall','$ Recall',
-                               'Flagged','Errors','Error $ caught','Workload %',
-                               'Expected error $ by case','Include?',
-                               'Conditions (delivered thresholds, as-is)'] +
-                              [h for _, h, _, _ in CHAR_COLS], 1):
+                'add or remove a rule from the combined rows above (on older Excel, type TRUE or '
+                'FALSE if you see text instead of checkboxes). Columns to the right of Include? '
+                'characterize each rule as mined on NATIONAL data (what error elements and natures '
+                'it catches, who caused them, whether the error was discovered in the case file); '
+                'they are fixed context and do not recompute from pasted data. The exact machine '
+                'expression of every rule is in the last column.',
+          fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=wrapped)
+    ws.row_dimensions[3].height = 42
+    for col, txt in enumerate(['Rule','HH size','What the rule says','Precision','Recall',
+                               '$ Recall','Flagged','Errors','Error $ caught','Workload %',
+                               'Expected error $ by case','Include?'] +
+                              [h for _, h, _, _ in CHAR_COLS] + ['Exact expression'], 1):
         set_cell(ws,4,col,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
 
-    merge(ws,5,1,5,13,
+    merge(ws,5,1,5,LASTC,
           value='All rules combined (a case is flagged if ANY Include?-checked rule flags it, '
                 'at delivered thresholds)',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
@@ -1007,17 +1077,17 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
             set_cell(ws,r,col,formula=f, align=center, border=thin(),
                      number_format=fmt, fill=GREEN)
         set_cell(ws,r,12,None, align=center, border=thin(), fill=GREEN)
-        set_cell(ws,r,13,'union of the checked rules at their delivered thresholds',
-                 align=left, font=Font(name=FONT,size=10))
 
-    merge(ws,10,1,10,13, value='Individual rules — delivered thresholds, no tuning',
+    merge(ws,10,1,10,LASTC, value='Individual rules — delivered thresholds, no tuning',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
+    plain_align = Alignment(horizontal='left', vertical='top', wrap_text=True)
     for j, rule in enumerate(rules_list):        # already in delivery-rank order
         r = NAT_ROW0 + j
         sc = scores[j]
         set_cell(ws,r,1,f'Rule {rule["num"]}', align=center, border=thin(), fill=GREEN)
         set_cell(ws,r,2,rule['hh'], align=center, border=thin(), fill=GREEN)
-        set_cell(ws,r,3,None, align=center, border=thin(), fill=GREEN)
+        set_cell(ws,r,3,render_plain(rule['conds']), align=plain_align, border=thin(),
+                 font=Font(name=FONT,size=10))
         for col, key, fmt in [(4,'prec','0.0%'),(5,'rec','0.0%'),(6,'drec','0.0%'),
                               (7,'n','#,##0'),(8,'tp','#,##0'),(9,'dollars','$#,##0')]:
             set_cell(ws,r,col,round(float(sc[key]),4), align=center, border=thin(),
@@ -1027,8 +1097,7 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
         set_cell(ws,r,11,(round(sc['dollars']/sc['n'], 2) if sc['n'] else '—'),
                  align=center, border=thin(), number_format='$#,##0', fill=GREEN)
         set_cell(ws,r,12,True, fill=YELLOW, align=center, border=thin(), font=Font(name=FONT))
-        set_cell(ws,r,13,conds_text[j], align=left, font=Font(name=FONT,size=10))
-        for ci, (key, _, fmt, _) in enumerate(CHAR_COLS, 14):
+        for ci, (key, _, fmt, _) in enumerate(CHAR_COLS, 13):
             v = rule.get('char', {}).get(key)
             if v is None or (isinstance(v, float) and np.isnan(v)):
                 v = ''
@@ -1036,7 +1105,9 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                 v = float(v)
             set_cell(ws,r,ci,v, align=(left if fmt == '@' else center), border=thin(),
                      number_format=fmt, font=Font(name=FONT,size=10))
-    ws.freeze_panes = 'A5'
+        set_cell(ws,r,LASTC,conds_text[j], align=left,
+                 font=Font(name=FONT,size=8,color='808080'))
+    ws.freeze_panes = 'D5'
     CHECKBOX_CELLS[sheet_name] = [f'L{NAT_ROW0+j}' for j in range(len(rules_list))]
     return ws
 
@@ -1046,10 +1117,10 @@ ws_n = delivery_list_tab(
     scores=blended_scores,
     conds_text=blended_conds,
     sel_rng=NATSEL, hh_rng=HHRNG, union_col=NATU,
-    intro=('A POTENTIAL rule list. The BLENDED delivery list: the state\'s own mined rules '
-           'merged into the national pool on a common ranking scale, filled to the review '
-           'budget against this state\'s caseload. Thresholds are used AS-IS, with no '
-           f'state-level search or tuning; every metric is computed on all {STATE_NAME} QC '
+    intro=('A POTENTIAL rule list, selected from state and national rules, prioritized by '
+           'precision (using the lower 99% confidence bound for reliability), and filled to '
+           'the review budget against this state\'s caseload. Thresholds are used AS-IS, with '
+           f'no state-level search or tuning; every metric is computed on all {STATE_NAME} QC '
            'cases in the Data tab.'))
 
 if NAT_RULES:
@@ -1058,47 +1129,51 @@ if NAT_RULES:
         scores=nat_scores,
         conds_text=nat_conds,
         sel_rng=NLSEL, hh_rng=NLHH, union_col=NLUCOL,
-        intro=('A POTENTIAL rule list. The NATIONAL-only delivery list: built purely from the '
-               'pool mined on all-state QC data, with no rules from this state\'s own mine. '
-               f'Thresholds are used AS-IS; every metric is computed on all {STATE_NAME} QC '
-               'cases in the Data tab. Compare against the Blended Rules tab to see what '
-               'merging the state\'s own rules adds.'))
+        intro=('A POTENTIAL rule list built only from rules mined on all-state QC data, with '
+               'none of this state\'s own mined rules. For some states, it may serve as an '
+               'alternative set of rules (or simply a reference point). Thresholds are used '
+               f'AS-IS; every metric is computed on all {STATE_NAME} QC cases in the Data tab.'))
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 8. ERROR CASES — live list of rules catching errors + the cases they catch
+# 8. SEE CASES FLAGGED BY A RULE — pick a rule, list the cases it flags, with
+# a toggle between true errors only and every flagged case
 # ══════════════════════════════════════════════════════════════════════════════
-ws_e = wb.create_sheet('View error cases by rule', 3 if NAT_RULES else 2)
+VIEWER = 'See cases flagged by a rule'
+ws_e = wb.create_sheet(VIEWER, 3 if NAT_RULES else 2)
 ws_e.sheet_view.showGridLines = False
+ws_e.sheet_properties.tabColor = '2F5496'
 NCOL   = len(DCOLS)
-G0     = 3                                   # first grid column (C)
-GLAST  = get_column_letter(G0 + NCOL - 1)
-DROWC  = get_column_letter(G0 + NCOL)        # data_row column
+NCOLV  = NCOL + 1                            # + the CASE_ID lead column
+G0     = 3                                   # CASE_ID column (C); DCOLS follow
+DROWC  = get_column_letter(G0 + NCOLV)       # data_row column
 LISTN  = max(NR, 64)                         # rule-list slots: one per rule, so a
                                              # longer delivery list is never
                                              # silently truncated on this panel
 GRIDN  = 60                                  # result rows
-HELP_Z = get_column_letter(G0 + NCOL + 2)    # per-case hit flag
-HELP_A = get_column_letter(G0 + NCOL + 3)    # cumulative count
-HELP_Y = get_column_letter(G0 + NCOL + 1)    # rule index / dashboard row
-SC_B   = get_column_letter(G0 + NCOL + 4)    # rule score
-SC_C   = get_column_letter(G0 + NCOL + 5)    # rule errors
-SC_D   = get_column_letter(G0 + NCOL + 6)    # compacted sorted rule list
+HELP_Y = get_column_letter(G0 + NCOLV + 1)   # rule index / dashboard row
+HELP_Z = get_column_letter(G0 + NCOLV + 2)   # per-case hit flag
+HELP_A = get_column_letter(G0 + NCOLV + 3)   # cumulative count
+SC_B   = get_column_letter(G0 + NCOLV + 4)   # rule score
+SC_C   = get_column_letter(G0 + NCOLV + 5)   # rule match count
+SC_D   = get_column_letter(G0 + NCOLV + 6)   # compacted sorted rule list
 PRESETS = f"'Grid Search'!$AA$2:$AA${1+NR}"
 for cl, w in {'A':20,'B':9}.items():
     ws_e.column_dimensions[cl].width = w
-for i in range(NCOL):
-    ws_e.column_dimensions[get_column_letter(G0+i)].width = 13 if i > 2 else 16
+ws_e.column_dimensions[get_column_letter(G0)].width = 14
+for i in range(1, NCOLV):
+    ws_e.column_dimensions[get_column_letter(G0+i)].width = 13 if i > 3 else 16
 ws_e.column_dimensions[DROWC].width = 9
 for cl in (HELP_Y, HELP_Z, HELP_A, SC_B, SC_C, SC_D):
     ws_e.column_dimensions[cl].hidden = True
+TOG = f'${get_column_letter(G0+7)}$3'        # errors-only / all-flagged toggle
 
-set_cell(ws_e,1,1,formula=f'=${SC_B}$1&" rules with errors"',
+set_cell(ws_e,1,1,formula=f'=${SC_B}$1&" rules with matches"',
          fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=14,color='FFFFFF'), align=center)
 ws_e.merge_cells('A1:B1'); ws_e.row_dimensions[1].height = 32
-merge(ws_e,2,1,2,2, value='sorted by errors caught — updates live',
+merge(ws_e,2,1,2,2, value='sorted by cases matched — updates live',
       fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
 set_cell(ws_e,3,1,'Rule', font=bold_font(10), fill=GRAY, align=center, border=thin())
-set_cell(ws_e,3,2,'errors', font=bold_font(10), fill=GRAY, align=center, border=thin())
+set_cell(ws_e,3,2,'matches', font=bold_font(10), fill=GRAY, align=center, border=thin())
 for k in range(1, LISTN+1):
     r = 3 + k
     set_cell(ws_e,r,1,formula=f'=IF({k}>${SC_B}$1,"",INDEX(${SC_D}$2:${SC_D}${1+NR},{k}))',
@@ -1107,23 +1182,30 @@ for k in range(1, LISTN+1):
              align=center, border=thin())
 
 merge(ws_e,1,G0,1,G0+11,
-      value='View error cases by rule — true errors caught by the selected rule (live Dashboard thresholds)',
+      value=f'{VIEWER} — the cases the selected rule flags, at current thresholds',
       fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
-merge(ws_e,2,G0,2,G0+NCOL-1,
-      value='Pick a rule (the dropdown lists only rules currently catching errors, sorted by errors '
-            'caught). The table lists every case the rule flags at its CURRENT Dashboard thresholds '
-            'that is a true payment error (over_threshold = 1).',
+merge(ws_e,2,G0,2,G0+NCOLV-1,
+      value='Pick a rule (the dropdown lists rules currently matching, sorted by matches) and '
+            'choose whether to see only flagged cases that are true payment errors, or every '
+            'flagged case. NOTE: this viewer shows the shipped public sample only; pasted rows '
+            'do not appear here (the rules tabs do recompute).',
       fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
 set_cell(ws_e,3,G0,'Rule', font=bold_font(10), fill=GRAY, align=center, border=thin())
 set_cell(ws_e,3,G0+1,f'Rule {RULES[0]["num"]} (HH {RULES[0]["hh"]})',
          fill=YELLOW, align=center, border=thin(), font=bold_font(), number_format='@')
 ws_e.merge_cells(start_row=3, start_column=G0+1, end_row=3, end_column=G0+3)
-set_cell(ws_e,3,G0+4,'← dropdown lists only the rules currently catching errors',
-         font=Font(name=FONT,size=9,color='808080'), align=left)
+set_cell(ws_e,3,G0+6,'Show', font=bold_font(10), fill=GRAY, align=center, border=thin())
+set_cell(ws_e,3,G0+7,'true errors only', fill=YELLOW, align=center, border=thin(),
+         font=bold_font(), number_format='@')
+ws_e.merge_cells(start_row=3, start_column=G0+7, end_row=3, end_column=G0+8)
+dv_tog = DataValidation(type='list', formula1='"true errors only,all flagged cases"',
+                        allow_blank=False)
+ws_e.add_data_validation(dv_tog)
+dv_tog.add(f'{get_column_letter(G0+7)}3')
 YREF = f'${HELP_Y}$1'; Y2REF = f'${HELP_Y}$2'
-set_cell(ws_e,1,G0+NCOL+1,
+set_cell(ws_e,1,G0+NCOLV+1,
          formula=f'=MATCH(${get_column_letter(G0+1)}$3,{PRESETS},0)-1')
-set_cell(ws_e,2,G0+NCOL+1, formula=f'={BASE_ROW+2}+{YREF}*{BLOCK_HEIGHT}')
+set_cell(ws_e,2,G0+NCOLV+1, formula=f'={BASE_ROW+2}+{YREF}*{BLOCK_HEIGHT}')
 set_cell(ws_e,4,G0,'HH stratum', font=bold_font(10), fill=GRAY, align=center, border=thin())
 set_cell(ws_e,4,G0+1,formula=f'=INDEX(RuleFlags!{HHRNG},1,{YREF}+1)',
          fill=BLUE_LIGHT, align=center, border=thin())
@@ -1133,7 +1215,7 @@ set_cell(ws_e,4,G0+4,formula=f'=INDEX(Dashboard!$G:$G,{Y2REF})',
 set_cell(ws_e,4,G0+6,'errors caught', font=bold_font(10), fill=GRAY, align=center, border=thin())
 set_cell(ws_e,4,G0+7,formula=f'=INDEX(Dashboard!$G:$G,{Y2REF}+1)',
          fill=BLUE_LIGHT, align=center, border=thin())
-for off, txt in enumerate(['Variable','Op','Dashboard threshold','Data col #']):
+for off, txt in enumerate(['Variable','Op','Current threshold','(col ref)']):
     set_cell(ws_e,5,G0+off,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
 CV = get_column_letter(G0); OPV = get_column_letter(G0+1)
 THV = get_column_letter(G0+2); IXV = get_column_letter(G0+3)
@@ -1150,39 +1232,46 @@ for i in range(NSLOTS):
     set_cell(ws_e,r,G0+3,formula=f'=IF(${CV}{r}="","",IFERROR(MATCH(${CV}{r},'
                                  f'Data!$A$1:${LASTCOL}$1,0),""))',
              fill=BLUE_LIGHT, align=center, border=thin())
+set_cell(ws_e,10,G0,'CASE_ID', font=bold_font(10), fill=GRAY, align=center, border=thin())
 for i, h in enumerate(DCOLS):
-    set_cell(ws_e,10,G0+i,h, font=bold_font(10), fill=GRAY, align=center, border=thin())
-set_cell(ws_e,10,G0+NCOL,'data_row', font=bold_font(10), fill=GRAY, align=center, border=thin())
+    set_cell(ws_e,10,G0+1+i,h, font=bold_font(10), fill=GRAY, align=center, border=thin())
+set_cell(ws_e,10,G0+NCOLV,'data_row', font=bold_font(10), fill=GRAY, align=center, border=thin())
 CUM = f'${HELP_A}$12:${HELP_A}${11+NDATA}'
 for r in range(11, 11+GRIDN):
+    # G0 (CASE_ID) is left blank here; make_recon fills it once the Data tab
+    # carries a CASE_ID column
     for i in range(NCOL):
-        ws_e.cell(row=r, column=G0+i).value = (
+        ws_e.cell(row=r, column=G0+1+i).value = (
             f'=IFERROR(INDEX(Data!$A$2:${LASTCOL}${1+NDATA},MATCH(ROW()-10,{CUM},0),'
-            f'COLUMN()-{G0-1}),"")')
-    ws_e.cell(row=r, column=G0+NCOL).value = f'=IFERROR(MATCH(ROW()-10,{CUM},0)+1,"")'
+            f'COLUMN()-{G0}),"")')
+    ws_e.cell(row=r, column=G0+NCOLV).value = f'=IFERROR(MATCH(ROW()-10,{CUM},0)+1,"")'
 for i in range(NDATA):
     r, dr_ = 12 + i, 2 + i
     slots = '*'.join(
         f'IF(${CV}${6+k}="",1,COUNTIF(INDEX(Data!$A{dr_}:${LASTCOL}{dr_},1,${IXV}${6+k}),'
         f'${OPV}${6+k}&${THV}${6+k}))' for k in range(NSLOTS))
-    ws_e.cell(row=r, column=G0+NCOL+2).value = (
+    ws_e.cell(row=r, column=G0+NCOLV+2).value = (
         f'=IF(Data!${dc("hh_group")}{dr_}<>${get_column_letter(G0+1)}$4,0,'
-        f'IF(Data!${dc("over_threshold")}{dr_}<>1,0,{slots}))')
-    ws_e.cell(row=r, column=G0+NCOL+3).value = (
+        f'IF(AND({TOG}="true errors only",Data!${dc("over_threshold")}{dr_}<>1),0,{slots}))')
+    ws_e.cell(row=r, column=G0+NCOLV+3).value = (
         f'=${HELP_Z}$12' if i == 0 else f'=${HELP_A}{r-1}+${HELP_Z}{r}')
-ws_e.cell(row=1, column=G0+NCOL+4).value = f'=COUNTIF(${SC_C}$2:${SC_C}${1+NR},">0")'
+ws_e.cell(row=1, column=G0+NCOLV+4).value = f'=COUNTIF(${SC_C}$2:${SC_C}${1+NR},">0")'
 for j in range(NR):
     r = 2 + j
-    ws_e.cell(row=r, column=G0+NCOL+4).value = (
-        f'=INDEX(Dashboard!$G:$G,{BASE_ROW+3}+{j}*{BLOCK_HEIGHT})*1000+({NR}-{j})')
-    ws_e.cell(row=r, column=G0+NCOL+5).value = (
-        f'=INDEX(Dashboard!$G:$G,{BASE_ROW+3}+{j}*{BLOCK_HEIGHT})')
-    ws_e.cell(row=r, column=G0+NCOL+6).value = (
+    # metric row: n_flagged (BASE_ROW+2) in all-flagged mode, errors (+3) in
+    # errors-only mode
+    mrow = (f'{BASE_ROW+2}+{j}*{BLOCK_HEIGHT}'
+            f'+IF({TOG}="true errors only",1,0)')
+    ws_e.cell(row=r, column=G0+NCOLV+4).value = (
+        f'=INDEX(Dashboard!$G:$G,{mrow})*1000+({NR}-{j})')
+    ws_e.cell(row=r, column=G0+NCOLV+5).value = (
+        f'=INDEX(Dashboard!$G:$G,{mrow})')
+    ws_e.cell(row=r, column=G0+NCOLV+6).value = (
         f'=IF(ROW()-1>${SC_B}$1,"",INDEX({PRESETS},'
         f'{1+NR}-MOD(LARGE(${SC_B}$2:${SC_B}${1+NR},ROW()-1),1000)))')
 wb.defined_names.add(DefinedName('RuleListLive',
-    attr_text=(f"OFFSET('View error cases by rule'!${SC_D}$2,0,0,"
-               f"MAX('View error cases by rule'!${SC_B}$1,1),1)")))
+    attr_text=(f"OFFSET('{VIEWER}'!${SC_D}$2,0,0,"
+               f"MAX('{VIEWER}'!${SC_B}$1,1),1)")))
 dv_live = DataValidation(type='list', formula1='RuleListLive', allow_blank=False)
 ws_e.add_data_validation(dv_live)
 dv_live.add(f'{get_column_letter(G0+1)}3')

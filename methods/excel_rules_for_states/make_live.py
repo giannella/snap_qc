@@ -78,13 +78,20 @@ def main():
     NROW, NCOL = dat.max_row, len(hdr)
     print(f'Data: {NROW-1} cases x {NCOL} columns')
 
-    # ── 1. read the rules straight out of the Conditions columns ─────────────
+    # ── 1. read the rules straight out of the Exact expression column ────────
     N0 = 11
 
     def read_delivery_tab(ws):
+        if ws is None:
+            return []
+        # the machine-readable rule text lives in the 'Exact expression'
+        # column (last); find it by header rather than assuming a position
+        expr_col = next((c for c in range(1, ws.max_column + 1)
+                         if ws.cell(row=4, column=c).value == 'Exact expression'),
+                        13)
         out_, r_ = [], N0
-        while ws is not None and ws.cell(row=r_, column=1).value:
-            out_.append((parse(ws.cell(row=r_, column=13).value),
+        while ws.cell(row=r_, column=1).value:
+            out_.append((parse(ws.cell(row=r_, column=expr_col).value),
                          ws.cell(row=r_, column=2).value))
             r_ += 1
         return out_

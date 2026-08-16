@@ -42,7 +42,7 @@ PKG = os.path.dirname(os.path.abspath(__file__))
 BUILD_DIR = os.path.join(PKG, '.build')
 PY = sys.executable
 PROBES = ["Blended Rules!C6", "Blended Rules!G6", "Blended Rules!H6",
-          "View error cases by rule!A1", "View error cases by rule!A4"]
+          "See cases flagged by a rule!A1", "See cases flagged by a rule!A4"]
 
 
 def run(script, *args, env=None):
