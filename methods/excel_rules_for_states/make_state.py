@@ -22,10 +22,11 @@ Stages:
   1. build_workbook_v2.py   every sheet, formula and value  (.build)
   2. make_live.py           Data becomes an Excel table; the rules tabs
                             recompute from it, so pasted rows flow through
-  3. make_recon.py          the Data tab's inputs become the raw FNS
-                            QC-schedule fields; every model feature is an
-                            in-workbook formula, for states that can run
-                            neither Python nor R
+  3. make_input_workbook.py  the Data tab gains the input contract (values)
+                            and every model feature becomes an in-workbook
+                            formula, for states that can run neither Python
+                            nor R; adds Start Here, Data Dictionary and
+                            FederalTables, and runs the validation gate
   4. postprocess_workbook.py   native checkboxes + calc-chain removal
   5. verify_workbook.py / verify_workbook_win.ps1   open-in-Excel probe
 
@@ -94,7 +95,7 @@ def build_one(state, refresh, want_verify):
     live = out.replace('.xlsx', '_LIVE.xlsx')
     recon = out.replace('.xlsx', '_RECON.xlsx')
     run('make_live.py', out, '-o', live)
-    run('make_recon.py', live, '-o', recon, '--state', state)
+    run('make_input_workbook.py', live, '-o', recon, '--state', state)
 
     ck = os.path.join(BUILD_DIR, 'checkbox_cells.json')
     for wbk in (out, live, recon):

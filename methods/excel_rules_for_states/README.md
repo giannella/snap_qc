@@ -59,7 +59,7 @@ crosswalk to the SNAP QC technical documentation's variables. A handful of
 names deviate from the feature vocabulary only because Excel table column
 names are case-insensitively unique (an input may not reuse a feature column's
 name — the collision makes Excel reject the file as damaged, and
-`make_recon.py` asserts against it).
+`make_input_workbook.py` asserts against it).
 
 The demo fills every input column with the research frame's RECONSTRUCTED
 (pre-QC-review) values — never the QC-corrected `FS*` values from the public
@@ -69,7 +69,7 @@ and the rules were mined on that scale, so demoing against corrected values
 would have states selecting rules that flag corrected case data — the
 measured v1 failure mode (21 of 114 WA rules never fired; held-out precision
 0.255 vs 0.318). `export_state_frame.R` ships the reconstructed input-level
-fields and `make_recon.py` builds the whole input block from that export; the
+fields and `make_input_workbook.py` builds the whole input block from that export; the
 `.sav` files are not read anywhere in the pipeline. The blue feature columns
 are formulas over the amber block — including the benefit recomputation chain
 (standard deduction, max allotment, shelter cap and minimum allotment looked
@@ -130,7 +130,7 @@ the removal decision.
 |---|---|---|
 | 1 | `build_workbook_v2.py` | Exports the state's rows from `reg_model_data.rds` (via `export_state_frame.R` + the miner's `prep_features()`), parses the blended and national delivery lists, scores every rule at its delivered thresholds, writes every sheet. |
 | 2 | `make_live.py` | Data becomes an Excel table; the three rules tabs and the Dashboard recompute from it by column NAME, so pasted rows flow through. |
-| 3 | `make_recon.py` | Appends the raw FNS block + benefit-chain helpers, turns every feature column into a formula, validates the formulas against the frame, adds FederalTables. |
+| 3 | `make_input_workbook.py` | Appends the raw FNS block + benefit-chain helpers, turns every feature column into a formula, validates the formulas against the frame, adds FederalTables. |
 | 4 | `postprocess_workbook.py` | Native Excel-365 checkboxes; drops the stale calc chain. Applied to every stage's output. |
 | 5 | `verify_workbook.py` (macOS) / `verify_workbook_win.ps1` (Windows) | Opens each workbook in desktop Excel (AppleScript / COM), forces a full recalculation, reads probe cells back, and fails on any formula error cell on any sheet. Needs desktop Excel installed. Formulas written by openpyxl must carry the `_xlfn.` prefix for post-2007 functions (NORM.S.INV, FLOOR.MATH) or Excel renders #NAME? — the verifier's error scan is what catches that class of bug. |
 

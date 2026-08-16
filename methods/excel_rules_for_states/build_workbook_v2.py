@@ -1243,7 +1243,7 @@ for i, h in enumerate(DCOLS):
 set_cell(ws_e,10,G0+NCOLV,'data_row', font=bold_font(10), fill=GRAY, align=center, border=thin())
 CUM = f'${HELP_A}$12:${HELP_A}${11+NDATA}'
 for r in range(11, 11+GRIDN):
-    # G0 (CASE_ID) is left blank here; make_recon fills it once the Data tab
+    # G0 (CASE_ID) is left blank here; make_input_workbook.py fills it once the Data tab
     # carries a CASE_ID column
     for i in range(NCOL):
         ws_e.cell(row=r, column=G0+1+i).value = (

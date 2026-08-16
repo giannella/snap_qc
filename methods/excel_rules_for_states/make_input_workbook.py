@@ -27,7 +27,7 @@ data supplies its ordinary as-reported fields (internal data carries no QC
 corrections, so nothing needs reconstructing there). The built-in validation
 prints the per-feature match rate against the frame on every build.
 
-Usage:  python make_recon.py <LIVE_workbook.xlsx> -o <out.xlsx> [--state WA]
+Usage:  python make_input_workbook.py <LIVE_workbook.xlsx> -o <out.xlsx> [--state WA]
 Then:   python postprocess_workbook.py <out.xlsx> <checkbox_cells.json>
 """
 import argparse
