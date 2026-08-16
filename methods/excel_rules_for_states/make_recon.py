@@ -318,9 +318,12 @@ def background_tab(wb, state_name):
 RAW_DESC = {
     'CASE_ID':   'case / review identifier — row identity only. QC manual: HHLDNO.',
     'REVIEW_FISCAL_YEAR': 'federal fiscal year of the review month (Oct-Sep).',
-    'HOUSEHOLD_SIZE': 'SNAP unit size as reported. QC manual: RAWHSIZE is the reported '
-                      '(Origin R) version, FSUSIZE the QC-corrected one; the demo carries '
-                      'the reconstructed pre-QC-review size.',
+    'HOUSEHOLD_SIZE': 'certified SNAP unit size: the members ON THE CASE, as reported. '
+                      'QC manual: CERTHHSZ (Origin R, reported); FSUSIZE is the '
+                      'constructed version. Do NOT supply the household\'s total person '
+                      'count (the manual\'s RAWHSIZE) — people in the home who are not '
+                      'unit members do not count. The demo carries the reconstructed '
+                      'pre-QC-review unit size.',
     'NUM_CHILDREN': 'children in the unit. QC manual: FSNKID.',
     'NUM_ELDERLY': 'members aged 60+. QC manual: FSNELDER.',
     'NUM_DISABLED': 'disabled members. QC manual: FSNDIS.',
@@ -374,11 +377,12 @@ FEAT_DESC = {
     'married':     'MARRIED_FLAG, unchanged',
     'medical_deductions': 'MEDICAL_DEDUCTION, unchanged',
     'months_since_cert_n': 'MONTHS_SINCE_CERT, unchanged',
-    'percent_abawd': 'NUM_ABAWD / HOUSEHOLD_SIZE (the research frame divided by the '
-                     'household person count, CERTHHSZ, which this contract does not collect)',
+    'percent_abawd': 'NUM_ABAWD / HOUSEHOLD_SIZE (the research frame divides by CERTHHSZ, '
+                     'the certified unit size — the same concept HOUSEHOLD_SIZE carries)',
     'earned_by_hh_size':   'EARNED_INCOME / HOUSEHOLD_SIZE',
     'unearned_by_hh_size': 'UNEARNED_INCOME / HOUSEHOLD_SIZE',
-    'gross_by_hh_size':    '(EARNED_INCOME + UNEARNED_INCOME) / HOUSEHOLD_SIZE',
+    'gross_by_hh_size':    '(EARNED_INCOME + UNEARNED_INCOME) / HOUSEHOLD_SIZE — on '
+                           'reported data this is the manual\'s RAWGROSS / CERTHHSZ',
     'rawben_rel_max':      'recomputed benefit / maximum allotment for the unit size '
                            '(via the hidden benefit-recomputation chain and FederalTables)',
     'unc_rawben_rel_max':  'recomputed benefit BEFORE the minimum/maximum caps / maximum allotment',
