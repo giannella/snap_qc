@@ -104,7 +104,13 @@ if (length(dropped_present)) {
 keys <- intersect(c("yrmonth", "hhldno", "stratum"), names(w))
 extra <- intersect(c("cert_HH_size_FS_n", "over_threshold", "total_error_amount",
                      "error_status", "second_element_i", "ded_fields_imputed",
-                     "fiscal_year"), names(w))
+                     "fiscal_year",
+                     # reconstructed (pre-QC-review) input-level fields: the
+                     # workbook's Data tab demo carries these, so its figures
+                     # sit on the same scale the rules were mined on
+                     "rawearn", "rawunearn", "rawdepded", "rawcsded", "rawrent",
+                     "rawhomeless_ded", "fsnkid", "fsnelder", "fsndis",
+                     "count_abawd", "cat_elig"), names(w))
 out <- w[, c(keys, extra, pf$features), drop = FALSE]
 out$hh_group    <- hh_group_of(w$cert_HH_size_FS_n)
 out$hh_size_raw <- suppressWarnings(as.numeric(as.character(w$cert_HH_size_FS_n)))

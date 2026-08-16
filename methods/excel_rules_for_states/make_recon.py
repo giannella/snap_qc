@@ -20,12 +20,12 @@ Federal parameter tables (standard deduction, max allotment, shelter cap,
 minimum allotment, by fiscal year x household size) live on a hidden
 FederalTables sheet; formulas look them up by year and size.
 
-Because the workbook's raw columns hold the AS-REPORTED public QC values while
-the delivery rules were mined on the munged frame's pre-QC-restored values,
-formula-computed features differ from the frame on rows the restoration
-touched (rows carrying QC error elements). The built-in validation prints the
-match rate per feature, overall and on element-free rows, every build. For
-state-supplied as-reported data that gap does not exist.
+The demo input block carries the research frame's RECONSTRUCTED
+(pre-QC-review) values — the same scale the rules were mined on — so the
+workbook's figures match the research pipeline's. A state pasting its own
+data supplies its ordinary as-reported fields (internal data carries no QC
+corrections, so nothing needs reconstructing there). The built-in validation
+prints the per-feature match rate against the frame on every build.
 
 Usage:  python make_recon.py <LIVE_workbook.xlsx> -o <out.xlsx> [--state WA]
 Then:   python postprocess_workbook.py <out.xlsx> <checkbox_cells.json>
@@ -37,7 +37,6 @@ import shutil
 import numpy as np
 import pandas as pd
 import openpyxl
-import pyreadstat
 from openpyxl.comments import Comment
 from openpyxl.styles import Alignment, PatternFill, Font
 from openpyxl.utils import get_column_letter as CL
@@ -89,80 +88,54 @@ RAW_COLS = [
 def raw_frame(cfg, frame_csv):
     """The input block for exactly the frame's rows, in the frame's row order.
 
-    On public data this is a STAND-IN for what a state would paste: reported
-    (pre-QC) values where the public file carries them (HOUSEHOLD_SIZE from
-    RAWHSIZE), QC-corrected values elsewhere (the file has no reported version
-    of the income split, deductions, rent or utilities). Reads the public QC
-    .sav files, filters to the state, and joins on yrmonth + hhldno + stratum.
+    The demo carries the research frame's RECONSTRUCTED (pre-QC-review)
+    values — the same scale the rules were mined on — so the workbook's
+    figures match the research pipeline's (decision 2026-08-16). A state
+    pasting its own data supplies its ordinary as-reported fields; internal
+    data carries no QC corrections, so no reconstruction is needed there.
+    Everything comes from the frame export; the .sav files are not read.
     """
     frame = pd.read_csv(frame_csv, dtype={'hhldno': str, 'stratum': str})
-    parts = []
-    for f in cfg['qc_files']:
-        d, _ = pyreadstat.read_sav(os.path.join(REPO, f))
-        d.columns = [c.upper() for c in d.columns]
-        d = d[d['STATE'] == cfg['fips']].copy()
-        parts.append(d)
-    sav = pd.concat(parts, ignore_index=True)
-    sav['_ym'] = pd.to_numeric(sav['YRMONTH'], errors='coerce').astype('Int64')
-    sav['_hh'] = sav['HHLDNO'].astype(str).str.strip().str.replace(r'\.0$', '', regex=True)
-    sav['_st'] = sav['STRATUM'].astype(str).str.strip().str.replace(r'\.0$', '', regex=True)
-    key_cols = ['_ym', '_hh', '_st']
-    assert not sav.duplicated(key_cols).any(), 'duplicate join keys in the .sav files'
+    need = ['rawearn', 'rawunearn', 'rawdepded', 'rawcsded', 'rawrent',
+            'rawhomeless_ded', 'fsnkid', 'fsnelder', 'fsndis',
+            'count_abawd', 'cat_elig']
+    missing = [c for c in need if c not in frame.columns]
+    assert not missing, (f'frame export lacks reconstructed input fields '
+                         f'{missing}; re-export it (make_state.py --refresh)')
 
-    left = pd.DataFrame({
-        '_ym': pd.to_numeric(frame['yrmonth'], errors='coerce').astype('Int64'),
-        '_hh': frame['hhldno'].astype(str).str.strip().str.replace(r'\.0$', '', regex=True),
-        '_st': frame['stratum'].astype(str).str.strip().str.replace(r'\.0$', '', regex=True),
-    })
-    m = left.merge(sav, on=key_cols, how='left', validate='one_to_one')
-    assert len(m) == len(frame), 'join changed the row count'
-    unmatched = m['YRMONTH'].isna().sum()
-    assert unmatched == 0, f'{unmatched} frame rows have no .sav match'
-
-    g = lambda c: pd.to_numeric(m[c], errors='coerce')
-    abwd = [c for c in m.columns if c.startswith('ABWDST')]
-    rel = [f'REL{i}' for i in range(1, 17) if f'REL{i}' in m.columns]
-    rawhsize = g('RAWHSIZE')
-    n_miss = int(rawhsize.isna().sum())
-    if n_miss:
-        print(f'  HOUSEHOLD_SIZE: RAWHSIZE missing on {n_miss} rows; '
-              'FSUSIZE fills in')
+    g = lambda c: pd.to_numeric(frame[c], errors='coerce')
     out = pd.DataFrame({
-        'CASE_ID': m['HHLDNO'].astype(str).str.strip(),
-        'REVIEW_FISCAL_YEAR': pd.to_numeric(frame['fiscal_year'], errors='coerce').values,
-        'HOUSEHOLD_SIZE': rawhsize.fillna(g('FSUSIZE')),
-        'NUM_CHILDREN': g('FSNKID'),
-        'NUM_ELDERLY': g('FSNELDER'),
-        'NUM_DISABLED': g('FSNDIS'),
-        'NUM_ABAWD': m[abwd].apply(pd.to_numeric, errors='coerce')
-                            .isin([2, 3, 4, 5]).sum(axis=1),
-        'MARRIED_FLAG': (m[rel].apply(pd.to_numeric, errors='coerce') == 2)
-                   .any(axis=1).astype(int),
-        'EXPEDITED': g('EXPEDSER').isin([1, 2]).astype(int),
-        'CATEGORICALLY_ELIGIBLE': (g('CAT_ELIG') >= 1).astype(int),
-        'HOMELESS_FLAG': (g('HOMEDED').notna() & (g('HOMEDED') != 1)).astype(int),
-        'MONTHS_SINCE_CERT': g('LASTCERT'),
-        'EARNED_INCOME': g('FSEARN'),
-        'UNEARNED_INCOME': g('FSUNEARN'),
-        'MEDICAL_DEDUCTION': g('FSMEDDED'),
-        'DEPENDENT_CARE_DEDUCTION': g('FSDEPDED'),
-        'CHILD_SUPPORT_DEDUCTION': g('FSCSDED'),
-        'HOMELESS_DEDUCTION': g('HOMELESS_DED'),
-        'RENT': g('RENT'),
-        'UTILITY_COSTS': g('UTIL'),
+        'CASE_ID': frame['hhldno'].astype(str).str.strip(),
+        'REVIEW_FISCAL_YEAR': g('fiscal_year'),
+        'HOUSEHOLD_SIZE': g('hh_size_raw'),
+        'NUM_CHILDREN': g('fsnkid'),
+        'NUM_ELDERLY': g('fsnelder'),
+        'NUM_DISABLED': g('fsndis'),
+        'NUM_ABAWD': g('count_abawd'),
+        'MARRIED_FLAG': g('married').fillna(0).astype(int),
+        'EXPEDITED': g('expedited_i').fillna(0).astype(int),
+        'CATEGORICALLY_ELIGIBLE': (g('cat_elig') >= 1).fillna(False).astype(int),
+        'HOMELESS_FLAG': g('homeless').fillna(0).astype(int),
+        'MONTHS_SINCE_CERT': g('months_since_cert_n'),
+        'EARNED_INCOME': g('rawearn'),
+        'UNEARNED_INCOME': g('rawunearn'),
+        'MEDICAL_DEDUCTION': g('medical_deductions'),
+        'DEPENDENT_CARE_DEDUCTION': g('rawdepded'),
+        'CHILD_SUPPORT_DEDUCTION': g('rawcsded'),
+        'HOMELESS_DEDUCTION': g('rawhomeless_ded'),
+        'RENT': g('rawrent'),
+        'UTILITY_COSTS': g('utilities'),
         # per its mined definition this counts the QC file's component fields,
         # which the totals-based contract does not collect; the demo carries
         # the frame's own value and a state supplies its own (see dictionary)
-        'NUM_AMOUNTS_DIVISIBLE_BY_100': pd.to_numeric(
-            frame['count_divisible_by_100'], errors='coerce').values,
+        'NUM_AMOUNTS_DIVISIBLE_BY_100': g('count_divisible_by_100'),
         'ERROR_FLAG': frame['is_error'].astype(int).values,
-        'ERROR_AMOUNT': pd.to_numeric(
-            frame['total_error_amount'], errors='coerce').values,
+        'ERROR_AMOUNT': g('total_error_amount'),
     })
     assert list(out.columns) == RAW_COLS
-    # element-free marker, for the validation report only (not written)
-    el1 = pd.to_numeric(m['ELEMENT1'], errors='coerce') if 'ELEMENT1' in m.columns else pd.Series(np.nan, index=m.index)
-    return out, el1.isna().values, frame
+    # with reconstructed inputs there is no restoration gap; keep the
+    # element-free split trivially all-True for the validation report
+    return out, np.ones(len(frame), bool), frame
 
 
 def federal_tables(wb, holdout_year):
@@ -279,8 +252,8 @@ def background_tab(wb, state_name):
         '1.  Read the Blended Rules tab: the combined rows at the top are the headline; '
         'each row below is one rule, in plain language, with its results here and its '
         'national evidence.',
-        '2.  Untick Include? on any rule you would never review — every combined figure '
-        'recomputes as you do.',
+        '2.  If there are rules that you do not want to use, untick the box in the '
+        'Include? Column (or change the value to FALSE, if you don\'t see a checkbox).',
         '3.  Paste your own cases into the Data tab\'s amber columns (definitions on the '
         'Data Dictionary tab) — every figure on this tab and the rules tabs recomputes '
         'on your data.',
@@ -299,9 +272,7 @@ def background_tab(wb, state_name):
          'for FY2022-2024. Each rule is a short, readable condition on case fields (for '
          'example: household size, income per person, deductions, benefit relative to the '
          'maximum). The rules tabs are POTENTIAL lists to evaluate: the blended list '
-         '(national + this state\'s own mined rules) and the national-only list. Nothing in '
-         'this workbook is in use anywhere, and nothing in it tunes or modifies the rules; '
-         'it exists so reviewers can judge the rules on real cases.')
+         '(national + this state\'s own mined rules) and the national-only list.')
     para('Why to use internal data, not just the public file', bold=True)
     para('Everything here is computed on the public QC file, which is a small audit sample '
          '(roughly one to a few thousand reviewed cases per state per year) and misses '
@@ -327,11 +298,12 @@ def background_tab(wb, state_name):
     r += 1
     para('Where the numbers on the rules tabs come from', bold=True)
     para('The rules were mined on a research frame whose fields are restored to their '
-         'pre-QC-review values, while this workbook\'s Data tab carries the as-reported '
-         'public values, so figures here can differ from the research pipeline\'s on cases '
-         'the QC review corrected. For a state\'s own as-reported data that gap does not '
-         'exist. The Data Dictionary tab defines every column; the Data tab\'s amber block '
-         'is what a state supplies.')
+         'pre-QC-review values, and this workbook\'s Data tab carries those same '
+         'reconstructed values, so the figures here sit on the scale the rules were mined '
+         'on. A state pasting its own data supplies its ordinary as-reported case fields; '
+         'internal data carries no QC corrections, so nothing needs reconstructing. The '
+         'Data Dictionary tab defines every column; the Data tab\'s amber block is what a '
+         'state supplies.')
     ws.freeze_panes = 'A2'
     return ws
 
@@ -340,14 +312,16 @@ def background_tab(wb, state_name):
 # Input names follow features.R's state_col_map style; each description cross-
 # references the SNAP QC technical documentation's variables (Origin R =
 # reported on the QC Review Schedule, C = constructed during editing). A state
-# supplies its own REPORTED (pre-QC-review) value for each concept; the public
-# demo carries the QC file's closest stand-in, named in each crosswalk.
+# supplies its own as-reported value for each concept; the public demo carries
+# the research frame's RECONSTRUCTED (pre-QC-review) value, which puts the
+# workbook's figures on the same scale the rules were mined on.
 RAW_DESC = {
-    'CASE_ID':   'case / review identifier — row identity only. Demo stand-in: HHLDNO.',
+    'CASE_ID':   'case / review identifier — row identity only. QC manual: HHLDNO.',
     'REVIEW_FISCAL_YEAR': 'federal fiscal year of the review month (Oct-Sep).',
-    'HOUSEHOLD_SIZE': 'reported SNAP unit size. QC manual: RAWHSIZE (Origin R, reported); '
-                      'FSUSIZE is the QC-corrected version. Demo stand-in: RAWHSIZE.',
-    'NUM_CHILDREN': 'children in the unit. QC manual: FSNKID. ',
+    'HOUSEHOLD_SIZE': 'SNAP unit size as reported. QC manual: RAWHSIZE is the reported '
+                      '(Origin R) version, FSUSIZE the QC-corrected one; the demo carries '
+                      'the reconstructed pre-QC-review size.',
+    'NUM_CHILDREN': 'children in the unit. QC manual: FSNKID.',
     'NUM_ELDERLY': 'members aged 60+. QC manual: FSNELDER.',
     'NUM_DISABLED': 'disabled members. QC manual: FSNDIS.',
     'NUM_ABAWD': 'members with ABAWD status. QC manual: count of ABWDST1-18 coded 2..5.',
@@ -357,21 +331,23 @@ RAW_DESC = {
                               'QC manual: CAT_ELIG >= 1.',
     'HOMELESS_FLAG':  '1 if the unit is homeless. QC manual: HOMEDED present and not 1.',
     'MONTHS_SINCE_CERT': 'months since the last certification. QC manual: LASTCERT.',
-    'EARNED_INCOME': 'total earned income, $/month. QC manual: FSEARN '
-                     '(= FSWAGES + FSSLFEMP + FSOTHERN); no reported version exists '
-                     'in the public file, so the demo carries the QC-corrected value.',
-    'UNEARNED_INCOME': 'total unearned income, $/month. QC manual: FSUNEARN (the sum of '
-                       'the ~30 unearned income-type fields, FY2024 definition); demo '
-                       'carries the QC-corrected value.',
-    'MEDICAL_DEDUCTION': 'medical expense deduction, $/month. QC manual: FSMEDDED; '
-                         'demo carries the QC-corrected value.',
+    'EARNED_INCOME': 'total earned income, $/month, as reported. QC manual: FSEARN '
+                     '(= FSWAGES + FSSLFEMP + FSOTHERN) is the QC-corrected total; the '
+                     'demo carries the reconstructed pre-QC-review value.',
+    'UNEARNED_INCOME': 'total unearned income, $/month, as reported. QC manual: FSUNEARN '
+                       '(the sum of the ~30 unearned income-type fields, FY2024 '
+                       'definition) is the QC-corrected total; the demo carries the '
+                       'reconstructed pre-QC-review value.',
+    'MEDICAL_DEDUCTION': 'medical expense deduction, $/month. QC manual: FSMEDDED; the '
+                         'demo carries the reconstructed pre-QC-review value.',
     'DEPENDENT_CARE_DEDUCTION': 'dependent care deduction, $/month. QC manual: FSDEPDED.',
     'CHILD_SUPPORT_DEDUCTION': 'child support payment deduction, $/month. QC manual: FSCSDED.',
     'HOMELESS_DEDUCTION': 'homeless household shelter deduction, $/month. '
                           'QC manual: HOMELESS_DED.',
-    'RENT':      'rent / mortgage, $/month. QC manual: RENT; demo carries the '
-                 'QC-corrected value.',
-    'UTILITY_COSTS': 'utilities, $/month. QC manual: UTIL; demo carries the QC-corrected value.',
+    'RENT':      'rent / mortgage, $/month. QC manual: RENT; the demo carries the '
+                 'reconstructed pre-QC-review value.',
+    'UTILITY_COSTS': 'utilities, $/month. QC manual: UTIL; the demo carries the '
+                     'reconstructed pre-QC-review value.',
     'NUM_AMOUNTS_DIVISIBLE_BY_100': 'how many of the case\'s reported income-type and '
                               'deduction-type amounts are a positive exact multiple of '
                               '$100 (QC manual: counted over the 21 income and 7 deduction '
@@ -449,10 +425,10 @@ def data_dictionary(wb, hdr):
         return r + 1
 
     r = header(3, 'Input fields (amber block) — what a state supplies: its own '
-                  'REPORTED (pre-QC-review) values, mapped onto these columns. '
-                  'Each definition cross-references the SNAP QC technical '
-                  'documentation; on this public-data copy the named stand-in '
-                  'fills each column.')
+                  'as-reported values, mapped onto these columns. Each '
+                  'definition cross-references the SNAP QC technical '
+                  'documentation; this public-data copy carries the research '
+                  'frame\'s reconstructed pre-QC-review values.')
     r = cols(r)
     for name in RAW_COLS:
         ws.cell(row=r, column=1, value=name)
@@ -618,8 +594,8 @@ def validate(raw, frame, elem_free, feat_names):
         t.columns = [str(c).strip() for c in t.columns]
     mir = mirror_features(raw, (yd, sd, ma))
     print(f'\nformula validation vs the munged frame '
-          f'({len(frame)} rows, {int(elem_free.sum())} carry no QC error element):')
-    print(f'  {"feature":32s} {"all rows":>9s} {"element-free":>13s}')
+          f'({len(frame)} rows, reconstructed pre-QC-review inputs):')
+    print(f'  {"feature":32s} {"all rows":>9s}')
     worst = []
     for c in feat_names:
         if c not in mir.columns or c not in frame.columns:
@@ -638,12 +614,12 @@ def validate(raw, frame, elem_free, feat_names):
             else:
                 b = pd.to_numeric(frame[c], errors='coerce').fillna(0).values
             ok = np.isclose(a, b, atol=1e-6, rtol=1e-9)
-        r_all, r_free = ok.mean(), ok[elem_free].mean()
-        print(f'  {c:32s} {r_all:9.1%} {r_free:13.1%}')
-        worst.append((c, r_free))
+        r_all = ok.mean()
+        print(f'  {c:32s} {r_all:9.1%}')
+        worst.append((c, r_all))
     bad = [c for c, r in worst if r < 0.995]
     if bad:
-        print(f'  WARNING: element-free match below 99.5% for: {", ".join(bad)}')
+        print(f'  WARNING: match below 99.5% for: {", ".join(bad)}')
     return not bad
 
 
@@ -684,8 +660,8 @@ def main():
     assert not dups, f'case-insensitive duplicate Data columns: {dups}'
     ok = validate(raw, frame, elem_free, [h for h in hdr if h in feats])
     if not ok:
-        print('  (continuing: mismatches on element-carrying rows are the '
-              'documented pre-QC restoration gap)')
+        print('  (with reconstructed inputs the match should be ~100%; '
+              'investigate any column flagged above)')
 
     # 1. helper columns, then the raw contract, appended AFTER the existing
     #    feature + hit columns so every positional reference stays valid
