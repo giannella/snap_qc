@@ -44,20 +44,35 @@ The rules tabs each present a POTENTIAL rule list for the state to evaluate; not
 
 ### The Data-tab contract
 
-The amber block is what a state supplies: 47 columns carrying FNS
-QC-schedule names (`FSUSIZE`, `FSEARN`, `FSUNEARN`, `RENT`, `UTIL`,
-`LASTCERT`, the 21 income-type and 7 deduction-type fields for
-`count_divisible_by_100`, ...), two compressed person-level counts
-(`NUM_ABAWD` = members with ABWDST1-18 in 2..5, `MARRIED_I` = any REL1-16 =
-2), and the state's own QC review outcome (`ERROR_FLAG`, `AMTERR`; not named
-OVER_THRESHOLD because Excel table column names are case-insensitively unique
-and the feature column `over_threshold` claims that name — a collision makes
-Excel reject the file as damaged, and `make_recon.py` asserts against it).
-The blue feature columns are formulas over that block — including the benefit
-recomputation chain (standard deduction, max allotment, shelter cap and
-minimum allotment looked up per year x size from the hidden FederalTables
-sheet, extendable by appending a row per fiscal year) and the state-year
-`bbce_state_i` share formula. Do not paste values over the blue columns.
+The amber block is what a state supplies: 23 columns carrying generic
+reported-value concept names in `features.R`'s `state_col_map` style —
+`HOUSEHOLD_SIZE`, `EARNED_INCOME`, `UNEARNED_INCOME`, `MEDICAL_DEDUCTION`,
+`DEPENDENT_CARE_DEDUCTION`, `CHILD_SUPPORT_DEDUCTION`, `RENT`,
+`UTILITY_COSTS`, unit counts (`NUM_CHILDREN`, `NUM_ELDERLY`, `NUM_DISABLED`,
+`NUM_ABAWD`), 0/1 indicators (`MARRIED_FLAG`, `EXPEDITED`,
+`CATEGORICALLY_ELIGIBLE`, `HOMELESS_FLAG`), `MONTHS_SINCE_CERT`,
+`NUM_AMOUNTS_DIVISIBLE_BY_100` (state-precomputed; its mined definition counts
+the QC file's 28 component fields, which a totals-based contract cannot
+reproduce), and the state's own QC review outcome (`ERROR_FLAG`,
+`ERROR_AMOUNT`). The Data Dictionary tab defines every column and carries the
+crosswalk to the SNAP QC technical documentation's variables. A handful of
+names deviate from the feature vocabulary only because Excel table column
+names are case-insensitively unique (an input may not reuse a feature column's
+name — the collision makes Excel reject the file as damaged, and
+`make_recon.py` asserts against it).
+
+On public data the demo fills each column with the QC file's closest stand-in:
+`HOUSEHOLD_SIZE` carries `RAWHSIZE` (the manual's reported, Origin-R unit
+size — chosen 2026-08-16 over the QC-corrected `FSUSIZE`; the two differ on
+~4% of rows, which is why the size-derived features validate at ~96-98%
+rather than 100% on element-free rows), while the income and deduction fields
+carry the QC-corrected `FS*` values because the public file has no reported
+version of them. The blue feature columns are formulas over the amber block —
+including the benefit recomputation chain (standard deduction, max allotment,
+shelter cap and minimum allotment looked up per year x size from the hidden
+FederalTables sheet, extendable by appending a row per fiscal year) and the
+state-year `bbce_state_i` share formula. Do not paste values over the blue
+columns.
 
 Every build validates the formulas: it mirrors each formula in pandas over
 the raw extract and prints the match rate against the munged frame, overall

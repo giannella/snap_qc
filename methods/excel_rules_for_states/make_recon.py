@@ -1,19 +1,20 @@
 """
 Reconstruction stage: the workbook accepts RAW case fields and computes every
 model feature with live formulas, so a state that can run neither Python nor R
-can still use it. The raw columns carry the FNS QC-schedule field names
-(FSEARN, RENT, UTIL, FSWAGES, ...) because those are the fields states already
-report to FNS every year, labeled with those names.
+can still use it. The input columns carry generic reported-value concept names
+in features.R's state_col_map style (HOUSEHOLD_SIZE, EARNED_INCOME, RENT, ...)
+that a state maps its own system's fields onto; the Data Dictionary tab
+carries the crosswalk to the SNAP QC technical documentation's variables.
 
 Data tab layout (one Excel table, columns bound by name):
   [ feature columns ]   the model features, in the SAME columns the built
                         workbook put them (A..), now formulas — positional
-                        references from Error Cases/RuleFlags stay valid
+                        references from the other sheets stay valid
   [ hit columns ]       per-case rule tests, carried over from the LIVE build
   [ helper columns ]    the benefit-recomputation chain, hidden
-  [ raw contract ]      what a state pastes: FNS-named fields, plus two
-                        compressed person-level counts (NUM_ABAWD, MARRIED_I)
-                        and the QC review outcome (OVER_THRESHOLD, AMTERR)
+  [ input contract ]    what a state pastes (RAW_COLS below): unit counts and
+                        indicators, income totals, deductions, shelter costs,
+                        and the QC review outcome (ERROR_FLAG, ERROR_AMOUNT)
 
 Federal parameter tables (standard deduction, max allotment, shelter cap,
 minimum allotment, by fiscal year x household size) live on a hidden
@@ -63,37 +64,36 @@ def find_repo(start):
 
 REPO = find_repo(PKG)
 
-# ── the raw input contract: FNS QC-schedule fields, one row per reviewed case ─
-INCOME_VARS = ['FSWAGES', 'FSSLFEMP', 'FSOTHERN', 'FSSSI', 'FSTANF', 'FSGA',
-               'FSSOCSEC', 'FSUNEMP', 'FSVET', 'FSWCOMP', 'FSEDLOAN',
-               'FSCSUPRT', 'FSDEEM', 'FSCONT', 'FSOTHGOV', 'FSOTHUN',
-               'FSDIVER', 'FSWGESUP', 'FSENERGY', 'FSEITC', 'FSFOSTER']
-DEDUCT_VARS = ['FSSTDDED', 'FSERNDED', 'FSDEPDED', 'FSSLTDED', 'FSMEDDED',
-               'FSCSDED', 'HOMELESS_DED']
-DIV100_VARS = INCOME_VARS + DEDUCT_VARS          # count_divisible_by_100 basis
-
-RAW_COLS = (
-    ['YRMONTH', 'HHLDNO',
-     'FSUSIZE', 'CERTHHSZ', 'FSNKID', 'FSNELDER', 'FSNDIS',
-     'NUM_ABAWD',      # members with ABWDST1-18 in 2..5 (compressed)
-     'MARRIED_I',      # 1 if any REL1-16 = 2, i.e. a spouse present (compressed)
-     'EXPEDSER', 'CAT_ELIG', 'HOMEDED', 'LASTCERT',
-     'FSEARN', 'FSUNEARN']
-    + INCOME_VARS + DEDUCT_VARS
-    + ['RENT', 'UTIL',
-       # QC review outcome. NB not named OVER_THRESHOLD: Excel table column
-       # names are case-insensitively unique, and the feature column
-       # over_threshold already claims that name
-       'ERROR_FLAG',       # 1 = payment error over threshold
-       'AMTERR'])          # benefit amount in error, $
+# ── the raw input contract, one row per reviewed case ─────────────────────────
+# Column names follow features.R's state_col_map style: generic reported-value
+# concepts a state maps its own system's fields onto. The Data Dictionary tab
+# carries the crosswalk to the QC technical manual's variables. NB the QC
+# outcome is named ERROR_FLAG, not OVER_THRESHOLD: Excel table column names
+# are case-insensitively unique and the feature column over_threshold already
+# claims that name.
+RAW_COLS = [
+    'CASE_ID', 'REVIEW_FISCAL_YEAR',
+    'HOUSEHOLD_SIZE',
+    'NUM_CHILDREN', 'NUM_ELDERLY', 'NUM_DISABLED', 'NUM_ABAWD',
+    'MARRIED_FLAG', 'EXPEDITED', 'CATEGORICALLY_ELIGIBLE', 'HOMELESS_FLAG',
+    'MONTHS_SINCE_CERT',
+    'EARNED_INCOME', 'UNEARNED_INCOME',
+    'MEDICAL_DEDUCTION', 'DEPENDENT_CARE_DEDUCTION', 'CHILD_SUPPORT_DEDUCTION',
+    'HOMELESS_DEDUCTION',
+    'RENT', 'UTILITY_COSTS',
+    'NUM_AMOUNTS_DIVISIBLE_BY_100',   # state-precomputed; definition in the dictionary
+    'ERROR_FLAG', 'ERROR_AMOUNT',
+]
 
 
 def raw_frame(cfg, frame_csv):
-    """Raw FNS fields for exactly the frame's rows, in the frame's row order.
+    """The input block for exactly the frame's rows, in the frame's row order.
 
-    Reads the public QC .sav files, filters to the state, and joins on
-    yrmonth + hhldno + stratum. A state replaces this block by pasting its own
-    FNS-reported fields; the QC outcome columns come from its own reviews.
+    On public data this is a STAND-IN for what a state would paste: reported
+    (pre-QC) values where the public file carries them (HOUSEHOLD_SIZE from
+    RAWHSIZE), QC-corrected values elsewhere (the file has no reported version
+    of the income split, deductions, rent or utilities). Reads the public QC
+    .sav files, filters to the state, and joins on yrmonth + hhldno + stratum.
     """
     frame = pd.read_csv(frame_csv, dtype={'hhldno': str, 'stratum': str})
     parts = []
@@ -119,23 +119,47 @@ def raw_frame(cfg, frame_csv):
     unmatched = m['YRMONTH'].isna().sum()
     assert unmatched == 0, f'{unmatched} frame rows have no .sav match'
 
+    g = lambda c: pd.to_numeric(m[c], errors='coerce')
     abwd = [c for c in m.columns if c.startswith('ABWDST')]
     rel = [f'REL{i}' for i in range(1, 17) if f'REL{i}' in m.columns]
-    out = pd.DataFrame(index=m.index)
-    for c in RAW_COLS:
-        if c == 'NUM_ABAWD':
-            out[c] = m[abwd].apply(pd.to_numeric, errors='coerce').isin([2, 3, 4, 5]).sum(axis=1)
-        elif c == 'MARRIED_I':
-            out[c] = (m[rel].apply(pd.to_numeric, errors='coerce') == 2).any(axis=1).astype(int)
-        elif c == 'ERROR_FLAG':
-            out[c] = frame['is_error'].astype(int).values
-        elif c == 'AMTERR':
-            out[c] = pd.to_numeric(frame['total_error_amount'], errors='coerce').values
-        elif c in m.columns:
-            out[c] = pd.to_numeric(m[c], errors='coerce')
-        else:                       # e.g. FSEITC absent from some years' files
-            out[c] = 0.0
-            print(f'  raw field {c} not in the .sav files; filled with 0')
+    rawhsize = g('RAWHSIZE')
+    n_miss = int(rawhsize.isna().sum())
+    if n_miss:
+        print(f'  HOUSEHOLD_SIZE: RAWHSIZE missing on {n_miss} rows; '
+              'FSUSIZE fills in')
+    out = pd.DataFrame({
+        'CASE_ID': m['HHLDNO'].astype(str).str.strip(),
+        'REVIEW_FISCAL_YEAR': pd.to_numeric(frame['fiscal_year'], errors='coerce').values,
+        'HOUSEHOLD_SIZE': rawhsize.fillna(g('FSUSIZE')),
+        'NUM_CHILDREN': g('FSNKID'),
+        'NUM_ELDERLY': g('FSNELDER'),
+        'NUM_DISABLED': g('FSNDIS'),
+        'NUM_ABAWD': m[abwd].apply(pd.to_numeric, errors='coerce')
+                            .isin([2, 3, 4, 5]).sum(axis=1),
+        'MARRIED_FLAG': (m[rel].apply(pd.to_numeric, errors='coerce') == 2)
+                   .any(axis=1).astype(int),
+        'EXPEDITED': g('EXPEDSER').isin([1, 2]).astype(int),
+        'CATEGORICALLY_ELIGIBLE': (g('CAT_ELIG') >= 1).astype(int),
+        'HOMELESS_FLAG': (g('HOMEDED').notna() & (g('HOMEDED') != 1)).astype(int),
+        'MONTHS_SINCE_CERT': g('LASTCERT'),
+        'EARNED_INCOME': g('FSEARN'),
+        'UNEARNED_INCOME': g('FSUNEARN'),
+        'MEDICAL_DEDUCTION': g('FSMEDDED'),
+        'DEPENDENT_CARE_DEDUCTION': g('FSDEPDED'),
+        'CHILD_SUPPORT_DEDUCTION': g('FSCSDED'),
+        'HOMELESS_DEDUCTION': g('HOMELESS_DED'),
+        'RENT': g('RENT'),
+        'UTILITY_COSTS': g('UTIL'),
+        # per its mined definition this counts the QC file's component fields,
+        # which the totals-based contract does not collect; the demo carries
+        # the frame's own value and a state supplies its own (see dictionary)
+        'NUM_AMOUNTS_DIVISIBLE_BY_100': pd.to_numeric(
+            frame['count_divisible_by_100'], errors='coerce').values,
+        'ERROR_FLAG': frame['is_error'].astype(int).values,
+        'ERROR_AMOUNT': pd.to_numeric(
+            frame['total_error_amount'], errors='coerce').values,
+    })
+    assert list(out.columns) == RAW_COLS
     # element-free marker, for the validation report only (not written)
     el1 = pd.to_numeric(m['ELEMENT1'], errors='coerce') if 'ELEMENT1' in m.columns else pd.Series(np.nan, index=m.index)
     return out, el1.isna().values, frame
@@ -267,71 +291,81 @@ def background_tab(wb, state_name):
 
 
 # ── data dictionary: one line per column on the Data tab ─────────────────────
+# Input names follow features.R's state_col_map style; each description cross-
+# references the SNAP QC technical documentation's variables (Origin R =
+# reported on the QC Review Schedule, C = constructed during editing). A state
+# supplies its own REPORTED (pre-QC-review) value for each concept; the public
+# demo carries the QC file's closest stand-in, named in each crosswalk.
 RAW_DESC = {
-    'YRMONTH':   'review month, YYYYMM',
-    'HHLDNO':    'case / household review number',
-    'FSUSIZE':   'certified SNAP unit size',
-    'CERTHHSZ':  'number of persons in the household at certification',
-    'FSNKID':    'children in the unit',
-    'FSNELDER':  'members aged 60+',
-    'FSNDIS':    'disabled members',
-    'NUM_ABAWD': 'members with ABAWD status (ABWDST1-18 coded 2..5) — compressed from the person-level fields',
-    'MARRIED_I': '1 if any member is a spouse (REL1-16 = 2) — compressed from the person-level fields',
-    'EXPEDSER':  'expedited service code (1, 2 = expedited; 3 = not)',
-    'CAT_ELIG':  'categorical eligibility code (>= 1 = categorically eligible)',
-    'HOMEDED':   'homeless status / homeless deduction code (1 = not homeless)',
-    'LASTCERT':  'months since the last certification',
-    'FSEARN':    'total earned income, $/month',
-    'FSUNEARN':  'total unearned income, $/month',
-    'FSWAGES':   'wages and salaries', 'FSSLFEMP': 'self-employment income',
-    'FSOTHERN':  'other earned income', 'FSSSI': 'SSI benefits',
-    'FSTANF':    'TANF payments', 'FSGA': 'General Assistance benefits',
-    'FSSOCSEC':  'Social Security income', 'FSUNEMP': 'unemployment compensation',
-    'FSVET':     "veterans' benefits", 'FSWCOMP': "workers' compensation",
-    'FSEDLOAN':  'educational grants and loans', 'FSCSUPRT': 'child support income received',
-    'FSDEEM':    'deemed income', 'FSCONT': 'contributions / in-kind income',
-    'FSOTHGOV':  'other government benefits', 'FSOTHUN': 'other unearned income',
-    'FSDIVER':   'state diversion payments', 'FSWGESUP': 'wage supplementation income',
-    'FSENERGY':  'energy assistance income', 'FSEITC': 'earned income tax credit',
-    'FSFOSTER':  'foster care income',
-    'FSSTDDED':  'standard deduction', 'FSERNDED': 'earned income deduction',
-    'FSDEPDED':  'dependent care deduction', 'FSSLTDED': 'excess shelter deduction',
-    'FSMEDDED':  'medical expense deduction', 'FSCSDED': 'child support payment deduction',
-    'HOMELESS_DED': 'homeless household shelter deduction',
-    'RENT':      'rent / mortgage, $/month', 'UTIL': 'utilities, $/month',
-    'ERROR_FLAG': 'QC review outcome: 1 = payment error over the federal threshold',
-    'AMTERR':    'QC review outcome: benefit amount in error, $',
+    'CASE_ID':   'case / review identifier — row identity only. Demo stand-in: HHLDNO.',
+    'REVIEW_FISCAL_YEAR': 'federal fiscal year of the review month (Oct-Sep).',
+    'HOUSEHOLD_SIZE': 'reported SNAP unit size. QC manual: RAWHSIZE (Origin R, reported); '
+                      'FSUSIZE is the QC-corrected version. Demo stand-in: RAWHSIZE.',
+    'NUM_CHILDREN': 'children in the unit. QC manual: FSNKID. ',
+    'NUM_ELDERLY': 'members aged 60+. QC manual: FSNELDER.',
+    'NUM_DISABLED': 'disabled members. QC manual: FSNDIS.',
+    'NUM_ABAWD': 'members with ABAWD status. QC manual: count of ABWDST1-18 coded 2..5.',
+    'MARRIED_FLAG':   '1 if a spouse is present in the unit. QC manual: any REL1-16 = 2.',
+    'EXPEDITED': '1 if the case received expedited service. QC manual: EXPEDSER in (1, 2).',
+    'CATEGORICALLY_ELIGIBLE': '1 if the unit is categorically eligible. '
+                              'QC manual: CAT_ELIG >= 1.',
+    'HOMELESS_FLAG':  '1 if the unit is homeless. QC manual: HOMEDED present and not 1.',
+    'MONTHS_SINCE_CERT': 'months since the last certification. QC manual: LASTCERT.',
+    'EARNED_INCOME': 'total earned income, $/month. QC manual: FSEARN '
+                     '(= FSWAGES + FSSLFEMP + FSOTHERN); no reported version exists '
+                     'in the public file, so the demo carries the QC-corrected value.',
+    'UNEARNED_INCOME': 'total unearned income, $/month. QC manual: FSUNEARN (the sum of '
+                       'the ~30 unearned income-type fields, FY2024 definition); demo '
+                       'carries the QC-corrected value.',
+    'MEDICAL_DEDUCTION': 'medical expense deduction, $/month. QC manual: FSMEDDED; '
+                         'demo carries the QC-corrected value.',
+    'DEPENDENT_CARE_DEDUCTION': 'dependent care deduction, $/month. QC manual: FSDEPDED.',
+    'CHILD_SUPPORT_DEDUCTION': 'child support payment deduction, $/month. QC manual: FSCSDED.',
+    'HOMELESS_DEDUCTION': 'homeless household shelter deduction, $/month. '
+                          'QC manual: HOMELESS_DED.',
+    'RENT':      'rent / mortgage, $/month. QC manual: RENT; demo carries the '
+                 'QC-corrected value.',
+    'UTILITY_COSTS': 'utilities, $/month. QC manual: UTIL; demo carries the QC-corrected value.',
+    'NUM_AMOUNTS_DIVISIBLE_BY_100': 'how many of the case\'s reported income-type and '
+                              'deduction-type amounts are a positive exact multiple of '
+                              '$100 (QC manual: counted over the 21 income and 7 deduction '
+                              'fields). Supplied precomputed: the totals above cannot '
+                              'reproduce it. Demo carries the research frame\'s value.',
+    'ERROR_FLAG': 'QC review outcome: 1 = payment error over the federal threshold.',
+    'ERROR_AMOUNT': 'QC review outcome: benefit amount in error, $. QC manual: AMTERR.',
 }
 FEAT_DESC = {
-    'fiscal_year': 'federal fiscal year, from YRMONTH (Oct-Sep)',
+    'fiscal_year': 'REVIEW_FISCAL_YEAR, unchanged',
     'split':       'label only: earlier fiscal years vs the most recent one (no tuning uses it)',
-    'hh_size_raw': 'FSUSIZE, unchanged',
+    'hh_size_raw': 'HOUSEHOLD_SIZE, unchanged',
     'hh_group':    'household-size stratum: 1 / 2-3 / 4+ (every rule applies within one stratum)',
-    'HH_size_n':   'FSUSIZE as a number, used inside rules',
-    'bbce_state_i': 'state-year flag: 1 when at least half the year\'s cases have CAT_ELIG >= 1 '
-                    '(the state runs Broad-Based Categorical Eligibility)',
-    'children_i':  '1 if FSNKID > 0',
-    'count_divisible_by_100': 'how many of the 21 income-type and 7 deduction-type fields are a '
-                              'positive exact multiple of $100',
-    'elderly_disabled_i': '1 if FSNELDER + FSNDIS > 0',
-    'expedited_i': '1 if EXPEDSER is 1 or 2',
-    'homeless':    '1 if HOMEDED is present and not 1',
-    'married':     'MARRIED_I, unchanged',
-    'medical_deductions': 'FSMEDDED, unchanged',
-    'months_since_cert_n': 'LASTCERT, unchanged',
-    'percent_abawd': 'NUM_ABAWD / CERTHHSZ',
-    'earned_by_hh_size':   'FSEARN / unit size',
-    'unearned_by_hh_size': 'FSUNEARN / unit size',
-    'gross_by_hh_size':    '(FSEARN + FSUNEARN) / unit size',
+    'HH_size_n':   'HOUSEHOLD_SIZE as a number, used inside rules',
+    'bbce_state_i': 'state-year flag: 1 when at least half the year\'s cases are '
+                    'CATEGORICALLY_ELIGIBLE (the state runs Broad-Based Categorical '
+                    'Eligibility)',
+    'children_i':  '1 if NUM_CHILDREN > 0',
+    'count_divisible_by_100': 'NUM_AMOUNTS_DIVISIBLE_BY_100, unchanged (supplied precomputed; '
+                              'see its input definition)',
+    'elderly_disabled_i': '1 if NUM_ELDERLY + NUM_DISABLED > 0',
+    'expedited_i': 'EXPEDITED, unchanged',
+    'homeless':    'HOMELESS_FLAG, unchanged',
+    'married':     'MARRIED_FLAG, unchanged',
+    'medical_deductions': 'MEDICAL_DEDUCTION, unchanged',
+    'months_since_cert_n': 'MONTHS_SINCE_CERT, unchanged',
+    'percent_abawd': 'NUM_ABAWD / HOUSEHOLD_SIZE (the research frame divided by the '
+                     'household person count, CERTHHSZ, which this contract does not collect)',
+    'earned_by_hh_size':   'EARNED_INCOME / HOUSEHOLD_SIZE',
+    'unearned_by_hh_size': 'UNEARNED_INCOME / HOUSEHOLD_SIZE',
+    'gross_by_hh_size':    '(EARNED_INCOME + UNEARNED_INCOME) / HOUSEHOLD_SIZE',
     'rawben_rel_max':      'recomputed benefit / maximum allotment for the unit size '
                            '(via the hidden benefit-recomputation chain and FederalTables)',
     'unc_rawben_rel_max':  'recomputed benefit BEFORE the minimum/maximum caps / maximum allotment',
-    'shelter_expenses_by_hh_size': '(RENT + UTIL) / unit size',
+    'shelter_expenses_by_hh_size': '(RENT + UTILITY_COSTS) / HOUSEHOLD_SIZE',
     'total_deductions_by_hh_size': '(dependent care + child support + recomputed shelter + medical '
-                                   '+ earned-income deductions) / unit size',
-    'utilities':   'UTIL, unchanged',
+                                   '+ earned-income deductions) / HOUSEHOLD_SIZE',
+    'utilities':   'UTILITY_COSTS, unchanged',
     'over_threshold':     'ERROR_FLAG, unchanged (what the rules aim to catch)',
-    'total_error_amount': 'ABS(AMTERR), rounded to whole dollars',
+    'total_error_amount': 'ABS(ERROR_AMOUNT), rounded to whole dollars',
 }
 HELPER_NOTE = ('_c_* columns (hidden): the benefit-recomputation chain — fiscal year, '
                'gross income, earned-income deduction, standard deduction and maximum '
@@ -341,8 +375,9 @@ HELPER_NOTE = ('_c_* columns (hidden): the benefit-recomputation chain — fisca
 
 
 def data_dictionary(wb, hdr):
-    """A visible tab documenting every Data column: the raw FNS input fields a
-    state supplies and the constructed model variables computed from them."""
+    """A visible tab documenting every Data column: the input fields a state
+    supplies and the constructed model variables computed from them, each
+    cross-referenced to the SNAP QC technical documentation's variables."""
     ws = wb.create_sheet('Data Dictionary', wb.sheetnames.index('Data') + 1)
     ws.sheet_view.showGridLines = False
     blue = PatternFill('solid', fgColor='2F5496')
@@ -367,8 +402,11 @@ def data_dictionary(wb, hdr):
             c.fill = gray; c.font = Font(bold=True, size=10)
         return r + 1
 
-    r = header(3, 'Input fields (amber block) — what a state supplies, under the '
-                  'FNS QC-schedule field names it already reports')
+    r = header(3, 'Input fields (amber block) — what a state supplies: its own '
+                  'REPORTED (pre-QC-review) values, mapped onto these columns. '
+                  'Each definition cross-references the SNAP QC technical '
+                  'documentation; on this public-data copy the named stand-in '
+                  'fills each column.')
     r = cols(r)
     for name in RAW_COLS:
         ws.cell(row=r, column=1, value=name)
@@ -401,68 +439,66 @@ def feature_formulas(R):
     """name -> formula for every feature the current delivery vocabulary uses,
     mirroring 1_data_munging_..._for_using_public_qc_data.R. Helpers are
     prefixed '_c_'; order matters (left to right)."""
-    sz = f'MIN(MAX({T("FSUSIZE")},1),20)'
-    hh = f'MAX({T("FSUSIZE")},1)'
+    sz = f'MIN(MAX({T("HOUSEHOLD_SIZE")},1),20)'
+    hh = f'MAX({T("HOUSEHOLD_SIZE")},1)'
     helpers = [
-        ('_c_fy',      f'=IF(MOD({T("YRMONTH")},100)>=10,INT({T("YRMONTH")}/100)+1,'
-                       f'INT({T("YRMONTH")}/100))'),
-        ('_c_eld',     f'=IF({T("FSNELDER")}+{T("FSNDIS")}>0,1,0)'),
-        ('_c_gross',   f'={T("FSEARN")}+{T("FSUNEARN")}'),
+        ('_c_fy',      f'={T("REVIEW_FISCAL_YEAR")}'),
+        ('_c_eld',     f'=IF({T("NUM_ELDERLY")}+{T("NUM_DISABLED")}>0,1,0)'),
+        ('_c_gross',   f'={T("EARNED_INCOME")}+{T("UNEARNED_INCOME")}'),
         # _xlfn. prefix: post-2007 functions written straight into the XML
         # need it, or Excel renders #NAME?
-        ('_c_ernded',  f'=_xlfn.FLOOR.MATH({T("FSEARN")}*0.2)'),
+        ('_c_ernded',  f'=_xlfn.FLOOR.MATH({T("EARNED_INCOME")}*0.2)'),
         ('_c_stdded',  f'=INDEX({R["SDBLK"]},MATCH({T("_c_fy")},{R["SDYRS"]},1),{sz})'),
         ('_c_benmax',  f'=INDEX({R["MABLK"]},MATCH({T("_c_fy")},{R["MAYRS"]},1),{sz})'),
-        ('_c_netbs',   f'={T("_c_gross")}-({T("_c_ernded")}+{T("FSDEPDED")}'
-                       f'+{T("FSMEDDED")}+{T("FSCSDED")}+{T("_c_stdded")})'),
+        ('_c_netbs',   f'={T("_c_gross")}-({T("_c_ernded")}+{T("DEPENDENT_CARE_DEDUCTION")}'
+                       f'+{T("MEDICAL_DEDUCTION")}+{T("CHILD_SUPPORT_DEDUCTION")}+{T("_c_stdded")})'),
         ('_c_maxsh',   f'=IF({T("_c_eld")}=1,1000000000,'
                        f'INDEX({R["MAXSH"]},MATCH({T("_c_fy")},{R["YEARS"]},1)))'),
         # NB: the munging script does NOT floor the shelter deduction; only the
         # net incomes and the benefit are floored (calculate_raw_benefits)
-        ('_c_sltded',  f'=MIN(MAX({T("RENT")}+{T("UTIL")}'
+        ('_c_sltded',  f'=MIN(MAX({T("RENT")}+{T("UTILITY_COSTS")}'
                        f'-MAX({T("_c_netbs")}*0.5,0),0),{T("_c_maxsh")})'),
-        ('_c_netan',   f'=_xlfn.FLOOR.MATH({T("_c_netbs")}-({T("_c_sltded")}+{T("HOMELESS_DED")}))'),
+        ('_c_netan',   f'=_xlfn.FLOOR.MATH({T("_c_netbs")}-({T("_c_sltded")}'
+                       f'+{T("HOMELESS_DEDUCTION")}))'),
         ('_c_benunc',  f'=_xlfn.FLOOR.MATH({T("_c_benmax")}-0.3*{T("_c_netan")})'),
-        ('_c_benrec',  f'=MIN(MAX({T("_c_benunc")},IF({T("FSUSIZE")}<3,'
+        ('_c_benrec',  f'=MIN(MAX({T("_c_benunc")},IF({T("HOUSEHOLD_SIZE")}<3,'
                        f'INDEX({R["MINAL"]},MATCH({T("_c_fy")},{R["YEARS"]},1)),0)),'
                        f'{T("_c_benmax")})'),
     ]
     feats = {
-        'fiscal_year': f'={T("_c_fy")}',
-        'split':       f'=IF({T("_c_fy")}>={R["HOLDOUT"]},"holdout","tune")',
-        'hh_size_raw': f'={T("FSUSIZE")}',
-        'hh_group':    f'=IF({T("FSUSIZE")}>=4,"4+",IF({T("FSUSIZE")}>=2,"2-3","1"))',
-        'HH_size_n':   f'={T("FSUSIZE")}',
+        'fiscal_year': f'={T("REVIEW_FISCAL_YEAR")}',
+        'split':       f'=IF({T("REVIEW_FISCAL_YEAR")}>={R["HOLDOUT"]},"holdout","tune")',
+        'hh_size_raw': f'={T("HOUSEHOLD_SIZE")}',
+        'hh_group':    f'=IF({T("HOUSEHOLD_SIZE")}>=4,"4+",'
+                       f'IF({T("HOUSEHOLD_SIZE")}>=2,"2-3","1"))',
+        'HH_size_n':   f'={T("HOUSEHOLD_SIZE")}',
         'bbce_state_i':
-            # state-year regime flag: share of the year's cases with CAT_ELIG
-            # >= 1 reaching 0.5 (munging script, 2026-08-13 decision)
-            f'=IF(COUNTIFS({TABLE}[_c_fy],{T("_c_fy")},{TABLE}[CAT_ELIG],">=1")'
-            f'/COUNTIFS({TABLE}[_c_fy],{T("_c_fy")})>=0.5,1,0)',
-        'children_i':  f'=IF({T("FSNKID")}>0,1,0)',
-        'count_divisible_by_100':
-            '=' + '+'.join(f'IF(AND({T(c)}>0,MOD({T(c)},100)=0),1,0)'
-                           for c in DIV100_VARS),
+            # state-year regime flag: share of the year's cases categorically
+            # eligible reaching 0.5 (munging script, 2026-08-13 decision)
+            f'=IF(COUNTIFS({TABLE}[REVIEW_FISCAL_YEAR],{T("REVIEW_FISCAL_YEAR")},'
+            f'{TABLE}[CATEGORICALLY_ELIGIBLE],1)'
+            f'/COUNTIFS({TABLE}[REVIEW_FISCAL_YEAR],{T("REVIEW_FISCAL_YEAR")})>=0.5,1,0)',
+        'children_i':  f'=IF({T("NUM_CHILDREN")}>0,1,0)',
+        'count_divisible_by_100': f'={T("NUM_AMOUNTS_DIVISIBLE_BY_100")}',
         'elderly_disabled_i': f'={T("_c_eld")}',
-        'expedited_i': f'=IF(OR({T("EXPEDSER")}=1,{T("EXPEDSER")}=2),1,0)',
-        # blank HOMEDED -> 0: the frame carries NA there and the miner's flag
-        # evaluator treats NA conditions as never-firing
-        'homeless':    f'=IF({T("HOMEDED")}="",0,IF({T("HOMEDED")}=1,0,1))',
-        'married':     f'={T("MARRIED_I")}',
-        'medical_deductions':  f'={T("FSMEDDED")}',
-        'months_since_cert_n': f'={T("LASTCERT")}',
-        'percent_abawd': f'={T("NUM_ABAWD")}/MAX({T("CERTHHSZ")},1)',
-        'earned_by_hh_size':   f'={T("FSEARN")}/{hh}',
-        'unearned_by_hh_size': f'={T("FSUNEARN")}/{hh}',
-        'gross_by_hh_size':    f'=({T("FSEARN")}+{T("FSUNEARN")})/{hh}',
+        'expedited_i': f'={T("EXPEDITED")}',
+        'homeless':    f'={T("HOMELESS_FLAG")}',
+        'married':     f'={T("MARRIED_FLAG")}',
+        'medical_deductions':  f'={T("MEDICAL_DEDUCTION")}',
+        'months_since_cert_n': f'={T("MONTHS_SINCE_CERT")}',
+        'percent_abawd': f'={T("NUM_ABAWD")}/{hh}',
+        'earned_by_hh_size':   f'={T("EARNED_INCOME")}/{hh}',
+        'unearned_by_hh_size': f'={T("UNEARNED_INCOME")}/{hh}',
+        'gross_by_hh_size':    f'=({T("EARNED_INCOME")}+{T("UNEARNED_INCOME")})/{hh}',
         'rawben_rel_max':      f'={T("_c_benrec")}/{T("_c_benmax")}',
-        'shelter_expenses_by_hh_size': f'=({T("RENT")}+{T("UTIL")})/{hh}',
+        'shelter_expenses_by_hh_size': f'=({T("RENT")}+{T("UTILITY_COSTS")})/{hh}',
         'total_deductions_by_hh_size':
-            f'=({T("FSDEPDED")}+{T("FSCSDED")}+{T("_c_sltded")}'
-            f'+{T("FSMEDDED")}+{T("_c_ernded")})/{hh}',
+            f'=({T("DEPENDENT_CARE_DEDUCTION")}+{T("CHILD_SUPPORT_DEDUCTION")}'
+            f'+{T("_c_sltded")}+{T("MEDICAL_DEDUCTION")}+{T("_c_ernded")})/{hh}',
         'unc_rawben_rel_max': f'={T("_c_benunc")}/{T("_c_benmax")}',
-        'utilities':   f'={T("UTIL")}',
+        'utilities':   f'={T("UTILITY_COSTS")}',
         'over_threshold':     f'={T("ERROR_FLAG")}',
-        'total_error_amount': f'=ROUND(ABS({T("AMTERR")}),0)',
+        'total_error_amount': f'=ROUND(ABS({T("ERROR_AMOUNT")}),0)',
     }
     return helpers, feats
 
@@ -476,49 +512,53 @@ def mirror_features(raw, ftabs):
     """Compute what the Excel formulas will produce, from the raw block."""
     g = lambda c: raw[c].fillna(0).astype(float).values     # Excel blank -> 0
     yd, sd, ma = ftabs
-    fy = np.where(raw['YRMONTH'] % 100 >= 10, raw['YRMONTH'] // 100 + 1,
-                  raw['YRMONTH'] // 100).astype(int)
-    sz20 = np.clip(g('FSUSIZE'), 1, 20).astype(int)
-    hh = np.maximum(g('FSUSIZE'), 1)
+    fy = g('REVIEW_FISCAL_YEAR').astype(int)
+    sz20 = np.clip(g('HOUSEHOLD_SIZE'), 1, 20).astype(int)
+    hh = np.maximum(g('HOUSEHOLD_SIZE'), 1)
     lk = lambda tbl, col: np.array([tbl.loc[tbl.year <= y, col].iloc[-1] for y in fy])
     stdded = np.array([sd.loc[sd.year <= y, str(s)].iloc[-1] for y, s in zip(fy, sz20)])
     benmax = np.array([ma.loc[ma.year <= y, str(s)].iloc[-1] for y, s in zip(fy, sz20)])
-    eld = ((g('FSNELDER') + g('FSNDIS')) > 0).astype(int)
-    ernded = _excel_floor(g('FSEARN') * 0.2)
-    netbs = g('FSEARN') + g('FSUNEARN') - (ernded + g('FSDEPDED') + g('FSMEDDED')
-                                           + g('FSCSDED') + stdded)
+    eld = ((g('NUM_ELDERLY') + g('NUM_DISABLED')) > 0).astype(int)
+    ernded = _excel_floor(g('EARNED_INCOME') * 0.2)
+    netbs = (g('EARNED_INCOME') + g('UNEARNED_INCOME')
+             - (ernded + g('DEPENDENT_CARE_DEDUCTION') + g('MEDICAL_DEDUCTION')
+                + g('CHILD_SUPPORT_DEDUCTION') + stdded))
     maxsh = np.where(eld == 1, 1e9, lk(yd, 'max_shelter_deduction'))
-    sltded = np.minimum(np.maximum(g('RENT') + g('UTIL')
+    sltded = np.minimum(np.maximum(g('RENT') + g('UTILITY_COSTS')
                                    - np.maximum(netbs * 0.5, 0), 0), maxsh)
-    netan = _excel_floor(netbs - (sltded + g('HOMELESS_DED')))
+    netan = _excel_floor(netbs - (sltded + g('HOMELESS_DEDUCTION')))
     benunc = _excel_floor(benmax - 0.3 * netan)
     minal = lk(yd, 'min_allotment')
-    benrec = np.minimum(np.maximum(benunc, np.where(g('FSUSIZE') < 3, minal, 0)), benmax)
-    fyshare = pd.Series((g('CAT_ELIG') >= 1).astype(int)).groupby(fy).transform('mean')
+    benrec = np.minimum(np.maximum(
+        benunc, np.where(g('HOUSEHOLD_SIZE') < 3, minal, 0)), benmax)
+    fyshare = pd.Series(g('CATEGORICALLY_ELIGIBLE')).groupby(fy).transform('mean')
     out = {
-        'fiscal_year': fy, 'hh_size_raw': g('FSUSIZE'), 'HH_size_n': g('FSUSIZE'),
-        'hh_group': np.where(g('FSUSIZE') >= 4, '4+', np.where(g('FSUSIZE') >= 2, '2-3', '1')),
+        'fiscal_year': fy, 'hh_size_raw': g('HOUSEHOLD_SIZE'),
+        'HH_size_n': g('HOUSEHOLD_SIZE'),
+        'hh_group': np.where(g('HOUSEHOLD_SIZE') >= 4, '4+',
+                             np.where(g('HOUSEHOLD_SIZE') >= 2, '2-3', '1')),
         'bbce_state_i': (fyshare.values >= 0.5).astype(int),
-        'children_i': (g('FSNKID') > 0).astype(int),
-        'count_divisible_by_100': sum(((g(c) > 0) & (g(c) % 100 == 0)).astype(int)
-                                      for c in DIV100_VARS),
+        'children_i': (g('NUM_CHILDREN') > 0).astype(int),
+        'count_divisible_by_100': g('NUM_AMOUNTS_DIVISIBLE_BY_100'),
         'elderly_disabled_i': eld,
-        'expedited_i': np.isin(g('EXPEDSER'), [1, 2]).astype(int),
-        'homeless': (raw['HOMEDED'].notna() & (raw['HOMEDED'] != 1)).astype(int).values,
-        'married': g('MARRIED_I'), 'medical_deductions': g('FSMEDDED'),
-        'months_since_cert_n': g('LASTCERT'),
-        'percent_abawd': g('NUM_ABAWD') / np.maximum(g('CERTHHSZ'), 1),
-        'earned_by_hh_size': g('FSEARN') / hh,
-        'unearned_by_hh_size': g('FSUNEARN') / hh,
-        'gross_by_hh_size': (g('FSEARN') + g('FSUNEARN')) / hh,
+        'expedited_i': g('EXPEDITED'),
+        'homeless': g('HOMELESS_FLAG'),
+        'married': g('MARRIED_FLAG'),
+        'medical_deductions': g('MEDICAL_DEDUCTION'),
+        'months_since_cert_n': g('MONTHS_SINCE_CERT'),
+        'percent_abawd': g('NUM_ABAWD') / hh,
+        'earned_by_hh_size': g('EARNED_INCOME') / hh,
+        'unearned_by_hh_size': g('UNEARNED_INCOME') / hh,
+        'gross_by_hh_size': (g('EARNED_INCOME') + g('UNEARNED_INCOME')) / hh,
         'rawben_rel_max': benrec / benmax,
-        'shelter_expenses_by_hh_size': (g('RENT') + g('UTIL')) / hh,
-        'total_deductions_by_hh_size': (g('FSDEPDED') + g('FSCSDED') + sltded
-                                        + g('FSMEDDED') + ernded) / hh,
+        'shelter_expenses_by_hh_size': (g('RENT') + g('UTILITY_COSTS')) / hh,
+        'total_deductions_by_hh_size': (g('DEPENDENT_CARE_DEDUCTION')
+                                        + g('CHILD_SUPPORT_DEDUCTION') + sltded
+                                        + g('MEDICAL_DEDUCTION') + ernded) / hh,
         'unc_rawben_rel_max': benunc / benmax,
-        'utilities': g('UTIL'),
+        'utilities': g('UTILITY_COSTS'),
         'over_threshold': g('ERROR_FLAG'),
-        'total_error_amount': np.round(np.abs(g('AMTERR'))),
+        'total_error_amount': np.round(np.abs(g('ERROR_AMOUNT'))),
     }
     return pd.DataFrame(out)
 
@@ -571,7 +611,7 @@ def main():
     frame_csv = os.path.join(PKG, '.frames', f'{cfg["abbr"].lower()}_frame.csv')
 
     raw, elem_free, frame = raw_frame(cfg, frame_csv)
-    print(f'raw extract: {len(raw)} rows x {len(RAW_COLS)} FNS fields')
+    print(f'raw extract: {len(raw)} rows x {len(RAW_COLS)} input fields')
 
     shutil.copy(a.live_workbook, a.out)
     wb = openpyxl.load_workbook(a.out)
@@ -655,11 +695,11 @@ def main():
             dat.column_dimensions[CL(i)].outline_level = 1
     for i in range(raw0 + 2, c + 1):
         dat.column_dimensions[CL(i)].outline_level = 1
-    note = ('Feature columns (blue) are FORMULAS computed from the raw FNS '
+    note = ('Feature columns (blue) are FORMULAS computed from the input '
             'fields (amber block to the right); do not paste values over them. '
-            'A state supplies ONLY the amber columns, using its FNS QC-schedule '
-            'field names, plus the two QC outcome columns. See the Data '
-            'Dictionary tab.')
+            'A state supplies ONLY the amber columns, mapping its own reported '
+            'case fields onto them. See the Data Dictionary tab for every '
+            'definition and the QC technical-manual crosswalk.')
     dat.cell(row=1, column=1).comment = Comment(note, 'snap_dashboard')
     dat.freeze_panes = 'B2'
 
