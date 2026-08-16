@@ -202,6 +202,24 @@ MAX_ROW = max(MAX_ROW, len(df) + 101)
 # ══════════════════════════════════════════════════════════════════════════════
 COND_PAT = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\s*(>=|<=|>|<|==)\s*(-?[0-9.]+)')
 
+# Per-rule characterization carried through from the delivery CSVs: what the
+# rule catches as mined on national data. Fixed context on the rules tabs —
+# deliberately NOT recomputed from pasted data.
+# (csv column, tab header, number format, column width)
+CHAR_COLS = [
+    ('pool',                   'Rule source pool',                 '@',      12),
+    ('precision_train',        'Train precision (natl.)',          '0.0%',   12),
+    ('precision_train_lcb',    'Train precision lower bound',      '0.0%',   13),
+    ('dollars_per_flag_train', 'Train error $ per flagged case',   '$#,##0', 13),
+    ('n_error_cases_national', 'Natl. error cases behind rule',    '#,##0',  13),
+    ('element_groups_to_75',   'Error elements caught (to 75%)',   '@',      46),
+    ('nature_groups_to_75',    'Error natures caught (to 75%)',    '@',      46),
+    ('found_in_case_record',   'Share findable in case record',    '0%',     13),
+    ('share_overissuance',     'Share overissuance',               '0%',     12),
+    ('timing_at_certification','Share at certification',           '0%',     12),
+    ('cause_agency',           'Share agency-caused',              '0%',     12),
+]
+
 
 def parse_delivery(csv_path):
     rdf = pd.read_csv(csv_path)
@@ -214,7 +232,8 @@ def parse_delivery(csv_path):
         out.append({'num': int(rr['rank']), 'hh': str(rr['hh']), 'conds': conds,
                     'prec_train': float(rr['precision_train']),
                     'prec_lcb': float(rr['precision_train_lcb']),
-                    'engine': rr['engines'], 'frame': rr['mined_frames']})
+                    'engine': rr['engines'], 'frame': rr['mined_frames'],
+                    'char': {k: rr.get(k) for k, _, _, _ in CHAR_COLS}})
     return out
 
 
@@ -931,24 +950,31 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                       sel_rng, hh_rng, union_col, intro):
     ws = wb.create_sheet(sheet_name, position)
     ws.sheet_view.showGridLines = False
+    LASTC = 13 + len(CHAR_COLS)
     for col_letter, width in {'A':9,'B':9,'C':11,'D':11,'E':11,'F':11,'G':10,'H':10,
                               'I':14,'J':12,'K':21,'L':9,'M':115}.items():
         ws.column_dimensions[col_letter].width = width
-    merge(ws,1,1,1,13, value=f'{sheet_name} — {STATE_NAME} FY{FY_LABEL}',
+    for ci, (_, _, _, w) in enumerate(CHAR_COLS, 14):
+        ws.column_dimensions[get_column_letter(ci)].width = w
+    merge(ws,1,1,1,LASTC, value=f'{sheet_name} — {STATE_NAME} FY{FY_LABEL}',
           fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
     ws.row_dimensions[1].height = 32
-    merge(ws,2,1,2,13, value=intro,
+    merge(ws,2,1,2,LASTC, value=intro,
           fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
-    merge(ws,3,1,3,13,
+    merge(ws,3,1,3,LASTC,
           value='Recall, $ Recall and Workload % are measured within each rule\'s own household-size '
                 'stratum. Expected error $ by case = error dollars caught / cases flagged. Rules are '
                 'listed in delivery-list rank order, exactly as delivered. Tick or untick Include? to '
-                'add or remove a rule from the combined rows above.',
+                'add or remove a rule from the combined rows above. Columns to the right of '
+                'Conditions characterize each rule as mined on NATIONAL data (what error elements '
+                'and natures it catches, who caused them, whether the error was findable in the '
+                'case record); they are fixed context and do not recompute from pasted data.',
           fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
     for col, txt in enumerate(['Rule','HH size','Rules count','Precision','Recall','$ Recall',
                                'Flagged','Errors','Error $ caught','Workload %',
                                'Expected error $ by case','Include?',
-                               'Conditions (delivered thresholds, as-is)'], 1):
+                               'Conditions (delivered thresholds, as-is)'] +
+                              [h for _, h, _, _ in CHAR_COLS], 1):
         set_cell(ws,4,col,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
 
     merge(ws,5,1,5,13,
@@ -1002,6 +1028,14 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                  align=center, border=thin(), number_format='$#,##0', fill=GREEN)
         set_cell(ws,r,12,True, fill=YELLOW, align=center, border=thin(), font=Font(name=FONT))
         set_cell(ws,r,13,conds_text[j], align=left, font=Font(name=FONT,size=10))
+        for ci, (key, _, fmt, _) in enumerate(CHAR_COLS, 14):
+            v = rule.get('char', {}).get(key)
+            if v is None or (isinstance(v, float) and np.isnan(v)):
+                v = ''
+            elif fmt != '@':
+                v = float(v)
+            set_cell(ws,r,ci,v, align=(left if fmt == '@' else center), border=thin(),
+                     number_format=fmt, font=Font(name=FONT,size=10))
     ws.freeze_panes = 'A5'
     CHECKBOX_CELLS[sheet_name] = [f'L{NAT_ROW0+j}' for j in range(len(rules_list))]
     return ws
