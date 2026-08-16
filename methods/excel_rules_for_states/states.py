@@ -45,7 +45,6 @@ _STATES = {
 }
 
 _YEARS = tuple(range(FY0, FY1 + 1))
-_QC_FILES = [f'qc_data/qc_pub_fy{y}.sav' for y in _YEARS]
 
 
 def _default_entry(abbr):
@@ -61,7 +60,6 @@ def _default_entry(abbr):
         # the builder skips the National Rules tab when the file is absent
         'national_csv': (f'state_delivery_lists/national_delivery_'
                          f'{name_us}_{FY0}_{FY1}_{_BUDGET}.csv'),
-        'qc_files': _QC_FILES,
         'role_filter': 'core',      # which delivery rules to implement
     }
 

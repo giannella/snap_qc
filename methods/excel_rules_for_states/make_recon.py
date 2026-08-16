@@ -660,8 +660,22 @@ def main():
     assert not dups, f'case-insensitive duplicate Data columns: {dups}'
     ok = validate(raw, frame, elem_free, [h for h in hdr if h in feats])
     if not ok:
-        print('  (with reconstructed inputs the match should be ~100%; '
-              'investigate any column flagged above)')
+        # HARD GATE (2026-08-16): the demo must sit on the reconstructed
+        # pre-QC-review scale the rules were mined on — a state's internal
+        # data is effectively that scale, and scoring rules against
+        # QC-corrected values misleads (v1 post-mortem: 21 of 114 WA rules
+        # never fired). With reconstructed inputs the match is 100%; any
+        # shortfall means corrected values crept back into the input block.
+        if os.environ.get('SNAP_ALLOW_VALIDATION_MISMATCH') == '1':
+            print('  SNAP_ALLOW_VALIDATION_MISMATCH=1: continuing despite '
+                  'validation failures (debug only)')
+        else:
+            raise SystemExit(
+                'validation failed: formula features do not reproduce the '
+                'research frame. The Data-tab demo must carry RECONSTRUCTED '
+                '(pre-QC-review) values, never QC-corrected ones — see the '
+                'columns flagged above. Set SNAP_ALLOW_VALIDATION_MISMATCH=1 '
+                'only to debug.')
 
     # 1. helper columns, then the raw contract, appended AFTER the existing
     #    feature + hit columns so every positional reference stays valid

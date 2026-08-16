@@ -61,27 +61,31 @@ names are case-insensitively unique (an input may not reuse a feature column's
 name — the collision makes Excel reject the file as damaged, and
 `make_recon.py` asserts against it).
 
-On public data the demo fills each column with the QC file's closest stand-in:
-`HOUSEHOLD_SIZE` carries `RAWHSIZE` (the manual's reported, Origin-R unit
-size — chosen 2026-08-16 over the QC-corrected `FSUSIZE`; the two differ on
-~4% of rows, which is why the size-derived features validate at ~96-98%
-rather than 100% on element-free rows), while the income and deduction fields
-carry the QC-corrected `FS*` values because the public file has no reported
-version of them. The blue feature columns are formulas over the amber block —
-including the benefit recomputation chain (standard deduction, max allotment,
-shelter cap and minimum allotment looked up per year x size from the hidden
-FederalTables sheet, extendable by appending a row per fiscal year) and the
-state-year `bbce_state_i` share formula. Do not paste values over the blue
-columns.
+The demo fills every input column with the research frame's RECONSTRUCTED
+(pre-QC-review) values — never the QC-corrected `FS*` values from the public
+files. This is a hard design principle (2026-08-16): a state's internal case
+data is effectively the reconstructed scale (as-reported, no QC corrections),
+and the rules were mined on that scale, so demoing against corrected values
+would have states selecting rules that flag corrected case data — the
+measured v1 failure mode (21 of 114 WA rules never fired; held-out precision
+0.255 vs 0.318). `export_state_frame.R` ships the reconstructed input-level
+fields and `make_recon.py` builds the whole input block from that export; the
+`.sav` files are not read anywhere in the pipeline. The blue feature columns
+are formulas over the amber block — including the benefit recomputation chain
+(standard deduction, max allotment, shelter cap and minimum allotment looked
+up per year x size from the hidden FederalTables sheet, extendable by
+appending a row per fiscal year) and the state-year `bbce_state_i` share
+formula. Do not paste values over the blue columns.
 
 Every build validates the formulas: it mirrors each formula in pandas over
-the raw extract and prints the match rate against the munged frame, overall
-and on rows carrying no QC error element. On WA, AL, VT and DE (2026-08),
-every feature matched 100% on element-free rows. Rows the pre-QC restoration
-touched differ by construction on public data — the delivery rules were mined
-on restored values while the raw block holds as-reported values — which is
-why the delivered workbook's live figures deviate from the plain build's on
-public data. For state-supplied as-reported data that gap does not exist.
+the raw extract and compares every formula-computed feature against the research frame and
+FAILS THE BUILD unless the match is complete (WA, AL, VT, DE: 100.0% on
+every feature, every row). That gate is what enforces the reconstructed-
+values principle: if corrected values ever creep back into the input
+block, no workbook ships. A consequence worth knowing: the delivered
+workbook's live figures now equal the research pipeline's and the R
+cross-check's exactly (WA blended: 195 flagged, 71 errors, $16,668 at
+36.4% precision).
 
 ## Cross-checking the workbook against R
 
@@ -141,8 +145,8 @@ pip install -r methods/excel_rules_for_states/requirements.txt
 
 Needs the snap_qc repo checked out (found by walking up from this package, or
 `SNAP_REPO`), `reg_model_data.rds` built in it (gitignored, written by the
-munging script), `Rscript` on the path or `RSCRIPT` set, and the public
-`qc_data/*.sav` files. The per-state frame export is cached under
+munging script), `Rscript` on the path or `RSCRIPT` set; the `.sav` files are no
+longer read by any stage. The per-state frame export is cached under
 `.frames/`; pass `--refresh` (or set `SNAP_REFRESH_FRAME=1`) after the
 munging script is re-run. The frame was last rebuilt 2026-08-13; workbooks
 built before that date are on a stale row universe and should be rebuilt, not

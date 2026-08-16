@@ -54,12 +54,11 @@ _cfg         = STATE_REGISTRY.get(os.environ.get('SNAP_STATE', 'WA'))
 
 STATE_NAME   = _cfg['name']
 STATE_ABBR   = _cfg['abbr']
-STATE_FIPS   = _cfg['fips']
+STATE_FIPS   = _cfg['fips']          # informational; nothing reads the .sav
+                                     # files any more (2026-08-16: the demo
+                                     # carries reconstructed frame values)
 FY_LABEL     = _cfg['fy_label']
 ROLE_FILTER  = _cfg['role_filter']
-# QC_FILES is v1's input; v2 never touches the .sav files, it reads the munged
-# frame instead (see section 1), so the entry is kept only for v1 compatibility.
-QC_FILES     = _cfg.get('qc_files')
 
 
 def _find_repo(start):
