@@ -138,8 +138,8 @@ def raw_frame(cfg, frame_csv):
     return out, np.ones(len(frame), bool), frame
 
 
-def federal_tables(wb, holdout_year):
-    """Hidden sheet with the year x size parameter tables + settings."""
+def federal_tables(wb):
+    """Hidden sheet with the year x size parameter tables."""
     ad = os.path.join(REPO, 'additional_data')
     yd = pd.read_csv(os.path.join(ad, 'year_data.csv')).dropna(axis=1, how='all')
     yd.columns = [str(c).strip() for c in yd.columns]
@@ -152,7 +152,6 @@ def federal_tables(wb, holdout_year):
     ws.sheet_state = 'hidden'
     ws['A1'] = ('Federal SNAP parameters by fiscal year. Append a row per table '
                 'each new fiscal year; every formula updates automatically.')
-    ws['A3'], ws['B3'] = 'holdout_year (split label only)', holdout_year
     ws['A5'], ws['B5'], ws['C5'] = 'year', 'max_shelter', 'min_allotment'
     years = sorted(yd['year'])
     for i, y in enumerate(years):
@@ -319,11 +318,11 @@ RAW_DESC = {
     'CASE_ID':   'case / review identifier — row identity only. QC manual: HHLDNO.',
     'REVIEW_FISCAL_YEAR': 'federal fiscal year of the review month (Oct-Sep).',
     'HOUSEHOLD_SIZE': 'certified SNAP unit size: the members ON THE CASE, as reported. '
-                      'QC manual: CERTHHSZ (Origin R, reported); FSUSIZE is the '
-                      'constructed version. Do NOT supply the household\'s total person '
-                      'count (the manual\'s RAWHSIZE) — people in the home who are not '
-                      'unit members do not count. The demo carries the reconstructed '
-                      'pre-QC-review unit size.',
+                      'QC manual: CERTHHSZ (Origin R, reported); FSUSIZE is the post-QC '
+                      'corrected household size. Do NOT supply the household\'s total '
+                      'person count (the manual\'s RAWHSIZE) — people in the home who '
+                      'are not unit members do not count. The demo carries the '
+                      'reconstructed pre-QC-review unit size.',
     'NUM_CHILDREN': 'children in the unit. QC manual: FSNKID.',
     'NUM_ELDERLY': 'members aged 60+. QC manual: FSNELDER.',
     'NUM_DISABLED': 'disabled members. QC manual: FSNDIS.',
@@ -361,7 +360,6 @@ RAW_DESC = {
 }
 FEAT_DESC = {
     'fiscal_year': 'REVIEW_FISCAL_YEAR, unchanged',
-    'split':       'label only: earlier fiscal years vs the most recent one (no tuning uses it)',
     'hh_size_raw': 'HOUSEHOLD_SIZE, unchanged',
     'hh_group':    'household-size stratum: 1 / 2-3 / 4+ (every rule applies within one stratum)',
     'HH_size_n':   'HOUSEHOLD_SIZE as a number, used inside rules',
@@ -493,7 +491,6 @@ def feature_formulas(R):
     ]
     feats = {
         'fiscal_year': f'={T("REVIEW_FISCAL_YEAR")}',
-        'split':       f'=IF({T("REVIEW_FISCAL_YEAR")}>={R["HOLDOUT"]},"holdout","tune")',
         'hh_size_raw': f'={T("HOUSEHOLD_SIZE")}',
         'hh_group':    f'=IF({T("HOUSEHOLD_SIZE")}>=4,"4+",'
                        f'IF({T("HOUSEHOLD_SIZE")}>=2,"2-3","1"))',
@@ -649,9 +646,7 @@ def main():
 
     hdr = [c.value for c in next(dat.iter_rows(min_row=1, max_row=1))]
     ncol0 = len(hdr)
-    holdout_year = int(pd.to_numeric(
-        frame['fiscal_year'], errors='coerce').max())    # split label only
-    R = federal_tables(wb, holdout_year)
+    R = federal_tables(wb)
     helpers, feats = feature_formulas(R)
 
     missing = [h for h in hdr if not h.startswith('_') and h not in feats]

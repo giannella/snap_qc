@@ -17,7 +17,7 @@ Sheets produced:
   Both present POTENTIAL rule lists for the state to evaluate.
   See cases flagged by a rule  pick a rule, list the cases it flags (errors-only
                                or all flagged, via a toggle)
-  Data               reconstructed state QC case data, with a year-split label
+  Data               reconstructed state QC case data
   Dashboard          one threshold block per rule + PR chart   (hidden engine)
   Grid Search        bracket-bounded threshold search          (hidden engine)
   RuleFlags          case x rule hit matrices                  (hidden engine)
@@ -178,14 +178,6 @@ if bad.any():
 print(f'error rate: {df.over_threshold.mean():.3f} '
       f'({int(df.over_threshold.sum())} errors)')
 
-# GUARD: the tune/holdout split is by fiscal year, most recent year held out.
-# There is no random-split option: a random split leaks, because the same
-# caseload composition appears on both sides. Carried into the workbook as a
-# column so a reviewer can verify every number by filtering.
-_tm, _hm, TUNE_YEARS, HOLD_YEARS = tuning.time_split(df, TCFG)
-df['split'] = np.where(_hm, 'holdout', 'tune')
-print(f'split: tune {TUNE_YEARS} ({int(_tm.sum())} cases) | '
-      f'holdout {HOLD_YEARS} ({int(_hm.sum())} cases)')
 df.to_csv(CASES_CSV, index=False)
 
 # The Data-sheet formula ranges must cover every case: large states (CA, TX, FL)
@@ -332,7 +324,7 @@ def base_step(v):
 # ══════════════════════════════════════════════════════════════════════════════
 # 3. WORKBOOK SCAFFOLDING
 # ══════════════════════════════════════════════════════════════════════════════
-DCOLS = ['fiscal_year', 'split', 'hh_size_raw', 'hh_group'] + RULE_VARS + \
+DCOLS = ['fiscal_year', 'hh_size_raw', 'hh_group'] + RULE_VARS + \
         ['over_threshold', 'total_error_amount']
 LASTCOL = get_column_letter(len(DCOLS))
 
