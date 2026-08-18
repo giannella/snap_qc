@@ -23,7 +23,8 @@ rebuild).
 ## The deliverable
 
 **One file per state**: `state_workbooks/<ABBR>/snap_qc_dashboard_<ABBR>.xlsx`.
-Its Data tab holds the raw FNS QC-schedule fields as VALUES and every model
+Its "Step 1. Paste-in Data" tab (the Data tab; sheet names live in
+`workbook_layout.py`) holds the raw FNS QC-schedule fields as VALUES and every model
 feature as an in-workbook FORMULA, so a state pastes the fields it already
 reports to FNS and every figure recomputes. The intermediate stages (the
 plain frame-values build and the LIVE table build) land in
@@ -36,10 +37,10 @@ The rules tabs each present a POTENTIAL rule list for the state to evaluate; not
 
 | Tab | What it shows |
 |---|---|
-| **Blended Rules** | The BLENDED delivery list — the state's own mined rules merged into the national pool, filled to the 10% review budget — at delivered thresholds, as-is. Its own Include? selection. |
-| **National Rules** | The NATIONAL-only delivery list (built purely from the all-state pool), where the repo carries one — 39 of 49 states as of 2026-08-16. Compare against Blended Rules to see what merging the state's own rules adds. |
+| **Step 2. Review and Select Rules** | The BLENDED delivery list — the state's own mined rules merged into the national pool, filled to the 10% review budget — at delivered thresholds, as-is. Its own Include? selection. |
+| **National Rules** | The NATIONAL-only delivery list (built purely from the all-state pool), where the repo carries one — 39 of 49 states as of 2026-08-16. Compare against the blended tab to see what merging the state's own rules adds. |
 | **View error cases by rule** | Rules currently catching errors, sorted; the grid shows the true-error cases the selected rule flags. Sized to the build's row count. |
-| Data | Raw FNS fields (amber, values — what a state pastes) + model features (blue, formulas). |
+| Step 1. Paste-in Data | Raw FNS fields (amber, on the left — what a state pastes) + model features (gray, formulas). |
 | Dashboard, Grid Search, RuleFlags, FederalTables | Hidden engines: the per-rule threshold tuner, the bracket-bounded threshold search, the case × rule hit matrices, and the federal parameter tables. Unhide the Dashboard to tune thresholds interactively. |
 
 ### The Data-tab contract
@@ -98,7 +99,7 @@ Re-implements the state's delivery rules independently in R
 miner's own `prep_features()`, and compares per rule (n flagged, errors,
 dollars, precision, recall, dollar recall, workload) plus the all-rules union
 overall and per stratum, recomputed from the workbook's RuleFlags hit
-matrix — for the Blended Rules tab AND the National Rules tab where present.
+matrix — for the blended rules tab AND the National Rules tab where present.
 On 2026-08-16: WA (92 blended + 101 national), AL (91 + 121), VT (66 + 66)
 and DE (35 blended, no national list) all matched with zero mismatches. It
 reads the plain build in `.build/out_<ABBR>/`; the delivered workbook holds

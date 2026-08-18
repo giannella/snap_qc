@@ -29,6 +29,7 @@ import openpyxl
 import pandas as pd
 
 import states as STATE_REGISTRY
+from workbook_layout import BLENDED_SHEET, NATIONAL_SHEET
 
 PKG = os.path.dirname(os.path.abspath(__file__))
 NAT_ROW0, FLAG0 = 11, 5
@@ -155,13 +156,13 @@ def main():
     NRB = len(blended)
     # RuleFlags layout (build_workbook_v2): the blended list's hit-mask block
     # starts at column 2; the national-only block at 6+2*NR
-    total += check_tab(wb, 'Blended Rules', blended, blended_u, 2, cases)
+    total += check_tab(wb, BLENDED_SHEET, blended, blended_u, 2, cases)
 
-    if 'National Rules' in wb.sheetnames:
+    if NATIONAL_SHEET in wb.sheetnames:
         nat_csv = resolve(cfg.get('national_csv', ''))
         assert nat_csv, 'workbook has a National Rules tab but no national CSV found'
         natl, natl_u = run_r(cfg, repo, nat_csv, tmp, 'national')
-        total += check_tab(wb, 'National Rules', natl, natl_u, 6 + 2 * NRB, cases)
+        total += check_tab(wb, NATIONAL_SHEET, natl, natl_u, 6 + 2 * NRB, cases)
     else:
         print('no National Rules tab (no national-only list for this state)')
 

@@ -22,10 +22,13 @@ import shutil
 
 import openpyxl
 from openpyxl.utils import get_column_letter as CL
+from openpyxl.utils import column_index_from_string
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
-TABLE = 'CaseData'            # table object name; the sheet stays "Data"
-CHUNKS = 4                    # per-rule tests split over this many helper columns
+from workbook_layout import DATA_SHEET, BLENDED_SHEET, NATIONAL_SHEET, qref
+
+TABLE = 'CaseData'            # table object name; the sheet keeps its name
+CHUNK_LIMIT = 7500            # max chars per hit-column formula (Excel cap 8192)
 COND = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\s*(>=|<=|>|<|=)\s*(-?[0-9.]+)')
 
 
@@ -50,16 +53,37 @@ def countifs(conds, hh, extra='', col=None, fn='COUNTIFS'):
 
 
 def rule_terms(rows, sel_ref):
-    """Per-case test terms, one per rule, weighted by that rule's checkbox flag."""
+    """Per-case test terms, one per rule, weighted by that rule's checkbox flag.
+
+    Each numeric condition carries an ISNUMBER guard: when an input column is
+    deleted the features built from it go blank (make_input_workbook gates
+    them), and a blank must never satisfy a condition — Excel otherwise ranks
+    any text above any number, so ``"" >= x`` would flag every case."""
     terms = []
     for i, (conds, hh) in enumerate(rows):
         if conds is None:
             continue
         t = [f'({TABLE}[[#This Row],[hh_group]]="{hh}")']
         for v, op, val in conds:
-            t.append(f'({TABLE}[[#This Row],[{v}]]{"=" if op == "=" else op}{val})')
+            ref = f'{TABLE}[[#This Row],[{v}]]'
+            t.append(f'ISNUMBER({ref})*({ref}{"=" if op == "=" else op}{val})')
         terms.append(f'{sel_ref(i)}*' + '*'.join(t))
     return terms
+
+
+def pack_chunks(terms, limit=CHUNK_LIMIT):
+    """Split the per-rule terms into as many helper-column formulas as the
+    formula length cap requires."""
+    chunks, cur, size = [], [], 1
+    for t in terms:
+        if cur and size + len(t) + 1 > limit:
+            chunks.append(cur)
+            cur, size = [], 1
+        cur.append(t)
+        size += len(t) + 1
+    if cur:
+        chunks.append(cur)
+    return chunks or [[]]
 
 
 def main():
@@ -71,9 +95,9 @@ def main():
     shutil.copy(a.workbook, out)
 
     wb = openpyxl.load_workbook(out)
-    dat = wb['Data']
-    nat = wb['Blended Rules'] if 'Blended Rules' in wb.sheetnames else None
-    natl = wb['National Rules'] if 'National Rules' in wb.sheetnames else None
+    dat = wb[DATA_SHEET]
+    nat = wb[BLENDED_SHEET] if BLENDED_SHEET in wb.sheetnames else None
+    natl = wb[NATIONAL_SHEET] if NATIONAL_SHEET in wb.sheetnames else None
     hdr = [c.value for c in next(dat.iter_rows(min_row=1, max_row=1))]
     NROW, NCOL = dat.max_row, len(hdr)
     print(f'Data: {NROW-1} cases x {NCOL} columns')
@@ -102,7 +126,7 @@ def main():
     # The selection vector's column order is NOT the order rules appear on the
     # sheets, so read the mapping out of RuleFlags row 2 rather than assuming it.
     rf = wb['RuleFlags']
-    sel_by_row = {'Blended Rules': {}, 'National Rules': {}}
+    sel_by_row = {BLENDED_SHEET: {}, NATIONAL_SHEET: {}}
     for cc in range(2, rf.max_column + 1):
         v = rf.cell(row=2, column=cc).value
         if not isinstance(v, str):
@@ -114,9 +138,9 @@ def main():
         if sheet in sel_by_row:
             sel_by_row[sheet][int(m.group(3))] = f'RuleFlags!${CL(cc)}$2'
     print('selection columns found: %d blended, %d national-only'
-          % (len(sel_by_row['Blended Rules']), len(sel_by_row['National Rules'])))
-    sel_n = lambda i: sel_by_row['Blended Rules'][N0 + i]
-    sel_l = lambda i: sel_by_row['National Rules'][N0 + i]
+          % (len(sel_by_row[BLENDED_SHEET]), len(sel_by_row[NATIONAL_SHEET])))
+    sel_n = lambda i: sel_by_row[BLENDED_SHEET][N0 + i]
+    sel_l = lambda i: sel_by_row[NATIONAL_SHEET][N0 + i]
     blocks = ([('nat', nt_rules, sel_n)] if nat else []) \
         + ([('nl', nl_rules, sel_l)] if natl else [])
     newcols = {}
@@ -124,8 +148,7 @@ def main():
     for tag, rules, sel in blocks:
         terms = rule_terms(rules, sel)
         parts = []
-        for k in range(CHUNKS):
-            chunk = terms[k::CHUNKS]
+        for k, chunk in enumerate(pack_chunks(terms)):
             c += 1
             name = f'_{tag}{k+1}'
             newcols[name] = c
@@ -178,7 +201,9 @@ def main():
         put('prec',    f'IF(${F}{row}=0,0,${E}{row}/${F}{row})')
         put('rec',     f'IFERROR(${E}{row}/{denom(hh,"errors")},0)')
         put('drec',    f'IFERROR(${D}{row}/{denom(hh,"dollars")},0)')
-        put('work',    f'IFERROR(${F}{row}/{denom(hh,"cases")},0)')
+        # summary-row workload: share of ALL cases, so the household-size
+        # rows are the percentage-point portions that sum to the 'all' row
+        put('work',    f'IFERROR(${F}{row}/{denom("all","cases")},0)')
         put('exp',     f'IFERROR(IF(${F}{row}=0,"",${D}{row}/${F}{row}),"")')
 
     NT = dict(prec=4, rec=5, drec=6, flagged=7, errors=8, dollars=9, work=10, exp=11)
@@ -214,13 +239,15 @@ def main():
 
     # ── 5. Dashboard: fixed ranges -> table references ───────────────────────
     swapped = 0
+    dq = qref(DATA_SHEET)
+    rng_pat = re.compile(re.escape(dq) + r'!\$([A-Z]{1,3})\$\d+:\$[A-Z]{1,3}\$\d+')
     for row in wb['Dashboard'].iter_rows():
         for cell in row:
             v = cell.value
-            if isinstance(v, str) and 'Data!$' in v:
+            if isinstance(v, str) and f'{dq}!$' in v:
                 def sub(m):
-                    return f'{TABLE}[{hdr[ord(m.group(1)) - 65]}]'
-                nv = re.sub(r'Data!\$([A-Z])\$\d+:\$[A-Z]\$\d+', sub, v)
+                    return f'{TABLE}[{hdr[column_index_from_string(m.group(1)) - 1]}]'
+                nv = rng_pat.sub(sub, v)
                 if nv != v:
                     cell.value = nv; swapped += 1
     print(f'Dashboard: {swapped} formulas rebound to the table')

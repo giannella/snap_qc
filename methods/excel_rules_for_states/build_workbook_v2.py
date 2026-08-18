@@ -11,13 +11,16 @@ workbook measures the delivered lists; it does not modify them. tuning.py
 stays in the package for pipeline-side use on a state's internal data
 (methods/tuning_principles.md).
 
-Sheets produced:
-  Blended Rules             the blended delivery list (state + national pools), as-is
-  National Rules            the national-only delivery list, as-is (where available)
+Sheets produced (names from workbook_layout.py):
+  Step 2. Review and Select Rules  the blended delivery list (state + national
+                                   pools), as-is
+  National Rules                   the national-only delivery list, as-is (where
+                                   available)
   Both present POTENTIAL rule lists for the state to evaluate.
   See cases flagged by a rule  pick a rule, list the cases it flags (errors-only
                                or all flagged, via a toggle)
-  Data               reconstructed state QC case data
+  Step 1. Paste-in Data  input-contract headers (left, filled by
+                         make_input_workbook) + reconstructed state QC case data
   Dashboard          one threshold block per rule + PR chart   (hidden engine)
   Grid Search        bracket-bounded threshold search          (hidden engine)
   RuleFlags          case x rule hit matrices                  (hidden engine)
@@ -46,6 +49,10 @@ import pandas as pd
 # ══════════════════════════════════════════════════════════════════════════════
 import states as STATE_REGISTRY
 import tuning
+from workbook_layout import (DATA_SHEET, BLENDED_SHEET, NATIONAL_SHEET,
+                             RAW_COLS, RAW_OFF, qref)
+
+DQ = qref(DATA_SHEET)                # the Data sheet as written in formulas
 
 PKG          = os.path.dirname(os.path.abspath(__file__))
 BASE         = os.path.dirname(PKG)                # project root
@@ -326,12 +333,15 @@ def base_step(v):
 # ══════════════════════════════════════════════════════════════════════════════
 DCOLS = ['fiscal_year', 'hh_size_raw', 'hh_group'] + RULE_VARS + \
         ['over_threshold', 'total_error_amount']
-LASTCOL = get_column_letter(len(DCOLS))
+# the raw input contract occupies columns 1..RAW_OFF (see workbook_layout);
+# the feature block sits to its right, so every feature reference is offset
+FEAT0   = get_column_letter(RAW_OFF + 1)
+LASTCOL = get_column_letter(RAW_OFF + len(DCOLS))
 
-def dc(varname): return get_column_letter(DCOLS.index(varname) + 1)
+def dc(varname): return get_column_letter(RAW_OFF + DCOLS.index(varname) + 1)
 def dr(varname):
     c = dc(varname)
-    return f'Data!${c}$2:${c}${MAX_ROW}'
+    return f'{DQ}!${c}$2:${c}${MAX_ROW}'
 
 YELLOW     = PatternFill('solid', fgColor='FFFF99')
 BLUE_LIGHT = PatternFill('solid', fgColor='BDD7EE')
@@ -371,17 +381,24 @@ def merge(ws, r1, c1, r2, c2, value=None, fill=None, font=None, align=None):
 wb = openpyxl.Workbook()
 
 # ── Data sheet ────────────────────────────────────────────────────────────────
-ws_data = wb.create_sheet('Data')
+ws_data = wb.create_sheet(DATA_SHEET)
 dfx = df[DCOLS]
-for ci, col in enumerate(DCOLS, 1):
+# the input contract's headers on the LEFT; make_input_workbook fills the values
+AMBER = PatternFill('solid', fgColor='FCE4D6')
+for ci, col in enumerate(RAW_COLS, 1):
     c = ws_data.cell(row=1, column=ci, value=col)
+    c.fill = AMBER
+    c.font = Font(name=FONT, bold=True)
+    c.alignment = center
+for ci, col in enumerate(DCOLS, 1):
+    c = ws_data.cell(row=1, column=RAW_OFF + ci, value=col)
     c.fill = BLUE_DARK
     c.font = Font(name=FONT, bold=True, color='FFFFFF')
     c.alignment = center
 for ri, row in enumerate(dfx.itertuples(index=False), 2):
     for ci, val in enumerate(row, 1):
-        ws_data.cell(row=ri, column=ci, value=val)
-ws_data.freeze_panes = 'A2'
+        ws_data.cell(row=ri, column=RAW_OFF + ci, value=val)
+ws_data.freeze_panes = 'B2'
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 4. DASHBOARD — one tuning block per delivery rule
@@ -527,7 +544,7 @@ ws.freeze_panes = 'A9'
 # ══════════════════════════════════════════════════════════════════════════════
 # 5. GRID SEARCH SHEET (same engine as the Virginia workbook)
 # ══════════════════════════════════════════════════════════════════════════════
-DATA2D = f'Data!$A$2:${LASTCOL}${MAX_ROW}'
+DATA2D = f'{DQ}!$A$2:${LASTCOL}${MAX_ROW}'
 HH     = dr('hh_group')
 OVER   = dr('over_threshold')
 ERRD   = dr('total_error_amount')
@@ -642,7 +659,10 @@ for i in range(NSLOTS):
                  formula=(f'=IF($A{r}="","",IF($B$5="Custom",${ccol}{r},'
                           f'INDEX(${pcol}$2:${pcol}${PEND},{PLOOK}+{i+1})))'),
                  fill=BLUE_LIGHT, align=center, border=thin())
-    set_cell(ws_g,r,32,formula=f'=IF($A{r}="",3,MATCH($A{r},Data!$A$1:${LASTCOL}$1,0))')
+    # empty slot fallback: point at hh_group so the degenerate condition is
+    # the always-true stratum match
+    set_cell(ws_g,r,32,formula=f'=IF($A{r}="",{RAW_OFF + DCOLS.index("hh_group") + 1},'
+                               f'MATCH($A{r},{DQ}!$A$1:${LASTCOL}$1,0))')
     # AI/AJ: this slot's search bracket. Presets carry the bracket computed by
     # condition_bracket(); a Custom rule gets the same +/-25% window on its own
     # original value, so the interactive sheet can never search wider than Tier 2.
@@ -960,7 +980,7 @@ for j, rule in enumerate(RULES):
     set_cell(ws_f,1,2+j, rule['num'])
     set_cell(ws_f,4,2+j, rule['hh'])
     set_cell(ws_f,2,3+NR+j,
-             formula=f"=IF('Blended Rules'!$L${NAT_ROW0+j}=TRUE,1,0)")
+             formula=f"=IF('{BLENDED_SHEET}'!$L${NAT_ROW0+j}=TRUE,1,0)")
     for i in np.flatnonzero(orig_masks[j]):
         ws_f.cell(row=FLAG0+int(i), column=2+j).value = 1
 HHRNG  = f'$B$4:${fcol(NR-1)}$4'
@@ -980,7 +1000,7 @@ if NAT_RULES:
         set_cell(ws_f,1,NL0+j, rule['num'])
         set_cell(ws_f,4,NL0+j, rule['hh'])
         set_cell(ws_f,2,NL0+NR2+j,
-                 formula=f"=IF('National Rules'!$L${NAT_ROW0+j}=TRUE,1,0)")
+                 formula=f"=IF('{NATIONAL_SHEET}'!$L${NAT_ROW0+j}=TRUE,1,0)")
         for i in np.flatnonzero(nat_masks[j]):
             ws_f.cell(row=FLAG0+int(i), column=NL0+j).value = 1
     NLSEL = f'${nlsel(0)}$2:${nlsel(NR2-1)}$2'
@@ -992,9 +1012,9 @@ if NAT_RULES:
 
 # shared by the delivery tabs
 cases_by = {lbl: int((df['hh_group'] == lbl).sum()) for lbl in STRATA}
-D_HH  = f'Data!${dc("hh_group")}$2:${dc("hh_group")}${1+NDATA}'
-D_OV  = f'Data!${dc("over_threshold")}$2:${dc("over_threshold")}${1+NDATA}'
-D_AM  = f'Data!${dc("total_error_amount")}$2:${dc("total_error_amount")}${1+NDATA}'
+D_HH  = f'{DQ}!${dc("hh_group")}$2:${dc("hh_group")}${1+NDATA}'
+D_OV  = f'{DQ}!${dc("over_threshold")}$2:${dc("over_threshold")}${1+NDATA}'
+D_AM  = f'{DQ}!${dc("total_error_amount")}$2:${dc("total_error_amount")}${1+NDATA}'
 CHECKBOX_CELLS = {}
 
 
@@ -1006,7 +1026,8 @@ CHECKBOX_CELLS = {}
 # available, the NATIONAL-only list (built purely from the national pool).
 # ══════════════════════════════════════════════════════════════════════════════
 def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
-                      sel_rng, hh_rng, union_col, intro):
+                      sel_rng, hh_rng, union_col, intro, title=None):
+    title = title or sheet_name
     ws = wb.create_sheet(sheet_name, position)
     ws.sheet_view.showGridLines = False
     ws.sheet_properties.tabColor = '2F5496'
@@ -1019,7 +1040,7 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     for ci, (_, _, _, w) in enumerate(CHAR_COLS, 13):
         ws.column_dimensions[get_column_letter(ci)].width = w
     ws.column_dimensions[get_column_letter(LASTC)].width = 100
-    merge(ws,1,1,1,LASTC, value=f'{sheet_name} — {STATE_NAME} FY{FY_LABEL}',
+    merge(ws,1,1,1,LASTC, value=f'{title} — {STATE_NAME} FY{FY_LABEL}',
           fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
     ws.row_dimensions[1].height = 32
     wrapped = Alignment(horizontal='left', vertical='top', wrap_text=True)
@@ -1027,8 +1048,10 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
           fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=wrapped)
     ws.row_dimensions[2].height = 30
     merge(ws,3,1,3,LASTC,
-          value='Recall, $ Recall and Workload % are measured within each rule\'s own household-size '
-                'stratum. Expected error $ by case = error dollars caught / cases flagged. Rules are '
+          value='For individual rules, Recall, $ Recall and Workload % are measured within the rule\'s '
+                'own household-size stratum. In the orange summary rows, Workload % is the share of ALL '
+                'cases, so the household-size rows are the percentage-point portions that add up to the '
+                '"all" row. Expected error $ by case = error dollars caught / cases flagged. Rules are '
                 'listed in delivery-list rank order, exactly as delivered. Tick or untick Include? to '
                 'add or remove a rule from the combined rows above (on older Excel, type TRUE or '
                 'FALSE if you see text instead of checkboxes). Columns to the right of Include? '
@@ -1048,19 +1071,24 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
           value='All rules combined (a case is flagged if ANY Include?-checked rule flags it, '
                 'at delivered thresholds)',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
+    # the overall-results rows: orange (accent 6, lighter 60%), matching the
+    # orange step tabs
+    ORANGE60 = PatternFill('solid', fgColor='F8CBAD')
     u_rng = f'RuleFlags!${union_col}${FLAG0}:${union_col}${FLAG0+NDATA-1}'
     for i, (scope_hh, sel) in enumerate([('all', np.ones(len(df), bool))] +
                                         [(lbl, (df['hh_group'] == lbl).values) for lbl in STRATA]):
         r = 6 + i
         tot_err = max(int((is_err_all & sel).sum()), 1)
         tot_ed  = round(float(ed_all[sel].sum()), 2) or 1
-        tot_n   = max(int(sel.sum()), 1)
+        # workload in the summary rows is the share of ALL cases, so the
+        # household-size rows are percentage-point portions of the 'all' row
+        tot_n   = max(len(df), 1)
         sterm = '' if scope_hh == 'all' else f'*({D_HH}="{scope_hh}")'
         f_cnt = (f'=SUM(RuleFlags!{sel_rng})' if scope_hh == 'all'
                  else f'=SUMPRODUCT((RuleFlags!{sel_rng})*(RuleFlags!{hh_rng}="{scope_hh}"))')
-        set_cell(ws,r,1,'All rules', align=center, border=thin(), fill=GREEN)
-        set_cell(ws,r,2,scope_hh, align=center, border=thin(), fill=GREEN)
-        set_cell(ws,r,3,formula=f_cnt, align=center, border=thin(), fill=GREEN, number_format='0')
+        set_cell(ws,r,1,'All rules', align=center, border=thin(), fill=ORANGE60)
+        set_cell(ws,r,2,scope_hh, align=center, border=thin(), fill=ORANGE60)
+        set_cell(ws,r,3,formula=f_cnt, align=center, border=thin(), fill=ORANGE60, number_format='0')
         for col, f, fmt in [
             (4, f'=IF($G{r}=0,0,$H{r}/$G{r})',                            '0.0%'),
             (5, f'=$H{r}/{tot_err}',                                      '0.0%'),
@@ -1072,8 +1100,8 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
             (11,f'=IFERROR(IF($G{r}=0,"",$I{r}/$G{r}),"")',               '$#,##0'),
         ]:
             set_cell(ws,r,col,formula=f, align=center, border=thin(),
-                     number_format=fmt, fill=GREEN)
-        set_cell(ws,r,12,None, align=center, border=thin(), fill=GREEN)
+                     number_format=fmt, fill=ORANGE60)
+        set_cell(ws,r,12,None, align=center, border=thin(), fill=ORANGE60)
 
     merge(ws,10,1,10,LASTC, value='Individual rules — delivered thresholds, no tuning',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
@@ -1110,26 +1138,28 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
 
 
 ws_n = delivery_list_tab(
-    'Blended Rules', 1, RULES,
+    BLENDED_SHEET, 1, RULES,
     scores=blended_scores,
     conds_text=blended_conds,
     sel_rng=NATSEL, hh_rng=HHRNG, union_col=NATU,
-    intro=('A POTENTIAL rule list, selected from state and national rules, prioritized by '
+    title='Blended Rules',
+    intro=('A list of potential rules, selected from state and national rules, prioritized by '
            'precision (using the lower 99% confidence bound for reliability), and filled to '
            'the review budget against this state\'s caseload. Thresholds are used AS-IS, with '
            f'no state-level search or tuning; every metric is computed on all {STATE_NAME} QC '
-           'cases in the Data tab.'))
+           f'cases on the "{DATA_SHEET}" tab.'))
 
 if NAT_RULES:
     delivery_list_tab(
-        'National Rules', 2, NAT_RULES,
+        NATIONAL_SHEET, 2, NAT_RULES,
         scores=nat_scores,
         conds_text=nat_conds,
         sel_rng=NLSEL, hh_rng=NLHH, union_col=NLUCOL,
-        intro=('A POTENTIAL rule list built only from rules mined on all-state QC data, with '
+        intro=('A list of potential rules built only from rules mined on all-state QC data, with '
                'none of this state\'s own mined rules. For some states, it may serve as an '
                'alternative set of rules (or simply a reference point). Thresholds are used '
-               f'AS-IS; every metric is computed on all {STATE_NAME} QC cases in the Data tab.'))
+               f'AS-IS; every metric is computed on all {STATE_NAME} QC cases on the '
+               f'"{DATA_SHEET}" tab.'))
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 8. SEE CASES FLAGGED BY A RULE — pick a rule, list the cases it flags, with
@@ -1227,7 +1257,7 @@ for i in range(NSLOTS):
     set_cell(ws_e,r,G0+2,formula=f'=IF(${CV}{r}="","",INDEX(Dashboard!$C:$C,{Y2REF}+{i}))',
              fill=BLUE_LIGHT, align=center, border=thin())
     set_cell(ws_e,r,G0+3,formula=f'=IF(${CV}{r}="","",IFERROR(MATCH(${CV}{r},'
-                                 f'Data!$A$1:${LASTCOL}$1,0),""))',
+                                 f'{DQ}!$A$1:${LASTCOL}$1,0),""))',
              fill=BLUE_LIGHT, align=center, border=thin())
 set_cell(ws_e,10,G0,'CASE_ID', font=bold_font(10), fill=GRAY, align=center, border=thin())
 for i, h in enumerate(DCOLS):
@@ -1239,17 +1269,17 @@ for r in range(11, 11+GRIDN):
     # carries a CASE_ID column
     for i in range(NCOL):
         ws_e.cell(row=r, column=G0+1+i).value = (
-            f'=IFERROR(INDEX(Data!$A$2:${LASTCOL}${1+NDATA},MATCH(ROW()-10,{CUM},0),'
+            f'=IFERROR(INDEX({DQ}!${FEAT0}$2:${LASTCOL}${1+NDATA},MATCH(ROW()-10,{CUM},0),'
             f'COLUMN()-{G0}),"")')
     ws_e.cell(row=r, column=G0+NCOLV).value = f'=IFERROR(MATCH(ROW()-10,{CUM},0)+1,"")'
 for i in range(NDATA):
     r, dr_ = 12 + i, 2 + i
     slots = '*'.join(
-        f'IF(${CV}${6+k}="",1,COUNTIF(INDEX(Data!$A{dr_}:${LASTCOL}{dr_},1,${IXV}${6+k}),'
+        f'IF(${CV}${6+k}="",1,COUNTIF(INDEX({DQ}!$A{dr_}:${LASTCOL}{dr_},1,${IXV}${6+k}),'
         f'${OPV}${6+k}&${THV}${6+k}))' for k in range(NSLOTS))
     ws_e.cell(row=r, column=G0+NCOLV+2).value = (
-        f'=IF(Data!${dc("hh_group")}{dr_}<>${get_column_letter(G0+1)}$4,0,'
-        f'IF(AND({TOG}="true errors only",Data!${dc("over_threshold")}{dr_}<>1),0,{slots}))')
+        f'=IF({DQ}!${dc("hh_group")}{dr_}<>${get_column_letter(G0+1)}$4,0,'
+        f'IF(AND({TOG}="true errors only",{DQ}!${dc("over_threshold")}{dr_}<>1),0,{slots}))')
     ws_e.cell(row=r, column=G0+NCOLV+3).value = (
         f'=${HELP_Z}$12' if i == 0 else f'=${HELP_A}{r-1}+${HELP_Z}{r}')
 ws_e.cell(row=1, column=G0+NCOLV+4).value = f'=COUNTIF(${SC_C}$2:${SC_C}${1+NR},">0")'

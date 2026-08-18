@@ -40,9 +40,12 @@ import subprocess
 import sys
 
 PKG = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, PKG)
+from workbook_layout import BLENDED_SHEET  # noqa: E402
+
 BUILD_DIR = os.path.join(PKG, '.build')
 PY = sys.executable
-PROBES = ["Blended Rules!C6", "Blended Rules!G6", "Blended Rules!H6",
+PROBES = [f"{BLENDED_SHEET}!C6", f"{BLENDED_SHEET}!G6", f"{BLENDED_SHEET}!H6",
           "See cases flagged by a rule!A1", "See cases flagged by a rule!A4"]
 
 
