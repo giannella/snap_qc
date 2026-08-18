@@ -113,12 +113,13 @@ Scripts: **[1]** `INCL_build_blended_delivery_list_v2.R` (writes `state_delivery
 | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | exclusion rules: filter safe-to-skip cases by clean-rate LCB; reports workload cut vs error-dollar retention |
 | `state_threshold_gridsearch_v2.R` | tunes national rule thresholds per state and tests on a hold-out year, incl. a "deploy national as-is" benchmark |
 | `INCL_build_blended_delivery_list_v2.R` (+ `runners/run_blended_delivery_batch.R`) | builds a state's deployable ranked list: blends the state's own mined rules into the national pool on the confidence-bound scale, sized to a review budget with buffer rules |
+| `INCL_mine_internal_and_blend_with_national_v2.R` | for a state running on its own INTERNAL case file: mines rules internally with the same recipe (any-error target, FDR admission, 99% confidence-bound ranking) and blends them with the published national pool artifact `state_delivery_lists/national_rule_pool_2022_2024_v250.rds`, scoring every rule on the internal data; the public frame is not needed. Judge the resulting list on a held-out later period of internal data, never on its own training numbers |
 | `methods/deployment_benchmark_train2223_test24.R`, `methods/frozen_list_experiment_v2.R`, `methods/blended_frozen_lists_v2.R` | the deployment studies behind the delivery recipe (train 2022-23, test 2024, 18 states) |
 | `methods/tune_engine_params_v2.R` | one-at-a-time engine hyperparameter sweeps, judged by hold-out frontier |
 | `compare_*_v2.R` | the studies behind the design choices (engines, engine pairs, typed-vs-pooled mining, HH strata) |
 | `run_*.R` | non-interactive runners (load `reg_model_data.rds`, source the script) |
 
-Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-out/any-error stats, filtered shortlists, sweep curves), `exclusion_rules_by_hh_size_v2/`, and `state_delivery_lists/` (the deployment deliverable). The superseded per-state threshold-tuning outputs live in `archive/state_rules_v2/`.
+Outputs: `inclusion_rules_by_hh_size_v2/` (per-frame rule CSVs with train/hold-out/any-error stats, filtered shortlists, sweep curves), `exclusion_rules_by_hh_size_v2/`, and `state_delivery_lists/` (the deployment deliverable, plus `rule_characterization.csv` and the national pool artifact `national_rule_pool_2022_2024_v250.rds`: the 60,920 admitted candidate rules behind the v2.5.0 lists, with per-rule training stats and the confidence-bound ranking statistic). The superseded per-state threshold-tuning outputs live in `archive/state_rules_v2/`.
 
 ## Tree visualization (exploration)
 

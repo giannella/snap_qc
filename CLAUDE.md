@@ -62,7 +62,8 @@ generate -> canonicalize -> dedup -> evaluate -> sweep / shortlist
 | `rule_mining_helpers.R` + `methods/test_rule_mining_helpers.R` | shared pipeline + regression test |
 | `INCL_find_inclusion_rules_by_hh_size_v2.R` | inclusion rules per mining frame (4 typed + pooled any_error) x stratum -> `inclusion_rules_by_hh_size_v2/` |
 | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | exclusion rules (clean-rate LCB; workload cut vs dollar retention) -> `exclusion_rules_by_hh_size_v2/` |
-| `INCL_build_blended_delivery_list_v2.R` (+ `runners/run_blended_delivery_batch.R`) | the deployment deliverable: blended frozen list per state -> `state_delivery_lists/` |
+| `INCL_build_blended_delivery_list_v2.R` (+ `runners/run_blended_delivery_batch.R`) | the deployment deliverable: blended frozen list per state -> `state_delivery_lists/` (NB its `POOL_CACHE` dir holds STALE pre-v2.5 pools; the current pool artifact is `state_delivery_lists/national_rule_pool_2022_2024_v250.rds`) |
+| `INCL_mine_internal_and_blend_with_national_v2.R` | issue-#14 mechanics (added 2026-08-18): mines a state's INTERNAL case file with the shipped recipe and blends with the published national pool artifact; no public frame needed; validity judged only by the state's held-out internal period |
 | `state_threshold_gridsearch_v2.R` | per-state threshold tuning + holdout test + national-as-is benchmark (superseded fallback; committed outputs archived in `archive/state_rules_v2/`) |
 | `methods/tune_engine_params_v2.R`, `methods/tune_followup_subsample_lcbz_v2.R` | hyperparameter + LCB_Z sweeps -> `methods/parameter_tuning_v2/` |
 | `methods/compare_engines_v2.R`, `methods/compare_engine_combos_v2.R` | engine studies -> `methods/compare_engines_v2/` |
