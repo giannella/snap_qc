@@ -63,14 +63,18 @@ def load_rules(cfg):
     if path is None:
         raise SystemExit(f'delivery list not found: {rel}')
     rl = pd.read_csv(path)
-    rl = rl[rl['role'] == cfg['role_filter']].sort_values('rank')
+    # 'role_filter' left the state registry 2026-08-18 (the workbook build now
+    # consumes all roles via rule_selection.py); this study keeps the original
+    # core-only universe it was run on
+    role = cfg.get('role_filter', 'core')
+    rl = rl[rl['role'] == role].sort_values('rank')
     pat = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\s*(>=|<=|>|<|==)\s*(-?[0-9.]+)')
     rules = []
     for _, rr in rl.iterrows():
         conds = [{'var': v, 'op': o, 'thr': float(t)} for v, o, t in pat.findall(rr['rule'])]
         assert 1 <= len(conds) <= NSLOTS, rr['rule']
         rules.append({'num': int(rr['rank']), 'hh': str(rr['hh']), 'conds': conds})
-    print(f'delivery list: {os.path.basename(path)} ({len(rules)} {cfg["role_filter"]} rules)')
+    print(f'delivery list: {os.path.basename(path)} ({len(rules)} {role} rules)')
     return rules
 
 

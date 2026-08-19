@@ -8,11 +8,11 @@ Build a state's SNAP QC rules workbook end to end.
 
 The deliverable is ONE file per state, state_workbooks/<ABBR>/
 snap_qc_dashboard_<ABBR>.xlsx: raw input fields as values, every model
-feature an in-workbook formula, and the rules tabs (Blended Rules, plus
-National Rules where the repo carries a national-only list). No tuning of
-any kind runs in the workbook. The intermediate stages land in
-.build/out_<ABBR>/ and are kept for crosscheck_rules.py, which reads the
-plain build's static values.
+feature an in-workbook formula, and the rules tab (the blended delivery
+list after the rule_selection.py transform). No tuning of any kind runs in
+the workbook. The intermediate stages land in .build/out_<ABBR>/ and are
+kept for crosscheck_rules.py, which reads the plain build's static values
+against .build/effective_rules_<ABBR>.csv.
 
 (--v2, --live and --recon are accepted as no-ops for old command lines: the
 full chain is always run, and the v1 builder is retired to
@@ -27,7 +27,7 @@ Stages:
                             formula, for states that can run neither Python
                             nor R; adds Start Here, Data Dictionary and
                             FederalTables, and runs the validation gate
-  4. postprocess_workbook.py   native checkboxes + calc-chain removal
+  4. postprocess_workbook.py   calc-chain removal (checkboxes retired 2026-08-18)
   5. verify_workbook.py / verify_workbook_win.ps1   open-in-Excel probe
 
 Close the workbook in Excel first: writing underneath an open session produces
@@ -41,12 +41,20 @@ import sys
 
 PKG = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, PKG)
-from workbook_layout import BLENDED_SHEET  # noqa: E402
+from workbook_layout import (BLENDED_SHEET, DATA_SHEET, EXPORT_SHEET,  # noqa: E402
+                             FLAGGED_SHEET, SHARE_SHEET, VIEWER_SHEET)
 
 BUILD_DIR = os.path.join(PKG, '.build')
 PY = sys.executable
 PROBES = [f"{BLENDED_SHEET}!C6", f"{BLENDED_SHEET}!G6", f"{BLENDED_SHEET}!H6",
-          "See cases flagged by a rule!A1", "See cases flagged by a rule!A4"]
+          f"{VIEWER_SHEET}!A1", f"{VIEWER_SHEET}!A4",
+          f"{EXPORT_SHEET}!A4"]
+# the delivered (stage-3) workbook additionally carries Start Here and the
+# Step 5/6 tabs; probe the KPIs (base error rate row 7, overissuance share
+# row 9 — the KPI block starts at row 3), the pair counter, and a Step 6
+# per-rule metric cell (first rule row, Flagged column)
+PROBES_FINAL = PROBES + ["Start Here!B7", "Start Here!B9",
+                         f"{FLAGGED_SHEET}!B3", f"{SHARE_SHEET}!D14"]
 
 
 def run(script, *args, env=None):
@@ -70,15 +78,15 @@ def in_use(path):
     return subprocess.run(['lsof', path], capture_output=True).returncode == 0
 
 
-def verify(wbk):
+def verify(wbk, probes=PROBES):
     if sys.platform == 'darwin':
-        run('verify_workbook.py', wbk, *PROBES)
+        run('verify_workbook.py', wbk, *probes)
     elif sys.platform == 'win32':
         print(f'\n$ verify_workbook_win.ps1 {os.path.basename(wbk)}')
         p = subprocess.run(
             ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass',
              '-File', os.path.join(PKG, 'verify_workbook_win.ps1'),
-             wbk] + PROBES, cwd=PKG)
+             wbk] + probes, cwd=PKG)
         if p.returncode != 0:
             raise SystemExit(f'verify failed: {wbk}')
     else:
@@ -119,8 +127,9 @@ def build_one(state, refresh, want_verify):
             os.remove(p)
 
     if want_verify:
-        for wbk in (out, live, deliver):
+        for wbk in (out, live):
             verify(wbk)
+        verify(deliver, PROBES_FINAL)
     print(f'\nDone: {deliver}')
 
 

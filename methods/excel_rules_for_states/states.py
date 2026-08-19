@@ -9,7 +9,7 @@ Entries are generated from the naming convention
 its caseload deploys, and the `buffer` rows extend the pool to 3x depth).
 `build_workbook_v2.py` resolves the path against the snap_qc checkout, so the
 value here is repo-relative. Set an explicit entry in OVERRIDES only when a
-state should deviate from the convention (different list, years, or role).
+state should deviate from the convention (different list or years).
 """
 
 FY0, FY1 = 2022, 2024
@@ -56,11 +56,10 @@ def _default_entry(abbr):
         'years': _YEARS,
         'delivery_csv': (f'state_delivery_lists/blended_delivery_'
                          f'{name_us}_{FY0}_{FY1}_{_BUDGET}.csv'),
-        # the national-only list exists for 39 of the 49 states (2026-08-16);
-        # the builder skips the National Rules tab when the file is absent
-        'national_csv': (f'state_delivery_lists/national_delivery_'
-                         f'{name_us}_{FY0}_{FY1}_{_BUDGET}.csv'),
-        'role_filter': 'core',      # which delivery rules to implement
+        # 2026-08-18: 'national_csv' and 'role_filter' retired — the National
+        # Rules tab is gone, and rule_selection.py consumes ALL roles of the
+        # blended CSV (transformed core + promoted buffer), so no role filter
+        # applies anywhere in the build any more.
     }
 
 

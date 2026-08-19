@@ -1,16 +1,20 @@
 """
-Test that the rules as shown in the workbook's Blended Rules and National
-Rules tabs match an independent R implementation of the same rules over the
-same years of reg_model_data.rds.
+Test that the rules as shown in the workbook's rules tab match an
+independent R implementation of the same rules over the same years of
+reg_model_data.rds.
 
     python crosscheck_rules.py WA [--workbook path.xlsx]
 
-For each tab, runs crosscheck_rules.R (which re-parses the delivery CSV,
-re-applies every rule in R with the miner's own prep_features(), and scores
-it) and compares, per rule: n flagged, errors caught, error dollars,
-precision, recall, dollar recall, workload — plus the all-rules union,
-recomputed from the workbook's RuleFlags hit matrix, overall and per
-household-size stratum.
+Runs crosscheck_rules.R against the workbook's EFFECTIVE rule list
+(.build/effective_rules_<ABBR>.csv, written by the build via
+rule_selection.py — the delivery CSV after the div-100 drop, bbce strip and
+buffer promotion). The R side re-parses that CSV's rule text, re-applies
+every rule with the miner's own prep_features(), and scores it; this
+compares, per rule: n flagged, errors caught, error dollars, precision,
+recall, dollar recall, workload — plus the all-rules union, recomputed from
+the workbook's RuleFlags hit matrix, overall and per household-size stratum.
+Because the R side re-derives each mask from the stripped rule text on the
+state's own rows, a bbce strip that changed any flag set would surface here.
 
 Exit code 0 = everything matches. Run it against the PLAIN build in
 .build/out_<ABBR>/ (the default): its rules-tab values are static, so they
@@ -29,7 +33,7 @@ import openpyxl
 import pandas as pd
 
 import states as STATE_REGISTRY
-from workbook_layout import BLENDED_SHEET, NATIONAL_SHEET
+from workbook_layout import BLENDED_SHEET
 
 PKG = os.path.dirname(os.path.abspath(__file__))
 NAT_ROW0, FLAG0 = 11, 5
@@ -61,10 +65,12 @@ def rscript():
 
 def run_r(cfg, repo, csv_path, tmp, tag):
     r_out = os.path.join(tmp, f'r_rules_{tag}.csv')
+    # role "all": the effective-rules CSV already holds exactly the tab's
+    # rules (transformed core + promoted buffer)
     cmd = [rscript(), os.path.join(PKG, 'crosscheck_rules.R'),
            '--state', cfg['name'], '--csv', csv_path, '--out', r_out,
            '--years', ','.join(str(y) for y in cfg.get('years', (2022, 2023, 2024))),
-           '--repo', repo, '--role', cfg['role_filter']]
+           '--repo', repo, '--role', 'all']
     print('$ ' + ' '.join(cmd))
     if subprocess.run(cmd, cwd=repo).returncode != 0:
         raise SystemExit('crosscheck_rules.R failed')
@@ -144,27 +150,18 @@ def main():
     cases = pd.read_csv(os.path.join(os.path.dirname(wbp),
                                      f'{cfg["abbr"].lower()}_cases.csv'))
 
-    def resolve(rel):
-        p = os.path.join(repo, rel)
-        return p if os.path.isfile(p) else None
+    eff_csv = os.path.join(PKG, '.build', f'effective_rules_{cfg["abbr"]}.csv')
+    assert os.path.isfile(eff_csv), (
+        f'{eff_csv} not found — it is written by build_workbook_v2.py '
+        '(rule_selection.effective_rules); rebuild the state first')
 
     wb = openpyxl.load_workbook(wbp)
     tmp = tempfile.mkdtemp(prefix='crosscheck_')
-    total = 0
 
-    blended, blended_u = run_r(cfg, repo, resolve(cfg['delivery_csv']), tmp, 'blended')
-    NRB = len(blended)
-    # RuleFlags layout (build_workbook_v2): the blended list's hit-mask block
-    # starts at column 2; the national-only block at 6+2*NR
-    total += check_tab(wb, BLENDED_SHEET, blended, blended_u, 2, cases)
-
-    if NATIONAL_SHEET in wb.sheetnames:
-        nat_csv = resolve(cfg.get('national_csv', ''))
-        assert nat_csv, 'workbook has a National Rules tab but no national CSV found'
-        natl, natl_u = run_r(cfg, repo, nat_csv, tmp, 'national')
-        total += check_tab(wb, NATIONAL_SHEET, natl, natl_u, 6 + 2 * NRB, cases)
-    else:
-        print('no National Rules tab (no national-only list for this state)')
+    blended, blended_u = run_r(cfg, repo, eff_csv, tmp, 'blended')
+    # RuleFlags layout (build_workbook_v2): the rule list's hit-mask block
+    # starts at column 2
+    total = check_tab(wb, BLENDED_SHEET, blended, blended_u, 2, cases)
 
     sys.exit(1 if total else 0)
 

@@ -12,22 +12,24 @@ stays in the package for pipeline-side use on a state's internal data
 (methods/tuning_principles.md).
 
 Sheets produced (names from workbook_layout.py):
-  Step 2. Review and Select Rules  the blended delivery list (state + national
-                                   pools), as-is
-  National Rules                   the national-only delivery list, as-is (where
-                                   available)
-  Both present POTENTIAL rule lists for the state to evaluate.
+  Step 3. Select Rules   the effective rule list (blended delivery list after
+                         the rule_selection.py transform: count_divisible_by_100
+                         rules dropped, trivially-true bbce_state_i conjuncts
+                         stripped, buffer rules promoted to refill capacity),
+                         sorted by error dollars caught on the state frame
   See cases flagged by a rule  pick a rule, list the cases it flags (errors-only
                                or all flagged, via a toggle)
-  Step 1. Paste-in Data  input-contract headers (left, filled by
+  Step 2. Import Testing Data  input-contract headers (left, filled by
                          make_input_workbook) + reconstructed state QC case data
   Dashboard          one threshold block per rule + PR chart   (hidden engine)
   Grid Search        bracket-bounded threshold search          (hidden engine)
   RuleFlags          case x rule hit matrices                  (hidden engine)
 
 Pick the state with the SNAP_STATE environment variable (default WA); add new
-states in states.py.  Run through make_state.py so the native checkboxes
-get injected and the result is verified in Excel.
+states in states.py.  Run through make_state.py so the calc chain gets dropped
+and the result is verified in Excel. Rule selection is plain TRUE/FALSE text in
+the Include? column (native checkboxes were dropped 2026-08-18 for
+compatibility with pre-365 Excel).
 """
 import os
 import re
@@ -49,8 +51,9 @@ import pandas as pd
 # ══════════════════════════════════════════════════════════════════════════════
 import states as STATE_REGISTRY
 import tuning
-from workbook_layout import (DATA_SHEET, BLENDED_SHEET, NATIONAL_SHEET,
-                             RAW_COLS, RAW_OFF, qref)
+import rule_selection
+from workbook_layout import (DATA_SHEET, BLENDED_SHEET, EXPORT_SHEET,
+                             VIEWER_SHEET, RAW_COLS, RAW_OFF, qref)
 
 DQ = qref(DATA_SHEET)                # the Data sheet as written in formulas
 
@@ -65,7 +68,6 @@ STATE_FIPS   = _cfg['fips']          # informational; nothing reads the .sav
                                      # files any more (2026-08-16: the demo
                                      # carries reconstructed frame values)
 FY_LABEL     = _cfg['fy_label']
-ROLE_FILTER  = _cfg['role_filter']
 
 
 def _find_repo(start):
@@ -194,12 +196,12 @@ MAX_ROW = max(MAX_ROW, len(df) + 101)
 # ══════════════════════════════════════════════════════════════════════════════
 # 2. PARSE THE DELIVERY RULES
 #
-# Two rule lists ship per state: the BLENDED list (the state's own mined rules
-# merged into the national pool — the deployment deliverable, and what the
-# tuner runs on) and, where the repo carries one, the NATIONAL-only list. Each
-# gets its own tab.
+# One rule list ships per state: the BLENDED delivery list (the state's own
+# mined rules merged into the national pool), passed through the
+# rule_selection.py transform (count_divisible_by_100 rules dropped, trivially
+# true bbce_state_i conjuncts stripped, buffer rules promoted to refill the
+# freed capacity) and sorted by error dollars caught on the state frame.
 # ══════════════════════════════════════════════════════════════════════════════
-COND_PAT = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\s*(>=|<=|>|<|==)\s*(-?[0-9.]+)')
 
 # Per-rule characterization carried through from the delivery CSVs: what the
 # rule catches as mined on national data. Fixed context on the rules tabs —
@@ -287,34 +289,13 @@ def render_plain(conds):
     return '; '.join(parts)
 
 
-def parse_delivery(csv_path):
-    rdf = pd.read_csv(csv_path)
-    rdf = rdf[rdf['role'] == ROLE_FILTER].sort_values('rank').reset_index(drop=True)
-    out = []
-    for _, rr in rdf.iterrows():
-        conds = [{'var': v, 'op': op, 'thr': float(t)}
-                 for v, op, t in COND_PAT.findall(rr['rule'])]
-        assert 1 <= len(conds) <= NSLOTS, rr['rule']
-        out.append({'num': int(rr['rank']), 'hh': str(rr['hh']), 'conds': conds,
-                    'prec_train': float(rr['precision_train']),
-                    'prec_lcb': float(rr['precision_train_lcb']),
-                    'engine': rr['engines'], 'frame': rr['mined_frames'],
-                    'char': {k: rr.get(k) for k, _, _, _ in CHAR_COLS}})
-    return out
+os.makedirs(BUILD_DIR, exist_ok=True)
+RULES = rule_selection.effective_rules(
+    DELIVERY_CSV, df, char_keys=[k for k, _, _, _ in CHAR_COLS],
+    out_csv=os.path.join(BUILD_DIR, f'effective_rules_{STATE_ABBR}.csv'))
+print('effective rules implemented:', len(RULES))
 
-
-RULES = parse_delivery(DELIVERY_CSV)
-print('blended rules implemented:', len(RULES))
-
-NAT_RULES = None
-if _cfg.get('national_csv'):
-    try:
-        NAT_RULES = parse_delivery(_find_delivery(_cfg['national_csv']))
-        print('national-only rules implemented:', len(NAT_RULES))
-    except SystemExit:
-        print('no national-only list for this state; National Rules tab skipped')
-
-RULE_VARS = sorted({c['var'] for r in RULES + (NAT_RULES or []) for c in r['conds']})
+RULE_VARS = sorted({c['var'] for r in RULES for c in r['conds']})
 for v in RULE_VARS:
     assert v in df.columns, f'missing variable: {v}'
 
@@ -383,11 +364,13 @@ wb = openpyxl.Workbook()
 # ── Data sheet ────────────────────────────────────────────────────────────────
 ws_data = wb.create_sheet(DATA_SHEET)
 dfx = df[DCOLS]
-# the input contract's headers on the LEFT; make_input_workbook fills the values
-AMBER = PatternFill('solid', fgColor='FCE4D6')
+# the input contract's headers on the LEFT; make_input_workbook fills the
+# values. Light yellow = the workbook-wide "yellow means interactive"
+# convention (revision 2026-08-18).
+INPUT_YELLOW = PatternFill('solid', fgColor='FFFF99')
 for ci, col in enumerate(RAW_COLS, 1):
     c = ws_data.cell(row=1, column=ci, value=col)
-    c.fill = AMBER
+    c.fill = INPUT_YELLOW
     c.font = Font(name=FONT, bold=True)
     c.alignment = center
 for ci, col in enumerate(DCOLS, 1):
@@ -638,7 +621,7 @@ merge(ws_g,4,1,4,13,
 set_cell(ws_g,5,1,'Rule preset', font=bold_font(), fill=GRAY, align=left)
 set_cell(ws_g,5,2,f'Rule {RULES[0]["num"]} (HH {RULES[0]["hh"]})', fill=YELLOW,
          align=center, border=thin(), font=bold_font(), number_format='@')
-set_cell(ws_g,5,4,'← delivery rules ranked by train precision LCB, or "Custom"',
+set_cell(ws_g,5,4,'← delivery rules sorted by error dollars caught on this state\'s data, or "Custom"',
          font=Font(name=FONT,size=9,color='808080'), align=left)
 merge(ws_g,5,8,5,11, value='Custom rule (used when preset = Custom)',
       fill=GRAY, font=bold_font(10), align=center)
@@ -922,46 +905,31 @@ wb.calculation.fullCalcOnLoad = True
 # them. The tuning machinery stays in tuning.py for pipeline-side use on a
 # state's internal data (methods/tuning_principles.md).
 # ══════════════════════════════════════════════════════════════════════════════
-def py_score(dd, conds, thresholds):
-    is_err = (dd['over_threshold'] == 1).values
-    ed = np.where(is_err, dd['total_error_amount'].fillna(0).values, 0)
-    m = np.ones(len(dd), bool)
-    for c, t in zip(conds, thresholds):
-        xv = dd[c['var']].values.astype(float)
-        if   c['op'] == '>=': cm = xv >= t
-        elif c['op'] == '>':  cm = xv > t
-        elif c['op'] == '<=': cm = xv <= t
-        else:                 cm = xv < t
-        m &= np.where(np.isnan(xv), False, cm)
-    n, tp = int(m.sum()), int((m & is_err).sum())
-    return {'prec': tp / n if n else 0.0, 'rec': tp / max(is_err.sum(), 1),
-            'drec': ed[m].sum() / max(ed.sum(), 1e-9), 'n': n, 'tp': tp,
-            'dollars': ed[m].sum()}
-
-def rule_mask_full(rule, thresholds):
-    m = (df['hh_group'] == rule['hh']).values.copy()
-    for c, t in zip(rule['conds'], thresholds):
-        xv = df[c['var']].values.astype(float)
-        if   c['op'] == '>=': cm = xv >= t
-        elif c['op'] == '>':  cm = xv > t
-        elif c['op'] == '<=': cm = xv <= t
-        else:                 cm = xv < t
-        m &= np.where(np.isnan(xv), False, cm)
-    return m
-
-def score_list(rules_list):
-    masks = [rule_mask_full(r, [c['thr'] for c in r['conds']]) for r in rules_list]
-    scores = [py_score(df[df['hh_group'] == r['hh']], r['conds'],
-                       [c['thr'] for c in r['conds']]) for r in rules_list]
-    conds = [' & '.join(f'{c["var"]} {c["op"]} {c["thr"]:g}' for c in r['conds'])
-             for r in rules_list]
-    return masks, scores, conds
-
 is_err_all = (df['over_threshold'] == 1).values
 ed_all = np.where(is_err_all, df['total_error_amount'].fillna(0).values, 0)
+TOT_ERR = max(int(is_err_all.sum()), 1)
+TOT_ED  = max(float(ed_all.sum()), 1e-9)
+
+
+def score_list(rules_list):
+    """Static per-rule metrics, each rule ALONE. Recall and $ Recall are
+    shares of ALL errors / error dollars on the frame (decision 2026-08-18:
+    grand-total denominators, comparable to the orange union row; rules
+    overlap, so they deliberately do not sum to the union). Precision and
+    workload stay within the rule's own flagged set / stratum. Must match
+    make_live.rule_row's live formulas (risk R4)."""
+    masks = [rule_selection.rule_mask(df, r) for r in rules_list]
+    scores = []
+    for m in masks:
+        n, tp = int(m.sum()), int((m & is_err_all).sum())
+        dol = float(ed_all[m].sum())
+        scores.append({'prec': tp / n if n else 0.0, 'rec': tp / TOT_ERR,
+                       'drec': dol / TOT_ED, 'n': n, 'tp': tp, 'dollars': dol})
+    conds = [rule_selection.rule_text(r['conds']) for r in rules_list]
+    return masks, scores, conds
+
+
 orig_masks, blended_scores, blended_conds = score_list(RULES)
-NR2 = len(NAT_RULES or [])
-nat_masks, nat_scores, nat_conds = score_list(NAT_RULES or [])
 
 # ── hidden RuleFlags sheet: case x rule 0/1 hit matrices + live union columns ─
 # row 1 rule nums | row 2 selected (from the rules tabs' Include? cols)
@@ -990,26 +958,6 @@ for i in range(NDATA):
     ws_f.cell(row=r, column=4+2*NR).value = (
         f'=IF(SUMPRODUCT({NATSEL},$B{r}:${fcol(NR-1)}{r})>0,1,0)')
 
-# second region: the national-only list's masks, selection vector and union
-if NAT_RULES:
-    NL0 = 6 + 2*NR
-    nlcol  = lambda j: get_column_letter(NL0 + j)
-    nlsel  = lambda j: get_column_letter(NL0 + NR2 + j)
-    NLUCOL = get_column_letter(NL0 + 2*NR2 + 1)
-    for j, rule in enumerate(NAT_RULES):
-        set_cell(ws_f,1,NL0+j, rule['num'])
-        set_cell(ws_f,4,NL0+j, rule['hh'])
-        set_cell(ws_f,2,NL0+NR2+j,
-                 formula=f"=IF('{NATIONAL_SHEET}'!$L${NAT_ROW0+j}=TRUE,1,0)")
-        for i in np.flatnonzero(nat_masks[j]):
-            ws_f.cell(row=FLAG0+int(i), column=NL0+j).value = 1
-    NLSEL = f'${nlsel(0)}$2:${nlsel(NR2-1)}$2'
-    NLHH  = f'${nlcol(0)}$4:${nlcol(NR2-1)}$4'
-    for i in range(NDATA):
-        r = FLAG0 + i
-        ws_f.cell(row=r, column=NL0+2*NR2+1).value = (
-            f'=IF(SUMPRODUCT({NLSEL},${nlcol(0)}{r}:${nlcol(NR2-1)}{r})>0,1,0)')
-
 # shared by the delivery tabs
 cases_by = {lbl: int((df['hh_group'] == lbl).sum()) for lbl in STRATA}
 D_HH  = f'{DQ}!${dc("hh_group")}$2:${dc("hh_group")}${1+NDATA}'
@@ -1019,11 +967,10 @@ CHECKBOX_CELLS = {}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 7. THE RULE-LIST TABS — thresholds as-is, no tuning
+# 7. THE RULE-LIST TAB — thresholds as-is, no tuning
 #
-# One tab per delivery list the repo carries for this state: the BLENDED list
-# (the state's own mined rules merged into the national pool) and, where
-# available, the NATIONAL-only list (built purely from the national pool).
+# One tab: the effective rule list (the blended delivery list after the
+# rule_selection transform), sorted by error dollars caught on the state frame.
 # ══════════════════════════════════════════════════════════════════════════════
 def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                       sel_rng, hh_rng, union_col, intro, title=None):
@@ -1043,24 +990,23 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     merge(ws,1,1,1,LASTC, value=f'{title} — {STATE_NAME} FY{FY_LABEL}',
           fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
     ws.row_dimensions[1].height = 32
+    # instructions: black 11pt, merged A:K only (not the full sheet width) so
+    # the text sits over the metric columns instead of stretching unreadably
+    # far right (revision 2026-08-18)
     wrapped = Alignment(horizontal='left', vertical='top', wrap_text=True)
-    merge(ws,2,1,2,LASTC, value=intro,
-          fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=wrapped)
-    ws.row_dimensions[2].height = 30
-    merge(ws,3,1,3,LASTC,
-          value='For individual rules, Recall, $ Recall and Workload % are measured within the rule\'s '
-                'own household-size stratum. In the orange summary rows, Workload % is the share of ALL '
-                'cases, so the household-size rows are the percentage-point portions that add up to the '
-                '"all" row. Expected error $ by case = error dollars caught / cases flagged. Rules are '
-                'listed in delivery-list rank order, exactly as delivered. Tick or untick Include? to '
-                'add or remove a rule from the combined rows above (on older Excel, type TRUE or '
-                'FALSE if you see text instead of checkboxes). Columns to the right of Include? '
-                'characterize each rule as mined on NATIONAL data (what error elements and natures '
-                'it catches, who caused them, whether the error was discovered in the case file); '
-                'they are fixed context and do not recompute from pasted data. The exact machine '
-                'expression of every rule is in the last column.',
-          fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=wrapped)
-    ws.row_dimensions[3].height = 42
+    merge(ws,2,1,2,11, value=intro,
+          fill=GRAY, font=Font(name=FONT,size=11,color='000000'), align=wrapped)
+    ws.row_dimensions[2].height = 60
+    merge(ws,3,1,3,11,
+          value=f'Rules are sorted by total error dollars caught on the data in the "{DATA_SHEET}" '
+                'tab. For individual rules, Recall and $ Recall are that rule ALONE as a share of '
+                'ALL errors / error dollars in the pasted data; rules overlap, so these columns do '
+                'not sum to the combined rows above. (In the orange rows, Recall and $ Recall are '
+                'within that row\'s household-size scope.) A rule\'s Workload % is the share of its '
+                'own household-size stratum; in the orange summary rows it is the share of ALL '
+                'cases. The exact machine expression of every rule is in the last column.',
+          fill=GRAY, font=Font(name=FONT,size=11,color='000000'), align=wrapped)
+    ws.row_dimensions[3].height = 60
     for col, txt in enumerate(['Rule','HH size','What the rule says','Precision','Recall',
                                '$ Recall','Flagged','Errors','Error $ caught','Workload %',
                                'Expected error $ by case','Include?'] +
@@ -1068,7 +1014,7 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
         set_cell(ws,4,col,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
 
     merge(ws,5,1,5,LASTC,
-          value='All rules combined (a case is flagged if ANY Include?-checked rule flags it, '
+          value='All rules combined (a case is flagged if ANY rule with Include? = TRUE flags it, '
                 'at delivered thresholds)',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
     # the overall-results rows: orange (accent 6, lighter 60%), matching the
@@ -1106,7 +1052,7 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     merge(ws,10,1,10,LASTC, value='Individual rules — delivered thresholds, no tuning',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
     plain_align = Alignment(horizontal='left', vertical='top', wrap_text=True)
-    for j, rule in enumerate(rules_list):        # already in delivery-rank order
+    for j, rule in enumerate(rules_list):   # already sorted by error $ caught
         r = NAT_ROW0 + j
         sc = scores[j]
         set_cell(ws,r,1,f'Rule {rule["num"]}', align=center, border=thin(), fill=GREEN)
@@ -1133,40 +1079,36 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
         set_cell(ws,r,LASTC,conds_text[j], align=left,
                  font=Font(name=FONT,size=8,color='808080'))
     ws.freeze_panes = 'D5'
-    CHECKBOX_CELLS[sheet_name] = [f'L{NAT_ROW0+j}' for j in range(len(rules_list))]
+    # Include? is plain TRUE/FALSE text (no native checkboxes since
+    # 2026-08-18); the dropdown constrains typing without needing Excel 365
+    dv_incl = DataValidation(type='list', formula1='"TRUE,FALSE"', allow_blank=False)
+    ws.add_data_validation(dv_incl)
+    dv_incl.add(f'L{NAT_ROW0}:L{NAT_ROW0 + len(rules_list) - 1}')
     return ws
 
 
+# row 2 carries the agreed workbook wording verbatim (revision note 2026-08-18)
 ws_n = delivery_list_tab(
     BLENDED_SHEET, 1, RULES,
     scores=blended_scores,
     conds_text=blended_conds,
     sel_rng=NATSEL, hh_rng=HHRNG, union_col=NATU,
-    title='Blended Rules',
+    title='Select Rules',
     intro=('A list of potential rules, selected from state and national rules, prioritized by '
-           'precision (using the lower 99% confidence bound for reliability), and filled to '
-           'the review budget against this state\'s caseload. Thresholds are used AS-IS, with '
-           f'no state-level search or tuning; every metric is computed on all {STATE_NAME} QC '
-           f'cases on the "{DATA_SHEET}" tab.'))
-
-if NAT_RULES:
-    delivery_list_tab(
-        NATIONAL_SHEET, 2, NAT_RULES,
-        scores=nat_scores,
-        conds_text=nat_conds,
-        sel_rng=NLSEL, hh_rng=NLHH, union_col=NLUCOL,
-        intro=('A list of potential rules built only from rules mined on all-state QC data, with '
-               'none of this state\'s own mined rules. For some states, it may serve as an '
-               'alternative set of rules (or simply a reference point). Thresholds are used '
-               f'AS-IS; every metric is computed on all {STATE_NAME} QC cases on the '
-               f'"{DATA_SHEET}" tab.'))
+           'precision and filled to a default 10% caseload. Expected error $ by case = error '
+           'dollars caught / cases flagged. To remove a rule, set the text in the yellow '
+           '"Include?" column to FALSE, which will decrease the workload % in cell J6. Columns '
+           'to the right of "Include?" characterize each rule as applied to NATIONAL data (what '
+           'error elements and natures it catches, who caused them, whether the error was '
+           'discovered in the case file); they are fixed context and do not recompute from '
+           'pasted data.'))
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 8. SEE CASES FLAGGED BY A RULE — pick a rule, list the cases it flags, with
 # a toggle between true errors only and every flagged case
 # ══════════════════════════════════════════════════════════════════════════════
-VIEWER = 'See cases flagged by a rule'
-ws_e = wb.create_sheet(VIEWER, 3 if NAT_RULES else 2)
+VIEWER = VIEWER_SHEET
+ws_e = wb.create_sheet(VIEWER, 2)
 ws_e.sheet_view.showGridLines = False
 ws_e.sheet_properties.tabColor = '2F5496'
 NCOL   = len(DCOLS)
@@ -1178,15 +1120,20 @@ LISTN  = max(NR, 64)                         # rule-list slots: one per rule, so
                                              # silently truncated on this panel
 GRIDN  = 60                                  # result rows
 HELP_Y = get_column_letter(G0 + NCOLV + 1)   # rule index / dashboard row
-HELP_Z = get_column_letter(G0 + NCOLV + 2)   # per-case hit flag
-HELP_A = get_column_letter(G0 + NCOLV + 3)   # cumulative count
+HELP_Z = get_column_letter(G0 + NCOLV + 2)   # unused since 2026-08-18 (hit
+HELP_A = get_column_letter(G0 + NCOLV + 3)   # matching moved into the Data
+                                             # sheet's _view_* table columns);
+                                             # kept so the panel columns to
+                                             # the right keep their letters
 SC_B   = get_column_letter(G0 + NCOLV + 4)   # rule score
 SC_C   = get_column_letter(G0 + NCOLV + 5)   # rule match count
 SC_D   = get_column_letter(G0 + NCOLV + 6)   # compacted sorted rule list
 PRESETS = f"'Grid Search'!$AA$2:$AA${1+NR}"
 for cl, w in {'A':20,'B':9}.items():
     ws_e.column_dimensions[cl].width = w
-ws_e.column_dimensions[get_column_letter(G0)].width = 14
+# wide enough for the full variable names in the rule readout (revision
+# 2026-08-18)
+ws_e.column_dimensions[get_column_letter(G0)].width = 26
 for i in range(1, NCOLV):
     ws_e.column_dimensions[get_column_letter(G0+i)].width = 13 if i > 3 else 16
 ws_e.column_dimensions[DROWC].width = 9
@@ -1198,7 +1145,8 @@ set_cell(ws_e,1,1,formula=f'=${SC_B}$1&" rules with matches"',
          fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=14,color='FFFFFF'), align=center)
 ws_e.merge_cells('A1:B1'); ws_e.row_dimensions[1].height = 32
 merge(ws_e,2,1,2,2, value='sorted by cases matched — updates live',
-      fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
+      fill=GRAY, font=Font(name=FONT,size=13,color='000000'), align=left)
+ws_e.row_dimensions[2].height = 36
 set_cell(ws_e,3,1,'Rule', font=bold_font(10), fill=GRAY, align=center, border=thin())
 set_cell(ws_e,3,2,'matches', font=bold_font(10), fill=GRAY, align=center, border=thin())
 for k in range(1, LISTN+1):
@@ -1214,9 +1162,11 @@ merge(ws_e,1,G0,1,G0+11,
 merge(ws_e,2,G0,2,G0+NCOLV-1,
       value='Pick a rule (the dropdown lists rules currently matching, sorted by matches) and '
             'choose whether to see only flagged cases that are true payment errors, or every '
-            'flagged case. NOTE: this viewer shows the shipped public sample only; pasted rows '
-            'do not appear here (the rules tabs do recompute).',
-      fill=GRAY, font=Font(name=FONT,size=9,color='808080'), align=left)
+            'flagged case. Pasted rows appear here too; the columns the rule uses are '
+            f'highlighted in blue, and the first {GRIDN} matching cases are shown.',
+      fill=GRAY, font=Font(name=FONT,size=13,color='000000'),
+      align=Alignment(horizontal='left', vertical='top', wrap_text=True))
+ws_e.row_dimensions[2].height = 36
 set_cell(ws_e,3,G0,'Rule', font=bold_font(10), fill=GRAY, align=center, border=thin())
 set_cell(ws_e,3,G0+1,f'Rule {RULES[0]["num"]} (HH {RULES[0]["hh"]})',
          fill=YELLOW, align=center, border=thin(), font=bold_font(), number_format='@')
@@ -1263,25 +1213,64 @@ set_cell(ws_e,10,G0,'CASE_ID', font=bold_font(10), fill=GRAY, align=center, bord
 for i, h in enumerate(DCOLS):
     set_cell(ws_e,10,G0+1+i,h, font=bold_font(10), fill=GRAY, align=center, border=thin())
 set_cell(ws_e,10,G0+NCOLV,'data_row', font=bold_font(10), fill=GRAY, align=center, border=thin())
-CUM = f'${HELP_A}$12:${HELP_A}${11+NDATA}'
+# blue-highlight the columns the selected rule uses (revision 2026-08-18):
+# conditional formatting keyed to the rule's variable readouts in CV6:CV9 —
+# the header turns BLUE_LIGHT when its name is among the rule's variables,
+# and the grid cells below follow (only on rows actually showing a case).
+# NB conditional-format fills read the dxf BACKGROUND color, hence bgColor.
+HL_FILL  = PatternFill(bgColor='BDD7EE')
+HL_FIRST = get_column_letter(G0 + 1)
+HL_LAST  = get_column_letter(G0 + NCOL)
+ws_e.conditional_formatting.add(
+    f'{HL_FIRST}10:{HL_LAST}10',
+    FormulaRule(formula=[f'COUNTIF(${CV}$6:${CV}$9,{HL_FIRST}$10)>0'],
+                fill=HL_FILL))
+ws_e.conditional_formatting.add(
+    f'{HL_FIRST}11:{HL_LAST}{10 + GRIDN}',
+    FormulaRule(formula=[f'AND(COUNTIF(${CV}$6:${CV}$9,{HL_FIRST}$10)>0,'
+                         f'${DROWC}11<>"")'],
+                fill=HL_FILL))
+# ── per-case matching lives INSIDE the Data sheet (2026-08-18) ───────────────
+# Two hidden columns appended right after the feature block, BEFORE make_live
+# forms the CaseData table over the sheet — so they become table columns that
+# Excel auto-fills when a state pastes rows, and the viewer covers pasted data
+# (it used to read a fixed helper block sized to the shipped sample only).
+#   _view_hit  does the currently selected rule flag this row (0/1, honoring
+#              the stratum and the errors-only toggle)
+#   _view_cum  running count of hits; the reference to the cell above is
+#              wrapped in N() so the header text reads as 0 on the first row
+VQ  = qref(VIEWER)
+VHI = RAW_OFF + len(DCOLS) + 1
+VHC, VCC = get_column_letter(VHI), get_column_letter(VHI + 1)
+ws_data.cell(row=1, column=VHI, value='_view_hit')
+ws_data.cell(row=1, column=VHI + 1, value='_view_cum')
+HHC, OVC = dc('hh_group'), dc('over_threshold')
+STRAT_REF = f'{VQ}!${get_column_letter(G0+1)}$4'
+for i in range(NDATA):
+    rr = 2 + i
+    slots = '*'.join(
+        f'IF({VQ}!${CV}${6+k}="",1,COUNTIF(INDEX($A{rr}:${LASTCOL}{rr},1,'
+        f'{VQ}!${IXV}${6+k}),{VQ}!${OPV}${6+k}&{VQ}!${THV}${6+k}))'
+        for k in range(NSLOTS))
+    ws_data.cell(row=rr, column=VHI).value = (
+        f'=IF(${HHC}{rr}<>{STRAT_REF},0,'
+        f'IF(AND({VQ}!{TOG}="true errors only",${OVC}{rr}<>1),0,{slots}))')
+    ws_data.cell(row=rr, column=VHI + 1).value = f'=${VHC}{rr}+N(${VCC}{rr-1})'
+ws_data.column_dimensions[VHC].hidden = True
+ws_data.column_dimensions[VCC].hidden = True
+
+# the viewer grid looks hits up in the whole _view_cum column, so rows pasted
+# past the shipped sample appear too (display still capped at GRIDN matches);
+# MATCH over a whole column returns the sheet row directly
+CUMC = f'{DQ}!${VCC}:${VCC}'
 for r in range(11, 11+GRIDN):
-    # G0 (CASE_ID) is left blank here; make_input_workbook.py fills it once the Data tab
-    # carries a CASE_ID column
+    ws_e.cell(row=r, column=G0).value = (
+        f'=IFERROR(INDEX({DQ}!$A:$A,MATCH(ROW()-10,{CUMC},0)),"")')
     for i in range(NCOL):
         ws_e.cell(row=r, column=G0+1+i).value = (
-            f'=IFERROR(INDEX({DQ}!${FEAT0}$2:${LASTCOL}${1+NDATA},MATCH(ROW()-10,{CUM},0),'
+            f'=IFERROR(INDEX({DQ}!${FEAT0}:${LASTCOL},MATCH(ROW()-10,{CUMC},0),'
             f'COLUMN()-{G0}),"")')
-    ws_e.cell(row=r, column=G0+NCOLV).value = f'=IFERROR(MATCH(ROW()-10,{CUM},0)+1,"")'
-for i in range(NDATA):
-    r, dr_ = 12 + i, 2 + i
-    slots = '*'.join(
-        f'IF(${CV}${6+k}="",1,COUNTIF(INDEX({DQ}!$A{dr_}:${LASTCOL}{dr_},1,${IXV}${6+k}),'
-        f'${OPV}${6+k}&${THV}${6+k}))' for k in range(NSLOTS))
-    ws_e.cell(row=r, column=G0+NCOLV+2).value = (
-        f'=IF({DQ}!${dc("hh_group")}{dr_}<>${get_column_letter(G0+1)}$4,0,'
-        f'IF(AND({TOG}="true errors only",{DQ}!${dc("over_threshold")}{dr_}<>1),0,{slots}))')
-    ws_e.cell(row=r, column=G0+NCOLV+3).value = (
-        f'=${HELP_Z}$12' if i == 0 else f'=${HELP_A}{r-1}+${HELP_Z}{r}')
+    ws_e.cell(row=r, column=G0+NCOLV).value = f'=IFERROR(MATCH(ROW()-10,{CUMC},0),"")'
 ws_e.cell(row=1, column=G0+NCOLV+4).value = f'=COUNTIF(${SC_C}$2:${SC_C}${1+NR},">0")'
 for j in range(NR):
     r = 2 + j
@@ -1304,6 +1293,60 @@ ws_e.add_data_validation(dv_live)
 dv_live.add(f'{get_column_letter(G0+1)}3')
 ws_e.freeze_panes = f'{get_column_letter(G0)}11'
 
+# ══════════════════════════════════════════════════════════════════════════════
+# 9. STEP 4 — EXPORT RULES: the rules still set to TRUE on the Step 3 tab, in
+# tab order, with their exact machine logic. Live: setting Include? to FALSE
+# removes the rule here immediately. No dynamic arrays (Excel-2013-safe).
+# ══════════════════════════════════════════════════════════════════════════════
+BQ = qref(BLENDED_SHEET)
+EXPR_L = get_column_letter(13 + len(CHAR_COLS))        # Step 3 exact-expression col
+ws_x = wb.create_sheet(EXPORT_SHEET)
+ws_x.sheet_view.showGridLines = False
+ws_x.sheet_properties.tabColor = '2F5496'
+for cl, w in {'A': 9, 'B': 9, 'C': 60, 'D': 100}.items():
+    ws_x.column_dimensions[cl].width = w
+for cl in ('H', 'I'):
+    ws_x.column_dimensions[cl].hidden = True
+merge(ws_x, 1, 1, 1, 4, value=f'Export Rules — {STATE_NAME}',
+      fill=BLUE_DARK, font=Font(name=FONT, bold=True, size=16, color='FFFFFF'),
+      align=center)
+ws_x.row_dimensions[1].height = 32
+merge(ws_x, 2, 1, 2, 4,
+      value=f'The rules currently set to TRUE on the "{BLENDED_SHEET}" tab, in the same '
+            'order, with their exact machine logic — this list updates as you change '
+            'Include?. A few example uses: filter your caseload in Excel with these '
+            'conditions, translate them into a query in your eligibility or case-management '
+            'system, or send this sheet to your vendor. Variable definitions are on the '
+            'dictionary tab.',
+      fill=GRAY, font=Font(name=FONT, size=11, color='000000'),
+      align=Alignment(horizontal='left', vertical='top', wrap_text=True))
+ws_x.row_dimensions[2].height = 45
+for col, txt in enumerate(['Rule', 'HH size', 'What the rule says',
+                           'Exact rule logic'], 1):
+    set_cell(ws_x, 3, col, txt, font=bold_font(10), fill=GRAY, align=center,
+             border=thin())
+# hidden helpers: H = 1 if the k-th Step 3 rule is TRUE, I = running count
+XCUM = f'$I$4:$I${3 + NR}'
+for k in range(1, NR + 1):
+    r = 3 + k
+    ws_x.cell(row=r, column=8).value = f'=IF({BQ}!$L${10 + k}=TRUE,1,0)'
+    ws_x.cell(row=r, column=9).value = f'=$H{r}+N($I{r - 1})'
+    idx = f'MATCH(ROW()-3,{XCUM},0)'
+    ws_x.cell(row=r, column=1).value = (
+        f'=IFERROR(INDEX({BQ}!$A$11:$A${10 + NR},{idx}),"")')
+    ws_x.cell(row=r, column=2).value = (
+        f'=IFERROR(INDEX({BQ}!$B$11:$B${10 + NR},{idx}),"")')
+    c3 = set_cell(ws_x, r, 3,
+                  formula=f'=IFERROR(INDEX({BQ}!$C$11:$C${10 + NR},{idx}),"")',
+                  align=Alignment(horizontal='left', vertical='top', wrap_text=True),
+                  font=Font(name=FONT, size=10))
+    ws_x.cell(row=r, column=4).value = (
+        f'=IFERROR(INDEX({BQ}!${EXPR_L}$11:${EXPR_L}${10 + NR},{idx}),"")')
+    ws_x.cell(row=r, column=4).font = Font(name=FONT, size=9)
+    ws_x.cell(row=r, column=1).alignment = center
+    ws_x.cell(row=r, column=2).alignment = center
+ws_x.freeze_panes = 'A4'
+
 # ── final touches ─────────────────────────────────────────────────────────────
 ws.sheet_state   = 'hidden'      # Dashboard  (engine)
 ws_g.sheet_state = 'hidden'      # Grid Search(engine)
@@ -1313,10 +1356,10 @@ os.makedirs(STATE_DIR, exist_ok=True)
 wb.save(OUT)
 import json
 os.makedirs(BUILD_DIR, exist_ok=True)
+# empty since 2026-08-18 (Include? is plain TRUE/FALSE, no native checkboxes);
+# kept so postprocess_workbook's calc-chain stage keeps its handoff file
 json.dump(CHECKBOX_CELLS, open(os.path.join(BUILD_DIR, 'checkbox_cells.json'), 'w'))
 json.dump({'out': OUT, 'state': STATE_NAME, 'abbr': STATE_ABBR},
           open(os.path.join(BUILD_DIR, 'target.json'), 'w'))
 print(f'Saved: {OUT}')
 print(f'Rules: {len(RULES)} | Data rows: {len(df)}')
-print(f'Checkbox cells recorded for post-processing: '
-      f'{sum(len(v) for v in CHECKBOX_CELLS.values())}')

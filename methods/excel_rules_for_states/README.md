@@ -12,18 +12,29 @@ python methods/excel_rules_for_states/make_state.py WA --refresh  # re-export th
 Every state with a blended delivery list in the repo's tracked
 `state_delivery_lists/` folder resolves automatically from the naming
 convention (`blended_delivery_<State>_2022_2024_budget10.csv`, the 10%
-review-budget list, `core` rules). Nothing needs adding to `states.py` for a
-new state; `OVERRIDES` there is for deviations, and `EXCLUDE` holds states
-withheld from batch builds (currently Illinois: the IL_OFFSET standard
-deduction is not implemented in the workbook formulas). All lists share one
-19-variable vocabulary with at most 4 conditions per rule (checked
-2026-08-15; `bbce_state_i` replaced `cat_elig` in the 2026-08-13 list
-rebuild).
+review-budget list). Nothing needs adding to `states.py` for a new state;
+`OVERRIDES` there is for deviations, and `EXCLUDE` holds states withheld
+from batch builds (currently Illinois: the IL_OFFSET standard deduction is
+not implemented in the workbook formulas). All lists share one 19-variable
+vocabulary with at most 4 conditions per rule (checked 2026-08-15;
+`bbce_state_i` replaced `cat_elig` in the 2026-08-13 list rebuild).
+
+The workbook does not carry the delivery CSV verbatim (2026-08-18,
+`rule_selection.py`): rules conditioned on `count_divisible_by_100` are
+dropped (it is the one input a state cannot derive from the paste-in
+contract's totals), `bbce_state_i` conjuncts that are trivially true for the
+state are stripped from the rule text (a state's list already applies only
+to that state), and buffer rules are promoted in delivery-rank order to
+refill the freed capacity, up to the original core list's union workload on
+the state frame. The result — the workbook's EFFECTIVE rule list, sorted by
+error dollars caught on the state frame — is written to
+`.build/effective_rules_<ABBR>.csv`, which is also what `crosscheck_rules.py`
+verifies against. The tracked delivery CSVs are untouched.
 
 ## The deliverable
 
 **One file per state**: `state_workbooks/<ABBR>/snap_qc_dashboard_<ABBR>.xlsx`.
-Its "Step 1. Paste-in Data" tab (the Data tab; sheet names live in
+Its "Step 2. Import Testing Data" tab (the Data tab; sheet names live in
 `workbook_layout.py`) holds the raw FNS QC-schedule fields as VALUES and every model
 feature as an in-workbook FORMULA, so a state pastes the fields it already
 reports to FNS and every figure recomputes. The intermediate stages (the
@@ -33,29 +44,40 @@ plain frame-values build and the LIVE table build) land in
 
 ### The tabs
 
-The rules tabs each present a POTENTIAL rule list for the state to evaluate; nothing is deployed anywhere by this workbook, and nothing in it tunes or modifies the rules.
+The rules tab presents a POTENTIAL rule list for the state to evaluate; nothing is deployed anywhere by this workbook, and nothing in it tunes or modifies the rules. Rule selection is a plain TRUE/FALSE value in the yellow Include? column (native Excel-365 checkboxes were dropped 2026-08-18 so the same mechanism works on every Excel version).
 
 | Tab | What it shows |
 |---|---|
-| **Step 2. Review and Select Rules** | The BLENDED delivery list — the state's own mined rules merged into the national pool, filled to the 10% review budget — at delivered thresholds, as-is. Its own Include? selection. |
-| **National Rules** | The NATIONAL-only delivery list (built purely from the all-state pool), where the repo carries one — 39 of 49 states as of 2026-08-16. Compare against the blended tab to see what merging the state's own rules adds. |
-| **View error cases by rule** | Rules currently catching errors, sorted; the grid shows the true-error cases the selected rule flags. Sized to the build's row count. |
-| Step 1. Paste-in Data | Raw FNS fields (amber, on the left — what a state pastes) + model features (gray, formulas). |
-| Dashboard, Grid Search, RuleFlags, FederalTables | Hidden engines: the per-rule threshold tuner, the bracket-bounded threshold search, the case × rule hit matrices, and the federal parameter tables. Unhide the Dashboard to tune thresholds interactively. |
+| Step 1. Data Dictionary | Every Data-tab column: the input fields a state maps its data onto (with the QC technical-manual crosswalk) and the constructed model variables. |
+| Step 2. Import Testing Data | Raw FNS fields (light yellow, on the left — what a state pastes) + model features (gray, formulas). |
+| **Step 3. Select Rules** | The effective rule list (see above), sorted by error dollars caught on the data present, at delivered thresholds. Per-rule Recall / $ Recall are each rule ALONE as a share of ALL errors / error dollars (rules overlap, so they do not sum to the orange union rows). Include? = TRUE/FALSE per rule. |
+| Step 4. Export Rules | The rules still set to TRUE, in order, with plain-English text and exact machine logic — live-shrinks as rules are set FALSE. For filtering in Excel, translating to a query, or sending to a vendor. |
+| Step 5.1 Screen New Cases (optional) | A second paste table (`ScreenData`): the Step 2 contract minus the outcome columns, for new cases with no review outcome. Hidden per-rule hit columns auto-extend on paste. |
+| Step 5.2 Flagged New Cases (optional) | One row per flagged case × rule from Step 5.1 (case ID, household size, benefit amount, rule id, plain-English rule). First 5,000 pairs shown, total in B3; enumeration is a binary-search MATCH on a running pair count + AGGREGATE for the j-th matching rule (COM-verified 2026-08-18). |
+| Step 6. Share Results (optional) | Per-rule aggregates on the pasted Step 2 data to send back: flagged, errors, precision, $ recall, and ineligible-household catches (STATUS = 4 — evidence the public files cannot provide), plus metadata inputs (years, QC/QA) and poolable denominators. Every rule alone, independent of Include?. |
+| **See cases flagged by a rule** | Rules currently catching errors, sorted; the grid shows the cases the selected rule flags — including pasted rows (matching moved into hidden `_view_*` columns of the CaseData table, 2026-08-18; first 60 matches shown), with the rule's columns highlighted in blue. |
+| FederalTables | Visible reference: max shelter, minimum allotment and the QC error threshold by fiscal year; standard deductions and max allotments by year × size; the state's USDA state-options rows (BBCE etc.). Append a row per new fiscal year. |
+| Dashboard, Grid Search, RuleFlags | Hidden engines: the per-rule threshold tuner, the bracket-bounded threshold search, the case × rule hit matrices. Unhide the Dashboard to tune thresholds interactively. |
 
 ### The Data-tab contract
 
-The amber block is what a state supplies: 23 columns carrying generic
+The light-yellow block is what a state supplies: 23 columns carrying generic
 reported-value concept names in `features.R`'s `state_col_map` style —
 `HOUSEHOLD_SIZE`, `EARNED_INCOME`, `UNEARNED_INCOME`, `MEDICAL_DEDUCTION`,
 `DEPENDENT_CARE_DEDUCTION`, `CHILD_SUPPORT_DEDUCTION`, `RENT`,
 `UTILITY_COSTS`, unit counts (`NUM_CHILDREN`, `NUM_ELDERLY`, `NUM_DISABLED`,
 `NUM_ABAWD`), 0/1 indicators (`MARRIED_FLAG`, `EXPEDITED`,
-`CATEGORICALLY_ELIGIBLE`, `HOMELESS_FLAG`), `MONTHS_SINCE_CERT`,
-`NUM_AMOUNTS_DIVISIBLE_BY_100` (state-precomputed; its mined definition counts
-the QC file's 28 component fields, which a totals-based contract cannot
-reproduce), and the state's own QC review outcome (`ERROR_FLAG`,
-`ERROR_AMOUNT`). The Data Dictionary tab defines every column and carries the
+`CATEGORICALLY_ELIGIBLE`, `HOMELESS_FLAG`), `MONTHS_SINCE_CERT`, and the QC
+review outcome as the benefit pair plus disposition (2026-08-18):
+`ORIGINAL_BENEFIT_AMOUNT` (QC manual RAWBEN — the benefit as issued),
+`CORRECTED_BENEFIT_AMOUNT` (FSBEN), and `STATUS` (2 = overissuance,
+3 = underissuance, 4 = ineligible household). The workbook computes
+`total_error_amount` = ROUND(ABS(original − corrected)) and flags
+`over_threshold` when it exceeds the review year's federal QC tolerance
+(FederalTables `error_threshold`) — the munging script's own definitions, so
+the demo matches the frame exactly (the earlier `ERROR_FLAG`/`ERROR_AMOUNT`
+paste-in columns and the `NUM_AMOUNTS_DIVISIBLE_BY_100` precompute are
+gone). The Step 1 Data Dictionary tab defines every column and carries the
 crosswalk to the SNAP QC technical documentation's variables. A handful of
 names deviate from the feature vocabulary only because Excel table column
 names are case-insensitively unique (an input may not reuse a feature column's
@@ -94,14 +116,16 @@ cross-check's exactly (WA blended: 195 flagged, 71 errors, $16,668 at
 python methods/excel_rules_for_states/crosscheck_rules.py WA   # exit 0 = everything matches
 ```
 
-Re-implements the state's delivery rules independently in R
+Re-implements the workbook's EFFECTIVE rule list
+(`.build/effective_rules_<ABBR>.csv`) independently in R
 (`crosscheck_rules.R`) over the same years of `reg_model_data.rds`, with the
 miner's own `prep_features()`, and compares per rule (n flagged, errors,
 dollars, precision, recall, dollar recall, workload) plus the all-rules union
 overall and per stratum, recomputed from the workbook's RuleFlags hit
-matrix — for the blended rules tab AND the National Rules tab where present.
-On 2026-08-16: WA (92 blended + 101 national), AL (91 + 121), VT (66 + 66)
-and DE (35 blended, no national list) all matched with zero mismatches. It
+matrix. Because R re-derives each mask from the transformed rule text, a
+bbce strip that changed any flag set would surface here. On 2026-08-18: WA
+(89 effective rules from 92 core: 3 div-100 dropped, 6 bbce-stripped)
+matched with zero mismatches on all 8 fields and all 4 union scopes. It
 reads the plain build in `.build/out_<ABBR>/`; the delivered workbook holds
 the same numbers as formulas, verified by the open-in-Excel stage.
 
@@ -129,10 +153,10 @@ the removal decision.
 
 | Stage | Script | Does |
 |---|---|---|
-| 1 | `build_workbook_v2.py` | Exports the state's rows from `reg_model_data.rds` (via `export_state_frame.R` + the miner's `prep_features()`), parses the blended and national delivery lists, scores every rule at its delivered thresholds, writes every sheet. |
-| 2 | `make_live.py` | Data becomes an Excel table; the three rules tabs and the Dashboard recompute from it by column NAME, so pasted rows flow through. |
-| 3 | `make_input_workbook.py` | Appends the raw FNS block + benefit-chain helpers, turns every feature column into a formula, validates the formulas against the frame, adds FederalTables. |
-| 4 | `postprocess_workbook.py` | Native Excel-365 checkboxes; drops the stale calc chain. Applied to every stage's output. |
+| 1 | `build_workbook_v2.py` | Exports the state's rows from `reg_model_data.rds` (via `export_state_frame.R` + the miner's `prep_features()`), derives the effective rule list from the blended delivery CSV (`rule_selection.py`: div-100 drop, bbce strip, buffer promotion, dollars-caught sort), scores every rule at its delivered thresholds, writes every sheet. |
+| 2 | `make_live.py` | Data becomes an Excel table; the rules tab and the Dashboard recompute from it by column NAME, so pasted rows flow through. Shares its rule-to-formula translation with stage 3 via `live_formulas.py`. |
+| 3 | `make_input_workbook.py` | Appends the raw FNS block + benefit-chain helpers, turns every feature column into a formula (including the recomputed QC outcome), validates the formulas against the frame, adds Start Here / the Step 1 dictionary / FederalTables / the Step 5 screening tabs / the Step 6 share-back tab. |
+| 4 | `postprocess_workbook.py` | Drops the stale calc chain (its checkbox stage is retired: Include? is plain TRUE/FALSE since 2026-08-18). Applied to every stage's output. |
 | 5 | `verify_workbook.py` (macOS) / `verify_workbook_win.ps1` (Windows) | Opens each workbook in desktop Excel (AppleScript / COM), forces a full recalculation, reads probe cells back, and fails on any formula error cell on any sheet. Needs desktop Excel installed. Formulas written by openpyxl must carry the `_xlfn.` prefix for post-2007 functions (NORM.S.INV, FLOOR.MATH) or Excel renders #NAME? — the verifier's error scan is what catches that class of bug. |
 
 The recon stage then becomes the deliverable, copied to
@@ -164,8 +188,9 @@ frame lost 2.4%.
   overwrite the new file. `make_state.py` checks and refuses.
 - **Do not repoint an existing workbook at another state by pasting into
   Data.** Rebuild instead.
-- View error cases by rule and the RuleFlags hit matrices are sized to the build's case
-  count; the rules tabs do follow pasted rows (they read the Data table); the error-case viewer does not.
+- The RuleFlags hit matrices are static (sized to the build's case count) but feed only
+  the union rows via the live selection vector; the rules tab, the case viewer, and the
+  Step 4-6 tabs all follow pasted rows (they read the CaseData/ScreenData tables).
 - The munged frame restores each field to its pre-QC-process value
   (`correct_variables <- TRUE`); scoring rules against raw `.sav` values
   kills about a fifth of the rules (see CHANGES_AND_RATIONALE.md for the v1

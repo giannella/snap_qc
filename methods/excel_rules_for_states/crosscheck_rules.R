@@ -52,8 +52,11 @@ is_err <- !is.na(w$over_threshold) & w$over_threshold != 0
 amt    <- round(abs(ifelse(is.na(w$total_error_amount), 0, w$total_error_amount)))
 ed     <- ifelse(is_err, amt, 0)
 
-rules <- read.csv(CSV, stringsAsFactors = FALSE) %>%
-  filter(role == ROLE) %>% arrange(rank)
+# ROLE "all" takes every row: the workbook's effective-rules CSV
+# (.build/effective_rules_<ABBR>.csv) already carries exactly the rules on
+# the tab (transformed core + promoted buffer), in tab order
+rules <- read.csv(CSV, stringsAsFactors = FALSE)
+if (ROLE != "all") rules <- rules %>% filter(role == ROLE) %>% arrange(rank)
 cat(sprintf("frame: %d rows, %d errors | rules: %d %s\n",
             nrow(w), sum(is_err), nrow(rules), ROLE))
 
@@ -90,8 +93,11 @@ for (i in seq_len(nrow(rules))) {
     rank = rules$rank[i], hh = rules$hh[i],
     n_flagged = sum(m), errors = sum(m & is_err), dollars = sum(ed[m]),
     precision = ifelse(sum(m) > 0, sum(m & is_err) / sum(m), 0),
-    recall = sum(m & is_err) / max(sum(is_err & in_hh), 1),
-    dollar_recall = sum(ed[m]) / max(sum(ed[in_hh]), 1e-9),
+    # per-rule recall / $ recall use GRAND totals (all strata) since
+    # 2026-08-18, matching build_workbook_v2.score_list; workload stays
+    # within the rule's stratum
+    recall = sum(m & is_err) / max(sum(is_err), 1),
+    dollar_recall = sum(ed[m]) / max(sum(ed), 1e-9),
     workload = sum(m) / max(sum(in_hh), 1))
 }
 write.csv(bind_rows(res), OUT, row.names = FALSE)

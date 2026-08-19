@@ -10,8 +10,12 @@ Data tab layout (one Excel table, columns bound by name; see workbook_layout):
   [ input contract ]    what a state pastes (workbook_layout.RAW_COLS, on the
                         LEFT): unit counts and indicators, income totals,
                         deductions, shelter costs, and the QC review outcome
-                        (ERROR_FLAG, ERROR_AMOUNT). Headers exist from the
-                        first build stage; this stage fills the values.
+                        (ORIGINAL_BENEFIT_AMOUNT, CORRECTED_BENEFIT_AMOUNT,
+                        STATUS). The error amount and the over-threshold flag
+                        are computed from the benefit pair against the
+                        FederalTables error-threshold table. Headers exist
+                        from the first build stage; this stage fills the
+                        values.
   [ feature columns ]   the model features, in the SAME columns the built
                         workbook put them, now formulas — positional
                         references from the other sheets stay valid
@@ -19,8 +23,10 @@ Data tab layout (one Excel table, columns bound by name; see workbook_layout):
   [ helper columns ]    the benefit-recomputation chain, appended here, hidden
 
 Federal parameter tables (standard deduction, max allotment, shelter cap,
-minimum allotment, by fiscal year x household size) live on a hidden
-FederalTables sheet; formulas look them up by year and size.
+minimum allotment and QC error threshold, by fiscal year x household size)
+live on a visible FederalTables sheet; formulas look them up by year and
+size. The sheet also carries the state's USDA state-options rows (BBCE and
+the other options) as reference.
 
 The demo input block carries the research frame's RECONSTRUCTED
 (pre-QC-review) values — the same scale the rules were mined on — so the
@@ -30,7 +36,7 @@ corrections, so nothing needs reconstructing there). The built-in validation
 prints the per-feature match rate against the frame on every build.
 
 Usage:  python make_input_workbook.py <LIVE_workbook.xlsx> -o <out.xlsx> [--state WA]
-Then:   python postprocess_workbook.py <out.xlsx> <checkbox_cells.json>
+Then:   python postprocess_workbook.py <out.xlsx>   (drops the stale calc chain)
 """
 import argparse
 import os
@@ -42,10 +48,14 @@ import openpyxl
 from openpyxl.comments import Comment
 from openpyxl.styles import Alignment, PatternFill, Font
 from openpyxl.utils import get_column_letter as CL
-from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.worksheet.datavalidation import DataValidation
 
 import states as STATE_REGISTRY
-from workbook_layout import DATA_SHEET, BLENDED_SHEET, RAW_COLS
+from workbook_layout import (DATA_SHEET, BLENDED_SHEET, DICT_SHEET,
+                             EXPORT_SHEET, SCREEN_SHEET, FLAGGED_SHEET,
+                             SHARE_SHEET, RAW_COLS, qref)
+from live_formulas import (countifs, make_table, read_delivery_tab,
+                           rule_term, selection_refs)
 
 TABLE = 'CaseData'
 PKG = os.path.dirname(os.path.abspath(__file__))
@@ -84,7 +94,7 @@ def raw_frame(cfg, frame_csv):
     frame = pd.read_csv(frame_csv, dtype={'hhldno': str, 'stratum': str})
     need = ['rawearn', 'rawunearn', 'rawdepded', 'rawcsded', 'rawrent',
             'rawhomeless_ded', 'fsnkid', 'fsnelder', 'fsndis',
-            'count_abawd', 'cat_elig']
+            'count_abawd', 'cat_elig', 'rawben', 'benefit_amount_FS', 'status']
     missing = [c for c in need if c not in frame.columns]
     assert not missing, (f'frame export lacks reconstructed input fields '
                          f'{missing}; re-export it (make_state.py --refresh)')
@@ -111,28 +121,37 @@ def raw_frame(cfg, frame_csv):
         'HOMELESS_DEDUCTION': g('rawhomeless_ded'),
         'RENT': g('rawrent'),
         'UTILITY_COSTS': g('utilities'),
-        # per its mined definition this counts the QC file's component fields,
-        # which the totals-based contract does not collect; the demo carries
-        # the frame's own value and a state supplies its own (see dictionary)
-        'NUM_AMOUNTS_DIVISIBLE_BY_100': g('count_divisible_by_100'),
-        'ERROR_FLAG': frame['is_error'].astype(int).values,
-        'ERROR_AMOUNT': g('total_error_amount'),
+        # QC outcome: the benefit as issued (QC manual RAWBEN — the reported
+        # value, exactly what a state's own system holds) and the QC-corrected
+        # benefit (FSBEN). Their rounded absolute difference IS the frame's
+        # total_error_amount by construction, so the workbook's recomputed
+        # outcome matches the frame 100% (R1 check, 2026-08-18).
+        'ORIGINAL_BENEFIT_AMOUNT': g('rawben'),
+        'CORRECTED_BENEFIT_AMOUNT': g('benefit_amount_FS'),
+        # review disposition: 2 = overissuance, 3 = underissuance,
+        # 4 = ineligible (never present in public files); 1 = correct
+        'STATUS': g('status'),
     })
     assert list(out.columns) == RAW_COLS
     # the demo block must carry COMPLETE rows: in the workbook a blank cell
     # means missing (the per-row feature guards blank the case), while the
     # frame's reconstruction already zero-imputes its missing inputs — write
-    # those zeros explicitly so the shipped figures match the frame
+    # those zeros explicitly so the shipped figures match the frame. STATUS
+    # is excluded: 0 is not a code, blank = unknown.
     for c in out.columns:
-        if c != 'CASE_ID':
+        if c not in ('CASE_ID', 'STATUS'):
             out[c] = out[c].fillna(0)
     # with reconstructed inputs there is no restoration gap; keep the
     # element-free split trivially all-True for the validation report
     return out, np.ones(len(frame), bool), frame
 
 
-def federal_tables(wb):
-    """Hidden sheet with the year x size parameter tables."""
+def federal_tables(wb, state_name=None):
+    """Visible reference sheet: the year-level parameters (max shelter,
+    minimum allotment, QC error threshold), the year x size tables (standard
+    deduction, max allotment), and the state's USDA state-options rows (BBCE
+    and the other options). Formulas look values up by year with MATCH(..,1),
+    so appending a row per new fiscal year updates everything."""
     ad = os.path.join(REPO, 'additional_data')
     yd = pd.read_csv(os.path.join(ad, 'year_data.csv')).dropna(axis=1, how='all')
     yd.columns = [str(c).strip() for c in yd.columns]
@@ -142,23 +161,45 @@ def federal_tables(wb):
         t.columns = [str(c).strip() for c in t.columns]
 
     ws = wb.create_sheet('FederalTables')
-    ws.sheet_state = 'hidden'
-    ws['A1'] = ('Federal SNAP parameters by fiscal year. Append a row per table '
-                'each new fiscal year; every formula updates automatically.')
-    ws['A5'], ws['B5'], ws['C5'] = 'year', 'max_shelter', 'min_allotment'
+    ws.sheet_view.showGridLines = False
+    blue = PatternFill('solid', fgColor='2F5496')
+    gray = PatternFill('solid', fgColor='F2F2F2')
+    ws.merge_cells('A1:J1')
+    c = ws['A1']
+    c.value = 'Federal SNAP parameters by fiscal year'
+    c.fill = blue; c.font = Font(bold=True, size=14, color='FFFFFF')
+    ws.row_dimensions[1].height = 26
+    ws['A2'] = ('Every formula in the workbook looks these up by fiscal year. To use a '
+                'new fiscal year, append one row to each table below; everything '
+                'updates automatically. error_threshold is the federal QC tolerance: a '
+                'case is a payment error when its error amount EXCEEDS this dollar '
+                'amount for its review year.')
+    ws['A2'].font = Font(size=10)
+    ws['A2'].alignment = Alignment(wrap_text=True, vertical='top')
+    ws.merge_cells('A2:J2')
+    ws.row_dimensions[2].height = 42
+    for ci, h in enumerate(('year', 'max_shelter', 'min_allotment',
+                            'error_threshold'), 1):
+        hc = ws.cell(row=5, column=ci, value=h)
+        hc.fill = gray; hc.font = Font(bold=True, size=10)
     years = sorted(yd['year'])
     for i, y in enumerate(years):
         r = yd[yd.year == y].iloc[0]
         ws.cell(row=6 + i, column=1, value=int(y))
         ws.cell(row=6 + i, column=2, value=float(r['max_shelter_deduction']))
         ws.cell(row=6 + i, column=3, value=float(r['min_allotment']))
+        ws.cell(row=6 + i, column=4, value=float(r['error_threshold']))
     ny = len(years)
+    for cl, w in (('A', 8), ('B', 12), ('C', 13), ('D', 15)):
+        ws.column_dimensions[cl].width = w
 
     def block(df, row0, label):
-        ws.cell(row=row0, column=5, value=label)
-        ws.cell(row=row0 + 1, column=5, value='year')
+        hc = ws.cell(row=row0, column=5, value=label)
+        hc.font = Font(bold=True, size=10)
+        ws.cell(row=row0 + 1, column=5, value='year').fill = gray
         for s in range(1, 21):
-            ws.cell(row=row0 + 1, column=5 + s, value=s)
+            sc = ws.cell(row=row0 + 1, column=5 + s, value=s)
+            sc.fill = gray; sc.font = Font(bold=True, size=10)
         yrs = sorted(df['year'])
         for i, y in enumerate(yrs):
             ws.cell(row=row0 + 2 + i, column=5, value=int(y))
@@ -168,10 +209,39 @@ def federal_tables(wb):
         return len(yrs), row0 + 2
     n_sd, sd0 = block(sd.reset_index(), 5, 'standard deduction')
     n_ma, ma0 = block(ma.reset_index(), 5 + n_sd + 4, 'max allotment')
+
+    # the state's rows from the USDA state-options panel, as reference only
+    # (nothing computes from them; BBCE membership is already baked into the
+    # delivered rules by the rule_selection transform)
+    opt0 = ma0 + n_ma + 3
+    try:
+        so = pd.read_csv(os.path.join(ad, 'snap_state_options_all_years.csv'))
+        rows = so[so['State'] == state_name] if state_name else so.iloc[0:0]
+    except OSError:
+        rows = None
+    if rows is not None and len(rows):
+        hc = ws.cell(row=opt0, column=1,
+                     value=f'USDA state options — {state_name} (reference only; '
+                           'BBCE membership is already reflected in the rule list)')
+        hc.font = Font(bold=True, size=10)
+        ws.merge_cells(start_row=opt0, start_column=1, end_row=opt0, end_column=10)
+        for ci, h in enumerate(rows.columns, 1):
+            hc = ws.cell(row=opt0 + 1, column=ci, value=str(h))
+            hc.fill = gray; hc.font = Font(bold=True, size=9)
+        for ri, (_, rr) in enumerate(rows.iterrows()):
+            for ci, h in enumerate(rows.columns, 1):
+                v = rr[h]
+                if pd.isna(v):
+                    v = None
+                elif hasattr(v, 'item'):        # numpy scalar -> python scalar
+                    v = v.item()
+                ws.cell(row=opt0 + 2 + ri, column=ci, value=v).font = Font(size=9)
+    ws.freeze_panes = 'A3'
     return {
         'YEARS':  f'FederalTables!$A$6:$A${5 + ny}',
         'MAXSH':  f'FederalTables!$B$6:$B${5 + ny}',
         'MINAL':  f'FederalTables!$C$6:$C${5 + ny}',
+        'ERRTHR': f'FederalTables!$D$6:$D${5 + ny}',
         'SDYRS':  f'FederalTables!$E${sd0}:$E${sd0 + n_sd - 1}',
         'SDBLK':  f'FederalTables!$F${sd0}:$Y${sd0 + n_sd - 1}',
         'MAYRS':  f'FederalTables!$E${ma0}:$E${ma0 + n_ma - 1}',
@@ -218,20 +288,27 @@ def background_tab(wb, state_name):
         c.font = Font(color='0563C1', underline='single')
         r += 1
 
-    # live KPI block: reads the blended tab's union row, recomputes on paste
+    # live KPI block: reads the rules tab's union row, recomputes on paste
     kpis = [
         ('Cases in this workbook',
          f'=COUNTA({TABLE}[CASE_ID])', '#,##0'),
-        ('Cases flagged by the blended rules',
+        ('Cases flagged by the selected rules',
          f"='{BLENDED_SHEET}'!G6", '#,##0'),
-        ('Errors flagged by the blended rules',
+        ('Errors flagged by the selected rules',
          f"='{BLENDED_SHEET}'!H6", '#,##0'),
         ('Precision: share of flagged cases that are true errors',
          f"='{BLENDED_SHEET}'!D6", '0.0%'),
         ('Base error rate, all cases (compare precision against this)',
          f'=COUNTIF({TABLE}[over_threshold],1)/COUNTA({TABLE}[CASE_ID])', '0.0%'),
-        ('Error $ caught by the blended rules',
+        ('Error $ caught by the selected rules',
          f"='{BLENDED_SHEET}'!I6", '$#,##0'),
+        # overissuance share from the benefit pair (revision 2026-08-18): the
+        # demo fills it automatically because the shipped input block carries
+        # ORIGINAL/CORRECTED_BENEFIT_AMOUNT for every case
+        ('Share of error cases that are overissuances (paid more than correct)',
+         f'=IFERROR(SUMPRODUCT(({TABLE}[over_threshold]=1)'
+         f'*({TABLE}[ORIGINAL_BENEFIT_AMOUNT]>{TABLE}[CORRECTED_BENEFIT_AMOUNT]))'
+         f'/COUNTIF({TABLE}[over_threshold],1),"")', '0.0%'),
     ]
     for label, f, fmt in kpis:
         ws.cell(row=r, column=1, value=label).font = Font(size=13)
@@ -245,30 +322,37 @@ def background_tab(wb, state_name):
     r += 1
 
     para('What this is', bold=True)
-    para('Rule lists for finding SNAP cases at higher risk of a payment error, selected '
-         f'based on {state_name}\'s cases in the public USDA SNAP Quality Control (QC) '
-         'files for FY2022-2024. Each rule is a short, readable condition on case fields '
-         '(for example: household size, income per person, deductions, benefit relative '
-         'to the maximum). The blended rules list is nationally-derived + this state\'s '
-         'own mined rules; the national-only list does not include state-mined rules.')
-    para('Unless you have a reason to prefer National Rules, start with the blended '
-         f'list on the "{BLENDED_SHEET}" tab. It will update to reflect the results '
-         f'for each rule based on the data present in the "{DATA_SHEET}" tab. Overall '
-         'performance of selected rules is at the top of the Step 2 tab. The data on '
-         'each rule\'s characteristics (e.g., error element and nature, discovered '
-         'from case file) come from applying that rule to the national pool of cases.')
+    para('This workbook helps you choose payment-error review rules to put into '
+         'production. Paste in your own recent data (for example FY2025/FY2026 QC or '
+         'QA cases), see how every rule performs on it, and keep the rules that earn '
+         'their place. Each rule is a short, readable condition on case fields (for '
+         'example: household size, income per person, deductions, benefit relative to '
+         f'the maximum), selected from national and {state_name} rules mined on the '
+         'public USDA SNAP Quality Control (QC) files for FY2022-2024.')
+    para('Yellow highlighting means a cell is interactive: the yellow columns on the '
+         f'"{DATA_SHEET}" tab are where you paste your data, and the yellow "Include?" '
+         f'column on the "{BLENDED_SHEET}" tab (TRUE/FALSE) is where you keep or drop '
+         'each rule. Everything else recomputes automatically.')
 
     para('How to use this workbook', bold=True)
     for step in [
-        '1.  Paste in your data (optional, but highly recommended): put your own cases '
-        f'into the amber columns of the "{DATA_SHEET}" tab (definitions on the Data '
-        'Dictionary tab). Every figure in the workbook recomputes on your data.',
-        f'2.  Review and select rules on the "{BLENDED_SHEET}" tab: untick the '
-        'Include? box for any rule you do not want (or change the value to FALSE, if '
-        'you don\'t see a checkbox).',
-        '3.  That\'s it! As you unselect and select rules, the results will be '
-        'summarized at the top of the worksheet in orange. If you have trouble, please '
-        'reach out to eric.giannella@georgetown.edu.',
+        f'1.  Map your data to the dictionary: the "{DICT_SHEET}" tab defines every '
+        'input column and gives the QC technical-manual crosswalk.',
+        f'2.  Import your testing data: paste your cases into the yellow columns of '
+        f'the "{DATA_SHEET}" tab. Every figure in the workbook recomputes on your '
+        'data.',
+        f'3.  Select rules on the "{BLENDED_SHEET}" tab: set the yellow Include? cell '
+        'to FALSE for any rule you do not want. The combined results update in the '
+        'orange rows at the top of that tab and in the figures above.',
+        f'4.  Export: the "{EXPORT_SHEET}" tab lists the rules still set to TRUE with '
+        'their exact logic — filter your caseload in Excel, turn them into a query, '
+        'or send them to your vendor.',
+        f'5.  (Optional) Screen new cases: paste cases with no review outcome into '
+        f'the "{SCREEN_SHEET}" tab; the "{FLAGGED_SHEET}" tab lists every case a '
+        'selected rule flags, with the rule that flagged it.',
+        f'6.  (Optional) Share results: the "{SHARE_SHEET}" tab aggregates each '
+        'rule\'s performance on your data in a form you can send back to us. If you '
+        'have trouble, please reach out to eric.giannella@georgetown.edu.',
     ]:
         ws.merge_cells(f'A{r}:B{r}')
         c = ws.cell(row=r, column=1, value=step)
@@ -301,6 +385,12 @@ def background_tab(wb, state_name):
          f'{GITHUB}/tree/main/state_delivery_lists')
     link('The finished state workbooks (GitHub)',
          f'{GITHUB}/tree/main/methods/excel_rules_for_states/state_workbooks')
+    r += 2
+    para('Made by the Better Government Lab at Georgetown University and the '
+         'University of Michigan', bold=True)
+    for name in ('Eric Giannella', 'Ziyu Shu', 'Ben Molin', 'Rachael Zuppke'):
+        ws.cell(row=r, column=1, value=name).font = Font(size=11)
+        r += 1
     ws.freeze_panes = 'A2'
     return ws
 
@@ -346,15 +436,23 @@ RAW_DESC = {
                           'QC manual: HOMELESS_DED.',
     'RENT':      'rent / mortgage, $/month. QC manual: RENT; the demo carries the '
                  'reconstructed pre-QC-review value.',
-    'UTILITY_COSTS': 'utilities, $/month. QC manual: UTIL; the demo carries the '
-                     'reconstructed pre-QC-review value.',
-    'NUM_AMOUNTS_DIVISIBLE_BY_100': 'how many of the case\'s reported income-type and '
-                              'deduction-type amounts are a positive exact multiple of '
-                              '$100 (QC manual: counted over the 21 income and 7 deduction '
-                              'fields). Supplied precomputed: the totals above cannot '
-                              'reproduce it. Demo carries the research frame\'s value.',
-    'ERROR_FLAG': 'QC review outcome: 1 = payment error over the federal threshold.',
-    'ERROR_AMOUNT': 'QC review outcome: benefit amount in error, $. QC manual: AMTERR.',
+    'UTILITY_COSTS': 'utilities, $/month, including standard allowances. QC manual: '
+                     'UTIL; the demo carries the reconstructed pre-QC-review value.',
+    'ORIGINAL_BENEFIT_AMOUNT': 'the benefit amount the case was actually issued for the '
+                               'review month, $ — before any review correction. QC '
+                               'manual: RAWBEN. In a state\'s own data this is simply '
+                               'the benefit paid.',
+    'CORRECTED_BENEFIT_AMOUNT': 'the correct benefit amount as determined by the review, '
+                                '$. QC manual: FSBEN. The workbook computes the error '
+                                'amount as the difference between this and '
+                                'ORIGINAL_BENEFIT_AMOUNT, and flags a payment error '
+                                'when that difference exceeds the review year\'s federal '
+                                'QC tolerance (FederalTables tab).',
+    'STATUS': 'review disposition code: 2 = overissuance, 3 = underissuance, '
+              '4 = ineligible household (the entire benefit is in error), 1 = correct. '
+              'QC manual: STATUS. The public demo data carries no code-4 cases (the '
+              'public QC files exclude ineligible households); include them when '
+              'pasting internal data so ineligibility catches can be counted.',
 }
 FEAT_DESC = {
     'fiscal_year': 'REVIEW_FISCAL_YEAR, unchanged',
@@ -365,8 +463,6 @@ FEAT_DESC = {
                     'CATEGORICALLY_ELIGIBLE (the state runs Broad-Based Categorical '
                     'Eligibility)',
     'children_i':  '1 if NUM_CHILDREN > 0',
-    'count_divisible_by_100': 'NUM_AMOUNTS_DIVISIBLE_BY_100, unchanged (supplied precomputed; '
-                              'see its input definition)',
     'elderly_disabled_i': '1 if NUM_ELDERLY + NUM_DISABLED > 0',
     'expedited_i': 'EXPEDITED, unchanged',
     'homeless':    'HOMELESS_FLAG, unchanged',
@@ -386,8 +482,11 @@ FEAT_DESC = {
     'total_deductions_by_hh_size': '(dependent care + child support + recomputed shelter + medical '
                                    '+ earned-income deductions) / HOUSEHOLD_SIZE',
     'utilities':   'UTILITY_COSTS, unchanged',
-    'over_threshold':     'ERROR_FLAG, unchanged (what the rules aim to catch)',
-    'total_error_amount': 'ABS(ERROR_AMOUNT), rounded to whole dollars',
+    'over_threshold':     '1 when total_error_amount exceeds the review year\'s federal '
+                          'QC tolerance (FederalTables error_threshold) — what the rules '
+                          'aim to catch',
+    'total_error_amount': 'ABS(ORIGINAL_BENEFIT_AMOUNT - CORRECTED_BENEFIT_AMOUNT), '
+                          'rounded to whole dollars (QC manual: AMTERR)',
 }
 HELPER_NOTE = ('_c_* columns (hidden): the benefit-recomputation chain — fiscal year, '
                'gross income, earned-income deduction, standard deduction and maximum '
@@ -400,7 +499,7 @@ def data_dictionary(wb, hdr):
     """A visible tab documenting every Data column: the input fields a state
     supplies and the constructed model variables computed from them, each
     cross-referenced to the SNAP QC technical documentation's variables."""
-    ws = wb.create_sheet('Data Dictionary', wb.sheetnames.index(DATA_SHEET) + 1)
+    ws = wb.create_sheet(DICT_SHEET, wb.sheetnames.index(DATA_SHEET) + 1)
     ws.sheet_view.showGridLines = False
     blue = PatternFill('solid', fgColor='2F5496')
     gray = PatternFill('solid', fgColor='F2F2F2')
@@ -408,7 +507,9 @@ def data_dictionary(wb, hdr):
     ws.column_dimensions['B'].width = 16
     ws.column_dimensions['C'].width = 120
     ws.merge_cells('A1:C1')
-    c = ws['A1']; c.value = f'Data Dictionary — every column on the "{DATA_SHEET}" tab'
+    c = ws['A1']
+    c.value = (f'Step 1: map your data to this dictionary — every column on the '
+               f'"{DATA_SHEET}" tab')
     c.fill = blue; c.font = Font(bold=True, size=14, color='FFFFFF')
     ws.row_dimensions[1].height = 28
 
@@ -424,7 +525,7 @@ def data_dictionary(wb, hdr):
             c.fill = gray; c.font = Font(bold=True, size=10)
         return r + 1
 
-    r = header(3, 'Input fields (amber block) — what a state supplies: its own '
+    r = header(3, 'Input fields (yellow block) — what a state supplies: its own '
                   'as-reported values, mapped onto these columns. Each '
                   'definition cross-references the SNAP QC technical '
                   'documentation; this public-data copy carries the research '
@@ -457,6 +558,229 @@ def data_dictionary(wb, hdr):
     return ws
 
 
+# ── Step 5.1 / 5.2: screen new cases, list the flagged case x rule pairs ─────
+SCREEN_TABLE = 'ScreenData'
+# same paste contract minus the outcome columns: new cases have no review
+# outcome yet, and the corrected benefit / status only exist after a review
+SCREEN_COLS = [c for c in RAW_COLS
+               if c not in ('CORRECTED_BENEFIT_AMOUNT', 'STATUS')]
+FLAG_CAP = 5000               # case x rule pairs displayed on Step 5.2
+
+
+def screening_tabs(wb, R, dat_hdr):
+    """Step 5.1: a second input table with the Step 2 contract minus the
+    outcome columns, the same feature formulas, and one hidden 0/1 column per
+    rule (weighted by that rule's Include? flag). Step 5.2: one row per
+    flagged case x rule pair, enumerated with a binary-search MATCH on the
+    running pair count plus AGGREGATE for the j-th matching rule (pattern
+    COM-verified 2026-08-18). Both tables auto-extend on paste."""
+    from openpyxl.utils import get_column_letter
+    bq = qref(BLENDED_SHEET)
+    rules = read_delivery_tab(wb[BLENDED_SHEET])
+    sel = selection_refs(wb, BLENDED_SHEET)
+    nr = len(rules)
+    assert nr and len(sel) == nr, 'rules tab / RuleFlags selection mismatch'
+
+    helpers, feats = feature_formulas(R, SCREEN_TABLE)
+    feat_cols = [h for h in dat_hdr
+                 if h in feats and h not in ('over_threshold', 'total_error_amount')]
+    hdr = (SCREEN_COLS + feat_cols + [h for h, _ in helpers]
+           + [f'_r{j + 1}' for j in range(nr)] + ['_hits', '_cum'])
+    ws = wb.create_sheet(SCREEN_SHEET)
+    yellow = PatternFill('solid', fgColor='FFFF99')
+    gray = PatternFill('solid', fgColor='D9D9D9')
+    for ci, name in enumerate(hdr, 1):
+        c = ws.cell(row=1, column=ci, value=name)
+        c.font = Font(bold=True)
+        if name in SCREEN_COLS:
+            c.fill = yellow
+        elif not name.startswith('_'):
+            c.fill = gray
+    hlet = lambda name: get_column_letter(hdr.index(name) + 1)
+    # the single seeded row: its formulas define the table's calculated
+    # columns, which Excel fills down when a state pastes cases
+    for name, f in list(helpers) + [(n, feats[n]) for n in feat_cols]:
+        ws.cell(row=2, column=hdr.index(name) + 1, value=f)
+    for j, (conds, hh) in enumerate(rules):
+        f = (f'={sel[11 + j]}*{rule_term(conds, hh, SCREEN_TABLE)}'
+             if conds else '=0')
+        ws.cell(row=2, column=hdr.index(f'_r{j + 1}') + 1, value=f)
+    ws.cell(row=2, column=hdr.index('_hits') + 1,
+            value=f'=SUM({SCREEN_TABLE}[[#This Row],[_r1]:[_r{nr}]])')
+    ws.cell(row=2, column=hdr.index('_cum') + 1,
+            value=f'=${hlet("_hits")}2+N(${hlet("_cum")}1)')
+    for ci, name in enumerate(hdr, 1):
+        if name in feats:
+            ws.cell(row=2, column=ci).fill = gray
+        if name.startswith('_'):
+            ws.column_dimensions[get_column_letter(ci)].hidden = True
+    make_table(ws, SCREEN_TABLE, f'A1:{get_column_letter(len(hdr))}2')
+    ws.freeze_panes = 'B2'
+    ws.cell(row=1, column=1).comment = Comment(
+        'Optional: paste NEW cases to screen against the selected rules. Same '
+        f'yellow input columns as the "{DATA_SHEET}" tab minus the outcome '
+        'columns (new cases have no review outcome yet); definitions on the '
+        f'"{DICT_SHEET}" tab. The gray columns are formulas — do not paste '
+        f'over them. Flagged cases appear on the "{FLAGGED_SHEET}" tab. NB '
+        'bbce_state_i recomputes from the pasted rows themselves, so paste '
+        'full years rather than a handful of cases.', 'snap_dashboard')
+
+    # ── Step 5.2 ─────────────────────────────────────────────────────────────
+    blue = PatternFill('solid', fgColor='2F5496')
+    grayF = PatternFill('solid', fgColor='F2F2F2')
+    wrap = Alignment(horizontal='left', vertical='top', wrap_text=True)
+    wsf = wb.create_sheet(FLAGGED_SHEET)
+    wsf.sheet_view.showGridLines = False
+    for cl, w in {'A': 16, 'B': 12, 'C': 14, 'D': 9, 'E': 70}.items():
+        wsf.column_dimensions[cl].width = w
+    for cl in ('G', 'H', 'I'):
+        wsf.column_dimensions[cl].hidden = True
+    wsf.merge_cells('A1:E1')
+    c = wsf['A1']; c.value = 'Flagged New Cases'
+    c.fill = blue; c.font = Font(bold=True, size=16, color='FFFFFF')
+    wsf.row_dimensions[1].height = 30
+    wsf.merge_cells('A2:E2')
+    c = wsf['A2']
+    c.value = (f'One row per case x rule: every case pasted into the "{SCREEN_SHEET}" '
+               'tab that a rule currently set to TRUE flags, with the rule that '
+               f'flagged it. A case flagged by several rules appears once per rule. '
+               f'Showing the first {FLAG_CAP:,} pairs; cell B3 holds the total.')
+    c.fill = grayF; c.font = Font(size=11); c.alignment = wrap
+    wsf.row_dimensions[2].height = 42
+    wsf['A3'] = 'Flagged case x rule pairs:'
+    wsf['A3'].font = Font(bold=True)
+    wsf['B3'] = f'=SUM({SCREEN_TABLE}[_hits])'
+    wsf['B3'].font = Font(bold=True)
+    wsf['B3'].number_format = '#,##0'
+    for ci, txt in enumerate(['Case ID', 'Household size', 'Benefit amount',
+                              'Rule', 'What the rule says'], 1):
+        c = wsf.cell(row=4, column=ci, value=txt)
+        c.fill = grayF; c.font = Font(bold=True, size=10)
+    RBLK = f'{SCREEN_TABLE}[[_r1]:[_r{nr}]]'
+    for k in range(1, FLAG_CAP + 1):
+        r = 4 + k
+        g = f'ROW()-4'
+        wsf.cell(row=r, column=7, value=(
+            f'=IF({g}>$B$3,"",IFERROR(MATCH({g}-1,{SCREEN_TABLE}[_cum],1),0)+1)'))
+        wsf.cell(row=r, column=8, value=(
+            f'=IF($G{r}="","",{g}-(INDEX({SCREEN_TABLE}[_cum],$G{r})'
+            f'-INDEX({SCREEN_TABLE}[_hits],$G{r})))'))
+        wsf.cell(row=r, column=9, value=(
+            f'=IF($G{r}="","",_xlfn.AGGREGATE(15,6,'
+            f'(COLUMN({RBLK})-COLUMN({SCREEN_TABLE}[_r1])+1)'
+            f'/(INDEX({RBLK},$G{r},0)>0),$H{r}))'))
+        wsf.cell(row=r, column=1, value=(
+            f'=IF($I{r}="","",INDEX({SCREEN_TABLE}[CASE_ID],$G{r}))'))
+        wsf.cell(row=r, column=2, value=(
+            f'=IF($I{r}="","",INDEX({SCREEN_TABLE}[HOUSEHOLD_SIZE],$G{r}))'))
+        c = wsf.cell(row=r, column=3, value=(
+            f'=IF($I{r}="","",INDEX({SCREEN_TABLE}[ORIGINAL_BENEFIT_AMOUNT],$G{r}))'))
+        c.number_format = '$#,##0'
+        wsf.cell(row=r, column=4, value=(
+            f'=IF($I{r}="","",INDEX({bq}!$A$11:$A${10 + nr},$I{r}))'))
+        c = wsf.cell(row=r, column=5, value=(
+            f'=IF($I{r}="","",INDEX({bq}!$C$11:$C${10 + nr},$I{r}))'))
+        c.font = Font(size=10)
+    wsf.freeze_panes = 'A5'
+    return nr
+
+
+def share_tab(wb, state_name):
+    """Step 6: aggregate per-rule performance on the pasted Step 2 data, in a
+    block a state can copy back to us — every rule alone (independent of
+    Include?), with the denominators that make results poolable across
+    states, plus the ineligible-household catches the public files can never
+    show (STATUS = 4)."""
+    bq = qref(BLENDED_SHEET)
+    rules_ws = wb[BLENDED_SHEET]
+    rules = read_delivery_tab(rules_ws)
+    nr = len(rules)
+    blue = PatternFill('solid', fgColor='2F5496')
+    grayF = PatternFill('solid', fgColor='F2F2F2')
+    yellow = PatternFill('solid', fgColor='FFFF99')
+    orange = PatternFill('solid', fgColor='F8CBAD')
+    wrap = Alignment(horizontal='left', vertical='top', wrap_text=True)
+    ws = wb.create_sheet(SHARE_SHEET)
+    ws.sheet_view.showGridLines = False
+    for cl, w in {'A': 30, 'B': 9, 'C': 60, 'D': 11, 'E': 12, 'F': 11,
+                  'G': 11, 'H': 18}.items():
+        ws.column_dimensions[cl].width = w
+    ws.merge_cells('A1:H1')
+    c = ws['A1']; c.value = f'Share Results — {state_name}'
+    c.fill = blue; c.font = Font(bold=True, size=16, color='FFFFFF')
+    ws.row_dimensions[1].height = 30
+    ws.merge_cells('A2:H2')
+    c = ws['A2']
+    c.value = ('Optional: aggregate performance of every rule on the data pasted into '
+               f'the "{DATA_SHEET}" tab, to share back with us (copy this tab into an '
+               'email as values, or send the workbook). Fill in the yellow cells so we '
+               'know what the numbers cover. Sharing helps every state: the public QC '
+               'files exclude ineligible households entirely, so the "ineligible errors '
+               'flagged" column is evidence we can get no other way about which kinds '
+               'of cases these rules can catch — and your recent years tell us how '
+               'well nationally-mined rules transfer out of sample.')
+    c.fill = grayF; c.font = Font(size=11); c.alignment = wrap
+    ws.row_dimensions[2].height = 58
+    meta = [('State', state_name, False),
+            ('Fiscal years pasted into Step 2 (e.g., 2025-2026)', '', True),
+            ('Data pasted (QC / QA / other)', '', True)]
+    for i, (label, val, editable) in enumerate(meta):
+        r = 4 + i
+        ws.cell(row=r, column=1, value=label).font = Font(bold=True)
+        c = ws.cell(row=r, column=2, value=val)
+        ws.merge_cells(start_row=r, start_column=2, end_row=r, end_column=3)
+        if editable:
+            c.fill = yellow
+    dv = DataValidation(type='list',
+                        formula1='"QC review data,QA review data,other"',
+                        allow_blank=True)
+    ws.add_data_validation(dv)
+    dv.add('B6')
+    dens = [('Total cases', f'=COUNTA({TABLE}[CASE_ID])', '#,##0'),
+            ('Error cases', f'=COUNTIF({TABLE}[over_threshold],1)', '#,##0'),
+            ('Error $', f'=SUMIFS({TABLE}[total_error_amount],'
+                        f'{TABLE}[over_threshold],1)', '$#,##0'),
+            ('Ineligible-household cases (STATUS = 4)',
+             f'=COUNTIF({TABLE}[STATUS],4)', '#,##0')]
+    for i, (label, f, fmt) in enumerate(dens):
+        r = 8 + i
+        ws.cell(row=r, column=1, value=label).font = Font(bold=True)
+        c = ws.cell(row=r, column=2, value=f)
+        c.fill = orange; c.number_format = fmt
+    hdrs = ['Rule', 'HH size', 'What the rule says', 'Flagged', 'Errors caught',
+            'Precision', '$ Recall', 'Ineligible households flagged (STATUS=4)']
+    HR = 13
+    for ci, txt in enumerate(hdrs, 1):
+        c = ws.cell(row=HR, column=ci, value=txt)
+        c.fill = grayF; c.font = Font(bold=True, size=10)
+    tot_ed = f'SUMIFS({TABLE}[total_error_amount],{TABLE}[over_threshold],1)'
+    for j, (conds, hh) in enumerate(rules):
+        r = HR + 1 + j
+        src = 11 + j
+        # rule id / stratum / plain text are static on the rules tab — copy
+        # the values so this block pastes cleanly as text
+        ws.cell(row=r, column=1, value=rules_ws.cell(row=src, column=1).value)
+        ws.cell(row=r, column=2, value=rules_ws.cell(row=src, column=2).value)
+        c = ws.cell(row=r, column=3, value=rules_ws.cell(row=src, column=3).value)
+        c.font = Font(size=10); c.alignment = wrap
+        if conds is None:
+            continue
+        n = countifs(conds, hh)
+        e = countifs(conds, hh, extra=f'{TABLE}[over_threshold],1')
+        d = countifs(conds, hh, extra=f'{TABLE}[over_threshold],1',
+                     col='total_error_amount', fn='SUMIFS')
+        i4 = countifs(conds, hh, extra=f'{TABLE}[STATUS],4')
+        for ci, (f, fmt) in enumerate([
+                (f'={n}', '#,##0'), (f'={e}', '#,##0'),
+                (f'=IFERROR($E{r}/$D{r},0)', '0.0%'),
+                (f'=IFERROR({d}/{tot_ed},0)', '0.0%'),
+                (f'={i4}', '#,##0')], 4):
+            c = ws.cell(row=r, column=ci, value=f)
+            c.number_format = fmt
+    ws.freeze_panes = f'A{HR + 1}'
+    return nr
+
+
 # ── feature inputs: which raw columns each feature needs ─────────────────────
 # Blank means MISSING, never zero: a feature only computes for a case when
 # every input it needs holds a number on that row; otherwise the feature goes
@@ -464,8 +788,10 @@ def data_dictionary(wb, hdr):
 # missing value never matches). Deleting a whole input column therefore
 # disables every rule that needs it. The demo block carries the research
 # frame's reconstructed values with its zero-imputation already applied, so
-# the shipped figures are unchanged. The QC outcome columns are deliberately
-# unguarded: a blank outcome means "no error recorded".
+# the shipped figures are unchanged. The QC outcome features are guarded on
+# the benefit pair (2026-08-18): a case missing either benefit amount gets a
+# blank error amount and a blank over-threshold flag, so it counts as neither
+# an error nor a clean case.
 BEN_INPUTS = ['REVIEW_FISCAL_YEAR', 'HOUSEHOLD_SIZE', 'EARNED_INCOME',
               'UNEARNED_INCOME', 'MEDICAL_DEDUCTION', 'DEPENDENT_CARE_DEDUCTION',
               'CHILD_SUPPORT_DEDUCTION', 'HOMELESS_DEDUCTION', 'RENT',
@@ -477,7 +803,6 @@ FEATURE_INPUTS = {
     'HH_size_n': ['HOUSEHOLD_SIZE'],
     'bbce_state_i': ['REVIEW_FISCAL_YEAR', 'CATEGORICALLY_ELIGIBLE'],
     'children_i': ['NUM_CHILDREN'],
-    'count_divisible_by_100': ['NUM_AMOUNTS_DIVISIBLE_BY_100'],
     'elderly_disabled_i': ['NUM_ELDERLY', 'NUM_DISABLED'],
     'expedited_i': ['EXPEDITED'],
     'homeless': ['HOMELESS_FLAG'],
@@ -493,19 +818,25 @@ FEATURE_INPUTS = {
     'shelter_expenses_by_hh_size': ['RENT', 'UTILITY_COSTS', 'HOUSEHOLD_SIZE'],
     'total_deductions_by_hh_size': BEN_INPUTS,
     'utilities': ['UTILITY_COSTS'],
+    'over_threshold': ['ORIGINAL_BENEFIT_AMOUNT', 'CORRECTED_BENEFIT_AMOUNT',
+                       'REVIEW_FISCAL_YEAR'],
+    'total_error_amount': ['ORIGINAL_BENEFIT_AMOUNT', 'CORRECTED_BENEFIT_AMOUNT'],
 }
 
 
-def T(col):
-    return f'{TABLE}[[#This Row],[{col}]]'
+def T(col, table=TABLE):
+    return f'{table}[[#This Row],[{col}]]'
 
 
-def feature_formulas(R):
+def feature_formulas(R, table=TABLE):
     """name -> formula for every feature the current delivery vocabulary uses,
     mirroring 1_data_munging_..._for_using_public_qc_data.R. Helpers are
     prefixed '_c_'; order matters (left to right). Each feature carries a
     per-row guard (FEATURE_INPUTS): a case missing any input the feature
-    needs gets a blank, never a zero, so no rule condition can match it."""
+    needs gets a blank, never a zero, so no rule condition can match it.
+    `table` parameterizes the structured references so the Step 5.1
+    screening table reuses the exact same formulas (2026-08-18)."""
+    T = lambda col: f'{table}[[#This Row],[{col}]]'   # noqa: E731 — shadow on purpose
     sz = f'MIN(MAX({T("HOUSEHOLD_SIZE")},1),20)'
     hh = f'MAX({T("HOUSEHOLD_SIZE")},1)'
     helpers = [
@@ -532,6 +863,12 @@ def feature_formulas(R):
                        f'INDEX({R["MINAL"]},MATCH({T("_c_fy")},{R["YEARS"]},1)),0)),'
                        f'{T("_c_benmax")})'),
     ]
+    # a row with blank inputs must never surface an ERROR cell: the year
+    # lookups return #N/A on a blank fiscal year and cascade down the chain
+    # (seen on Step 5.1's empty seeded row, 2026-08-18). IFERROR blanks the
+    # helper instead; with complete inputs it is a no-op (the validation
+    # gate re-verifies), and the guarded features ignore blank helpers.
+    helpers = [(n, f'=IFERROR({f[1:]},"")') for n, f in helpers]
     feats = {
         'fiscal_year': f'={T("REVIEW_FISCAL_YEAR")}',
         'hh_size_raw': f'={T("HOUSEHOLD_SIZE")}',
@@ -541,11 +878,10 @@ def feature_formulas(R):
         'bbce_state_i':
             # state-year regime flag: share of the year's cases categorically
             # eligible reaching 0.5 (munging script, 2026-08-13 decision)
-            f'=IF(COUNTIFS({TABLE}[REVIEW_FISCAL_YEAR],{T("REVIEW_FISCAL_YEAR")},'
-            f'{TABLE}[CATEGORICALLY_ELIGIBLE],1)'
-            f'/COUNTIFS({TABLE}[REVIEW_FISCAL_YEAR],{T("REVIEW_FISCAL_YEAR")})>=0.5,1,0)',
+            f'=IF(COUNTIFS({table}[REVIEW_FISCAL_YEAR],{T("REVIEW_FISCAL_YEAR")},'
+            f'{table}[CATEGORICALLY_ELIGIBLE],1)'
+            f'/COUNTIFS({table}[REVIEW_FISCAL_YEAR],{T("REVIEW_FISCAL_YEAR")})>=0.5,1,0)',
         'children_i':  f'=IF({T("NUM_CHILDREN")}>0,1,0)',
-        'count_divisible_by_100': f'={T("NUM_AMOUNTS_DIVISIBLE_BY_100")}',
         'elderly_disabled_i': f'={T("_c_eld")}',
         'expedited_i': f'={T("EXPEDITED")}',
         'homeless':    f'={T("HOMELESS_FLAG")}',
@@ -563,14 +899,30 @@ def feature_formulas(R):
             f'+{T("_c_sltded")}+{T("MEDICAL_DEDUCTION")}+{T("_c_ernded")})/{hh}',
         'unc_rawben_rel_max': f'={T("_c_benunc")}/{T("_c_benmax")}',
         'utilities':   f'={T("UTILITY_COSTS")}',
-        'over_threshold':     f'={T("ERROR_FLAG")}',
-        'total_error_amount': f'=ROUND(ABS({T("ERROR_AMOUNT")}),0)',
+        # the QC outcome, recomputed from the benefit pair exactly as the
+        # munging script defines it: error amount = |RAWBEN - FSBEN| rounded,
+        # error flag = amount STRICTLY OVER the year's federal QC tolerance
+        # (FederalTables error_threshold; munging script lines 165/198)
+        'over_threshold':
+            f'=IF(ROUND(ABS({T("ORIGINAL_BENEFIT_AMOUNT")}'
+            f'-{T("CORRECTED_BENEFIT_AMOUNT")}),0)'
+            f'>INDEX({R["ERRTHR"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["YEARS"]},1)),1,0)',
+        'total_error_amount':
+            f'=ROUND(ABS({T("ORIGINAL_BENEFIT_AMOUNT")}'
+            f'-{T("CORRECTED_BENEFIT_AMOUNT")}),0)',
     }
     for name, f in list(feats.items()):
         cols = list(dict.fromkeys(FEATURE_INPUTS.get(name, [])))
         if cols:
+            # IFERROR inside the guard (2026-08-18 review): inputs that are
+            # numeric but unusable (e.g. a "25" fiscal-year typo) pass the
+            # COUNT guard yet blank the helper chain, and an error-valued
+            # feature cell would poison every per-case rule term it touches.
+            # Degrade to blank instead — same meaning as a missing input.
+            # A real formula bug still cannot hide: the validation gate
+            # compares values against the frame on every build.
             guard = f'COUNT({",".join(T(c) for c in cols)})={len(cols)}'
-            feats[name] = f'=IF({guard},{f[1:]},"")'
+            feats[name] = f'=IF({guard},IFERROR({f[1:]},""),"")'
     return helpers, feats
 
 
@@ -610,7 +962,6 @@ def mirror_features(raw, ftabs):
                              np.where(g('HOUSEHOLD_SIZE') >= 2, '2-3', '1')),
         'bbce_state_i': (fyshare.values >= 0.5).astype(int),
         'children_i': (g('NUM_CHILDREN') > 0).astype(int),
-        'count_divisible_by_100': g('NUM_AMOUNTS_DIVISIBLE_BY_100'),
         'elderly_disabled_i': eld,
         'expedited_i': g('EXPEDITED'),
         'homeless': g('HOMELESS_FLAG'),
@@ -628,9 +979,13 @@ def mirror_features(raw, ftabs):
                                         + g('MEDICAL_DEDUCTION') + ernded) / hh,
         'unc_rawben_rel_max': benunc / benmax,
         'utilities': g('UTILITY_COSTS'),
-        'over_threshold': g('ERROR_FLAG'),
-        'total_error_amount': np.round(np.abs(g('ERROR_AMOUNT'))),
     }
+    # QC outcome recomputed from the benefit pair, mirroring the Excel
+    # formulas (and the munging script's own definition)
+    errdiff = np.round(np.abs(g('ORIGINAL_BENEFIT_AMOUNT')
+                              - g('CORRECTED_BENEFIT_AMOUNT')))
+    out['total_error_amount'] = errdiff
+    out['over_threshold'] = (errdiff > lk(yd, 'error_threshold')).astype(int)
     return pd.DataFrame(out)
 
 
@@ -694,7 +1049,7 @@ def main():
 
     hdr = [c.value for c in next(dat.iter_rows(min_row=1, max_row=1))]
     ncol0 = len(hdr)
-    R = federal_tables(wb)
+    R = federal_tables(wb, cfg['name'])
     helpers, feats = feature_formulas(R)
 
     missing = [h for h in hdr
@@ -758,17 +1113,17 @@ def main():
     print(f'features -> formulas: {n_swapped} columns | helpers: {len(helpers)} | '
           f'raw: {len(RAW_COLS)} -> Data!A1:{LAST}{NROW}')
 
-    # 3. rebind the table over the widened range
+    # 3. rebind the table over the widened range (with calculated-column
+    #    declarations so pasted rows fill the hidden formula columns)
     for t in list(dat.tables):
         del dat.tables[t]
-    tbl = Table(displayName=TABLE, ref=f'A1:{LAST}{NROW}')
-    tbl.tableStyleInfo = TableStyleInfo(name='TableStyleLight1', showRowStripes=False)
-    dat.add_table(tbl)
+    make_table(dat, TABLE, f'A1:{LAST}{NROW}')
 
-    # 4. presentation: inputs (left block) amber; computed features gray;
-    #    helpers hidden
+    # 4. presentation: inputs (left block) light yellow — the workbook-wide
+    #    "yellow means interactive" convention (revision 2026-08-18); computed
+    #    features gray; helpers hidden
     feat_fill = PatternFill('solid', fgColor='D9D9D9')
-    raw_fill = PatternFill('solid', fgColor='FCE4D6')
+    raw_fill = PatternFill('solid', fgColor='FFFF99')
     for i in range(1, len(RAW_COLS) + 1):
         h = dat.cell(row=1, column=i)
         h.fill = raw_fill
@@ -790,7 +1145,7 @@ def main():
     for ci, name in enumerate(hdr, 1):
         if name in feats and name != 'fiscal_year':
             dat.column_dimensions[CL(ci)].outline_level = 1
-    note = ('Amber input columns (this left block) are what a state supplies, '
+    note = ('Yellow input columns (this left block) are what a state supplies, '
             'mapping its own reported case fields onto them. The gray columns '
             'to the right are FORMULAS computed from the inputs; do not paste '
             'values over them. A blank cell means MISSING, not zero: cases '
@@ -803,27 +1158,25 @@ def main():
 
     data_dictionary(wb, hdr)
     background_tab(wb, cfg['name'])
+    n51 = screening_tabs(wb, R, hdr)
+    n6 = share_tab(wb, cfg['name'])
+    print(f'screening tabs: {n51} rule columns | share-back rows: {n6}')
 
-    # fill the viewer's CASE_ID lead column, now that Data carries CASE_ID
-    vname = 'See cases flagged by a rule'
-    if vname in wb.sheetnames:
-        wsv = wb[vname]
-        hdr10 = {wsv.cell(row=10, column=ci).value: ci for ci in range(1, 200)}
-        cid, drc = hdr10.get('CASE_ID'), hdr10.get('data_row')
-        if cid and drc:
-            cum = f'${CL(drc + 3)}$12:${CL(drc + 3)}${10 + NROW}'
-            for rr in range(11, 71):
-                wsv.cell(row=rr, column=cid).value = (
-                    f'=IFERROR(INDEX({TABLE}[CASE_ID],MATCH(ROW()-10,{cum},0)),"")')
-            print('viewer CASE_ID column wired to the Data table')
+    # (the viewer's CASE_ID and grid formulas are written by the build stage
+    # since 2026-08-18: they read the Data sheet's _view_cum column, which
+    # lives inside the CaseData table and auto-extends over pasted rows)
 
-    # tab colors: blue = read; orange = the working tabs (paste, select, define)
-    for name in (DATA_SHEET, BLENDED_SHEET, 'Data Dictionary'):
+    # tab colors: blue = read; orange = the working tabs (paste, select, share)
+    for name in (DATA_SHEET, BLENDED_SHEET, DICT_SHEET, SCREEN_SHEET, SHARE_SHEET):
         if name in wb.sheetnames:
             wb[name].sheet_properties.tabColor = 'C55A11'
+    for name in (FLAGGED_SHEET,):
+        if name in wb.sheetnames:
+            wb[name].sheet_properties.tabColor = '2F5496'
 
-    # sheet order: Start Here, then the two step tabs, then everything else
-    head_names = ['Start Here', DATA_SHEET, BLENDED_SHEET]
+    # sheet order: Start Here, then the step tabs in order, then everything else
+    head_names = ['Start Here', DICT_SHEET, DATA_SHEET, BLENDED_SHEET,
+                  EXPORT_SHEET, SCREEN_SHEET, FLAGGED_SHEET, SHARE_SHEET]
     head = [wb[n] for n in head_names if n in wb.sheetnames]
     wb._sheets = head + [s for s in wb._sheets if s.title not in head_names]
     wb.active = 0

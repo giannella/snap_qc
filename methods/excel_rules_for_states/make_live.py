@@ -5,15 +5,17 @@ What changes
   Data          becomes an Excel Table (sheet keeps its name), so pasting more
                 rows extends every reference automatically, and columns are
                 bound by NAME rather than by position.
-  Rules tabs    per-rule metrics and the combined rows on Blended Rules and
-                National Rules become COUNTIFS/SUMIFS over that table; the
-                hard-coded denominators go live too.
+  Rules tab     per-rule metrics and the combined rows become COUNTIFS/SUMIFS
+                over that table; the hard-coded denominators go live too.
+                Per-rule Recall and $ Recall divide by ALL pasted errors /
+                error dollars (grand totals, decision 2026-08-18), matching
+                build_workbook_v2.score_list; the orange combined rows keep
+                their per-stratum denominators.
   Dashboard     its fixed Data!$X$2:$X$3000 ranges become table references.
 
 Usage:  python make_live.py <built_workbook.xlsx> [-o out.xlsx]
 
-Run postprocess_workbook.py afterwards to put the native checkboxes back:
-openpyxl cannot preserve them through a save.
+Run postprocess_workbook.py afterwards to drop the stale calc chain.
 """
 import argparse
 import os
@@ -23,67 +25,14 @@ import shutil
 import openpyxl
 from openpyxl.utils import get_column_letter as CL
 from openpyxl.utils import column_index_from_string
-from openpyxl.worksheet.table import Table, TableStyleInfo
 
-from workbook_layout import DATA_SHEET, BLENDED_SHEET, NATIONAL_SHEET, qref
+from workbook_layout import DATA_SHEET, BLENDED_SHEET, qref
+# the rule-to-formula translation is shared with make_input_workbook's
+# Step 5/6 tabs (extracted 2026-08-18)
+from live_formulas import (countifs, make_table, pack_chunks,
+                           read_delivery_tab, rule_terms, selection_refs)
 
 TABLE = 'CaseData'            # table object name; the sheet keeps its name
-CHUNK_LIMIT = 7500            # max chars per hit-column formula (Excel cap 8192)
-COND = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\s*(>=|<=|>|<|=)\s*(-?[0-9.]+)')
-
-
-def parse(text):
-    """'a > 1 & b <= 2' -> [('a','>','1'), ('b','<=','2')]  (None if unusable)"""
-    if (not text or 'no combination' in str(text) or 'not selected' in str(text)
-            or 'not deployed' in str(text)):
-        return None
-    out = COND.findall(str(text))
-    return out or None
-
-
-def countifs(conds, hh, extra='', col=None, fn='COUNTIFS'):
-    """A COUNTIFS/SUMIFS over the table for one rule."""
-    head = f'{TABLE}[{col}],' if fn == 'SUMIFS' else ''
-    parts = [f'{TABLE}[hh_group],"{hh}"']
-    for v, op, t in conds:
-        parts.append(f'{TABLE}[{v}],"{op if op != "=" else ""}{t}"')
-    if extra:
-        parts.append(extra)
-    return f'{fn}({head}{",".join(parts)})'
-
-
-def rule_terms(rows, sel_ref):
-    """Per-case test terms, one per rule, weighted by that rule's checkbox flag.
-
-    Each numeric condition carries an ISNUMBER guard: when an input column is
-    deleted the features built from it go blank (make_input_workbook gates
-    them), and a blank must never satisfy a condition — Excel otherwise ranks
-    any text above any number, so ``"" >= x`` would flag every case."""
-    terms = []
-    for i, (conds, hh) in enumerate(rows):
-        if conds is None:
-            continue
-        t = [f'({TABLE}[[#This Row],[hh_group]]="{hh}")']
-        for v, op, val in conds:
-            ref = f'{TABLE}[[#This Row],[{v}]]'
-            t.append(f'ISNUMBER({ref})*({ref}{"=" if op == "=" else op}{val})')
-        terms.append(f'{sel_ref(i)}*' + '*'.join(t))
-    return terms
-
-
-def pack_chunks(terms, limit=CHUNK_LIMIT):
-    """Split the per-rule terms into as many helper-column formulas as the
-    formula length cap requires."""
-    chunks, cur, size = [], [], 1
-    for t in terms:
-        if cur and size + len(t) + 1 > limit:
-            chunks.append(cur)
-            cur, size = [], 1
-        cur.append(t)
-        size += len(t) + 1
-    if cur:
-        chunks.append(cur)
-    return chunks or [[]]
 
 
 def main():
@@ -97,52 +46,20 @@ def main():
     wb = openpyxl.load_workbook(out)
     dat = wb[DATA_SHEET]
     nat = wb[BLENDED_SHEET] if BLENDED_SHEET in wb.sheetnames else None
-    natl = wb[NATIONAL_SHEET] if NATIONAL_SHEET in wb.sheetnames else None
     hdr = [c.value for c in next(dat.iter_rows(min_row=1, max_row=1))]
     NROW, NCOL = dat.max_row, len(hdr)
     print(f'Data: {NROW-1} cases x {NCOL} columns')
 
     # ── 1. read the rules straight out of the Exact expression column ────────
     N0 = 11
-
-    def read_delivery_tab(ws):
-        if ws is None:
-            return []
-        # the machine-readable rule text lives in the 'Exact expression'
-        # column (last); find it by header rather than assuming a position
-        expr_col = next((c for c in range(1, ws.max_column + 1)
-                         if ws.cell(row=4, column=c).value == 'Exact expression'),
-                        13)
-        out_, r_ = [], N0
-        while ws.cell(row=r_, column=1).value:
-            out_.append((parse(ws.cell(row=r_, column=expr_col).value),
-                         ws.cell(row=r_, column=2).value))
-            r_ += 1
-        return out_
-    nt_rules, nl_rules = read_delivery_tab(nat), read_delivery_tab(natl)
-    print(f'rules: {len(nt_rules)} blended, {len(nl_rules)} national-only')
+    nt_rules = read_delivery_tab(nat, first_row=N0)
+    print(f'rules: {len(nt_rules)}')
 
     # ── 2. hidden per-case hit columns, inside the table so they auto-fill ───
-    # The selection vector's column order is NOT the order rules appear on the
-    # sheets, so read the mapping out of RuleFlags row 2 rather than assuming it.
-    rf = wb['RuleFlags']
-    sel_by_row = {BLENDED_SHEET: {}, NATIONAL_SHEET: {}}
-    for cc in range(2, rf.max_column + 1):
-        v = rf.cell(row=2, column=cc).value
-        if not isinstance(v, str):
-            continue
-        m = re.search(r"(?:'([^']+)'|([A-Za-z_]\w*))!\$[A-Z]+\$(\d+)", v)
-        if not m:
-            continue
-        sheet = m.group(1) or m.group(2)
-        if sheet in sel_by_row:
-            sel_by_row[sheet][int(m.group(3))] = f'RuleFlags!${CL(cc)}$2'
-    print('selection columns found: %d blended, %d national-only'
-          % (len(sel_by_row[BLENDED_SHEET]), len(sel_by_row[NATIONAL_SHEET])))
-    sel_n = lambda i: sel_by_row[BLENDED_SHEET][N0 + i]
-    sel_l = lambda i: sel_by_row[NATIONAL_SHEET][N0 + i]
-    blocks = ([('nat', nt_rules, sel_n)] if nat else []) \
-        + ([('nl', nl_rules, sel_l)] if natl else [])
+    sel_by_row = selection_refs(wb, BLENDED_SHEET)
+    print('selection columns found: %d' % len(sel_by_row))
+    sel_n = lambda i: sel_by_row[N0 + i]
+    blocks = [('nat', nt_rules, sel_n)] if nat else []
     newcols = {}
     c = NCOL
     for tag, rules, sel in blocks:
@@ -168,9 +85,7 @@ def main():
     LAST = CL(c)
     print(f'added {len(newcols)} computed columns -> Data!A1:{LAST}{NROW}')
 
-    tbl = Table(displayName=TABLE, ref=f'A1:{LAST}{NROW}')
-    tbl.tableStyleInfo = TableStyleInfo(name='TableStyleLight1', showRowStripes=False)
-    dat.add_table(tbl)
+    make_table(dat, TABLE, f'A1:{LAST}{NROW}')
     for name, idx in newcols.items():
         dat.column_dimensions[CL(idx)].hidden = True
 
@@ -186,7 +101,7 @@ def main():
                 f'{TABLE}[over_threshold],1)' if hh != 'all'
                 else f'SUMIFS({TABLE}[total_error_amount],{TABLE}[over_threshold],1)')
 
-    HITS = {'nat': f'{TABLE}[_hit_nat]', 'nl': f'{TABLE}[_hit_nl]'}
+    HITS = {'nat': f'{TABLE}[_hit_nat]'}
     OV, AMT = f'{TABLE}[over_threshold]', f'{TABLE}[total_error_amount]'
 
     def combined(ws, row, hh, tag, cols):
@@ -210,8 +125,6 @@ def main():
     for i, hh in enumerate(['all', '1', '2-3', '4+']):
         if nat:
             combined(nat, 6 + i, hh, 'nat', NT)
-        if natl:
-            combined(natl, 6 + i, hh, 'nl', NT)
 
     # ── 4. per-rule rows ─────────────────────────────────────────────────────
     def rule_row(ws, row, conds, hh, cols):
@@ -227,15 +140,15 @@ def main():
         # below 10 flagged cases a percentage misleads; show the counts
         put('prec', f'IF(${F}{row}<10,${E}{row}&" errors of "&${F}{row}'
                     f'&" cases flagged",IFERROR(${E}{row}/${F}{row},0))')
-        put('rec',  f'IFERROR(${E}{row}/{denom(hh,"errors")},0)')
-        put('drec', f'IFERROR(${D}{row}/{denom(hh,"dollars")},0)')
+        # per-rule Recall / $ Recall: this rule ALONE over ALL pasted errors /
+        # error dollars (grand totals; must match build_workbook_v2.score_list)
+        put('rec',  f'IFERROR(${E}{row}/{denom("all","errors")},0)')
+        put('drec', f'IFERROR(${D}{row}/{denom("all","dollars")},0)')
         put('work', f'IFERROR(${F}{row}/{denom(hh,"cases")},0)')
         put('exp',  f'IFERROR(IF(${F}{row}=0,"",${D}{row}/${F}{row}),"")')
 
     for i, (conds, hh) in enumerate(nt_rules):
         rule_row(nat, N0 + i, conds, hh, NT)
-    for i, (conds, hh) in enumerate(nl_rules):
-        rule_row(natl, N0 + i, conds, hh, NT)
 
     # ── 5. Dashboard: fixed ranges -> table references ───────────────────────
     swapped = 0
@@ -254,7 +167,7 @@ def main():
 
     wb.save(out)
     print('saved', out)
-    print('\nnow run:  python postprocess_workbook.py "%s" <checkbox_cells.json>' % out)
+    print('\nnow run:  python postprocess_workbook.py "%s"' % out)
 
 
 if __name__ == '__main__':

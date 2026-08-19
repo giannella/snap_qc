@@ -110,7 +110,16 @@ extra <- intersect(c("cert_HH_size_FS_n", "over_threshold", "total_error_amount"
                      # sit on the same scale the rules were mined on
                      "rawearn", "rawunearn", "rawdepded", "rawcsded", "rawrent",
                      "rawhomeless_ded", "fsnkid", "fsnelder", "fsndis",
-                     "count_abawd", "cat_elig"), names(w))
+                     "count_abawd", "cat_elig",
+                     # QC outcome pair + review disposition: rawben is the
+                     # benefit as issued (reported, not reconstructed) and
+                     # benefit_amount_FS the QC-corrected one; their rounded
+                     # absolute difference IS total_error_amount by
+                     # construction (munging line 165), so the workbook's
+                     # recomputed outcome matches the frame exactly. status:
+                     # 1 = correct, 2 = overissuance, 3 = underissuance
+                     # (4 = ineligible never occurs in the public files).
+                     "rawben", "benefit_amount_FS", "status"), names(w))
 out <- w[, c(keys, extra, pf$features), drop = FALSE]
 out$hh_group    <- hh_group_of(w$cert_HH_size_FS_n)
 out$hh_size_raw <- suppressWarnings(as.numeric(as.character(w$cert_HH_size_FS_n)))
