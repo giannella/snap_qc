@@ -347,15 +347,19 @@ def background_tab(wb, state_name):
         f'3.  Select rules on the "{BLENDED_SHEET}" tab: set the yellow Include? cell '
         'to FALSE for any rule you do not want. The combined results update in the '
         'orange rows at the top of that tab and in the figures above.',
-        f'4.  Export: the "{EXPORT_SHEET}" tab lists the rules still set to TRUE with '
-        'their exact logic — filter your caseload in Excel, turn them into a query, '
-        'or send them to your vendor.',
-        f'5.  (Optional) Screen new cases: paste cases with no review outcome into '
-        f'the "{SCREEN_SHEET}" tab; the "{FLAGGED_SHEET}" tab lists every case a '
+        'Steps 1-3 are the core path (the orange tabs). After step 3 you have a '
+        'selected rule list, and you can stop there. The pale orange tabs are '
+        'optional next steps; use any of them, in any order.',
+        f'4.  Export the selected rules (the "{EXPORT_SHEET}" tab): the rules still '
+        'set to TRUE, with their exact logic. Filter your caseload in Excel, turn '
+        'them into a query, or send them to your vendor.',
+        f'5.  Screen new cases (the "{SCREEN_SHEET}" and "{FLAGGED_SHEET}" tabs): '
+        'paste cases with no review outcome into 5.1; 5.2 lists every case a '
         'selected rule flags, with the rule that flagged it.',
-        f'6.  (Optional) Share results: the "{SHARE_SHEET}" tab aggregates each '
-        'rule\'s performance on your data in a form you can send back to us. If you '
-        'have trouble, please reach out to eric.giannella@georgetown.edu.',
+        f'6.  Share aggregate results back (the "{SHARE_SHEET}" tab): whichever path '
+        'you took, this tab summarizes each rule\'s performance on your data in a '
+        'form you can copy and send back to us. If you have trouble, please reach '
+        'out to eric.giannella@georgetown.edu.',
     ]:
         ws.merge_cells(f'A{r}:B{r}')
         c = ws.cell(row=r, column=1, value=step)
@@ -1173,13 +1177,15 @@ def main():
     # since 2026-08-18: they read the Data sheet's _view_cum column, which
     # lives inside the CaseData table and auto-extends over pasted rows)
 
-    # tab colors: blue = read; orange = the working tabs (paste, select, share)
-    for name in (DATA_SHEET, BLENDED_SHEET, DICT_SHEET, SCREEN_SHEET, SHARE_SHEET):
+    # tab colors (Eric's WA scheme, 2026-08-19): orange = the core path
+    # (Steps 1-3), pale orange = the optional post-Step-3 tabs, dark blue =
+    # Start Here and the viewer (set where those sheets are created)
+    for name in (DICT_SHEET, DATA_SHEET, BLENDED_SHEET):
         if name in wb.sheetnames:
             wb[name].sheet_properties.tabColor = 'C55A11'
-    for name in (FLAGGED_SHEET,):
+    for name in (EXPORT_SHEET, SCREEN_SHEET, FLAGGED_SHEET, SHARE_SHEET):
         if name in wb.sheetnames:
-            wb[name].sheet_properties.tabColor = '2F5496'
+            wb[name].sheet_properties.tabColor = 'FDE9D9'
 
     # sheet order: Start Here, then the step tabs in order, then everything else
     head_names = ['Start Here', DICT_SHEET, DATA_SHEET, BLENDED_SHEET,

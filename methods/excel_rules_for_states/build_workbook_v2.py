@@ -1302,7 +1302,8 @@ BQ = qref(BLENDED_SHEET)
 EXPR_L = get_column_letter(13 + len(CHAR_COLS))        # Step 3 exact-expression col
 ws_x = wb.create_sheet(EXPORT_SHEET)
 ws_x.sheet_view.showGridLines = False
-ws_x.sheet_properties.tabColor = '2F5496'
+# pale orange: the optional post-Step-3 tabs (Eric's WA scheme, 2026-08-19)
+ws_x.sheet_properties.tabColor = 'FDE9D9'
 for cl, w in {'A': 9, 'B': 9, 'C': 60, 'D': 100}.items():
     ws_x.column_dimensions[cl].width = w
 for cl in ('H', 'I'):
