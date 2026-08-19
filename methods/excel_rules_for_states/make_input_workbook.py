@@ -24,9 +24,9 @@ Data tab layout (one Excel table, columns bound by name; see workbook_layout):
 
 Federal parameter tables (standard deduction, max allotment, shelter cap,
 minimum allotment and QC error threshold, by fiscal year x household size)
-live on a visible FederalTables sheet; formulas look them up by year and
+live on a hidden FederalTables sheet; formulas look them up by year and
 size. The sheet also carries the state's USDA state-options rows (BBCE and
-the other options) as reference.
+the other options) as reference; unhide it to inspect or extend.
 
 The demo input block carries the research frame's RECONSTRUCTED
 (pre-QC-review) values — the same scale the rules were mined on — so the
@@ -147,11 +147,12 @@ def raw_frame(cfg, frame_csv):
 
 
 def federal_tables(wb, state_name=None):
-    """Visible reference sheet: the year-level parameters (max shelter,
-    minimum allotment, QC error threshold), the year x size tables (standard
-    deduction, max allotment), and the state's USDA state-options rows (BBCE
-    and the other options). Formulas look values up by year with MATCH(..,1),
-    so appending a row per new fiscal year updates everything."""
+    """Hidden reference sheet (hidden again 2026-08-19 by request): the
+    year-level parameters (max shelter, minimum allotment, QC error
+    threshold), the year x size tables (standard deduction, max allotment),
+    and the state's USDA state-options rows (BBCE and the other options).
+    Formulas look values up by year with MATCH(..,1), so unhiding and
+    appending a row per new fiscal year updates everything."""
     ad = os.path.join(REPO, 'additional_data')
     yd = pd.read_csv(os.path.join(ad, 'year_data.csv')).dropna(axis=1, how='all')
     yd.columns = [str(c).strip() for c in yd.columns]
@@ -161,6 +162,8 @@ def federal_tables(wb, state_name=None):
         t.columns = [str(c).strip() for c in t.columns]
 
     ws = wb.create_sheet('FederalTables')
+    ws.sheet_state = 'hidden'          # reference plumbing; unhide to inspect
+                                       # or to append a new fiscal year
     ws.sheet_view.showGridLines = False
     blue = PatternFill('solid', fgColor='2F5496')
     gray = PatternFill('solid', fgColor='F2F2F2')
@@ -447,7 +450,7 @@ RAW_DESC = {
                                 'amount as the difference between this and '
                                 'ORIGINAL_BENEFIT_AMOUNT, and flags a payment error '
                                 'when that difference exceeds the review year\'s federal '
-                                'QC tolerance (FederalTables tab).',
+                                'QC tolerance (hidden FederalTables sheet).',
     'STATUS': 'review disposition code: 2 = overissuance, 3 = underissuance, '
               '4 = ineligible household (the entire benefit is in error), 1 = correct. '
               'QC manual: STATUS. The public demo data carries no code-4 cases (the '
@@ -706,24 +709,28 @@ def share_tab(wb, state_name):
                   'G': 11, 'H': 18}.items():
         ws.column_dimensions[cl].width = w
     ws.merge_cells('A1:H1')
-    c = ws['A1']; c.value = f'Share Results — {state_name}'
+    c = ws['A1']; c.value = f'Share aggregate results back — {state_name}'
     c.fill = blue; c.font = Font(bold=True, size=16, color='FFFFFF')
     ws.row_dimensions[1].height = 30
     ws.merge_cells('A2:H2')
     c = ws['A2']
-    c.value = ('Optional: aggregate performance of every rule on the data pasted into '
-               f'the "{DATA_SHEET}" tab, to share back with us (copy this tab into an '
-               'email as values, or send the workbook). Fill in the yellow cells so we '
-               'know what the numbers cover. Sharing helps every state: the public QC '
-               'files exclude ineligible households entirely, so the "ineligible errors '
-               'flagged" column is evidence we can get no other way about which kinds '
-               'of cases these rules can catch — and your recent years tell us how '
-               'well nationally-mined rules transfer out of sample.')
+    # wording agreed 2026-08-19
+    c.value = ('Optional: this tab displays aggregate performance of every rule on the '
+               f'data pasted into the "{DATA_SHEET}" tab. It would help us improve the '
+               'models (for your state and others) if you can share back the aggregate '
+               'performance by rule - that will tell us what kinds of errors can be '
+               'reliably found out of sample or what kinds of rules might be more '
+               'robust out of sample. Fill in the yellow cells so we know what the '
+               'numbers cover. Ineligible cases are not included in the public QC '
+               'sample, which is why we want a separate count of them and which rule '
+               'might capture them. To send the results back to us, please copy / '
+               'paste the whole sheet into a new excel workbook (paste as values) and '
+               'send it back to us.')
     c.fill = grayF; c.font = Font(size=11); c.alignment = wrap
-    ws.row_dimensions[2].height = 58
+    ws.row_dimensions[2].height = 72
     meta = [('State', state_name, False),
             ('Fiscal years pasted into Step 2 (e.g., 2025-2026)', '', True),
-            ('Data pasted (QC / QA / other)', '', True)]
+            ('Data pasted (QC / QA / pre-auth / other)', '', True)]
     for i, (label, val, editable) in enumerate(meta):
         r = 4 + i
         ws.cell(row=r, column=1, value=label).font = Font(bold=True)
@@ -732,7 +739,7 @@ def share_tab(wb, state_name):
         if editable:
             c.fill = yellow
     dv = DataValidation(type='list',
-                        formula1='"QC review data,QA review data,other"',
+                        formula1='"QC review data,QA review data,pre-auth data,other"',
                         allow_blank=True)
     ws.add_data_validation(dv)
     dv.add('B6')
