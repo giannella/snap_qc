@@ -53,7 +53,7 @@ add_percentile <- function(data, col,
 add_features <- function(data) {
   data |>
     rename_cols() |>
-    dplyr::mutate(at_max_ben = rawben_uncapped > rawbenmax) |>
+    dplyr::mutate(at_max_ben = rawben_uncapped >= rawbenmax) |>
     dplyr::left_join(dplyr::select(year_data, year, cpi),       
                      by = c("fiscal_year" = "year")) |>
     add_percentile(rawgrinc) |>
