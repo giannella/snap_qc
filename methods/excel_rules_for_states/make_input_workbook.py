@@ -53,7 +53,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 import states as STATE_REGISTRY
 from workbook_layout import (DATA_SHEET, BLENDED_SHEET, DICT_SHEET,
                              EXPORT_SHEET, SCREEN_SHEET, FLAGGED_SHEET,
-                             SHARE_SHEET, RAW_COLS, qref)
+                             SHARE_SHEET, VIEWER_SHEET, RAW_COLS, qref)
 from live_formulas import (countifs, make_table, read_delivery_tab,
                            rule_term, selection_refs)
 
@@ -308,7 +308,7 @@ def background_tab(wb, state_name):
         # overissuance share from the benefit pair (revision 2026-08-18): the
         # demo fills it automatically because the shipped input block carries
         # ORIGINAL/CORRECTED_BENEFIT_AMOUNT for every case
-        ('Share of error cases that are overissuances (paid more than correct)',
+        ('Share of error cases that are overissuances',
          f'=IFERROR(SUMPRODUCT(({TABLE}[over_threshold]=1)'
          f'*({TABLE}[ORIGINAL_BENEFIT_AMOUNT]>{TABLE}[CORRECTED_BENEFIT_AMOUNT]))'
          f'/COUNTIF({TABLE}[over_threshold],1),"")', '0.0%'),
@@ -325,19 +325,33 @@ def background_tab(wb, state_name):
     r += 1
 
     para('What this is', bold=True)
-    para('This workbook helps you choose payment-error review rules to put into '
-         'production. Paste in your own recent data (for example FY2025/FY2026 QC or '
-         'QA cases), see how every rule performs on it, and keep the rules that earn '
-         'their place. Each rule is a short, readable condition on case fields (for '
-         'example: household size, income per person, deductions, benefit relative to '
-         f'the maximum), selected from national and {state_name} rules mined on the '
-         'public USDA SNAP Quality Control (QC) files for FY2022-2024.')
+    # wording agreed 2026-08-21
+    para('This workbook helps you test potential rules for flagging cases at risk of '
+         'payment errors using your own internal data. It then allows you to either '
+         'a) export those rules for use somewhere else or b) apply the rules to new '
+         'cases here in Excel (i.e., this workbook will flag cases based on the rules '
+         'you\'ve selected). It is critical to test rules before implementing them - '
+         'you have access to more recent and more comprehensive data about errors '
+         'than what was used to generate these rules. Some rules may no longer catch '
+         'errors, others may flag too many cases without errors. Paste in your own '
+         'recent data (e.g., FY2025/FY2026 QC or QA cases), see how every rule '
+         'performs on it, and keep the rules that perform well (e.g., at least 3-4 in '
+         '10 cases flagged have errors) and that make sense given what you know about '
+         'your secondary review processes (e.g., can the types of errors flagged by '
+         'the rule be found and fixed?). Each rule is a short, readable condition on '
+         'case fields (for example: household size, income per person, deductions, '
+         f'benefit relative to the maximum), selected from national and {state_name} '
+         'rules mined on the public USDA SNAP Quality Control (QC) files for '
+         'FY2022-2024.')
     para('Yellow highlighting means a cell is interactive: the yellow columns on the '
          f'"{DATA_SHEET}" tab are where you paste your data, and the yellow "Include?" '
          f'column on the "{BLENDED_SHEET}" tab (TRUE/FALSE) is where you keep or drop '
          'each rule. Everything else recomputes automatically.')
 
     para('How to use this workbook', bold=True)
+    # step structure and wording agreed 2026-08-21: steps 1-3 are the core
+    # path; steps 4 and 5 are ALTERNATIVE paths to using the selected rules,
+    # indented under step 3; step 6 applies to any path
     for step in [
         f'1.  Map your data to the dictionary: the "{DICT_SHEET}" tab defines every '
         'input column and gives the QC technical-manual crosswalk.',
@@ -346,20 +360,28 @@ def background_tab(wb, state_name):
         'data.',
         f'3.  Select rules on the "{BLENDED_SHEET}" tab: set the yellow Include? cell '
         'to FALSE for any rule you do not want. The combined results update in the '
-        'orange rows at the top of that tab and in the figures above.',
-        'Steps 1-3 are the core path (the orange tabs). After step 3 you have a '
-        'selected rule list, and you can stop there. The pale orange tabs are '
-        'optional next steps; use any of them, in any order.',
-        f'4.  Export the selected rules (the "{EXPORT_SHEET}" tab): the rules still '
-        'set to TRUE, with their exact logic. Filter your caseload in Excel, turn '
-        'them into a query, or send them to your vendor.',
-        f'5.  Screen new cases (the "{SCREEN_SHEET}" and "{FLAGGED_SHEET}" tabs): '
-        'paste cases with no review outcome into 5.1; 5.2 lists every case a '
-        'selected rule flags, with the rule that flagged it.',
-        f'6.  Share aggregate results back (the "{SHARE_SHEET}" tab): whichever path '
-        'you took, this tab summarizes each rule\'s performance on your data in a '
-        'form you can copy and send back to us. If you have trouble, please reach '
-        'out to eric.giannella@georgetown.edu.',
+        'orange rows at the top of that tab and in the figures above. At any point, '
+        f'use the "{VIEWER_SHEET}" tab to pick a rule and see the actual cases it '
+        'flags in your data, with the columns the rule uses highlighted in blue: an '
+        'easy way to sanity-check a rule before keeping it.',
+        'Steps 4 and 5 are alternative paths to using the rules to flag new '
+        'high-risk cases: step 4 is for exporting them to use somewhere else, and '
+        'step 5 is to use them here in Excel.',
+        f'      4.  Export the selected rules (the "{EXPORT_SHEET}" tab): the rules '
+        'still set to TRUE, with their exact logic. Filter your caseload in Excel, '
+        'turn them into a query, or send them to your vendor.',
+        f'      5.1  Screen new cases (the "{SCREEN_SHEET}" tab): paste cases with '
+        'no review outcome into its yellow columns.',
+        f'      5.2  See the flagged cases (the "{FLAGGED_SHEET}" tab): every new '
+        'case a selected rule flags, with the rule that flagged it.',
+        f'6.  Optional: share aggregate results back (the "{SHARE_SHEET}" tab): '
+        'whichever path you took, this tab summarizes each rule\'s performance on '
+        'your data. If you do not mind sending us back these aggregate performance '
+        'numbers by rule, that will help us improve the models and the rules we '
+        'generate for you as well as other states. Please copy/paste as values into '
+        'a new workbook (do not send internal case-level data) in order to send '
+        'these results back to us. If you have trouble, please reach out to '
+        'eric.giannella@georgetown.edu.',
     ]:
         ws.merge_cells(f'A{r}:B{r}')
         c = ws.cell(row=r, column=1, value=step)
@@ -376,16 +398,20 @@ def background_tab(wb, state_name):
          'errors. In addition, there are not that many observations per state per year '
          '(several hundred to a little over 1,000) so most state-derived rules are based '
          'on a small number of cases. Pasting the state\'s own internal data into the '
-         f'"{DATA_SHEET}" tab makes every figure recompute on far more cases, so rule '
-         'performance is based on more comprehensive and recent data. You could paste '
-         'QA data in to see what rules might work for QA.')
+         f'"{DATA_SHEET}" tab makes every figure recompute so that you can select '
+         'rules based on their performance with more comprehensive and recent data. '
+         'You could try pasting QA data in to see what rules might work for QA '
+         '(i.e., rules that address the subset of QC errors that can be found and '
+         'fixed in QA).')
     para('How the rule lists were made', bold=True)
+    # wording agreed 2026-08-21
     para('Candidate rules come from decision trees built by machine learning algorithms '
          '(xgboost and ranger) fitted to the QC data within household-size strata '
          '(1 / 2-3 / 4+), then filtered on a conservative lower confidence bound of '
-         'training precision, admitted by a false-discovery-rate test against the stratum '
-         'base rate, ranked, and filled to a 10% review budget. Documentation can be '
-         'found at the sources below:')
+         'training precision, filtered with a false-discovery-rate test against the '
+         'stratum base rate, ranked using a stringent reliability measure of precision, '
+         'and filled to a 10% review budget (i.e., enough rules to cover reviewing up '
+         'to 10% of cases per year). Documentation can be found at the sources below:')
     link('The pipeline that builds these workbooks (GitHub)',
          f'{GITHUB}/tree/main/methods/excel_rules_for_states')
     link('The delivery rule lists, one CSV per state (GitHub)',
@@ -395,6 +421,8 @@ def background_tab(wb, state_name):
     r += 2
     para('Made by the Better Government Lab at Georgetown University and the '
          'University of Michigan', bold=True)
+    ws.cell(row=r, column=1, value='Contributors:').font = Font(size=11)
+    r += 1
     for name in ('Eric Giannella', 'Ziyu Shu', 'Ben Molin', 'Rachael Zuppke'):
         ws.cell(row=r, column=1, value=name).font = Font(size=11)
         r += 1

@@ -33,7 +33,7 @@ verifies against. The tracked delivery CSVs are untouched.
 
 ## The deliverable
 
-**One file per state**: `state_workbooks/<ABBR>/snap_qc_dashboard_<ABBR>.xlsx`.
+**One file per state**: `state_workbooks/<ABBR>/SNAP_flagging_rules_<ABBR>.xlsx`.
 Its "Step 2. Import Testing Data" tab (the Data tab; sheet names live in
 `workbook_layout.py`) holds the raw FNS QC-schedule fields as VALUES and every model
 feature as an in-workbook FORMULA, so a state pastes the fields it already
@@ -160,7 +160,7 @@ the removal decision.
 | 5 | `verify_workbook.py` (macOS) / `verify_workbook_win.ps1` (Windows) | Opens each workbook in desktop Excel (AppleScript / COM), forces a full recalculation, reads probe cells back, and fails on any formula error cell on any sheet. Needs desktop Excel installed. Formulas written by openpyxl must carry the `_xlfn.` prefix for post-2007 functions (NORM.S.INV, FLOOR.MATH) or Excel renders #NAME? — the verifier's error scan is what catches that class of bug. |
 
 The recon stage then becomes the deliverable, copied to
-`state_workbooks/<ABBR>/snap_qc_dashboard_<ABBR>.xlsx`.
+`state_workbooks/<ABBR>/SNAP_flagging_rules_<ABBR>.xlsx`.
 
 ## Requirements
 

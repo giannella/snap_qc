@@ -7,7 +7,7 @@ Build a state's SNAP QC rules workbook end to end.
     python make_state.py WA --refresh    # re-export the frame from the rds first
 
 The deliverable is ONE file per state, state_workbooks/<ABBR>/
-snap_qc_dashboard_<ABBR>.xlsx: raw input fields as values, every model
+SNAP_flagging_rules_<ABBR>.xlsx: raw input fields as values, every model
 feature an in-workbook formula, and the rules tab (the blended delivery
 list after the rule_selection.py transform). No tuning of any kind runs in
 the workbook. The intermediate stages land in .build/out_<ABBR>/ and are
@@ -114,13 +114,15 @@ def build_one(state, refresh, want_verify):
 
     deliver_dir = os.path.join(PKG, 'state_workbooks', state)
     os.makedirs(deliver_dir, exist_ok=True)
-    deliver = os.path.join(deliver_dir, f'snap_qc_dashboard_{state}.xlsx')
+    # delivery filename convention agreed 2026-08-21
+    deliver = os.path.join(deliver_dir, f'SNAP_flagging_rules_{state}.xlsx')
     if in_use(deliver):
         raise SystemExit(f'{deliver} is open in Excel — close it and re-run.')
     shutil.copy(recon, deliver)
     # drop leftovers from the era when all three variants were delivered
     for stale in (f'snap_qc_dashboard_{state}_LIVE.xlsx',
                   f'snap_qc_dashboard_{state}_RECON.xlsx',
+                  f'snap_qc_dashboard_{state}.xlsx',   # pre-2026-08-21 name
                   f'{state.lower()}_cases.csv'):
         p = os.path.join(deliver_dir, stale)
         if os.path.isfile(p) and not in_use(p):

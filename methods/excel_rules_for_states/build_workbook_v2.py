@@ -106,7 +106,7 @@ STATE_DIR    = os.environ.get('SNAP_OUT_DIR') or os.path.join(
                    PKG, 'state_workbooks', STATE_ABBR)
 os.makedirs(STATE_DIR, exist_ok=True)
 CASES_CSV    = os.path.join(STATE_DIR, f'{STATE_ABBR.lower()}_cases.csv')
-OUT          = os.path.join(STATE_DIR, f'snap_qc_dashboard_{STATE_ABBR}.xlsx')
+OUT          = os.path.join(STATE_DIR, f'SNAP_flagging_rules_{STATE_ABBR}.xlsx')
 
 MAX_ROW      = 3000            # Data-sheet formula range ceiling
 MAXG         = 2500            # grid rows allocated per stratum

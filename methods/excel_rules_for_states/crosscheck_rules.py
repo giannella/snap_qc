@@ -146,7 +146,7 @@ def main():
     cfg = STATE_REGISTRY.get(a.state.upper())
     repo = find_repo(PKG)
     wbp = a.workbook or os.path.join(PKG, '.build', f'out_{cfg["abbr"]}',
-                                     f'snap_qc_dashboard_{cfg["abbr"]}.xlsx')
+                                     f'SNAP_flagging_rules_{cfg["abbr"]}.xlsx')
     cases = pd.read_csv(os.path.join(os.path.dirname(wbp),
                                      f'{cfg["abbr"].lower()}_cases.csv'))
 
