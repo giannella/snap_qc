@@ -1752,3 +1752,35 @@ per-state deltas are unreadable individually (SE ~0.068 at a median
 state's 5% budget) - read the 49-state aggregates.
 
 *Design, scorecard, paired tables, and caveats: [detailed record](modeling_findings_detailed.md#39-v250-the-corrected-frame-re-mine-beats-the-shipped-v240-lists-a-year-ahead-2026-08-13), §39.*
+
+## 40. Narrow dollar-interval rules decay more out of year and often stop firing; the 99% LCB is never underwater at the median
+
+> **Takeaway (about our pipeline).** Rules built on very narrow two-sided
+> dollar windows (relative width under 5%, e.g. earned income per person
+> between 589 and 592) are the fragile tail of the pool. At matched training
+> support (n 30-300), their held-out precision drops 0.04-0.07 below their
+> training precision vs 0.02-0.03 for ordinary rules, and 8-36% of them flag
+> fewer than 10 held-out cases at all, on both eras tested (mined FY2022-23
+> tested on FY2024, and mined FY2017-18 tested on FY2019). The 99% LCB is
+> not miscalibrated for them (its median margin stays non-negative in every
+> width bucket on both eras); they are simply the zero-margin rules, and the
+> reach collapse is invisible to any precision-based selection. A
+> delivery-time width floor near 5% is supported as hygiene but does NOT
+> ship until the 49-state with/without re-walk with the standard companions.
+
+The census behind the question: 466 of the delivered core rules carry a
+two-sided dollar interval, 156 of them 10 dollars wide or less.
+
+-> detailed record: modeling_findings_detailed.md section 40.
+
+**Section 40 addendum (2026-08-21).** The width floor cleared its
+pre-registered gate the same day: the 49-state with/without re-walk over
+the cached benchmark pools showed removal-invariance at both budgets
+(median paired change +0.0000 for precision and dollar recall under both
+candidate floors, means +0.0002 to +0.0024, zero of 49 states harmed, zero
+fill gaps; the unfiltered arm reproduced the committed benchmark in 98 of
+98 cells). Per the stated preference the 5% relative floor SHIPPED as
+workbook delivery hygiene (rule_selection.py; a median 634 narrow rules
+drop from each blend and the buffer refill replaces them at unchanged
+capacity). Positive means are one-era observations, not improvement
+claims.

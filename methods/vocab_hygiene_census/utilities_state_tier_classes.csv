@@ -1,0 +1,50 @@
+"state","max_distinct","tier_state"
+"Virginia",54,FALSE
+"Tennessee",18,FALSE
+"Arkansas",17,FALSE
+"Maine",16,FALSE
+"Mississippi",16,FALSE
+"Indiana",12,FALSE
+"Michigan",11,FALSE
+"North Carolina",11,FALSE
+"Florida",10,FALSE
+"New Hampshire",10,FALSE
+"New York",10,FALSE
+"Wisconsin",10,FALSE
+"Georgia",9,FALSE
+"Minnesota",9,FALSE
+"Nebraska",9,FALSE
+"Colorado",8,FALSE
+"Connecticut",8,FALSE
+"Idaho",8,FALSE
+"Kansas",8,FALSE
+"Kentucky",8,FALSE
+"Louisiana",8,FALSE
+"Massachusetts",8,FALSE
+"Missouri",8,FALSE
+"Ohio",8,FALSE
+"Texas",8,FALSE
+"Utah",8,FALSE
+"Alabama",7,FALSE
+"Arizona",7,FALSE
+"District of Columbia",7,FALSE
+"Illinois",7,FALSE
+"Maryland",7,FALSE
+"Nevada",7,FALSE
+"Oklahoma",7,FALSE
+"South Dakota",7,FALSE
+"California",6,TRUE
+"Delaware",6,TRUE
+"Iowa",6,TRUE
+"Montana",6,TRUE
+"New Mexico",6,TRUE
+"Oregon",6,TRUE
+"Pennsylvania",6,TRUE
+"Rhode Island",6,TRUE
+"Wyoming",6,TRUE
+"New Jersey",5,TRUE
+"North Dakota",5,TRUE
+"Washington",5,TRUE
+"West Virginia",5,TRUE
+"South Carolina",4,TRUE
+"Vermont",4,TRUE

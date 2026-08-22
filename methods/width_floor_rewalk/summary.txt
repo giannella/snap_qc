@@ -1,0 +1,18 @@
+﻿# Recovered from width_floor_rewalk.log (the in-script sink wrote an empty file; run 2026-08-21, exit 0)
+[18:14:02] floor02 @ 5%: d_precision median +0.0000 | mean +0.0004 | harmed(<-0.05) 0 | helped(>+0.05) 0 of 49
+[18:14:02] floor02 @ 5%: d_dollar   median +0.0000 | mean +0.0005 | harmed(<-0.05) 0 | helped(>+0.05) 0 | dropped rules med 193.0
+[18:14:02] floor02 @ 5%: fill gaps: 0 of 49 cells with gap_total > 0 (unfiltered: 0)
+[18:14:02] floor02 @ 10%: d_precision median +0.0000 | mean +0.0003 | harmed(<-0.05) 0 | helped(>+0.05) 0 of 49
+[18:14:02] floor02 @ 10%: d_dollar   median +0.0000 | mean +0.0002 | harmed(<-0.05) 0 | helped(>+0.05) 0 | dropped rules med 193.0
+[18:14:02] floor02 @ 10%: fill gaps: 0 of 49 cells with gap_total > 0 (unfiltered: 0)
+[18:14:02] floor05 @ 5%: d_precision median +0.0000 | mean +0.0024 | harmed(<-0.05) 0 | helped(>+0.05) 1 of 49
+[18:14:02] floor05 @ 5%: d_dollar   median +0.0000 | mean +0.0012 | harmed(<-0.05) 0 | helped(>+0.05) 0 | dropped rules med 634.0
+[18:14:02] floor05 @ 5%: fill gaps: 0 of 49 cells with gap_total > 0 (unfiltered: 0)
+[18:14:02] floor05 @ 10%: d_precision median +0.0000 | mean +0.0019 | harmed(<-0.05) 0 | helped(>+0.05) 0 of 49
+[18:14:02] floor05 @ 10%: d_dollar   median +0.0000 | mean +0.0020 | harmed(<-0.05) 0 | helped(>+0.05) 1 | dropped rules med 634.0
+[18:14:02] floor05 @ 10%: fill gaps: 0 of 49 cells with gap_total > 0 (unfiltered: 0)
+[18:14:02] pre-registered bar (design_note.md, one-sided non-inferiority): ship a
+[18:14:02] floor arm only if, at BOTH budgets and for BOTH metrics, median d >=
+[18:14:02] -0.005, mean d >= -0.01, and zero states harmed (< -0.05). Positive
+[18:14:02] medians are one-era observations, never improvement claims. Preference:
+[18:14:02] 0.05, else 0.02, else unshipped.

@@ -276,6 +276,17 @@ we learned is recoverable. Each points to its numbered section.
   (#39). Production lists built on all of FY2022-24 with
   characterization + audit columns; promoted to `state_delivery_lists/`
   as v2.5.0 on 2026-08-14.
+- **08-21**: Vocabulary-hygiene census (utilities / SMD / narrow
+  intervals), then the interval-width decay diagnostic on two eras:
+  narrow dollar intervals carry excess held-out decay and a reach
+  collapse the LCB cannot see, while LCB medians stay non-negative
+  everywhere (#40). Same day: the 49-state re-walk cleared its
+  pre-registered bar (removal-invariant, zero harmed) and the 5% width
+  floor shipped as workbook delivery hygiene (#40 addendum). Anchor
+  studies (census + translation test) retargeted the planned utilities
+  encoding to the state-year MODE; the mode-anchored variant mine
+  launched overnight (design note in
+  methods/v250_benchmark_2024_utilrel/).
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -3747,3 +3758,155 @@ characterization sheet are local-only duplicates of the shipped folder),
 `rule_characterization.csv`). Scripts:
 `methods/v250_benchmark_2024_v2.R`, `methods/v250_build_staged_lists_v2.R`,
 `runners/run_v250_cycle.R`. Log: `v250_cycle2.log` (untracked).
+
+## 40. Narrow dollar-interval rules: excess held-out decay and reach collapse on two eras; the 99% LCB medians stay non-negative (2026-08-21)
+
+**Question.** Two-sided dollar intervals in mined rules can be very narrow
+(e.g., earned income per person between 589 and 592). The 99% Wilson LCB
+corrects sampling noise for a rule as given, and the BH admission corrects
+selection across the candidate set, but neither sees the threshold-grid
+multiplicity behind a cherry-picked window. Do narrow intervals carry excess
+held-out decay the LCB does not price in?
+
+**Design (pre-run design note and fresh senior-statistician review,
+2026-08-21: methods/interval_width_decay/design_note.md).** One fixed,
+already-mined any-error national pool is evaluated once, as-is, on a
+subsequent held-out year; nothing is re-mined or tuned. Each rule is
+bucketed post hoc by the RELATIVE width of its narrowest two-sided interval
+on a dollar variable (width = (upper - lower) / upper, over the seven
+dollar-denominated features: medical_deductions, utilities, the four
+per-person income/deduction aggregates, shelter per person). Rules with no
+two-sided dollar interval (one-sided or non-dollar conditions only) are the
+reference class. Readouts per rule, on rules with held-out flagged n >= 10:
+d_raw = held-out precision minus train precision, and d_lcb = held-out
+precision minus the 99% train LCB. The review-mandated PRIMARY read
+restricts every bucket to the shared train-support band n in [30, 300],
+because narrow rules concentrate at small n (era 1, all rules: median train
+n 134 in the <=2% bucket vs 1,342 in the reference class, with higher raw
+train precision 0.242 vs 0.202), so an unbanded decay-vs-LCB contrast would
+differ across buckets mechanically under the null. The share of rules with
+held-out flagged n < 10 ("reach collapse") is reported per bucket: a rule
+that stops firing is invisible to any precision column. Budget-level (5% /
+10% of caseload) readouts are deliberately absent here: this is a rule-level
+diagnostic, and the review gate requires a 49-state with/without-floor
+re-walk with the mandatory companions before any floor ships. The pools are
+mined on the any-error frame, so frame-relative and any-error precision
+coincide by construction.
+
+**Era 1.** Pool: the 2022-2023-trained any-error national pool behind the
+v2.5.0 benchmark (methods/v250_benchmark_2024/cache/bench_national_117.rds,
+54,641 rules with cached train n / k / 99% LCB). Held-out FY2024: 39,528
+rows, 4,764 errors (12.1% base rate). Bucket counts, all rules: <=2% 193,
+2-5% 443, 5-15% 1,005, 15-50% 2,091, >50% 2,525, reference 48,384.
+
+Train-n band [30, 300], per bucket (rules / median train n / share with
+held-out n < 10 / median d_raw / median d_lcb):
+
+| bucket | rules | med n | reach collapse | med d_raw | med d_lcb |
+|---|---|---|---|---|---|
+| <=2% | 153 | 106 | 31.4% | -0.069 | +0.006 |
+| 2-5% | 328 | 110 | 10.1% | -0.070 | +0.009 |
+| 5-15% | 578 | 128 | 2.6% | -0.048 | +0.028 |
+| 15-50% | 728 | 143 | 0.8% | -0.031 | +0.043 |
+| >50% | 479 | 140 | 2.1% | -0.031 | +0.046 |
+| reference | 11,726 | 121 | 1.7% | -0.017 | +0.061 |
+
+Mean train precision is flat across the band buckets (0.261-0.273), so the
+gradient is not a train-precision artifact.
+
+**Era 2 (replication, mandated by the pre-run review).** Pool: the cached
+FY2017-18 any-error national mine
+(methods/state_similarity_v2/era_validation_train1718_test19/raw_vocab/
+raw_national.rds, 145,313 rules with cached train n / k; training window
+established by the era-2 fresh-share replication plan of 2026-08-06 and the
+cache-determinism check of 2026-08-07). The cache predates the 2026-08-08
+benefit-reconstruction repair, so both its train stats and the held-out
+evaluation use the archived pre-benmerge frame it was mined on
+(archive_data/reg_model_data_pre_benmerge_2026-08-08.rds; build support
+79,907 rows / 7,115 errors and test support match the cached artifact
+exactly, asserted at runtime). Admission uses the shipped recipe on the
+cached counts (pooled BH FDR 10% vs the cached stratum base rates AND
+n >= 30; LCB = 99% Wilson), the identical construction behind the era-1
+artifact: 50,869 of 145,313 rules admitted. Held-out FY2019: 39,221 rows,
+3,931 errors (10.0% base rate).
+
+Train-n band [30, 300], same columns:
+
+| bucket | rules | med n | reach collapse | med d_raw | med d_lcb |
+|---|---|---|---|---|---|
+| <=2% | 213 | 107 | 36.2% | -0.043 | +0.023 |
+| 2-5% | 305 | 135 | 8.5% | -0.052 | +0.015 |
+| 5-15% | 538 | 128 | 1.7% | -0.037 | +0.030 |
+| 15-50% | 690 | 127 | 1.2% | -0.025 | +0.045 |
+| >50% | 457 | 131 | 0.2% | -0.024 | +0.045 |
+| reference | 11,668 | 122 | 0.9% | -0.026 | +0.046 |
+
+**What replicated, what did not.** Reach collapse replicates cleanly and is
+the sharpest signature on both eras: 31.4% / 10.1% (era 1) and 36.2% / 8.5%
+(era 2) of the two narrow buckets flag fewer than 10 held-out cases, vs
+0.2-2.6% for every other bucket. The width gradient in d_raw replicates in
+direction with attenuation: the narrow buckets are worst on both eras, but
+their excess decay over the reference class is about -0.05 in era 1
+(-0.069/-0.070 vs -0.017) and about -0.02 to -0.03 in era 2 (-0.043/-0.052
+vs -0.026); era 1's wide-bucket-below-reference gap (-0.031 vs -0.017) does
+not replicate (era 2 wide buckets sit at the reference level). The LCB
+result is consistent on both eras and is a null worth recording: median
+d_lcb stays NON-NEGATIVE in every bucket on both eras, i.e. the 99% LCB is
+never underwater at the median even for the narrowest intervals. Narrow
+rules keep only a fraction of the reference class's LCB headroom (+0.006 /
++0.009 vs +0.061 era 1; +0.023 / +0.015 vs +0.046 era 2), so they are the
+zero-margin rules, but the case for a floor rests on the reach collapse and
+the thinner margin, not on miscalibration.
+
+**Caveats.** Bucketing is post hoc within a pre-registered evaluation (the
+bucket edges were fixed in the design note before the run). The d_raw
+gradient's size is era-dependent (attenuated on the older era). Band
+medians summarize rules, not caseload: no budget-level readout exists yet,
+and per the review NO width floor ships from these runs; calibrating one
+requires the 49-state with/without-floor budget re-walk carrying the
+within-state median + mean + harmed-tail companions. Delivered-list
+exposure (census, methods/vocab_hygiene_census/): 466 two-sided dollar
+intervals among 3,214 delivered core rules, 156 of them <= $10 wide.
+
+**Artifacts.** methods/interval_width_decay/: design_note.md,
+intervalwidth_decay_2024.R and _era2.R (regenerating scripts),
+per_rule_decay_2024.csv / _era2.csv (per-rule),
+decay_by_bucket_2024.csv / _era2.csv (all rules),
+decay_by_bucket_trainband_2024.csv / _era2.csv (the primary tables above).
+Census: methods/vocab_hygiene_census/census_vocab_hygiene.R and its CSVs.
+
+**Section 40 addendum (2026-08-21, same day): the width floor cleared its
+gate and shipped as delivery hygiene.** The 49-state with/without-floor
+re-walk (methods/width_floor_rewalk/: design_note.md with the
+pre-registered one-sided non-inferiority bar, width_floor_rewalk_v2.R,
+runner; pre-run senior-statistician review APPROVE WITH CHANGES, applied)
+walked three arms over the cached FY2022-23 benchmark pools and scored
+them held-out on FY2024 at both budgets: unfiltered (asserted to reproduce
+the committed benchmark, 98 of 98 cells at 1e-6), and the same blend with
+rules dropped whose narrowest two-sided dollar interval has relative width
+under 2% / under 5% (the section-40 definition verbatim), dropped BEFORE
+the fill so the buffer refill replaces them. Result, per the mandatory
+companions (paired within state, floor arm minus unfiltered):
+
+| arm | budget | median d_prec | mean d_prec | harmed | median d_$ | mean d_$ | harmed | rules dropped (med) |
+|---|---|---|---|---|---|---|---|---|
+| floor02 | 5% | +0.0000 | +0.0004 | 0 | +0.0000 | +0.0005 | 0 | 193 |
+| floor02 | 10% | +0.0000 | +0.0003 | 0 | +0.0000 | +0.0002 | 0 | 193 |
+| floor05 | 5% | +0.0000 | +0.0024 | 0 | +0.0000 | +0.0012 | 0 | 634 |
+| floor05 | 10% | +0.0000 | +0.0019 | 0 | +0.0000 | +0.0020 | 0 | 634 |
+
+(every cell re-derived from methods/width_floor_rewalk/
+per_state_paired.csv, the artifact of record.) Zero fill gaps in every one
+of the 49 x 2 x 3 cells. The
+pre-registered bar (median >= -0.005, mean >= -0.01, zero harmed, both
+budgets, both metrics; preference 0.05 over 0.02) is cleared by BOTH
+arms; per the stated preference the 5% FLOOR SHIPPED, implemented in the
+workbook delivery transform
+(methods/excel_rules_for_states/rule_selection.py, narrow_interval(), the
+section-40 rel-width definition verbatim, dollar variables only,
+ratio-boundary intervals exempt), with buffer refill at unchanged capacity
+targets. Positive means are one-era observations per the pre-registration,
+not improvement claims. Artifacts: methods/width_floor_rewalk/
+{width_floor_results_2024.csv, per_state_paired.csv, summary.txt
+(recovered from width_floor_rewalk.log; the in-script sink wrote an empty
+file), design_note.md}; log width_floor_rewalk.log (untracked).

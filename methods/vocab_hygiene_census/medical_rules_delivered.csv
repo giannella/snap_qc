@@ -1,0 +1,288 @@
+"state","rank","rule","hh","smd_min","smd_max","in_training_smd_range"
+"Alabama",9,"medical_deductions >= 229 & rawben_rel_max >= 0.751 & shelter_expenses_by_hh_size < 688","2-3",140,140,FALSE
+"Alabama",13,"children_i <= 0 & medical_deductions > 138 & total_deductions_by_hh_size > 542 & utilities <= 504","2-3",140,140,FALSE
+"Alabama",18,"bbce_state_i >= 1 & medical_deductions > 625 & unc_rawben_rel_max <= 1.24 & unearned_by_hh_size > 288","1",140,140,FALSE
+"Alabama",21,"medical_deductions >= 326 & rawben_rel_max >= 0.581","2-3",140,140,FALSE
+"Alabama",29,"elderly_disabled_i >= 1 & medical_deductions > 158 & rawben_rel_max > 0.997 & unc_rawben_rel_max <= 1.03","1",140,140,FALSE
+"Alabama",33,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",140,140,FALSE
+"Alabama",76,"gross_by_hh_size > 203 & medical_deductions > 354 & rawben_rel_max > 0.312 & unearned_by_hh_size > 675","2-3",140,140,FALSE
+"Alabama",78,"medical_deductions >= 162 & months_since_cert_n >= 5 & rawben_rel_max >= 0.139 & shelter_expenses_by_hh_size >= 216","2-3",140,140,FALSE
+"Alabama",82,"medical_deductions > 165 & rawben_rel_max > 0.998 & shelter_expenses_by_hh_size <= 862 & unc_rawben_rel_max > 1.02","1",140,140,FALSE
+"Alabama",91,"medical_deductions > 138 & unc_rawben_rel_max > 0.356 & unearned_by_hh_size > 1220 & utilities <= 392","1",140,140,FALSE
+"Arizona",12,"gross_by_hh_size > 228 & medical_deductions <= 170 & shelter_expenses_by_hh_size > 638 & unc_rawben_rel_max > 0.246","2-3",125,145,FALSE
+"Arizona",13,"medical_deductions >= 229 & rawben_rel_max >= 0.751 & shelter_expenses_by_hh_size < 688","2-3",125,145,FALSE
+"Arizona",14,"medical_deductions <= 122 & rawben_rel_max > 0.997 & unearned_by_hh_size > 401 & utilities <= 14","1",125,145,FALSE
+"Arkansas",43,"medical_deductions >= 162 & months_since_cert_n >= 5 & rawben_rel_max >= 0.139 & shelter_expenses_by_hh_size >= 216","2-3",103,103,FALSE
+"Arkansas",53,"medical_deductions >= 206 & months_since_cert_n >= 17 & rawben_rel_max >= 0.104 & shelter_expenses_by_hh_size < 1120","1",103,103,FALSE
+"Arkansas",81,"medical_deductions > 126 & rawben_rel_max > 0.17 & unc_rawben_rel_max > 0.625","2-3",103,103,FALSE
+"Arkansas",88,"medical_deductions >= 129 & months_since_cert_n >= 3 & unc_rawben_rel_max >= 0.159 & utilities < 714","2-3",103,103,FALSE
+"California",9,"medical_deductions >= 229 & rawben_rel_max >= 0.751 & shelter_expenses_by_hh_size < 688","2-3",120,120,FALSE
+"California",13,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",120,120,FALSE
+"California",18,"elderly_disabled_i >= 1 & medical_deductions > 134 & shelter_expenses_by_hh_size > 855 & utilities <= 724","2-3",120,120,FALSE
+"California",37,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",120,120,FALSE
+"California",60,"gross_by_hh_size > 1290 & medical_deductions > 140 & rawben_rel_max > 0.997 & utilities <= 598","1",120,120,FALSE
+"Colorado",8,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",165,165,FALSE
+"Colorado",14,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",165,165,FALSE
+"Colorado",19,"bbce_state_i >= 1 & medical_deductions > 625 & unc_rawben_rel_max <= 1.24 & unearned_by_hh_size > 288","1",165,165,FALSE
+"Colorado",41,"medical_deductions >= 156 & medical_deductions < 241 & unc_rawben_rel_max >= 1.02 & unc_rawben_rel_max < 1.05","1",165,165,FALSE
+"Colorado",57,"gross_by_hh_size > 1290 & medical_deductions > 140 & rawben_rel_max > 0.997 & utilities <= 598","1",165,165,FALSE
+"Connecticut",24,"medical_deductions < 106 & total_deductions_by_hh_size < 598 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.02","1",0,0,FALSE
+"Connecticut",32,"medical_deductions >= 582 & shelter_expenses_by_hh_size < 2000 & unc_rawben_rel_max < 1.4 & unearned_by_hh_size < 1580","1",0,0,FALSE
+"Connecticut",40,"medical_deductions >= 156 & medical_deductions < 241 & unc_rawben_rel_max >= 1.02 & unc_rawben_rel_max < 1.05","1",0,0,FALSE
+"Connecticut",43,"medical_deductions > 538 & total_deductions_by_hh_size <= 1960 & unc_rawben_rel_max > 1.09 & unearned_by_hh_size > 1180","1",0,0,FALSE
+"Delaware",6,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"Delaware",10,"medical_deductions >= 173 & rawben_rel_max >= 0.433 & unearned_by_hh_size >= 1210 & utilities < 277","1",0,0,FALSE
+"Delaware",20,"bbce_state_i >= 1 & medical_deductions > 636 & unc_rawben_rel_max > 1.11 & utilities <= 636","1",0,0,FALSE
+"Delaware",27,"gross_by_hh_size >= 1130 & medical_deductions >= 310 & rawben_rel_max >= 0.972 & utilities < 550","1",0,0,FALSE
+"District of Columbia",10,"medical_deductions >= 173 & rawben_rel_max >= 0.433 & unearned_by_hh_size >= 1210 & utilities < 277","1",0,0,FALSE
+"Florida",8,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"Florida",12,"medical_deductions >= 229 & rawben_rel_max >= 0.751 & shelter_expenses_by_hh_size < 688","2-3",0,0,FALSE
+"Florida",15,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",0,0,FALSE
+"Florida",22,"medical_deductions < 106 & total_deductions_by_hh_size < 598 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.02","1",0,0,FALSE
+"Florida",27,"bbce_state_i >= 1 & medical_deductions > 636 & unc_rawben_rel_max > 1.11 & utilities <= 636","1",0,0,FALSE
+"Georgia",17,"medical_deductions >= 229 & rawben_rel_max >= 0.751 & shelter_expenses_by_hh_size < 688","2-3",101,161,FALSE
+"Idaho",37,"medical_deductions >= 194 & rawben_rel_max >= 0.979 & unc_rawben_rel_max < 1.16","1",144,144,FALSE
+"Idaho",58,"gross_by_hh_size < 964 & medical_deductions >= 347 & months_since_cert_n < 11","2-3",144,144,FALSE
+"Idaho",62,"medical_deductions > 165 & rawben_rel_max > 0.998 & shelter_expenses_by_hh_size <= 862 & unc_rawben_rel_max > 1.02","1",144,144,FALSE
+"Illinois",2,"earned_by_hh_size <= 642 & medical_deductions > 152 & unc_rawben_rel_max > 0.268 & utilities > 22","1",150,150,FALSE
+"Illinois",6,"medical_deductions >= 115 & rawben_rel_max >= 0.238 & shelter_expenses_by_hh_size < 1630 & utilities >= 44","1",150,150,FALSE
+"Illinois",10,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",150,150,FALSE
+"Illinois",14,"medical_deductions >= 229 & rawben_rel_max >= 0.751 & shelter_expenses_by_hh_size < 688","2-3",150,150,FALSE
+"Illinois",15,"medical_deductions <= 122 & rawben_rel_max > 0.997 & unearned_by_hh_size > 401 & utilities <= 14","1",150,150,FALSE
+"Illinois",35,"HH_size_n <= 2.5 & medical_deductions > 138 & total_deductions_by_hh_size > 520 & unearned_by_hh_size <= 1360","2-3",150,150,FALSE
+"Illinois",37,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",150,150,FALSE
+"Indiana",14,"children_i <= 0 & medical_deductions > 138 & total_deductions_by_hh_size > 542 & utilities <= 504","2-3",0,0,FALSE
+"Iowa",19,"medical_deductions >= 326 & rawben_rel_max >= 0.581","2-3",125,140,FALSE
+"Iowa",20,"medical_deductions < 106 & total_deductions_by_hh_size < 598 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.02","1",125,140,FALSE
+"Iowa",27,"HH_size_n <= 2.5 & medical_deductions > 138 & total_deductions_by_hh_size > 520 & unearned_by_hh_size <= 1360","2-3",125,140,TRUE
+"Iowa",52,"medical_deductions <= 416 & rawben_rel_max > 0.988 & total_deductions_by_hh_size > 355 & unc_rawben_rel_max <= 1","2-3",125,140,FALSE
+"Iowa",73,"expedited_i <= 0 & married <= 0 & medical_deductions > 148 & total_deductions_by_hh_size > 355","2-3",125,140,FALSE
+"Iowa",80,"medical_deductions > 165 & rawben_rel_max > 0.998 & shelter_expenses_by_hh_size <= 862 & unc_rawben_rel_max > 1.02","1",125,140,FALSE
+"Iowa",96,"medical_deductions >= 136 & unc_rawben_rel_max >= 0.709 & utilities >= 379 & utilities < 723","2-3",125,140,TRUE
+"Iowa",102,"count_divisible_by_100 <= 0.5 & medical_deductions > 150 & rawben_rel_max > 0.152 & shelter_expenses_by_hh_size > 600","2-3",125,140,FALSE
+"Iowa",112,"gross_by_hh_size >= 1160 & medical_deductions >= 547 & total_deductions_by_hh_size >= 894 & unc_rawben_rel_max < 1.23","1",125,140,FALSE
+"Iowa",114,"medical_deductions <= 124 & shelter_expenses_by_hh_size > 886 & unearned_by_hh_size > 175 & utilities <= 30.5","1",125,140,FALSE
+"Kansas",11,"medical_deductions >= 173 & rawben_rel_max >= 0.433 & unearned_by_hh_size >= 1210 & utilities < 277","1",140,140,FALSE
+"Kansas",13,"children_i <= 0 & medical_deductions > 138 & total_deductions_by_hh_size > 542 & utilities <= 504","2-3",140,140,FALSE
+"Kansas",21,"gross_by_hh_size <= 1170 & medical_deductions > 176 & rawben_rel_max > 0.647 & unc_rawben_rel_max <= 1.02","2-3",140,140,FALSE
+"Kansas",23,"medical_deductions >= 582 & shelter_expenses_by_hh_size < 2000 & unc_rawben_rel_max < 1.4 & unearned_by_hh_size < 1580","1",140,140,FALSE
+"Kansas",71,"medical_deductions > 165 & rawben_rel_max > 0.998 & shelter_expenses_by_hh_size <= 862 & unc_rawben_rel_max > 1.02","1",140,140,FALSE
+"Kansas",79,"medical_deductions > 144 & unc_rawben_rel_max > 0.15 & unearned_by_hh_size > 115 & utilities <= 564","2-3",140,140,FALSE
+"Kansas",85,"medical_deductions > 138 & unc_rawben_rel_max > 0.356 & unearned_by_hh_size > 1220 & utilities <= 392","1",140,140,FALSE
+"Kentucky",4,"medical_deductions >= 173 & rawben_rel_max >= 0.433 & unearned_by_hh_size >= 1210 & utilities < 277","1",0,137,FALSE
+"Kentucky",13,"bbce_state_i >= 1 & medical_deductions > 636 & unc_rawben_rel_max > 1.11 & utilities <= 636","1",0,137,FALSE
+"Kentucky",69,"medical_deductions > 144 & unc_rawben_rel_max > 0.15 & unearned_by_hh_size > 115 & utilities <= 564","2-3",0,137,FALSE
+"Kentucky",77,"medical_deductions > 138 & unc_rawben_rel_max > 0.356 & unearned_by_hh_size > 1220 & utilities <= 392","1",0,137,FALSE
+"Kentucky",78,"medical_deductions >= 136 & unc_rawben_rel_max >= 0.709 & utilities >= 379 & utilities < 723","2-3",0,137,TRUE
+"Kentucky",85,"HH_size_n <= 2.5 & medical_deductions > 126 & rawben_rel_max > 0.17 & unc_rawben_rel_max > 0.625","2-3",0,137,TRUE
+"Kentucky",90,"bbce_state_i >= 1 & medical_deductions > 128 & rawben_rel_max > 0.156 & unc_rawben_rel_max <= 1","2-3",0,137,TRUE
+"Louisiana",13,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",0,161,FALSE
+"Louisiana",14,"children_i <= 0 & medical_deductions > 138 & total_deductions_by_hh_size > 542 & utilities <= 504","2-3",0,161,TRUE
+"Louisiana",23,"medical_deductions >= 326 & rawben_rel_max >= 0.581","2-3",0,161,FALSE
+"Louisiana",30,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",0,161,FALSE
+"Louisiana",38,"married >= 1 & medical_deductions > 144 & total_deductions_by_hh_size > 340 & utilities <= 434","2-3",0,161,TRUE
+"Louisiana",49,"medical_deductions >= 145 & rawben_rel_max >= 0.851 & utilities < 714","2-3",0,161,TRUE
+"Louisiana",50,"earned_by_hh_size < 0.5 & gross_by_hh_size >= 204 & medical_deductions >= 301 & rawben_rel_max >= 0.56","2-3",0,161,FALSE
+"Louisiana",66,"medical_deductions >= 202 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.2 & unearned_by_hh_size < 1120","1",0,161,FALSE
+"Louisiana",71,"earned_by_hh_size > 0.312 & medical_deductions <= 135 & months_since_cert_n > 10.5 & shelter_expenses_by_hh_size > 346","4+",0,161,TRUE
+"Louisiana",80,"gross_by_hh_size < 964 & medical_deductions >= 347 & months_since_cert_n < 11","2-3",0,161,FALSE
+"Maine",9,"medical_deductions <= 122 & rawben_rel_max > 0.997 & unearned_by_hh_size > 401 & utilities <= 14","1",0,0,FALSE
+"Maine",29,"medical_deductions >= 229 & rawben_rel_max >= 0.751","2-3",0,0,FALSE
+"Maine",30,"medical_deductions >= 582 & shelter_expenses_by_hh_size < 2000 & unc_rawben_rel_max < 1.4 & unearned_by_hh_size < 1580","1",0,0,FALSE
+"Maryland",8,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"Maryland",15,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",0,0,FALSE
+"Maryland",16,"medical_deductions >= 173 & rawben_rel_max >= 0.433 & unearned_by_hh_size >= 1210 & utilities < 277","1",0,0,FALSE
+"Massachusetts",8,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",155,155,FALSE
+"Massachusetts",14,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",155,155,FALSE
+"Massachusetts",18,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",155,155,FALSE
+"Massachusetts",19,"bbce_state_i >= 1 & medical_deductions > 625 & unc_rawben_rel_max <= 1.24 & unearned_by_hh_size > 288","1",155,155,FALSE
+"Massachusetts",29,"elderly_disabled_i >= 1 & medical_deductions > 158 & rawben_rel_max > 0.997 & unc_rawben_rel_max <= 1.03","1",155,155,FALSE
+"Massachusetts",30,"medical_deductions >= 582 & shelter_expenses_by_hh_size < 2000 & unc_rawben_rel_max < 1.4 & unearned_by_hh_size < 1580","1",155,155,FALSE
+"Michigan",6,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",165,165,FALSE
+"Michigan",12,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",165,165,FALSE
+"Michigan",28,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",165,165,FALSE
+"Michigan",56,"medical_deductions >= 157 & rawben_rel_max >= 0.993 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.09","1",165,165,FALSE
+"Minnesota",10,"count_divisible_by_100 < 2 & medical_deductions >= 311 & rawben_rel_max >= 0.804","2-3",0,0,FALSE
+"Minnesota",12,"medical_deductions <= 122 & rawben_rel_max > 0.997 & unearned_by_hh_size > 401 & utilities <= 14","1",0,0,FALSE
+"Minnesota",15,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",0,0,FALSE
+"Minnesota",18,"bbce_state_i >= 1 & medical_deductions > 625 & unc_rawben_rel_max <= 1.24 & unearned_by_hh_size > 288","1",0,0,FALSE
+"Minnesota",24,"medical_deductions >= 326 & rawben_rel_max >= 0.581","2-3",0,0,FALSE
+"Minnesota",34,"medical_deductions >= 229 & rawben_rel_max >= 0.751","2-3",0,0,FALSE
+"Minnesota",65,"gross_by_hh_size > 1290 & medical_deductions > 140 & rawben_rel_max > 0.997 & utilities <= 598","1",0,0,FALSE
+"Mississippi",6,"medical_deductions <= 122 & rawben_rel_max > 0.997 & unearned_by_hh_size > 401 & utilities <= 14","1",0,0,FALSE
+"Mississippi",18,"medical_deductions >= 326 & rawben_rel_max >= 0.581","2-3",0,0,FALSE
+"Mississippi",21,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",0,0,FALSE
+"Mississippi",32,"count_divisible_by_100 <= 0.5 & medical_deductions > 613 & total_deductions_by_hh_size > 0.25 & unc_rawben_rel_max <= 1.24","1",0,0,FALSE
+"Missouri",11,"count_divisible_by_100 < 2 & medical_deductions >= 311 & rawben_rel_max >= 0.804","2-3",135,135,FALSE
+"Missouri",21,"medical_deductions >= 326 & rawben_rel_max >= 0.581","2-3",135,135,FALSE
+"Missouri",24,"elderly_disabled_i >= 1 & medical_deductions > 158 & rawben_rel_max > 0.997 & unc_rawben_rel_max <= 1.03","1",135,135,FALSE
+"Missouri",26,"medical_deductions >= 582 & shelter_expenses_by_hh_size < 2000 & unc_rawben_rel_max < 1.4 & unearned_by_hh_size < 1580","1",135,135,FALSE
+"Missouri",30,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",135,135,FALSE
+"Missouri",38,"gross_by_hh_size >= 1130 & medical_deductions >= 310 & rawben_rel_max >= 0.972 & utilities < 550","1",135,135,FALSE
+"Missouri",48,"medical_deductions >= 145 & rawben_rel_max >= 0.851 & utilities < 714","2-3",135,135,FALSE
+"Missouri",56,"count_divisible_by_100 <= 0.5 & medical_deductions > 613 & total_deductions_by_hh_size > 0.25 & unc_rawben_rel_max <= 1.24","1",135,135,FALSE
+"Missouri",61,"medical_deductions >= 202 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.2 & unearned_by_hh_size < 1120","1",135,135,FALSE
+"Missouri",63,"medical_deductions >= 111 & months_since_cert_n >= 8 & shelter_expenses_by_hh_size >= 548 & total_deductions_by_hh_size >= 403","2-3",135,135,FALSE
+"Montana",5,"count_divisible_by_100 < 2 & medical_deductions >= 311 & rawben_rel_max >= 0.804","2-3",0,0,FALSE
+"Montana",8,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",0,0,FALSE
+"Montana",9,"medical_deductions >= 173 & rawben_rel_max >= 0.433 & unearned_by_hh_size >= 1210 & utilities < 277","1",0,0,FALSE
+"Montana",10,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",0,0,FALSE
+"Montana",18,"bbce_state_i >= 1 & medical_deductions > 636 & unc_rawben_rel_max > 1.11 & utilities <= 636","1",0,0,FALSE
+"Montana",22,"medical_deductions >= 582 & shelter_expenses_by_hh_size < 2000 & unc_rawben_rel_max < 1.4 & unearned_by_hh_size < 1580","1",0,0,FALSE
+"Montana",25,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",0,0,FALSE
+"Montana",37,"medical_deductions >= 156 & medical_deductions < 241 & unc_rawben_rel_max >= 1.02 & unc_rawben_rel_max < 1.05","1",0,0,FALSE
+"Montana",57,"homeless <= 0 & medical_deductions > 342 & unc_rawben_rel_max > 1.03 & unc_rawben_rel_max <= 1.15","1",0,0,FALSE
+"Nebraska",8,"count_divisible_by_100 < 2 & medical_deductions >= 311 & rawben_rel_max >= 0.804","2-3",0,0,FALSE
+"Nebraska",11,"medical_deductions >= 173 & rawben_rel_max >= 0.433 & unearned_by_hh_size >= 1210 & utilities < 277","1",0,0,FALSE
+"Nebraska",19,"elderly_disabled_i >= 1 & medical_deductions > 134 & shelter_expenses_by_hh_size > 855 & utilities <= 724","2-3",0,0,FALSE
+"Nebraska",31,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",0,0,FALSE
+"Nebraska",50,"gross_by_hh_size > 1170 & medical_deductions > 134 & rawben_rel_max > 0.203 & unearned_by_hh_size > 432","2-3",0,0,FALSE
+"Nebraska",52,"medical_deductions > 124 & total_deductions_by_hh_size > 581","2-3",0,0,FALSE
+"Nebraska",62,"medical_deductions > 508 & months_since_cert_n <= 5.5 & percent_abawd <= 0.125","2-3",0,0,FALSE
+"Nevada",9,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"Nevada",11,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",0,0,FALSE
+"Nevada",12,"medical_deductions >= 173 & rawben_rel_max >= 0.433 & unearned_by_hh_size >= 1210 & utilities < 277","1",0,0,FALSE
+"Nevada",60,"medical_deductions >= 111 & months_since_cert_n >= 8 & shelter_expenses_by_hh_size >= 548 & total_deductions_by_hh_size >= 403","2-3",0,0,FALSE
+"Nevada",69,"earned_by_hh_size < 1090 & gross_by_hh_size < 1250 & medical_deductions >= 185 & rawben_rel_max >= 0.325","2-3",0,0,FALSE
+"Nevada",70,"medical_deductions >= 162 & months_since_cert_n >= 5 & rawben_rel_max >= 0.139 & shelter_expenses_by_hh_size >= 216","2-3",0,0,FALSE
+"Nevada",73,"medical_deductions > 165 & rawben_rel_max > 0.998 & shelter_expenses_by_hh_size <= 862 & unc_rawben_rel_max > 1.02","1",0,0,FALSE
+"New Hampshire",7,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",135,135,FALSE
+"New Hampshire",13,"bbce_state_i >= 1 & medical_deductions > 625 & unc_rawben_rel_max <= 1.24 & unearned_by_hh_size > 288","1",135,135,FALSE
+"New Hampshire",23,"elderly_disabled_i >= 1 & medical_deductions > 158 & rawben_rel_max > 0.997 & unc_rawben_rel_max <= 1.03","1",135,135,FALSE
+"New Hampshire",31,"medical_deductions >= 173 & shelter_expenses_by_hh_size >= 648 & utilities < 431","2-3",135,135,FALSE
+"New Hampshire",50,"medical_deductions > 138 & shelter_expenses_by_hh_size <= 902 & total_deductions_by_hh_size > 520 & unc_rawben_rel_max > 0.13","2-3",135,135,FALSE
+"New Hampshire",54,"medical_deductions >= 202 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.2 & unearned_by_hh_size < 1120","1",135,135,FALSE
+"New Jersey",4,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"New Jersey",6,"count_divisible_by_100 < 2 & medical_deductions >= 311 & rawben_rel_max >= 0.804","2-3",0,0,FALSE
+"New Jersey",7,"medical_deductions <= 122 & rawben_rel_max > 0.997 & unearned_by_hh_size > 401 & utilities <= 14","1",0,0,FALSE
+"New Jersey",9,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",0,0,FALSE
+"New Jersey",15,"elderly_disabled_i >= 1 & medical_deductions > 134 & shelter_expenses_by_hh_size > 855 & utilities <= 724","2-3",0,0,FALSE
+"New Jersey",25,"gross_by_hh_size <= 1170 & medical_deductions > 176 & rawben_rel_max > 0.647 & unc_rawben_rel_max <= 1.02","2-3",0,0,FALSE
+"New Jersey",29,"HH_size_n <= 2.5 & medical_deductions > 138 & total_deductions_by_hh_size > 520 & unearned_by_hh_size <= 1360","2-3",0,0,FALSE
+"New Jersey",34,"count_divisible_by_100 <= 1.5 & medical_deductions > 128 & rawben_rel_max > 0.159 & shelter_expenses_by_hh_size > 970","2-3",0,0,FALSE
+"New Jersey",43,"medical_deductions > 538 & total_deductions_by_hh_size <= 1960 & unc_rawben_rel_max > 1.09 & unearned_by_hh_size > 1180","1",0,0,FALSE
+"New Jersey",59,"medical_deductions <= 416 & rawben_rel_max > 0.988 & total_deductions_by_hh_size > 355 & unc_rawben_rel_max <= 1","2-3",0,0,FALSE
+"New Mexico",10,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"New Mexico",26,"bbce_state_i >= 1 & medical_deductions > 636 & unc_rawben_rel_max > 1.11 & utilities <= 636","1",0,0,FALSE
+"New York",8,"count_divisible_by_100 < 2 & medical_deductions >= 311 & rawben_rel_max >= 0.804","2-3",0,0,FALSE
+"New York",13,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",0,0,FALSE
+"New York",26,"medical_deductions < 106 & total_deductions_by_hh_size < 598 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.02","1",0,0,FALSE
+"New York",28,"gross_by_hh_size <= 1170 & medical_deductions > 176 & rawben_rel_max > 0.647 & unc_rawben_rel_max <= 1.02","2-3",0,0,FALSE
+"New York",29,"elderly_disabled_i >= 1 & medical_deductions > 158 & rawben_rel_max > 0.997 & unc_rawben_rel_max <= 1.03","1",0,0,FALSE
+"North Carolina",15,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",0,0,FALSE
+"North Carolina",74,"gross_by_hh_size > 204 & medical_deductions > 99.5 & shelter_expenses_by_hh_size > 402 & total_deductions_by_hh_size > 569","2-3",0,0,FALSE
+"North Carolina",80,"earned_by_hh_size > 0.312 & medical_deductions <= 135 & months_since_cert_n > 10.5 & shelter_expenses_by_hh_size > 346","4+",0,0,FALSE
+"North Carolina",88,"earned_by_hh_size < 1090 & medical_deductions >= 185 & rawben_rel_max >= 0.325","2-3",0,0,FALSE
+"North Dakota",6,"count_divisible_by_100 < 2 & medical_deductions >= 311 & rawben_rel_max >= 0.804","2-3",140,140,FALSE
+"North Dakota",7,"medical_deductions <= 122 & rawben_rel_max > 0.997 & unearned_by_hh_size > 401 & utilities <= 14","1",140,140,FALSE
+"North Dakota",10,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",140,140,FALSE
+"North Dakota",11,"medical_deductions >= 173 & rawben_rel_max >= 0.433 & unearned_by_hh_size >= 1210 & utilities < 277","1",140,140,FALSE
+"North Dakota",14,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",140,140,FALSE
+"North Dakota",40,"medical_deductions >= 194 & rawben_rel_max >= 0.979 & unc_rawben_rel_max < 1.16","1",140,140,FALSE
+"North Dakota",45,"medical_deductions <= 134 & rawben_rel_max > 0.997 & unearned_by_hh_size > 345 & utilities <= 365","1",140,140,FALSE
+"North Dakota",48,"bbce_state_i >= 1 & gross_by_hh_size >= 1070 & medical_deductions >= 620","1",140,140,FALSE
+"Ohio",6,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"Ohio",10,"medical_deductions >= 229 & rawben_rel_max >= 0.751 & shelter_expenses_by_hh_size < 688","2-3",0,0,FALSE
+"Ohio",32,"medical_deductions > 138 & total_deductions_by_hh_size > 520","2-3",0,0,FALSE
+"Ohio",59,"medical_deductions >= 111 & months_since_cert_n >= 8 & shelter_expenses_by_hh_size >= 548 & total_deductions_by_hh_size >= 403","2-3",0,0,FALSE
+"Ohio",76,"gross_by_hh_size > 184 & medical_deductions > 114 & shelter_expenses_by_hh_size > 843 & unearned_by_hh_size > 184","2-3",0,0,FALSE
+"Ohio",80,"medical_deductions >= 206 & months_since_cert_n >= 17 & rawben_rel_max >= 0.104 & shelter_expenses_by_hh_size < 1120","1",0,0,FALSE
+"Ohio",81,"medical_deductions > 144 & unc_rawben_rel_max > 0.15 & unearned_by_hh_size > 115 & utilities <= 564","2-3",0,0,FALSE
+"Oklahoma",10,"medical_deductions >= 229 & rawben_rel_max >= 0.751 & shelter_expenses_by_hh_size < 688","2-3",0,0,FALSE
+"Oklahoma",14,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",0,0,FALSE
+"Oklahoma",22,"gross_by_hh_size <= 1170 & medical_deductions > 176 & rawben_rel_max > 0.647 & unc_rawben_rel_max <= 1.02","2-3",0,0,FALSE
+"Oklahoma",48,"gross_by_hh_size > 499 & medical_deductions <= 0.5 & rawben_rel_max <= 0.877 & unc_rawben_rel_max > 0.639","2-3",0,0,FALSE
+"Oklahoma",60,"medical_deductions > 165 & rawben_rel_max > 0.998 & shelter_expenses_by_hh_size <= 862 & unc_rawben_rel_max > 1.02","1",0,0,FALSE
+"Oregon",13,"medical_deductions <= 440 & months_since_cert_n > 4.5 & rawben_rel_max <= 0.887 & total_deductions_by_hh_size > 356","2-3",170,170,FALSE
+"Oregon",18,"children_i <= 0 & medical_deductions > 138 & total_deductions_by_hh_size > 542 & utilities <= 504","2-3",170,170,FALSE
+"Pennsylvania",7,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"Pennsylvania",21,"medical_deductions >= 326 & rawben_rel_max >= 0.581","2-3",0,0,FALSE
+"Pennsylvania",26,"elderly_disabled_i >= 1 & medical_deductions > 158 & rawben_rel_max > 0.997 & unc_rawben_rel_max <= 1.03","1",0,0,FALSE
+"Pennsylvania",31,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",0,0,FALSE
+"Pennsylvania",58,"bbce_state_i >= 1 & medical_deductions > 622 & shelter_expenses_by_hh_size <= 1650 & total_deductions_by_hh_size > 25.2","1",0,0,FALSE
+"Rhode Island",8,"count_divisible_by_100 < 2 & medical_deductions >= 311 & rawben_rel_max >= 0.804","2-3",183,183,FALSE
+"Rhode Island",14,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",183,183,FALSE
+"Rhode Island",15,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",183,183,FALSE
+"Rhode Island",28,"medical_deductions >= 582 & shelter_expenses_by_hh_size < 2000 & unc_rawben_rel_max < 1.4 & unearned_by_hh_size < 1580","1",183,183,FALSE
+"South Carolina",12,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",175,175,FALSE
+"South Carolina",15,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",175,175,FALSE
+"South Carolina",21,"medical_deductions < 106 & total_deductions_by_hh_size < 598 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.02","1",175,175,FALSE
+"South Carolina",26,"bbce_state_i >= 1 & medical_deductions > 636 & unc_rawben_rel_max > 1.11 & utilities <= 636","1",175,175,FALSE
+"South Carolina",44,"medical_deductions >= 145 & rawben_rel_max >= 0.851 & utilities < 714","2-3",175,175,FALSE
+"South Dakota",11,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",165,180,FALSE
+"South Dakota",21,"gross_by_hh_size <= 1170 & medical_deductions > 176 & rawben_rel_max > 0.647 & unc_rawben_rel_max <= 1.02","2-3",165,180,TRUE
+"South Dakota",22,"elderly_disabled_i >= 1 & medical_deductions > 158 & rawben_rel_max > 0.997 & unc_rawben_rel_max <= 1.03","1",165,180,FALSE
+"South Dakota",31,"medical_deductions >= 156 & medical_deductions < 241 & unc_rawben_rel_max >= 1.02 & unc_rawben_rel_max < 1.05","1",165,180,FALSE
+"South Dakota",54,"medical_deductions >= 202 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.2 & unearned_by_hh_size < 1120","1",165,180,FALSE
+"South Dakota",60,"expedited_i <= 0 & married <= 0 & medical_deductions > 148 & total_deductions_by_hh_size > 355","2-3",165,180,FALSE
+"South Dakota",61,"earned_by_hh_size < 1090 & medical_deductions >= 185 & rawben_rel_max >= 0.325","2-3",165,180,FALSE
+"South Dakota",70,"medical_deductions > 165 & rawben_rel_max > 0.998 & shelter_expenses_by_hh_size <= 862 & unc_rawben_rel_max > 1.02","1",165,180,TRUE
+"South Dakota",75,"medical_deductions >= 149 & total_deductions_by_hh_size >= 829 & utilities < 318","1",165,180,FALSE
+"Tennessee",7,"count_divisible_by_100 < 2 & medical_deductions >= 311 & rawben_rel_max >= 0.804","2-3",0,0,FALSE
+"Tennessee",21,"medical_deductions >= 582 & shelter_expenses_by_hh_size < 2000 & unc_rawben_rel_max < 1.4 & unearned_by_hh_size < 1580","1",0,0,FALSE
+"Tennessee",34,"gross_by_hh_size >= 1130 & medical_deductions >= 310 & rawben_rel_max >= 0.972 & utilities < 550","1",0,0,FALSE
+"Tennessee",44,"medical_deductions <= 416 & rawben_rel_max > 0.988 & total_deductions_by_hh_size > 355 & unc_rawben_rel_max <= 1","2-3",0,0,FALSE
+"Tennessee",51,"count_divisible_by_100 <= 0.5 & medical_deductions > 613 & total_deductions_by_hh_size > 0.25 & unc_rawben_rel_max <= 1.24","1",0,0,FALSE
+"Tennessee",63,"earned_by_hh_size < 1090 & medical_deductions >= 185 & rawben_rel_max >= 0.325","2-3",0,0,FALSE
+"Tennessee",67,"medical_deductions >= 162 & months_since_cert_n >= 5 & rawben_rel_max >= 0.139 & shelter_expenses_by_hh_size >= 216","2-3",0,0,FALSE
+"Tennessee",77,"medical_deductions >= 149 & total_deductions_by_hh_size >= 829 & utilities < 318","1",0,0,FALSE
+"Texas",4,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",135,135,FALSE
+"Texas",7,"medical_deductions <= 122 & rawben_rel_max > 0.997 & unearned_by_hh_size > 401 & utilities <= 14","1",135,135,FALSE
+"Texas",15,"elderly_disabled_i >= 1 & medical_deductions > 134 & shelter_expenses_by_hh_size > 855 & utilities <= 724","2-3",135,135,FALSE
+"Texas",44,"earned_by_hh_size < 0.5 & gross_by_hh_size >= 204 & medical_deductions >= 301 & rawben_rel_max >= 0.56","2-3",135,135,FALSE
+"Texas",48,"medical_deductions >= 194 & rawben_rel_max >= 0.979 & unc_rawben_rel_max < 1.16","1",135,135,FALSE
+"Utah",6,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"Utah",17,"medical_deductions < 106 & total_deductions_by_hh_size < 598 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.02","1",0,0,FALSE
+"Utah",25,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",0,0,FALSE
+"Utah",50,"count_divisible_by_100 <= 0.5 & medical_deductions > 613 & total_deductions_by_hh_size > 0.25 & unc_rawben_rel_max <= 1.24","1",0,0,FALSE
+"Utah",67,"earned_by_hh_size < 1090 & gross_by_hh_size < 1250 & medical_deductions >= 185 & rawben_rel_max >= 0.325","2-3",0,0,FALSE
+"Utah",79,"earned_by_hh_size > 71.8 & expedited_i >= 1 & medical_deductions <= 67.5 & unearned_by_hh_size > 273","2-3",0,0,FALSE
+"Utah",86,"medical_deductions > 138 & unc_rawben_rel_max > 0.356 & unearned_by_hh_size > 1220 & utilities <= 392","1",0,0,FALSE
+"Vermont",5,"count_divisible_by_100 < 2 & medical_deductions >= 311 & rawben_rel_max >= 0.804","2-3",116,156,FALSE
+"Vermont",8,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",116,156,FALSE
+"Vermont",11,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",116,156,TRUE
+"Vermont",20,"elderly_disabled_i >= 1 & medical_deductions > 158 & rawben_rel_max > 0.997 & unc_rawben_rel_max <= 1.03","1",116,156,FALSE
+"Vermont",22,"medical_deductions >= 582 & shelter_expenses_by_hh_size < 2000 & unc_rawben_rel_max < 1.4 & unearned_by_hh_size < 1580","1",116,156,FALSE
+"Vermont",25,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",116,156,FALSE
+"Vermont",31,"medical_deductions > 538 & total_deductions_by_hh_size <= 1960 & unc_rawben_rel_max > 1.09 & unearned_by_hh_size > 1180","1",116,156,FALSE
+"Vermont",34,"gross_by_hh_size > 1170 & medical_deductions > 134 & rawben_rel_max > 0.203 & unearned_by_hh_size > 432","2-3",116,156,TRUE
+"Vermont",49,"gross_by_hh_size > 879 & homeless >= 1 & medical_deductions <= 61.1 & rawben_rel_max > 0.993","1",116,156,FALSE
+"Vermont",66,"earned_by_hh_size >= 613 & medical_deductions < 582 & unc_rawben_rel_max >= 1.44 & unc_rawben_rel_max < 1.86","1",116,156,FALSE
+"Virginia",9,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",200,200,FALSE
+"Virginia",11,"medical_deductions >= 229 & rawben_rel_max >= 0.751 & shelter_expenses_by_hh_size < 688","2-3",200,200,FALSE
+"Virginia",15,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",200,200,FALSE
+"Virginia",23,"gross_by_hh_size <= 1170 & medical_deductions > 176 & rawben_rel_max > 0.647 & unc_rawben_rel_max <= 1.02","2-3",200,200,FALSE
+"Virginia",33,"medical_deductions >= 173 & shelter_expenses_by_hh_size >= 648 & utilities < 431","2-3",200,200,FALSE
+"Washington",9,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"Washington",16,"bbce_state_i >= 1 & medical_deductions > 625 & unc_rawben_rel_max <= 1.24 & unearned_by_hh_size > 288","1",0,0,FALSE
+"Washington",39,"gross_by_hh_size >= 1130 & medical_deductions >= 310 & rawben_rel_max >= 0.972 & utilities < 550","1",0,0,FALSE
+"Washington",67,"earned_by_hh_size > 0.312 & medical_deductions <= 135 & months_since_cert_n > 10.5 & shelter_expenses_by_hh_size > 346","4+",0,0,FALSE
+"Washington",76,"earned_by_hh_size < 1090 & medical_deductions >= 185 & rawben_rel_max >= 0.325","2-3",0,0,FALSE
+"West Virginia",11,"bbce_state_i >= 1 & medical_deductions > 625 & unc_rawben_rel_max <= 1.24 & unearned_by_hh_size > 288","1",0,0,FALSE
+"West Virginia",17,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",0,0,FALSE
+"West Virginia",42,"medical_deductions >= 213 & total_deductions_by_hh_size >= 390 & utilities >= 34 & utilities < 469","2-3",0,0,FALSE
+"West Virginia",59,"medical_deductions >= 206 & months_since_cert_n >= 17 & rawben_rel_max >= 0.104 & shelter_expenses_by_hh_size < 1120","1",0,0,FALSE
+"West Virginia",61,"medical_deductions > 144 & unc_rawben_rel_max > 0.15 & unearned_by_hh_size > 115 & utilities <= 564","2-3",0,0,FALSE
+"West Virginia",65,"gross_by_hh_size >= 980 & medical_deductions >= 1 & unc_rawben_rel_max >= 0.264","2-3",0,0,FALSE
+"West Virginia",79,"HH_size_n <= 2.5 & medical_deductions > 126 & rawben_rel_max > 0.17 & unc_rawben_rel_max > 0.625","2-3",0,0,FALSE
+"West Virginia",98,"count_divisible_by_100 <= 0.5 & medical_deductions > 112 & months_since_cert_n > 11.5 & rawben_rel_max > 0.225","2-3",0,0,FALSE
+"Wisconsin",8,"medical_deductions > 138 & shelter_expenses_by_hh_size > 904 & utilities <= 786","2-3",0,0,FALSE
+"Wisconsin",11,"medical_deductions <= 122 & rawben_rel_max > 0.997 & unearned_by_hh_size > 401 & utilities <= 14","1",0,0,FALSE
+"Wisconsin",14,"bbce_state_i >= 1 & medical_deductions > 734 & shelter_expenses_by_hh_size > 18.5 & unc_rawben_rel_max <= 1.28","1",0,0,FALSE
+"Wisconsin",18,"bbce_state_i >= 1 & medical_deductions > 625 & unc_rawben_rel_max <= 1.24 & unearned_by_hh_size > 288","1",0,0,FALSE
+"Wisconsin",19,"elderly_disabled_i >= 1 & medical_deductions > 134 & shelter_expenses_by_hh_size > 855 & utilities <= 724","2-3",0,0,FALSE
+"Wisconsin",24,"medical_deductions < 106 & total_deductions_by_hh_size < 598 & unc_rawben_rel_max >= 1.01 & unc_rawben_rel_max < 1.02","1",0,0,FALSE
+"Wisconsin",30,"gross_by_hh_size >= 116 & medical_deductions >= 183 & medical_deductions < 282 & rawben_rel_max >= 0.42","2-3",0,0,FALSE
+"Wisconsin",39,"medical_deductions >= 156 & medical_deductions < 241 & unc_rawben_rel_max >= 1.02 & unc_rawben_rel_max < 1.05","1",0,0,FALSE
+"Wisconsin",58,"medical_deductions <= 416 & rawben_rel_max > 0.988 & total_deductions_by_hh_size > 355 & unc_rawben_rel_max <= 1","2-3",0,0,FALSE
+"Wisconsin",67,"medical_deductions > 508 & months_since_cert_n <= 5.5 & percent_abawd <= 0.125","2-3",0,0,FALSE
+"Wisconsin",73,"medical_deductions >= 213 & total_deductions_by_hh_size >= 390 & utilities >= 34 & utilities < 469","2-3",0,0,FALSE
+"Wisconsin",96,"medical_deductions >= 162 & months_since_cert_n >= 5 & rawben_rel_max >= 0.139 & shelter_expenses_by_hh_size >= 216","2-3",0,0,FALSE
+"Wisconsin",103,"medical_deductions > 165 & rawben_rel_max > 0.998 & shelter_expenses_by_hh_size <= 862 & unc_rawben_rel_max > 1.02","1",0,0,FALSE
+"Wisconsin",109,"earned_by_hh_size > 71.8 & expedited_i >= 1 & medical_deductions <= 67.5 & unearned_by_hh_size > 273","2-3",0,0,FALSE
+"Wisconsin",111,"medical_deductions >= 206 & months_since_cert_n >= 17 & rawben_rel_max >= 0.104 & shelter_expenses_by_hh_size < 1120","1",0,0,FALSE
+"Wisconsin",128,"HH_size_n <= 2.5 & medical_deductions > 126 & rawben_rel_max > 0.17 & unc_rawben_rel_max > 0.625","2-3",0,0,FALSE
+"Wyoming",3,"medical_deductions >= 229 & rawben_rel_max >= 0.751 & shelter_expenses_by_hh_size < 688","2-3",103,140,FALSE
+"Wyoming",8,"medical_deductions > 138 & rawben_rel_max > 0.159 & total_deductions_by_hh_size > 515 & unc_rawben_rel_max <= 1","2-3",103,140,TRUE
+"Wyoming",12,"married >= 1 & medical_deductions > 144 & total_deductions_by_hh_size > 340 & utilities <= 434","2-3",103,140,FALSE
+"Wyoming",25,"gross_by_hh_size > 204 & medical_deductions > 99.5 & shelter_expenses_by_hh_size > 402 & total_deductions_by_hh_size > 569","2-3",103,140,FALSE

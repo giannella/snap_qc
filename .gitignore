@@ -40,3 +40,7 @@ snap_qc.Rproj
 .RDataTmp
 .RDataTmp1
 Untitled.R
+
+# per-rule evaluation dumps (regenerable from their scripts; summaries are tracked)
+methods/interval_width_decay/per_rule_decay_*.csv
+methods/interval_width_decay/anchor_translation_per_rule_*.csv

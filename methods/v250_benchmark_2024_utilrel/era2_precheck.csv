@@ -1,0 +1,148 @@
+"state","fy","integral","tied","md"
+"Alabama","2017",TRUE,FALSE,339
+"Alabama","2018",TRUE,FALSE,352
+"Alabama","2019",TRUE,FALSE,374
+"Arizona","2017",TRUE,FALSE,265
+"Arizona","2018",TRUE,FALSE,274
+"Arizona","2019",TRUE,FALSE,278
+"Arkansas","2017",TRUE,FALSE,284
+"Arkansas","2018",TRUE,FALSE,278
+"Arkansas","2019",TRUE,FALSE,284
+"California","2017",TRUE,FALSE,389
+"California","2018",TRUE,FALSE,397
+"California","2019",TRUE,FALSE,415
+"Colorado","2017",TRUE,FALSE,459
+"Colorado","2018",TRUE,FALSE,469
+"Colorado","2019",TRUE,FALSE,476
+"Connecticut","2017",TRUE,FALSE,698
+"Connecticut","2018",TRUE,FALSE,728
+"Connecticut","2019",TRUE,FALSE,736
+"Delaware","2017",TRUE,FALSE,402
+"Delaware","2018",TRUE,FALSE,406
+"Delaware","2019",TRUE,FALSE,417
+"District of Columbia","2017",TRUE,FALSE,316
+"District of Columbia","2018",TRUE,FALSE,325
+"District of Columbia","2019",TRUE,FALSE,331
+"Florida","2017",TRUE,FALSE,338
+"Florida","2018",TRUE,FALSE,347
+"Florida","2019",TRUE,FALSE,359
+"Georgia","2017",TRUE,FALSE,391
+"Georgia","2018",TRUE,FALSE,357
+"Georgia","2019",TRUE,FALSE,377
+"Idaho","2017",TRUE,FALSE,396
+"Idaho","2018",TRUE,FALSE,279
+"Idaho","2019",TRUE,FALSE,368
+"Illinois","2017",TRUE,FALSE,388
+"Illinois","2018",TRUE,FALSE,394
+"Illinois","2019",TRUE,FALSE,466
+"Indiana","2017",TRUE,FALSE,380
+"Indiana","2018",TRUE,FALSE,400
+"Indiana","2019",TRUE,FALSE,421
+"Iowa","2017",TRUE,FALSE,358
+"Iowa","2018",TRUE,FALSE,348
+"Iowa","2019",TRUE,FALSE,449
+"Kansas","2017",TRUE,FALSE,364
+"Kansas","2018",TRUE,FALSE,391
+"Kansas","2019",TRUE,FALSE,357
+"Kentucky","2017",TRUE,FALSE,318
+"Kentucky","2018",TRUE,FALSE,318
+"Kentucky","2019",TRUE,FALSE,321
+"Louisiana","2017",TRUE,FALSE,349
+"Louisiana","2018",TRUE,FALSE,346
+"Louisiana","2019",TRUE,FALSE,356
+"Maine","2017",TRUE,FALSE,663
+"Maine","2018",TRUE,FALSE,692
+"Maine","2019",TRUE,FALSE,699
+"Maryland","2017",TRUE,FALSE,416
+"Maryland","2018",TRUE,FALSE,420
+"Maryland","2019",TRUE,FALSE,404
+"Massachusetts","2017",TRUE,FALSE,609
+"Massachusetts","2018",TRUE,FALSE,636
+"Massachusetts","2019",TRUE,FALSE,643
+"Michigan","2017",TRUE,FALSE,526
+"Michigan","2018",TRUE,FALSE,537
+"Michigan","2019",TRUE,FALSE,543
+"Minnesota","2017",TRUE,FALSE,532
+"Minnesota","2018",TRUE,FALSE,556
+"Minnesota","2019",TRUE,FALSE,493
+"Mississippi","2017",TRUE,FALSE,274
+"Mississippi","2018",TRUE,FALSE,270
+"Mississippi","2019",TRUE,FALSE,278
+"Missouri","2017",TRUE,FALSE,362
+"Missouri","2018",TRUE,FALSE,371
+"Missouri","2019",TRUE,FALSE,380
+"Montana","2017",TRUE,FALSE,520
+"Montana","2018",TRUE,FALSE,534
+"Montana","2019",TRUE,FALSE,545
+"Nebraska","2017",TRUE,FALSE,457
+"Nebraska","2018",TRUE,FALSE,469
+"Nebraska","2019",TRUE,FALSE,481
+"Nevada","2017",TRUE,FALSE,276
+"Nevada","2018",TRUE,FALSE,266
+"Nevada","2019",TRUE,FALSE,285
+"New Hampshire","2017",TRUE,FALSE,659
+"New Hampshire","2018",TRUE,FALSE,689
+"New Hampshire","2019",TRUE,FALSE,724
+"New Jersey","2017",TRUE,FALSE,501
+"New Jersey","2018",TRUE,FALSE,514
+"New Jersey","2019",TRUE,FALSE,542
+"New Mexico","2017",TRUE,FALSE,325
+"New Mexico","2018",TRUE,FALSE,320
+"New Mexico","2019",TRUE,FALSE,344
+"New York","2017",TRUE,FALSE,758
+"New York","2018",TRUE,FALSE,791
+"New York","2019",TRUE,FALSE,800
+"North Carolina","2017",TRUE,FALSE,374
+"North Carolina","2018",TRUE,FALSE,400
+"North Carolina","2019",TRUE,FALSE,437
+"North Dakota","2017",TRUE,FALSE,596
+"North Dakota","2018",TRUE,FALSE,610
+"North Dakota","2019",TRUE,FALSE,615
+"Ohio","2017",TRUE,FALSE,513
+"Ohio","2018",TRUE,FALSE,530
+"Ohio","2019",TRUE,FALSE,544
+"Oklahoma","2017",TRUE,FALSE,338
+"Oklahoma","2018",TRUE,FALSE,330
+"Oklahoma","2019",TRUE,FALSE,362
+"Oregon","2017",TRUE,FALSE,449
+"Oregon","2018",TRUE,FALSE,454
+"Oregon","2019",TRUE,FALSE,436
+"Pennsylvania","2017",TRUE,FALSE,570
+"Pennsylvania","2018",TRUE,FALSE,580
+"Pennsylvania","2019",TRUE,FALSE,588
+"Rhode Island","2017",TRUE,FALSE,605
+"Rhode Island","2018",TRUE,FALSE,628
+"Rhode Island","2019",TRUE,FALSE,635
+"South Carolina","2017",TRUE,FALSE,299
+"South Carolina","2018",TRUE,FALSE,302
+"South Carolina","2019",TRUE,FALSE,302
+"South Dakota","2017",TRUE,FALSE,705
+"South Dakota","2018",TRUE,FALSE,721
+"South Dakota","2019",TRUE,FALSE,732
+"Tennessee","2017",TRUE,FALSE,308
+"Tennessee","2018",TRUE,FALSE,311
+"Tennessee","2019",TRUE,FALSE,317
+"Texas","2017",TRUE,FALSE,338
+"Texas","2018",TRUE,FALSE,342
+"Texas","2019",TRUE,FALSE,357
+"Utah","2017",TRUE,FALSE,347
+"Utah","2018",TRUE,FALSE,365
+"Utah","2019",TRUE,FALSE,360
+"Vermont","2017",TRUE,FALSE,776
+"Vermont","2018",TRUE,FALSE,808
+"Vermont","2019",TRUE,FALSE,822
+"Virginia","2017",TRUE,FALSE,287
+"Virginia","2018",TRUE,FALSE,306
+"Virginia","2019",TRUE,FALSE,311
+"Washington","2017",TRUE,FALSE,411
+"Washington","2018",TRUE,FALSE,421
+"Washington","2019",TRUE,FALSE,430
+"West Virginia","2017",TRUE,FALSE,455
+"West Virginia","2018",TRUE,FALSE,462
+"West Virginia","2019",TRUE,FALSE,421
+"Wisconsin","2017",TRUE,FALSE,457
+"Wisconsin","2018",TRUE,FALSE,448
+"Wisconsin","2019",TRUE,FALSE,452
+"Wyoming","2017",TRUE,FALSE,380
+"Wyoming","2018",TRUE,FALSE,386
+"Wyoming","2019",TRUE,FALSE,393

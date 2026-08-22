@@ -1,0 +1,9 @@
+"state","budget","n_artifact_in_blend","precision_with","precision_without","d_precision","d_dollar_recall"
+"Washington",0.05,69,0.303,0.303,0,0
+"Washington",0.1,69,0.2687,0.2687,0,0
+"Maine",0.05,70,0.413,0.413,0,0
+"Maine",0.1,70,0.3152,0.3152,0,0
+"Mississippi",0.05,67,0.4222,0.4222,0,0
+"Mississippi",0.1,67,0.3667,0.3667,0,0
+"Illinois",0.05,68,0.5,0.5,0,0
+"Illinois",0.1,68,0.3704,0.3704,0,0

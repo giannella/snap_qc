@@ -41,6 +41,12 @@ FEATURES19 = [
     "unc_rawben_rel_max", "months_since_cert_n", "count_divisible_by_100",
     "gross_by_hh_size", "earned_by_hh_size", "unearned_by_hh_size",
 ]
+# vocabulary variants (2026-08-22): a staged build that swaps one feature
+# exports its own frame_for_profiles.csv carrying the swapped name; set
+# V250_UTIL_FEATURE to that name (e.g. utilities_sua) so the eval vocabulary
+# matches the lists being characterized
+_UTIL = os.environ.get("V250_UTIL_FEATURE", "utilities")
+FEATURES19 = [_UTIL if f == "utilities" else f for f in FEATURES19]
 
 
 def main():

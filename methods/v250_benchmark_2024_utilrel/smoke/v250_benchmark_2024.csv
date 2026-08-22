@@ -1,0 +1,9 @@
+"state","budget","n_pool","n_state_pool","state_pool_held","n_artifact_dropped","n_core","n_buffer","n_state_rules_core","n_te","n_flagged","n_errors_caught","precision","base_rate_te","lift","dollar_recall","fill_gap_core","fill_gap_total"
+"Washington",0.05,2495,178,FALSE,69,9,31,0,678,33,10,0.303,0.09,3.37,0.2033,0,0
+"Washington",0.1,2495,178,FALSE,69,26,49,1,678,67,18,0.2687,0.09,2.99,0.3105,0,0
+"Maine",0.05,2723,414,FALSE,70,14,18,1,928,46,19,0.413,0.1239,3.33,0.2497,0,0
+"Maine",0.1,2723,414,FALSE,70,25,34,2,928,92,29,0.3152,0.1239,2.54,0.3202,0,0
+"Mississippi",0.05,2656,340,FALSE,67,5,22,2,902,45,19,0.4222,0.1408,3,0.1455,0,0
+"Mississippi",0.1,2656,340,FALSE,67,15,58,4,902,90,33,0.3667,0.1408,2.6,0.2748,0,0
+"Illinois",0.05,2834,518,FALSE,68,4,20,1,818,40,20,0.5,0.165,3.03,0.1439,0,0
+"Illinois",0.1,2834,518,FALSE,68,11,24,3,818,81,30,0.3704,0.165,2.24,0.227,0,0
