@@ -236,6 +236,7 @@ PLAIN_VARS = {
     'medical_deductions':         ('medical deduction', '$'),
     'shelter_expenses_by_hh_size': ('shelter costs per person', '$'),
     'utilities':                  ('utility costs', '$'),
+    'utilities_sua':              ('SUA tier (0 none / 1 low / 2 high)', 'n'),
     'married':                    ('spouse present', 'i'),
     'homeless':                   ('homeless', 'i'),
     'earned_by_hh_size':          ('earned income per person', '$'),
@@ -292,7 +293,8 @@ def render_plain(conds):
 os.makedirs(BUILD_DIR, exist_ok=True)
 RULES = rule_selection.effective_rules(
     DELIVERY_CSV, df, char_keys=[k for k, _, _, _ in CHAR_COLS],
-    out_csv=os.path.join(BUILD_DIR, f'effective_rules_{STATE_ABBR}.csv'))
+    out_csv=os.path.join(BUILD_DIR, f'effective_rules_{STATE_ABBR}.csv'),
+    state_name=STATE_NAME, repo=REPO)
 print('effective rules implemented:', len(RULES))
 
 RULE_VARS = sorted({c['var'] for r in RULES for c in r['conds']})
@@ -302,6 +304,7 @@ for v in RULE_VARS:
 # snapped_grid steps by variable type (dollar 50, ratio 0.05, months/counts 1)
 RATIO_VARS = {'rawben_rel_max', 'unc_rawben_rel_max', 'percent_abawd'}
 UNIT_VARS  = {'months_since_cert_n', 'HH_size_n', 'count_divisible_by_100', 'cat_elig',
+              'utilities_sua',
               'bbce_state_i', 'expedited_i', 'elderly_disabled_i', 'married',
               'children_i', 'homeless'}
 def base_step(v):
@@ -995,8 +998,8 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     # far right (revision 2026-08-18)
     wrapped = Alignment(horizontal='left', vertical='top', wrap_text=True)
     merge(ws,2,1,2,11, value=intro,
-          fill=GRAY, font=Font(name=FONT,size=11,color='000000'), align=wrapped)
-    ws.row_dimensions[2].height = 60
+          fill=GRAY, font=Font(name=FONT,size=12,color='000000'), align=wrapped)
+    ws.row_dimensions[2].height = 66
     merge(ws,3,1,3,11,
           value=f'Rules are sorted by total error dollars caught on the data in the "{DATA_SHEET}" '
                 'tab. For individual rules, Recall and $ Recall are that rule ALONE as a share of '
@@ -1005,8 +1008,8 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                 'within that row\'s household-size scope.) A rule\'s Workload % is the share of its '
                 'own household-size stratum; in the orange summary rows it is the share of ALL '
                 'cases. The exact machine expression of every rule is in the last column.',
-          fill=GRAY, font=Font(name=FONT,size=11,color='000000'), align=wrapped)
-    ws.row_dimensions[3].height = 60
+          fill=GRAY, font=Font(name=FONT,size=12,color='000000'), align=wrapped)
+    ws.row_dimensions[3].height = 66
     for col, txt in enumerate(['Rule','HH size','What the rule says','Precision','Recall',
                                '$ Recall','Flagged','Errors','Error $ caught','Workload %',
                                'Expected error $ by case','Include?'] +
@@ -1068,14 +1071,19 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
         set_cell(ws,r,11,(round(sc['dollars']/sc['n'], 2) if sc['n'] else '—'),
                  align=center, border=thin(), number_format='$#,##0', fill=GREEN)
         set_cell(ws,r,12,True, fill=YELLOW, align=center, border=thin(), font=Font(name=FONT))
+        # the four share columns (T-W) read left-aligned so their content is
+        # legible before any column resize (feedback 2026-08-21)
+        LEFT_KEYS = {'share_overissuance', 'cause_agency',
+                     'found_in_case_record', 'timing_at_certification'}
         for ci, (key, _, fmt, _) in enumerate(CHAR_COLS, 13):
             v = rule.get('char', {}).get(key)
             if v is None or (isinstance(v, float) and np.isnan(v)):
                 v = ''
             elif fmt != '@':
                 v = float(v)
-            set_cell(ws,r,ci,v, align=(left if fmt == '@' else center), border=thin(),
-                     number_format=fmt, font=Font(name=FONT,size=10))
+            set_cell(ws,r,ci,v,
+                     align=(left if fmt == '@' or key in LEFT_KEYS else center),
+                     border=thin(), number_format=fmt, font=Font(name=FONT,size=10))
         set_cell(ws,r,LASTC,conds_text[j], align=left,
                  font=Font(name=FONT,size=8,color='808080'))
     ws.freeze_panes = 'D5'
@@ -1101,7 +1109,8 @@ ws_n = delivery_list_tab(
            'to the right of "Include?" characterize each rule as applied to NATIONAL data (what '
            'error elements and natures it catches, who caused them, whether the error was '
            'discovered in the case file); they are fixed context and do not recompute from '
-           'pasted data.'))
+           'pasted data. If removing rules for a smaller workload percentage, start from '
+           'the bottom.'))
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 8. SEE CASES FLAGGED BY A RULE — pick a rule, list the cases it flags, with
@@ -1145,7 +1154,8 @@ set_cell(ws_e,1,1,formula=f'=${SC_B}$1&" rules with matches"',
          fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=14,color='FFFFFF'), align=center)
 ws_e.merge_cells('A1:B1'); ws_e.row_dimensions[1].height = 32
 merge(ws_e,2,1,2,2, value='sorted by cases matched — updates live',
-      fill=GRAY, font=Font(name=FONT,size=13,color='000000'), align=left)
+      fill=GRAY, font=Font(name=FONT,size=13,color='000000'),
+      align=Alignment(horizontal='left', vertical='top', wrap_text=True))
 ws_e.row_dimensions[2].height = 36
 set_cell(ws_e,3,1,'Rule', font=bold_font(10), fill=GRAY, align=center, border=thin())
 set_cell(ws_e,3,2,'matches', font=bold_font(10), fill=GRAY, align=center, border=thin())
@@ -1159,14 +1169,15 @@ for k in range(1, LISTN+1):
 merge(ws_e,1,G0,1,G0+11,
       value=f'{VIEWER} — the cases the selected rule flags, at current thresholds',
       fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
-merge(ws_e,2,G0,2,G0+NCOLV-1,
+# merged C:N with wrap (feedback 2026-08-21) rather than the full grid width
+merge(ws_e,2,G0,2,14,
       value='Pick a rule (the dropdown lists rules currently matching, sorted by matches) and '
             'choose whether to see only flagged cases that are true payment errors, or every '
             'flagged case. Pasted rows appear here too; the columns the rule uses are '
             f'highlighted in blue, and the first {GRIDN} matching cases are shown.',
       fill=GRAY, font=Font(name=FONT,size=13,color='000000'),
       align=Alignment(horizontal='left', vertical='top', wrap_text=True))
-ws_e.row_dimensions[2].height = 36
+ws_e.row_dimensions[2].height = 60
 set_cell(ws_e,3,G0,'Rule', font=bold_font(10), fill=GRAY, align=center, border=thin())
 set_cell(ws_e,3,G0+1,f'Rule {RULES[0]["num"]} (HH {RULES[0]["hh"]})',
          fill=YELLOW, align=center, border=thin(), font=bold_font(), number_format='@')
@@ -1299,14 +1310,13 @@ ws_e.freeze_panes = f'{get_column_letter(G0)}11'
 # removes the rule here immediately. No dynamic arrays (Excel-2013-safe).
 # ══════════════════════════════════════════════════════════════════════════════
 BQ = qref(BLENDED_SHEET)
-EXPR_L = get_column_letter(13 + len(CHAR_COLS))        # Step 3 exact-expression col
 ws_x = wb.create_sheet(EXPORT_SHEET)
 ws_x.sheet_view.showGridLines = False
 # pale orange: the optional post-Step-3 tabs (Eric's WA scheme, 2026-08-19)
 ws_x.sheet_properties.tabColor = 'FDE9D9'
-for cl, w in {'A': 9, 'B': 9, 'C': 60, 'D': 100}.items():
+for cl, w in {'A': 9, 'B': 9, 'C': 60, 'D': 110}.items():
     ws_x.column_dimensions[cl].width = w
-for cl in ('H', 'I'):
+for cl in ('H', 'I', 'J'):
     ws_x.column_dimensions[cl].hidden = True
 merge(ws_x, 1, 1, 1, 4, value=f'Export Rules — {STATE_NAME}',
       fill=BLUE_DARK, font=Font(name=FONT, bold=True, size=16, color='FFFFFF'),
@@ -1314,14 +1324,24 @@ merge(ws_x, 1, 1, 1, 4, value=f'Export Rules — {STATE_NAME}',
 ws_x.row_dimensions[1].height = 32
 merge(ws_x, 2, 1, 2, 4,
       value=f'The rules currently set to TRUE on the "{BLENDED_SHEET}" tab, in the same '
-            'order, with their exact machine logic — this list updates as you change '
-            'Include?. A few example uses: filter your caseload in Excel with these '
-            'conditions, translate them into a query in your eligibility or case-management '
-            'system, or send this sheet to your vendor. Variable definitions are on the '
-            'dictionary tab.',
-      fill=GRAY, font=Font(name=FONT, size=11, color='000000'),
+            'order, with their exact machine logic (each rule includes its household-size '
+            'restriction) — this list updates as you change Include?. A few example uses: '
+            'filter your caseload in Excel with these conditions, translate them into a '
+            'query in your eligibility or case-management system, or send this sheet to '
+            'your vendor. Variable definitions are on the dictionary tab.',
+      fill=GRAY, font=Font(name=FONT, size=12, color='000000'),
       align=Alignment(horizontal='left', vertical='top', wrap_text=True))
-ws_x.row_dimensions[2].height = 45
+ws_x.row_dimensions[2].height = 50
+
+# full machine logic per rule, in tab order: the exact expression plus the
+# household-size stratum as a conjunct, so an exported rule is complete on
+# its own (feedback 2026-08-21)
+HH_CLAUSE = {'1': 'HH_size_n <= 1',
+             '2-3': 'HH_size_n >= 2 & HH_size_n <= 3',
+             '4+': 'HH_size_n >= 4'}
+for j, rule in enumerate(RULES):
+    ws_x.cell(row=4 + j, column=10,
+              value=f'{blended_conds[j]} & {HH_CLAUSE[rule["hh"]]}')
 for col, txt in enumerate(['Rule', 'HH size', 'What the rule says',
                            'Exact rule logic'], 1):
     set_cell(ws_x, 3, col, txt, font=bold_font(10), fill=GRAY, align=center,
@@ -1342,7 +1362,7 @@ for k in range(1, NR + 1):
                   align=Alignment(horizontal='left', vertical='top', wrap_text=True),
                   font=Font(name=FONT, size=10))
     ws_x.cell(row=r, column=4).value = (
-        f'=IFERROR(INDEX({BQ}!${EXPR_L}$11:${EXPR_L}${10 + NR},{idx}),"")')
+        f'=IFERROR(INDEX($J$4:$J${3 + NR},{idx}),"")')
     ws_x.cell(row=r, column=4).font = Font(name=FONT, size=9)
     ws_x.cell(row=r, column=1).alignment = center
     ws_x.cell(row=r, column=2).alignment = center

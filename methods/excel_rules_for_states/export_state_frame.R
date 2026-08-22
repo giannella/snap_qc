@@ -59,7 +59,8 @@ FEATURES <- c(
   "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
   "earned_by_hh_size", "unearned_by_hh_size", "gross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max",
-  "months_since_cert_n", "count_divisible_by_100"
+  "months_since_cert_n", "count_divisible_by_100",
+  "utilities_sua"
 )
 
 hh_group_of <- function(n) {
@@ -70,6 +71,22 @@ hh_group_of <- function(n) {
 cat(sprintf("reading %s ...\n", RDS))
 d <- readRDS(RDS)
 cat(sprintf("frame: %d rows\n", nrow(d)))
+
+# SUA tier (vocabulary variant, 2026-08-22; methods/v250_benchmark_2024_utilrel/
+# design_note.md): computed per state-year exactly as the variant mine
+# computes it, so the workbook's demo sits on the mined scale. Harmless
+# when a delivery list does not use it (prep_features keeps the column;
+# the workbook only emits features its rules reference).
+mode_pos <- function(x) {
+  x <- round(x[x > 0])
+  if (!length(x)) return(NA_real_)
+  as.numeric(names(sort(table(x), decreasing = TRUE))[1])
+}
+d <- d %>% group_by(state_name, fiscal_year) %>%
+  mutate(utilities_sua = ifelse(utilities <= 0, 0L,
+                                ifelse(utilities < mode_pos(utilities) - 200,
+                                       1L, 2L))) %>%
+  ungroup()
 
 states_present <- unique(as.character(d$state))
 if (!STATE %in% states_present)
@@ -119,7 +136,14 @@ extra <- intersect(c("cert_HH_size_FS_n", "over_threshold", "total_error_amount"
                      # recomputed outcome matches the frame exactly. status:
                      # 1 = correct, 2 = overissuance, 3 = underissuance
                      # (4 = ineligible never occurs in the public files).
-                     "rawben", "benefit_amount_FS", "status"), names(w))
+                     "rawben", "benefit_amount_FS", "status",
+                     # child support expense (QC FSCSEXP): shipped so the
+                     # workbook's CHILD_SUPPORT_EXPENSES input column can
+                     # demo the exclusion-state ask (2026-08-21); the
+                     # munging already standardizes exclusion-state records
+                     # to the deduction treatment, so these amounts are
+                     # reflected in rawcsded for those rows
+                     "fscsexp"), names(w))
 out <- w[, c(keys, extra, pf$features), drop = FALSE]
 out$hh_group    <- hh_group_of(w$cert_HH_size_FS_n)
 out$hh_size_raw <- suppressWarnings(as.numeric(as.character(w$cert_HH_size_FS_n)))

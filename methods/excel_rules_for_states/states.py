@@ -12,6 +12,8 @@ value here is repo-relative. Set an explicit entry in OVERRIDES only when a
 state should deviate from the convention (different list or years).
 """
 
+import os
+
 FY0, FY1 = 2022, 2024
 _BUDGET = 'budget10'          # keep in step with TUNING['budget'] below
 
@@ -54,8 +56,11 @@ def _default_entry(abbr):
         'fips': fips,
         'fy_label': f'{FY0}–{FY1}',
         'years': _YEARS,
-        'delivery_csv': (f'state_delivery_lists/blended_delivery_'
-                         f'{name_us}_{FY0}_{FY1}_{_BUDGET}.csv'),
+        # SNAP_LIST_DIR (2026-08-22) redirects the source folder, e.g. to a
+        # STAGED candidate build under methods/ for preview workbooks; the
+        # default stays the tracked, shipped folder
+        'delivery_csv': (f'{os.environ.get("SNAP_LIST_DIR", "state_delivery_lists")}'
+                         f'/blended_delivery_{name_us}_{FY0}_{FY1}_{_BUDGET}.csv'),
         # 2026-08-18: 'national_csv' and 'role_filter' retired — the National
         # Rules tab is gone, and rule_selection.py consumes ALL roles of the
         # blended CSV (transformed core + promoted buffer), so no role filter

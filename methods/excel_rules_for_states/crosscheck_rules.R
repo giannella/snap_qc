@@ -33,10 +33,22 @@ FEATURES <- c(
   "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
   "earned_by_hh_size", "unearned_by_hh_size", "gross_by_hh_size",
   "percent_abawd", "unc_rawben_rel_max",
-  "months_since_cert_n", "count_divisible_by_100"
+  "months_since_cert_n", "count_divisible_by_100",
+  "utilities_sua"
 )
 
+mode_pos <- function(x) {
+  x <- round(x[x > 0])
+  if (!length(x)) return(NA_real_)
+  as.numeric(names(sort(table(x), decreasing = TRUE))[1])
+}
 d <- readRDS("reg_model_data.rds") %>%
+  # SUA tier, per state-year (the variant mine's construction, 2026-08-22)
+  group_by(state_name, fiscal_year) %>%
+  mutate(utilities_sua = ifelse(utilities <= 0, 0L,
+                                ifelse(utilities < mode_pos(utilities) - 200,
+                                       1L, 2L))) %>%
+  ungroup() %>%
   filter(as.character(state) == STATE, as.character(fiscal_year) %in% YEARS)
 pf <- prep_features(d, FEATURES)
 w  <- pf$data

@@ -137,9 +137,10 @@ def main():
                      col='total_error_amount', fn='SUMIFS')
         put = lambda k, f: ws.cell(row=row, column=cols[k], value='=' + f)
         put('flagged', n); put('errors', e); put('dollars', d)
-        # below 10 flagged cases a percentage misleads; show the counts
-        put('prec', f'IF(${F}{row}<10,${E}{row}&" errors of "&${F}{row}'
-                    f'&" cases flagged",IFERROR(${E}{row}/${F}{row},0))')
+        # per-rule precision as counts for EVERY rule (feedback 2026-08-21:
+        # one format is easier to read than a mix); the orange union rows
+        # keep the percentage
+        put('prec', f'${E}{row}&" errors of "&${F}{row}&" cases flagged"')
         # per-rule Recall / $ Recall: this rule ALONE over ALL pasted errors /
         # error dollars (grand totals; must match build_workbook_v2.score_list)
         put('rec',  f'IFERROR(${E}{row}/{denom("all","errors")},0)')

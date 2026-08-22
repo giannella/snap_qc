@@ -94,7 +94,8 @@ def raw_frame(cfg, frame_csv):
     frame = pd.read_csv(frame_csv, dtype={'hhldno': str, 'stratum': str})
     need = ['rawearn', 'rawunearn', 'rawdepded', 'rawcsded', 'rawrent',
             'rawhomeless_ded', 'fsnkid', 'fsnelder', 'fsndis',
-            'count_abawd', 'cat_elig', 'rawben', 'benefit_amount_FS', 'status']
+            'count_abawd', 'cat_elig', 'rawben', 'benefit_amount_FS', 'status',
+            'fscsexp']
     missing = [c for c in need if c not in frame.columns]
     assert not missing, (f'frame export lacks reconstructed input fields '
                          f'{missing}; re-export it (make_state.py --refresh)')
@@ -118,6 +119,9 @@ def raw_frame(cfg, frame_csv):
         'MEDICAL_DEDUCTION': g('medical_deductions'),
         'DEPENDENT_CARE_DEDUCTION': g('rawdepded'),
         'CHILD_SUPPORT_DEDUCTION': g('rawcsded'),
+        # informational input (no rule reads it): the QC expense field, for
+        # exclusion-state reconciliation — see its dictionary entry
+        'CHILD_SUPPORT_EXPENSES': g('fscsexp'),
         'HOMELESS_DEDUCTION': g('rawhomeless_ded'),
         'RENT': g('rawrent'),
         'UTILITY_COSTS': g('utilities'),
@@ -277,11 +281,12 @@ def background_tab(wb, state_name):
         nonlocal r
         ws.merge_cells(f'A{r}:B{r}')
         c = ws.cell(row=r, column=1, value=txt)
-        c.font = Font(bold=bold, size=14 if bold else 11)
+        # explainer text at 12pt black (feedback 2026-08-21)
+        c.font = Font(bold=bold, size=14 if bold else 12)
         c.alignment = Alignment(wrap_text=True, vertical='top')
-        # ~110 wrapped chars per line across the A:B merge, 14pt per line
+        # ~100 wrapped chars per line across the A:B merge at 12pt, 15pt per line
         ws.row_dimensions[r].height = height or (
-            20 if bold else max(30, 14 * -(-len(txt) // 110)))
+            20 if bold else max(30, 15 * -(-len(txt) // 100)))
         r += 2
 
     def link(label, url):
@@ -303,8 +308,10 @@ def background_tab(wb, state_name):
          f"='{BLENDED_SHEET}'!D6", '0.0%'),
         ('Base error rate, all cases (compare precision against this)',
          f'=COUNTIF({TABLE}[over_threshold],1)/COUNTA({TABLE}[CASE_ID])', '0.0%'),
-        ('Error $ caught by the selected rules',
-         f"='{BLENDED_SHEET}'!I6", '$#,##0'),
+        # feedback 2026-08-21: the per-case average reads better than the
+        # raw total (K6 = the union row's error dollars caught / cases flagged)
+        ('Average error $ per case flagged (includes $0 error cases)',
+         f"='{BLENDED_SHEET}'!K6", '$#,##0'),
         # overissuance share from the benefit pair (revision 2026-08-18): the
         # demo fills it automatically because the shipped input block carries
         # ORIGINAL/CORRECTED_BENEFIT_AMOUNT for every case
@@ -325,7 +332,8 @@ def background_tab(wb, state_name):
     r += 1
 
     para('What this is', bold=True)
-    # wording agreed 2026-08-21
+    # wording agreed 2026-08-21; split into two paragraphs at "Paste in" and
+    # the review-budget sentence added per the same day's feedback
     para('This workbook helps you test potential rules for flagging cases at risk of '
          'payment errors using your own internal data. It then allows you to either '
          'a) export those rules for use somewhere else or b) apply the rules to new '
@@ -333,16 +341,17 @@ def background_tab(wb, state_name):
          'you\'ve selected). It is critical to test rules before implementing them - '
          'you have access to more recent and more comprehensive data about errors '
          'than what was used to generate these rules. Some rules may no longer catch '
-         'errors, others may flag too many cases without errors. Paste in your own '
-         'recent data (e.g., FY2025/FY2026 QC or QA cases), see how every rule '
-         'performs on it, and keep the rules that perform well (e.g., at least 3-4 in '
-         '10 cases flagged have errors) and that make sense given what you know about '
-         'your secondary review processes (e.g., can the types of errors flagged by '
-         'the rule be found and fixed?). Each rule is a short, readable condition on '
-         'case fields (for example: household size, income per person, deductions, '
-         f'benefit relative to the maximum), selected from national and {state_name} '
-         'rules mined on the public USDA SNAP Quality Control (QC) files for '
-         'FY2022-2024.')
+         'errors, others may flag too many cases without errors.')
+    para('Paste in your own recent data (e.g., FY2025/FY2026 QC or QA cases), see '
+         'how every rule performs on it, and keep the rules that perform well (e.g., '
+         'at least 3-4 in 10 cases flagged have errors) and that make sense given '
+         'what you know about your secondary review processes (e.g., can the types '
+         'of errors flagged by the rule be found and fixed?). Add or remove rules to '
+         'get to your "review budget" (the percentage of cases you can review '
+         'annually). Each rule is a short, readable condition on case fields (for '
+         'example: household size, income per person, deductions, benefit relative '
+         f'to the maximum), selected from national and {state_name} rules mined on '
+         'the public USDA SNAP Quality Control (QC) files for FY2022-2024.')
     para('Yellow highlighting means a cell is interactive: the yellow columns on the '
          f'"{DATA_SHEET}" tab are where you paste your data, and the yellow "Include?" '
          f'column on the "{BLENDED_SHEET}" tab (TRUE/FALSE) is where you keep or drop '
@@ -385,10 +394,10 @@ def background_tab(wb, state_name):
     ]:
         ws.merge_cells(f'A{r}:B{r}')
         c = ws.cell(row=r, column=1, value=step)
-        c.font = Font(size=11)
+        c.font = Font(size=12)
         c.alignment = Alignment(wrap_text=True, vertical='top')
-        # ~110 wrapped chars per line across the A:B merge, 14pt per line
-        ws.row_dimensions[r].height = max(28, 14 * -(-len(step) // 110))
+        # ~100 wrapped chars per line across the A:B merge at 12pt, 15pt per line
+        ws.row_dimensions[r].height = max(28, 15 * -(-len(step) // 100))
         r += 1
     r += 1
 
@@ -467,6 +476,18 @@ RAW_DESC = {
                          'demo carries the reconstructed pre-QC-review value.',
     'DEPENDENT_CARE_DEDUCTION': 'dependent care deduction, $/month. QC manual: FSDEPDED.',
     'CHILD_SUPPORT_DEDUCTION': 'child support payment deduction, $/month. QC manual: FSCSDED.',
+    'CHILD_SUPPORT_EXPENSES': 'child support payments, $/month, for states that treat '
+                              'child support as an income EXCLUSION rather than a '
+                              'deduction. QC manual: FSCSEXP. No rule reads this column: '
+                              'the rules were mined on data standardized to the DEDUCTION '
+                              'treatment (exclusion-state records get the expense amount '
+                              'moved into the child support deduction and gross income '
+                              'recomputed), so if amounts appear here that are NOT in your '
+                              'CHILD_SUPPORT_DEDUCTION column, add them into '
+                              'CHILD_SUPPORT_DEDUCTION to match the scale the rules were '
+                              'mined on. The demo carries the QC file\'s expense field; '
+                              'for exclusion-state rows those amounts are already '
+                              'reflected in the demo\'s CHILD_SUPPORT_DEDUCTION.',
     'HOMELESS_DEDUCTION': 'homeless household shelter deduction, $/month. '
                           'QC manual: HOMELESS_DED.',
     'RENT':      'rent / mortgage, $/month. QC manual: RENT; the demo carries the '
@@ -517,6 +538,16 @@ FEAT_DESC = {
     'total_deductions_by_hh_size': '(dependent care + child support + recomputed shelter + medical '
                                    '+ earned-income deductions) / HOUSEHOLD_SIZE',
     'utilities':   'UTILITY_COSTS, unchanged',
+    'utilities_sua': 'standard utility allowance tier, computed from the pasted data: '
+                     '0 = no utility amount; 1 = positive but more than $200 below '
+                     'the most common positive UTILITY_COSTS value among cases in the '
+                     'same fiscal year; 2 = within $200 of or above that value (the '
+                     'high-SUA cluster, which in states with household-size or '
+                     'regional SUA schedules covers all of the high variants). Rules '
+                     'use this tier instead of utility dollars so they keep meaning '
+                     'the same thing when SUA levels reset each October. Paste whole '
+                     'fiscal years rather than a handful of cases: the anchor is '
+                     'recomputed from what you paste.',
     'over_threshold':     '1 when total_error_amount exceeds the review year\'s federal '
                           'QC tolerance (FederalTables error_threshold) — what the rules '
                           'aim to catch',
@@ -680,8 +711,8 @@ def screening_tabs(wb, R, dat_hdr):
                'tab that a rule currently set to TRUE flags, with the rule that '
                f'flagged it. A case flagged by several rules appears once per rule. '
                f'Showing the first {FLAG_CAP:,} pairs; cell B3 holds the total.')
-    c.fill = grayF; c.font = Font(size=11); c.alignment = wrap
-    wsf.row_dimensions[2].height = 42
+    c.fill = grayF; c.font = Font(size=12); c.alignment = wrap
+    wsf.row_dimensions[2].height = 46
     wsf['A3'] = 'Flagged case x rule pairs:'
     wsf['A3'].font = Font(bold=True)
     wsf['B3'] = f'=SUM({SCREEN_TABLE}[_hits])'
@@ -758,8 +789,8 @@ def share_tab(wb, state_name):
                'might capture them. To send the results back to us, please copy / '
                'paste the whole sheet into a new excel workbook (paste as values) and '
                'send it back to us.')
-    c.fill = grayF; c.font = Font(size=11); c.alignment = wrap
-    ws.row_dimensions[2].height = 72
+    c.fill = grayF; c.font = Font(size=12); c.alignment = wrap
+    ws.row_dimensions[2].height = 80
     meta = [('State', state_name, False),
             ('Fiscal years pasted into Step 2 (e.g., 2025-2026)', '', True),
             ('Data pasted (QC / QA / pre-auth / other)', '', True)]
@@ -857,6 +888,7 @@ FEATURE_INPUTS = {
     'shelter_expenses_by_hh_size': ['RENT', 'UTILITY_COSTS', 'HOUSEHOLD_SIZE'],
     'total_deductions_by_hh_size': BEN_INPUTS,
     'utilities': ['UTILITY_COSTS'],
+    'utilities_sua': ['UTILITY_COSTS', 'REVIEW_FISCAL_YEAR'],
     'over_threshold': ['ORIGINAL_BENEFIT_AMOUNT', 'CORRECTED_BENEFIT_AMOUNT',
                        'REVIEW_FISCAL_YEAR'],
     'total_error_amount': ['ORIGINAL_BENEFIT_AMOUNT', 'CORRECTED_BENEFIT_AMOUNT'],
@@ -938,6 +970,23 @@ def feature_formulas(R, table=TABLE):
             f'+{T("_c_sltded")}+{T("MEDICAL_DEDUCTION")}+{T("_c_ernded")})/{hh}',
         'unc_rawben_rel_max': f'={T("_c_benunc")}/{T("_c_benmax")}',
         'utilities':   f'={T("UTILITY_COSTS")}',
+        # SUA tier (vocabulary variant staged 2026-08-22; design + result in
+        # methods/v250_benchmark_2024_utilrel/): 0 = no utility amount,
+        # 1 = positive below (state-year mode - 200), 2 = at/above that
+        # (the HIGH-SUA cluster). The anchor is the MODE of positive
+        # UTILITY_COSTS within the row's fiscal year, computed from the
+        # pasted data itself (per state-year semantics: the workbook holds
+        # one state, so the year is the grouping). _xlfn. prefix: MODE.SNGL
+        # is post-2007. The IF(...,n,"") array inside MODE.SNGL restricts
+        # the mode to positive values of the same year; MODE.SNGL errors on
+        # an empty set, which IFERROR maps to tier 0 for every row of that
+        # year. Tie rule: MODE.SNGL returns the first-occurring tied value
+        # (the build frame's mode_pos returns the smallest); the frame has
+        # no tied state-year cells, so the demo matches exactly.
+        'utilities_sua':
+            f'=IF({T("UTILITY_COSTS")}<=0,0,IFERROR(IF({T("UTILITY_COSTS")}'
+            f'<_xlfn.MODE.SNGL(IF(({TABLE}[REVIEW_FISCAL_YEAR]={T("REVIEW_FISCAL_YEAR")})'
+            f'*({TABLE}[UTILITY_COSTS]>0),ROUND({TABLE}[UTILITY_COSTS],0)))-200,1,2),0))',
         # the QC outcome, recomputed from the benefit pair exactly as the
         # munging script defines it: error amount = |RAWBEN - FSBEN| rounded,
         # error flag = amount STRICTLY OVER the year's federal QC tolerance
@@ -1019,6 +1068,19 @@ def mirror_features(raw, ftabs):
         'unc_rawben_rel_max': benunc / benmax,
         'utilities': g('UTILITY_COSTS'),
     }
+    # SUA tier mirror: mode of positive rounded utilities within fiscal year
+    # (smallest tied value, matching the build frame's mode_pos)
+    util = g('UTILITY_COSTS')
+    tier = np.zeros(len(util), dtype=int)
+    for y in np.unique(fy):
+        sel = fy == y
+        pos = np.round(util[sel & (util > 0)])
+        if len(pos):
+            vals, cnt = np.unique(pos, return_counts=True)
+            mode = vals[cnt == cnt.max()].min()
+            t = np.where(util[sel] <= 0, 0, np.where(util[sel] < mode - 200, 1, 2))
+            tier[sel] = t
+    out['utilities_sua'] = tier
     # QC outcome recomputed from the benefit pair, mirroring the Excel
     # formulas (and the munging script's own definition)
     errdiff = np.round(np.abs(g('ORIGINAL_BENEFIT_AMOUNT')
