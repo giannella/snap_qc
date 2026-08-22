@@ -1,0 +1,52 @@
+﻿diff --git a/methods/v250_benchmark_era2_baseline_v2.R b/methods/v250_benchmark_era2_utilsua_variant_v2.R
+index 36ed19a..006d5e1 100644
+--- a/methods/v250_benchmark_era2_baseline_v2.R
++++ b/methods/v250_benchmark_era2_utilsua_variant_v2.R
+@@ -1,2 +1,2 @@
+-# ERA-2 REPLICATION, BASELINE ARM (raw utilities; methods/v250_benchmark_2024_utilrel/era2_design_note.md).
+-# Derived from the variant driver with the vocabulary reverted; header below is inherited.
++# ERA-2 REPLICATION, VARIANT ARM (methods/v250_benchmark_2024_utilrel/era2_design_note.md).
++# UTILITIES-SUA-TIER VOCABULARY VARIANT of the v2.5.0 one-year-ahead
+@@ -80 +80 @@ BASE_FEATURES <- c(
+-  "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
++  "shelter_expenses_by_hh_size", "utilities_sua", "married", "homeless",
+@@ -95 +95 @@ HOLD_STATE_POOLS <- character(0)  # Illinois hold LIFTED 2026-08-13 (the IL stan
+-OUT_DIR <- "methods/v250_benchmark_2024_utilrel/era2_baseline"
++OUT_DIR <- "methods/v250_benchmark_2024_utilrel/era2_variant"
+@@ -114,0 +115,33 @@ adf0 <- reg_model_data %>% filter(fiscal_year %in% c(TRAIN_YEARS, TEST_YEAR))
++# VARIANT (design note, 2026-08-21; anchor retargeted to the MODE, FORM
++# set to the TIER, and the HIGH band widened to mode - 200 by the project
++# lead the same day): utilities encoded as a 3-level tier against the
++# state-year's MODAL positive utility value (the dominant SUA):
++#   0 = no utility amount; 1 = positive but below (mode - 200);
++#   2 = at or above (mode - 200), i.e. the HIGH-SUA cluster.
++# The $200 tolerance captures within-state high-SUA VARIANTS (household
++# size schedules, e.g. Virginia 375/476; regional schedules, e.g. New York
++# 877/988/1062) that a strict at-mode cut would mis-tier; the band census
++# (methods/vocab_hygiene_census/utilities_high_band_census.csv) shows the
++# band is empty in most states (median 0.8% of positive cases) and carries
++# 10-47% exactly in the multi-schedule states.
++# The tier travels with SUA level resets like the ratio does, admits only
++# two possible cuts (>= 1: any allowance; >= 2: at/above the dominant
++# SUA), so interval fishing on it is impossible by construction and the
++# width floor needs no extension to cover it. Anchor evidence:
++# methods/vocab_hygiene_census/utilities_anchor_census.csv (mode
++# year-over-year log-ratio sd 0.077 vs 0.391 for the max) and
++# methods/interval_width_decay/anchor_translation_summary_2024.csv
++# (mode-re-anchored reach-collapse 1.35% vs 3.05% max, 4.18% raw).
++# 147/147 state-year cells have positive utilities so the mode exists
++# everywhere; utilities values are integral (round is a no-op) and no
++# cell has a tied top count, so mode_pos is deterministic here (ties
++# would break to the smallest tied value).
++mode_pos <- function(x) {
++  x <- round(x[x > 0])
++  as.numeric(names(sort(table(x), decreasing = TRUE))[1])
++}
++adf0 <- adf0 %>% group_by(state_name, fiscal_year) %>%
++  mutate(utilities_sua = ifelse(utilities <= 0, 0L,
++                                ifelse(utilities < mode_pos(utilities) - 200,
++                                       1L, 2L))) %>%
++  ungroup() %>% as.data.frame()
+@@ -402 +435 @@ if (requireNamespace("jsonlite", quietly = TRUE))
+-    list(built = "era-2 replication, BASELINE raw utilities: fresh mines train FY2017-18, walk FY2019, seed 117, current frame",
++    list(built = "era-2 replication, VARIANT utilities_sua: fresh mines train FY2017-18, walk FY2019, seed 117, current frame",

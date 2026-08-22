@@ -6,9 +6,24 @@
 #   3. family representation + per-state tier-1 mass (monitor)
 suppressMessages(library(dplyr))
 
-VAR_DIR  <- "methods/v250_benchmark_2024_utilrel"
-VAR_CSV  <- file.path(VAR_DIR, "v250_benchmark_2024.csv")
-BASE_CSV <- "methods/v250_benchmark_2024/v250_benchmark_2024.csv"
+# ERA=2 (env var) switches every input to the era-2 replication arms
+# (era2_design_note.md, constraint c): variant + baseline both from the
+# fresh FY2017-18 mines, slices on FY2019, and the pre-set harmed-tail
+# null bound reported beside the era-1 package-noise figure.
+ERA <- Sys.getenv("ERA", "1")
+if (ERA == "2") {
+  VAR_DIR  <- "methods/v250_benchmark_2024_utilrel/era2_variant"
+  VAR_CSV  <- file.path(VAR_DIR, "v250_benchmark_2024.csv")
+  BASE_CSV <- "methods/v250_benchmark_2024_utilrel/era2_baseline/v250_benchmark_2024.csv"
+  TEST_YR  <- "2019"
+  HARM_BOUND <- c(`0.05` = 15L, `0.1` = 12L)   # independent-sampling null, FY2019 caseloads
+} else {
+  VAR_DIR  <- "methods/v250_benchmark_2024_utilrel"
+  VAR_CSV  <- file.path(VAR_DIR, "v250_benchmark_2024.csv")
+  BASE_CSV <- "methods/v250_benchmark_2024/v250_benchmark_2024.csv"
+  TEST_YR  <- "2024"
+  HARM_BOUND <- NULL
+}
 POOL_RDS <- file.path(VAR_DIR, "cache", "bench_national_117.rds")
 HARM_THR <- -0.05
 
@@ -26,16 +41,36 @@ cat("== readout 1: variant vs baseline benchmark (paired per state) ==\n")
 pass1 <- TRUE
 for (bud in sort(unique(p$budget))) {
   s <- p %>% filter(budget == bud)
+  bound <- if (is.null(HARM_BOUND)) NA_integer_ else HARM_BOUND[[as.character(bud)]]
   for (m in c("d_prec", "d_doll")) {
     md <- median(s[[m]]); mn <- mean(s[[m]]); hurt <- sum(s[[m]] < HARM_THR)
-    ok <- md >= -0.005 && mn >= -0.01 && hurt == 0
+    # era 1 bar as pre-registered (zero harmed; recorded as mis-specified
+    # in result_2026-08-22.md); era 2 bar: harmed <= the pre-set null bound
+    ok <- md >= -0.005 && mn >= -0.01 &&
+      (if (is.na(bound)) hurt == 0 else hurt <= bound)
     pass1 <- pass1 && ok
-    cat(sprintf("  %s @ %d%%: median %+.4f | mean %+.4f | harmed %d of %d -> %s\n",
+    cat(sprintf("  %s @ %d%%: median %+.4f | mean %+.4f | harmed %d of %d%s -> %s\n",
                 m, round(100 * bud), md, mn, hurt, nrow(s),
+                ifelse(is.na(bound), "",
+                       sprintf(" (null bound %d; era-1 package noise %s)",
+                               bound, ifelse(bud < 0.075, "10", "4"))),
                 ifelse(ok, "ok", "FAIL")))
   }
 }
-cat(sprintf("readout 1 (bar: median >= -0.005, mean >= -0.01, zero harmed): %s\n\n",
+if (ERA == "2") {
+  small <- c("South Dakota", "Wyoming")      # under the 400-row / 20-error threshold
+  s47 <- p %>% filter(!state %in% small)
+  cat("  secondary (47 states, SD/WY excluded):\n")
+  for (bud in sort(unique(s47$budget))) for (m in c("d_prec", "d_doll")) {
+    s <- s47 %>% filter(budget == bud)
+    cat(sprintf("    %s @ %d%%: median %+.4f | mean %+.4f | harmed %d of %d\n",
+                m, round(100 * bud), median(s[[m]]), mean(s[[m]]),
+                sum(s[[m]] < HARM_THR), nrow(s)))
+  }
+}
+cat(sprintf("readout 1 (%s): %s\n\n",
+            ifelse(is.na(bound), "bar: median >= -0.005, mean >= -0.01, zero harmed",
+                   "bar: median >= -0.005, mean >= -0.01, harmed <= null bound"),
             ifelse(pass1, "PASS", "FAIL")))
 
 ## ---- readouts 2 + 3: per-rule on the variant national pool ------------------
@@ -50,7 +85,7 @@ cat(sprintf("  utilities_sua rules in the admitted national pool: %d of %d (%.1f
             sum(fam), nrow(pool), 100 * mean(fam)))
 
 d <- readRDS("reg_model_data.rds")
-h <- d %>% filter(as.character(fiscal_year) == "2024")
+h <- d %>% filter(as.character(fiscal_year) == TEST_YR)
 mode_pos <- function(x) {
   x <- round(x[x > 0]); as.numeric(names(sort(table(x), decreasing = TRUE))[1])
 }
@@ -63,7 +98,7 @@ hh_num <- suppressWarnings(as.numeric(as.character(h$cert_HH_size_FS_n)))
 h$hh_group <- ifelse(hh_num <= 1, "1", ifelse(hh_num <= 3, "2-3", "4+"))
 is_err <- !is.na(h$over_threshold) & h$over_threshold != 0
 
-cat("== readout 3b: per-state tier-1 mass (FY2024, positive-utilities cases) ==\n")
+cat(sprintf("== readout 3b: per-state tier-1 mass (FY%s, positive-utilities cases) ==\n", TEST_YR))
 t1 <- h %>% filter(utilities > 0) %>%
   group_by(state = as.character(state)) %>%
   summarise(tier1_share = mean(utilities_sua == 1), .groups = "drop")
@@ -71,7 +106,8 @@ cat(sprintf("  tier-1 share quartiles: %s | states with tier1 < 1%%: %d of %d\n\
             paste(round(quantile(t1$tier1_share, c(.25, .5, .75)), 3),
                   collapse = " / "),
             sum(t1$tier1_share < 0.01), nrow(t1)))
-write.csv(t1, file.path(VAR_DIR, "tier1_mass_fy2024.csv"), row.names = FALSE)
+write.csv(t1, file.path(VAR_DIR, sprintf("tier1_mass_fy%s.csv", TEST_YR)),
+          row.names = FALSE)
 
 parse_conds <- function(txt) {
   parts <- regmatches(txt, gregexpr(COND_PAT, txt, perl = TRUE))[[1]]
