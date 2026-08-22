@@ -117,6 +117,20 @@ or changes a constraint.
   FY2024 file recoded it, so rules on it read the data era. The mining
   feature is `bbce_state_i`, computed here as the state-year share of
   `cat_elig >= 1` reaching 0.5 (§39).
+- `utilities_sua` (the SUA tier) is defined ONCE, in `features.R`
+  (`add_sua_tier` / `sua_anchor` / `sua_high_band`), and written into the
+  frame by this script (promoted 2026-08-22). Changing the anchor or the
+  band there is the intended revision path (SUA-structure expert review),
+  and every change must be followed by: a frame rebuild; the
+  `frame_tier_equivalence.R` check only if the STUDY definition is meant
+  to be preserved; updating the Excel mirror in
+  `make_input_workbook.py` (`mirror_features` + the `utilities_sua`
+  formula and the FederalTables mode block) so the workbook validation
+  gate passes; and re-running the era-1 readouts before any era-2 launch,
+  since the era-1 result (methods/v250_benchmark_2024_utilrel/
+  result_2026-08-22.md) is a result for the v1 definition only. Never
+  recompute the tier downstream: the six study-local copies were removed
+  at promotion precisely so the definition cannot drift.
 - **`reg_model_data.rds` is the source of truth; the CSV export is lossy**
   (15 significant digits, does not round-trip; ruling of 2026-08-06).
   Threshold comparisons against `reg_model_data.csv` flipped rule flags on

@@ -107,15 +107,9 @@ adf0 <- reg_model_data %>% filter(fiscal_year %in% YEARS)
 # UTILITIES-SUA TIER VARIANT (2026-08-22; design + result in
 # methods/v250_benchmark_2024_utilrel/): same construction as the
 # benchmark driver, applied per state-year on the all-years slice.
-mode_pos <- function(x) {
-  x <- round(x[x > 0])
-  as.numeric(names(sort(table(x), decreasing = TRUE))[1])
-}
-adf0 <- adf0 %>% group_by(state_name, fiscal_year) %>%
-  mutate(utilities_sua = ifelse(utilities <= 0, 0L,
-                                ifelse(utilities < mode_pos(utilities) - 200,
-                                       1L, 2L))) %>%
-  ungroup() %>% as.data.frame()
+# PROMOTED 2026-08-22: utilities_sua is a frame column (features.R
+# add_sua_tier); the driver reads it rather than recomputing.
+stopifnot("utilities_sua" %in% names(adf0))
 pf  <- prep_features(adf0, VOCAB19)
 adf <- pf$data
 miss <- setdiff(VOCAB19, pf$features)

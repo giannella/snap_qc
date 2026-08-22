@@ -136,15 +136,11 @@ adf0 <- reg_model_data %>% filter(fiscal_year %in% c(TRAIN_YEARS, TEST_YEAR))
 # everywhere; utilities values are integral (round is a no-op) and no
 # cell has a tied top count, so mode_pos is deterministic here (ties
 # would break to the smallest tied value).
-mode_pos <- function(x) {
-  x <- round(x[x > 0])
-  as.numeric(names(sort(table(x), decreasing = TRUE))[1])
-}
-adf0 <- adf0 %>% group_by(state_name, fiscal_year) %>%
-  mutate(utilities_sua = ifelse(utilities <= 0, 0L,
-                                ifelse(utilities < mode_pos(utilities) - 200,
-                                       1L, 2L))) %>%
-  ungroup() %>% as.data.frame()
+# PROMOTED 2026-08-22: utilities_sua is a frame column (features.R
+# add_sua_tier). Era 2 runs on whatever definition that file carries at
+# launch (the SUA-structure review may revise it first); the driver reads
+# the column, so the definition under test is the frame's, by construction.
+stopifnot("utilities_sua" %in% names(adf0))
 pf  <- prep_features(adf0, VOCAB19)
 adf <- pf$data
 stopifnot(length(setdiff(VOCAB19, pf$features)) == 0)

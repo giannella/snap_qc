@@ -37,19 +37,11 @@ FEATURES <- c(
   "utilities_sua"
 )
 
-mode_pos <- function(x) {
-  x <- round(x[x > 0])
-  if (!length(x)) return(NA_real_)
-  as.numeric(names(sort(table(x), decreasing = TRUE))[1])
-}
+# utilities_sua is a frame column since the 2026-08-22 promotion
+# (features.R add_sua_tier); the cross-check reads it like any feature
 d <- readRDS("reg_model_data.rds") %>%
-  # SUA tier, per state-year (the variant mine's construction, 2026-08-22)
-  group_by(state_name, fiscal_year) %>%
-  mutate(utilities_sua = ifelse(utilities <= 0, 0L,
-                                ifelse(utilities < mode_pos(utilities) - 200,
-                                       1L, 2L))) %>%
-  ungroup() %>%
   filter(as.character(state) == STATE, as.character(fiscal_year) %in% YEARS)
+stopifnot("utilities_sua" %in% names(d))
 pf <- prep_features(d, FEATURES)
 w  <- pf$data
 for (v in setdiff(intersect(FEATURES, names(w)), pf$features))

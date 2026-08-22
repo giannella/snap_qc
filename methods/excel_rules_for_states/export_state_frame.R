@@ -72,21 +72,11 @@ cat(sprintf("reading %s ...\n", RDS))
 d <- readRDS(RDS)
 cat(sprintf("frame: %d rows\n", nrow(d)))
 
-# SUA tier (vocabulary variant, 2026-08-22; methods/v250_benchmark_2024_utilrel/
-# design_note.md): computed per state-year exactly as the variant mine
-# computes it, so the workbook's demo sits on the mined scale. Harmless
-# when a delivery list does not use it (prep_features keeps the column;
-# the workbook only emits features its rules reference).
-mode_pos <- function(x) {
-  x <- round(x[x > 0])
-  if (!length(x)) return(NA_real_)
-  as.numeric(names(sort(table(x), decreasing = TRUE))[1])
-}
-d <- d %>% group_by(state_name, fiscal_year) %>%
-  mutate(utilities_sua = ifelse(utilities <= 0, 0L,
-                                ifelse(utilities < mode_pos(utilities) - 200,
-                                       1L, 2L))) %>%
-  ungroup()
+# utilities_sua (the SUA tier) is a frame column since the 2026-08-22
+# promotion: features.R add_sua_tier() is the single definition and the
+# munging script writes it into reg_model_data.rds. Nothing is recomputed
+# here; a frame predating the promotion fails loudly.
+stopifnot("utilities_sua" %in% names(d))
 
 states_present <- unique(as.character(d$state))
 if (!STATE %in% states_present)

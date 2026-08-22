@@ -91,6 +91,7 @@ shelter_expenses           # sourced from: rawrent + utilities                  
 
 ```text
 utilities                  # sourced from: rawutil                                    # Per FNS: UTIL = Utility amount
+utilities_sua              # features.R add_sua_tier(): 0 = no utility amount; 1 = positive below (state-year anchor - 200); 2 = at/above that (HIGH-SUA cluster). Anchor = mode of positive rawutil per state-year (sua_anchor(): whole dollars, ties to the smallest). v1 2026-08-22; mined in place of `utilities` in the SUA-tier vocabulary (methods/v250_benchmark_2024_utilrel/)
 ```
 
 ### `married`

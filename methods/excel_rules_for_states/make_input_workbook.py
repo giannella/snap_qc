@@ -1125,8 +1125,12 @@ def mirror_features(raw, ftabs):
         'unc_rawben_rel_max': benunc / benmax,
         'utilities': g('UTILITY_COSTS'),
     }
-    # SUA tier mirror: mode of positive rounded utilities within fiscal year
-    # (smallest tied value, matching the build frame's mode_pos)
+    # SUA tier mirror of the EXCEL formula (mode of positive rounded
+    # utilities within fiscal year, smallest tied value, $200 band). The
+    # validation gate compares this against the frame's canonical
+    # utilities_sua column (features.R add_sua_tier, promoted 2026-08-22),
+    # so a drift between the workbook formula and the canonical definition
+    # fails the build. Keep this in step with features.R.
     util = g('UTILITY_COSTS')
     tier = np.zeros(len(util), dtype=int)
     for y in np.unique(fy):

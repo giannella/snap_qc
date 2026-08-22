@@ -85,15 +85,10 @@ cat(sprintf("  utilities_sua rules in the admitted national pool: %d of %d (%.1f
             sum(fam), nrow(pool), 100 * mean(fam)))
 
 d <- readRDS("reg_model_data.rds")
-h <- d %>% filter(as.character(fiscal_year) == TEST_YR)
-mode_pos <- function(x) {
-  x <- round(x[x > 0]); as.numeric(names(sort(table(x), decreasing = TRUE))[1])
-}
-h <- h %>% group_by(state_name) %>%
-  mutate(utilities_sua = ifelse(utilities <= 0, 0L,
-                                ifelse(utilities < mode_pos(utilities) - 200,
-                                       1L, 2L))) %>%
-  ungroup() %>% as.data.frame()
+# utilities_sua is a frame column since the 2026-08-22 promotion
+# (features.R add_sua_tier); the test-year slice carries it already
+stopifnot("utilities_sua" %in% names(d))
+h <- d %>% filter(as.character(fiscal_year) == TEST_YR) %>% as.data.frame()
 hh_num <- suppressWarnings(as.numeric(as.character(h$cert_HH_size_FS_n)))
 h$hh_group <- ifelse(hh_num <= 1, "1", ifelse(hh_num <= 3, "2-3", "4+"))
 is_err <- !is.na(h$over_threshold) & h$over_threshold != 0
