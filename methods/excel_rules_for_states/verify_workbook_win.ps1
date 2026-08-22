@@ -27,14 +27,31 @@ try {
     $xl.CalculateFullRebuild()
     while ($xl.CalculationState -ne 0) { Start-Sleep -Milliseconds 200 }  # 0 = xlDone
 
+    # A probe may carry an expectation: "Sheet!Cell=value". The live value
+    # must equal it (numeric compare when both parse as numbers). This is the
+    # guard for SILENT formula collapse (2026-08-22: an in-row array formula
+    # evaluated to a clean 0 on every row, the error scan passed, and only
+    # the union count revealed it); the expectation is the plain build's
+    # static figure, which the R cross-check independently verifies.
     foreach ($p in $Probes) {
-        $i = $p.LastIndexOf('!')
-        $sheet = $p.Substring(0, $i); $cell = $p.Substring($i + 1)
+        $expect = $null
+        $spec = $p
+        $eq = $p.LastIndexOf('=')
+        if ($eq -gt $p.LastIndexOf('!')) { $expect = $p.Substring($eq + 1); $spec = $p.Substring(0, $eq) }
+        $i = $spec.LastIndexOf('!')
+        $sheet = $spec.Substring(0, $i); $cell = $spec.Substring($i + 1)
         try {
             $v = $wb.Worksheets.Item($sheet).Range($cell).Text
-            "probe  {0,-28} = {1}" -f $p, $v
+            if ($null -ne $expect) {
+                $vn = 0.0; $en = 0.0
+                $ok = if ([double]::TryParse($v, [ref]$vn) -and [double]::TryParse($expect, [ref]$en)) { [math]::Abs($vn - $en) -lt 1e-6 } else { $v -eq $expect }
+                if ($ok) { "probe  {0,-28} = {1}  (== expected)" -f $spec, $v }
+                else { "PROBE MISMATCH  $spec = $v  (expected $expect)"; $failed = $true }
+            } else {
+                "probe  {0,-28} = {1}" -f $spec, $v
+            }
         } catch {
-            "PROBE FAILED  $p : $($_.Exception.Message)"
+            "PROBE FAILED  $spec : $($_.Exception.Message)"
             $failed = $true
         }
     }

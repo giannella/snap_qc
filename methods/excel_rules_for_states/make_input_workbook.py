@@ -49,6 +49,7 @@ from openpyxl.comments import Comment
 from openpyxl.styles import Alignment, PatternFill, Font
 from openpyxl.utils import get_column_letter as CL
 from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.worksheet.formula import ArrayFormula
 
 import states as STATE_REGISTRY
 from workbook_layout import (DATA_SHEET, BLENDED_SHEET, DICT_SHEET,
@@ -243,8 +244,29 @@ def federal_tables(wb, state_name=None):
                 elif hasattr(v, 'item'):        # numpy scalar -> python scalar
                     v = v.item()
                 ws.cell(row=opt0 + 2 + ri, column=ci, value=v).font = Font(size=9)
+    # hidden per-year SUA-mode block (2026-08-22): one ARRAY-entered
+    # MODE.SNGL per fiscal year over the CaseData columns, so the mode is
+    # evaluated as an array exactly once per year and each Data row reads
+    # it with a plain INDEX/MATCH (see feature_formulas: an in-row array
+    # silently collapses). Years span the FederalTables year list so any
+    # pasted year resolves; a year with no positive utilities reads 0.
+    # Written AFTER the CaseData table exists (main() calls
+    # write_sua_mode_block once the table is rebound), since the array
+    # formulas reference the table's columns.
+    sua0 = opt0 + (len(rows) + 3 if rows is not None and len(rows) else 0) + 2
+    ws.cell(row=sua0, column=12, value='SUA mode by fiscal year (hidden helper; '
+            'array formulas over the pasted data)').font = Font(bold=True, size=9)
+    ws.cell(row=sua0 + 1, column=12, value='year').fill = gray
+    ws.cell(row=sua0 + 1, column=13, value='mode of positive UTILITY_COSTS').fill = gray
+    for i, y in enumerate(years):
+        ws.cell(row=sua0 + 2 + i, column=12, value=int(y))
+    ws.column_dimensions['L'].width = 8
+    ws.column_dimensions['M'].width = 30
     ws.freeze_panes = 'A3'
     return {
+        'SUAYRS':  f'FederalTables!$L${sua0 + 2}:$L${sua0 + 1 + ny}',
+        'SUAMODE': f'FederalTables!$M${sua0 + 2}:$M${sua0 + 1 + ny}',
+        'SUAROW0': sua0 + 2,
         'YEARS':  f'FederalTables!$A$6:$A${5 + ny}',
         'MAXSH':  f'FederalTables!$B$6:$B${5 + ny}',
         'MINAL':  f'FederalTables!$C$6:$C${5 + ny}',
@@ -255,6 +277,37 @@ def federal_tables(wb, state_name=None):
         'MABLK':  f'FederalTables!$F${ma0}:$Y${ma0 + n_ma - 1}',
         'HOLDOUT': 'FederalTables!$B$3',
     }
+
+
+def write_sua_mode_block(wb, R, nrow):
+    """The per-year SUA-mode cells on FederalTables, ARRAY-entered so the
+    IF(...) inside MODE.SNGL evaluates as an array (a plain table cell would
+    collapse it). References are absolute Data-sheet column ranges rather
+    than structured refs: Excel is free to rewrite structured refs inside an
+    array formula, and a fixed generous range (rows 2..MAXR) covers pasted
+    rows; blanks contribute neither to the year test nor the positive test.
+    MAXR is sized to the 250k-row design ceiling."""
+    from openpyxl.utils import get_column_letter
+    ws = wb['FederalTables']
+    dat = wb[DATA_SHEET]
+    hdr = [c.value for c in next(dat.iter_rows(min_row=1, max_row=1))]
+    cy = get_column_letter(hdr.index('REVIEW_FISCAL_YEAR') + 1)
+    cu = get_column_letter(hdr.index('UTILITY_COSTS') + 1)
+    dq = qref(DATA_SHEET)
+    MAXR = 250000
+    yrs = f'{dq}!${cy}$2:${cy}${MAXR}'
+    uts = f'{dq}!${cu}$2:${cu}${MAXR}'
+    r0 = R['SUAROW0']
+    n = 0
+    r = r0
+    while ws.cell(row=r, column=12).value is not None:
+        ref = f'M{r}'
+        ws[ref] = ArrayFormula(
+            ref,
+            f'=IFERROR(_xlfn.MODE.SNGL(IF(({yrs}=$L{r})*({uts}>0),ROUND({uts},0))),0)')
+        n += 1
+        r += 1
+    return n
 
 
 # ── Start Here: KPIs, how-to, and background ─────────────────────────────────
@@ -975,18 +1028,22 @@ def feature_formulas(R, table=TABLE):
         # 1 = positive below (state-year mode - 200), 2 = at/above that
         # (the HIGH-SUA cluster). The anchor is the MODE of positive
         # UTILITY_COSTS within the row's fiscal year, computed from the
-        # pasted data itself (per state-year semantics: the workbook holds
-        # one state, so the year is the grouping). _xlfn. prefix: MODE.SNGL
-        # is post-2007. The IF(...,n,"") array inside MODE.SNGL restricts
-        # the mode to positive values of the same year; MODE.SNGL errors on
-        # an empty set, which IFERROR maps to tier 0 for every row of that
-        # year. Tie rule: MODE.SNGL returns the first-occurring tied value
-        # (the build frame's mode_pos returns the smallest); the frame has
-        # no tied state-year cells, so the demo matches exactly.
+        # pasted data itself. The mode is NOT computed inside this row
+        # formula: an IF(...) array inside MODE.SNGL in a non-array table
+        # cell collapses to a single cell under implicit intersection and
+        # IFERROR hides the failure (every row read tier 0 in the first
+        # build, 2026-08-22, while the pandas mirror passed). It lives in
+        # the hidden per-year mode block on FederalTables (R["SUAMODE"] /
+        # R["SUAYRS"], array-entered there), and each row does a plain
+        # INDEX/MATCH; a year absent from the block yields mode 0 -> tier 2
+        # for every positive row, handled by the IFERROR->0 below only for
+        # real lookup errors. Tie rule: MODE.SNGL returns the first-
+        # occurring tied value (the build frame's mode_pos the smallest);
+        # the frame has no tied state-year cells, so the demo matches.
         'utilities_sua':
             f'=IF({T("UTILITY_COSTS")}<=0,0,IFERROR(IF({T("UTILITY_COSTS")}'
-            f'<_xlfn.MODE.SNGL(IF(({TABLE}[REVIEW_FISCAL_YEAR]={T("REVIEW_FISCAL_YEAR")})'
-            f'*({TABLE}[UTILITY_COSTS]>0),ROUND({TABLE}[UTILITY_COSTS],0)))-200,1,2),0))',
+            f'<INDEX({R["SUAMODE"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["SUAYRS"]},0))'
+            f'-200,1,2),0))',
         # the QC outcome, recomputed from the benefit pair exactly as the
         # munging script defines it: error amount = |RAWBEN - FSBEN| rounded,
         # error flag = amount STRICTLY OVER the year's federal QC tolerance
@@ -1219,6 +1276,8 @@ def main():
     for t in list(dat.tables):
         del dat.tables[t]
     make_table(dat, TABLE, f'A1:{LAST}{NROW}')
+    n_modes = write_sua_mode_block(wb, R, NROW)
+    print(f'SUA mode block: {n_modes} array-entered per-year cells on FederalTables')
 
     # 4. presentation: inputs (left block) light yellow — the workbook-wide
     #    "yellow means interactive" convention (revision 2026-08-18); computed

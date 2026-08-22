@@ -186,6 +186,21 @@ frame lost 2.4%.
 
 ## Gotchas worth knowing
 
+- **Never put an array-evaluated expression inside a per-row table
+  formula.** `MODE.SNGL(IF(CaseData[year]=..., ...))` in a calculated
+  column collapses under implicit intersection to a single cell, and an
+  enclosing `IFERROR` turns the failure into a clean 0 on every row: the
+  error scan passes, the pandas validation gate passes (it mirrors the
+  intended formula, not Excel's evaluation), and only the union count
+  reveals it (2026-08-22, the SUA-tier feature: 413 flagged in the
+  delivered file vs 193 in the plain build). Per-year aggregates live in
+  an array-entered block on FederalTables (`write_sua_mode_block`, written
+  after the table is rebound) and each row does a plain `INDEX/MATCH`.
+  The permanent guard: `make_state.py` recomputes the all-rules union
+  from the plain build's static RuleFlags matrix and passes it to the
+  verifier as `Sheet!Cell=expected` probes on the delivered file; a live
+  union that drifts from the static one fails the build.
+
 - **Close the workbook in Excel before rebuilding.** Writing underneath an
   open session causes OneDrive conflict copies, and Excel's autosave can
   overwrite the new file. `make_state.py` checks and refuses.

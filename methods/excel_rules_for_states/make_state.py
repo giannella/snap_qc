@@ -131,8 +131,44 @@ def build_one(state, refresh, want_verify):
     if want_verify:
         for wbk in (out, live):
             verify(wbk)
-        verify(deliver, PROBES_FINAL)
+        # the delivered file's LIVE union figures must equal the plain
+        # build's STATIC ones: a formula that silently collapses
+        # (2026-08-22: an in-row array evaluated to 0 everywhere, with no
+        # error cell) shows up here as a union count that drifts. The static
+        # union is recomputed from the plain build's RuleFlags 0/1 hit
+        # matrix (every rule selected) and the Data tab's static
+        # over_threshold column, the same quantities crosscheck_rules.py
+        # verifies against R, so no Excel evaluation is involved.
+        g6, h6 = static_union(out)
+        expect = [f"{BLENDED_SHEET}!G6={g6}", f"{BLENDED_SHEET}!H6={h6}"]
+        probes = [p for p in PROBES_FINAL
+                  if p not in (f"{BLENDED_SHEET}!G6", f"{BLENDED_SHEET}!H6")] + expect
+        verify(deliver, probes)
     print(f'\nDone: {deliver}')
+
+
+def static_union(plain_xlsx):
+    """(cases flagged, errors caught) by the union of ALL rules, from the
+    plain build's static RuleFlags hit matrix (rows FLAG0.., one 0/1 column
+    per rule starting at column B) and the Data tab's over_threshold."""
+    import openpyxl
+    wb = openpyxl.load_workbook(plain_xlsx, read_only=True)
+    rf = wb['RuleFlags']
+    nr = sum(1 for c in next(rf.iter_rows(min_row=1, max_row=1))[1:]
+             if isinstance(c.value, int))
+    dat = wb[DATA_SHEET]
+    hdr = [c.value for c in next(dat.iter_rows(min_row=1, max_row=1))]
+    ov = hdr.index('over_threshold')
+    err = [row[ov] for row in dat.iter_rows(min_row=2, values_only=True)]
+    flagged = errors = 0
+    for i, row in enumerate(rf.iter_rows(min_row=5, max_col=1 + nr, values_only=True)):
+        if i >= len(err):
+            break
+        if any(v == 1 for v in row[1:]):
+            flagged += 1
+            if err[i] == 1:
+                errors += 1
+    return flagged, errors
 
 
 def main():
