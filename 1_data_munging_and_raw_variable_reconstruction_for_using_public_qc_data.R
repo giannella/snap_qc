@@ -88,6 +88,11 @@ mydata <- mydata %>%
     by = c("NATURE1" = "code")
   )
 
+# Add in external data including
+# - Maximum SUA amounts
+source("features.R")
+mydata <- add_external_data(mydata)
+
 # Add standard medical deduction amounts by year
 smd_by_year <- read.csv(paste0(folder, "additional_data/standard_medical_deductions.csv"))
 smd_long <- smd_by_year %>%
@@ -114,6 +119,10 @@ mean(abs(mydata$FSERNDED - mydata$RAWERND) <= 1, na.rm = TRUE) * 100 # 99.62%
 mean(abs(mydata$FSMEDDED - mydata$FSMEDEXP) <= 1, na.rm = TRUE) * 100 # 99.96%
 mean(abs(mydata$FSCSDED - mydata$FSCSEXP) <= 1, na.rm = TRUE) * 100 # 99.94%
 mean(abs(mydata$FSSLTDED - mydata$SHELDED) <= 1, na.rm = TRUE) * 100 # 92.36%
+
+# Save data as a checkpoint
+saveRDS(mydata, paste0(folder, "all_years.rds"))
+mydata <- readRDS(paste0(folder, "all_years.rds"))
 
 # 2. Filter dataset 
 
@@ -818,17 +827,12 @@ if (apply_correction_smoothing) {
 mydata <- mydata %>% mutate(raw_total_deductions = rawdepded + rawcsded +
                               rawsltded + rawmedded + rawernded)
 
-#### Add additional features from features.R
-source("features.R")
-mydata <- add_features(mydata)
-
 # Save data
-#write_sav(mydata, paste0(folder, "final.sav"))
 saveRDS(mydata, paste0(folder, "final.rds"))
+mydata <- readRDS(paste0(folder, "final.rds"))
 
-#df <- mydata
-#rm(mydata)
-df <- readRDS(paste0(folder, "final.rds"))
+#### Add additional features from features.R
+mydata <- add_features(mydata)
 
 #### variable cleaning / recoding ###
 names(df) <- tolower(names(df))

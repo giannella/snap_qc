@@ -29,6 +29,27 @@ rename_cols <- function(data, map = state_col_map, qc = using_qc_data) {
 # Additional data
 folder <- paste0(here(), "/")
 year_data <- read.csv(paste0(folder, "additional_data/year_data.csv"))
+state_sua <- read.csv(paste0(folder, "additional_data/state_sua.csv"))
+
+#' Join a wide state x year lookup (state_name + X2017...X2026) onto a frame.
+add_state_year_col <- function(data, lookup, value_col,
+                               key = "state_name", year_col = "fiscal_year") {
+  
+  long <- lookup |>
+    tidyr::pivot_longer(
+      cols         = -dplyr::all_of(key),
+      names_to     = year_col,
+      names_prefix = "X",
+      values_to    = value_col
+    ) |>
+    dplyr::mutate(dplyr::across(dplyr::all_of(year_col), as.integer))
+  
+  long <- dplyr::mutate(long,
+                        dplyr::across(dplyr::all_of(value_col), \(x) dplyr::na_if(x, 0)))
+  
+  dplyr::left_join(data, long, by = c(key, year_col))
+}
+
 
 #' Add a within-cell percentile column. For `col`, adds 
 #' `<col>_p`: the proportion of non-missing observations in the
@@ -50,57 +71,33 @@ add_percentile <- function(data, col,
     dplyr::ungroup()
 }
 
-#' Standard utility allowance (SUA) anchor for a state-year: the MODE of the
-#' positive utility amounts, i.e. the dominant standard allowance in that
-#' state-year. v1 (2026-08-22): self-computed from the data, no external
-#' SUA table. Semantics, pinned: positive values only, rounded to whole
-#' dollars, ties broken to the SMALLEST tied value; NA when a cell has no
-#' positive amounts. The published FNS SUA tables are the intended
-#' refinement path for an externally anchored version.
-sua_anchor <- function(util) {
-  x <- round(util[!is.na(util) & util > 0])
-  if (!length(x)) return(NA_real_)
-  tb <- table(x)
-  as.numeric(names(tb)[which(tb == max(tb))[1]])
+#' SUA tier, 3 levels, per state-year
+#'   0 = no utility amount
+#'   1 = below the heating/cooling standard
+#'   2 = at or above the heating/cooling standard
+add_sua_tier <- function(data, util_col = "rawutil", anchor_col = "max_sua") {
+  data |>
+    dplyr::mutate(utilities_sua = dplyr::case_when(
+      is.na(.data[[util_col]])   | .data[[util_col]]   <= 0 ~ 0L,
+      is.na(.data[[anchor_col]]) | .data[[anchor_col]] <= 0 ~ NA_integer_,
+      .data[[util_col]] < .data[[anchor_col]]               ~ 1L,
+      TRUE                                                  ~ 2L
+    ))
 }
 
-#' SUA tier, 3 levels, per state-year (v1, 2026-08-22; design + one-year-
-#' ahead result in methods/v250_benchmark_2024_utilrel/):
-#'   0 = no utility amount
-#'   1 = positive but below (anchor - band)
-#'   2 = at or above (anchor - band): the HIGH-SUA cluster
-#' The $200 band (`sua_high_band`) pulls within-state HIGH-SUA variants
-#' into tier 2: household-size schedules (e.g. Virginia 375 / 476) and
-#' regional schedules (e.g. New York 877 / 988 / 1,062), which sit close
-#' to each other relative to the lower allowances. The band census
-#' (methods/vocab_hygiene_census/utilities_high_band_census.csv) shows it
-#' is empty in most state-years and captures the variants where they
-#' exist. A fixed dollar band is proportionally looser where the anchor
-#' is low; that is a known v1 property, left for the SUA-structure review.
-#' Rules mined on this tier keep meaning the same thing when SUA levels
-#' reset each October, which dollar thresholds on utilities do not.
-sua_high_band <- 200
-
-add_sua_tier <- function(data, util_col = "rawutil",
-                         group_vars = c("state_name", "fiscal_year")) {
+#' Add all external data needed for calculations
+add_external_data <- function(data) {
   data |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) |>
-    dplyr::mutate(utilities_sua = {
-      u <- .data[[util_col]]
-      a <- sua_anchor(u)
-      dplyr::case_when(
-        is.na(u) | u <= 0 ~ 0L,
-        is.na(a)          ~ 2L,   # positive amounts with no anchor: never occurs on the frame
-        u < a - sua_high_band ~ 1L,
-        TRUE              ~ 2L)
-    }) |>
-    dplyr::ungroup()
+    rename_cols() |>
+    add_state_year_col(state_sua, "max_sua") |>
+    dplyr::left_join(dplyr::select(year_data, year, cpi),       
+                     by = c("fiscal_year" = "year")) |>
+    dplyr::select(-cpi)                                    
 }
 
 #' Add all engineered features
 add_features <- function(data) {
   data |>
-    rename_cols() |>
     dplyr::mutate(at_max_ben = rawben_uncapped >= rawbenmax) |>
     add_sua_tier() |>
     dplyr::left_join(dplyr::select(year_data, year, cpi),       
