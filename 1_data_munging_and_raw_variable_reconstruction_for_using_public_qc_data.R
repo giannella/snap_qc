@@ -68,7 +68,6 @@ mydata$state_name <- fips_to_state[as.character(mydata$STATE)]
 mydata$year <- as.integer(substr(mydata$YRMONTH, 1, 4))
 mydata$month <- as.integer(substr(mydata$YRMONTH, 5, 6))
 mydata$fiscal_year <- ifelse(mydata$month >= 10, mydata$year + 1, mydata$year)
-nrow(mydata) # 272416
 
 # Add element and nature labels
 qc_elements <- read.csv(paste0(folder, "additional_data/qc_elements.csv"))
@@ -90,18 +89,9 @@ mydata <- mydata %>%
 
 # Add in external data including
 # - Maximum SUA amounts
+# - Standard Medical Deduction amounts
 source("features.R")
 mydata <- add_external_data(mydata)
-
-# Correlations between variables
-mean(abs(mydata$FSBEN - mydata$RAWBEN) <= 1, na.rm = TRUE) * 100 # 61.93%
-mean(abs(mydata$FSNETINC - mydata$RAWNET) <= 1, na.rm = TRUE) * 100 # 93.52%
-mean(abs(mydata$FSUSIZE - mydata$RAWHSIZE) <= 1, na.rm = TRUE) * 100 # 95.71%
-mean(abs(mydata$FSGRINC - mydata$RAWGROSS) <= 1, na.rm = TRUE) * 100 # 99.40%
-mean(abs(mydata$FSERNDED - mydata$RAWERND) <= 1, na.rm = TRUE) * 100 # 99.62%
-mean(abs(mydata$FSMEDDED - mydata$FSMEDEXP) <= 1, na.rm = TRUE) * 100 # 99.96%
-mean(abs(mydata$FSCSDED - mydata$FSCSEXP) <= 1, na.rm = TRUE) * 100 # 99.94%
-mean(abs(mydata$FSSLTDED - mydata$SHELDED) <= 1, na.rm = TRUE) * 100 # 92.36%
 
 # Save data as a checkpoint
 saveRDS(mydata, paste0(folder, "all_years.rds"))
@@ -134,29 +124,24 @@ mydata <- mydata %>%
 
 # Drop all states with below 30% - optional
 # mydata <- mydata[mydata$pct_element2 >= 0.30, ]
-# nrow(mydata)
 
 # Keep 48 states and DC only (related to max allotment)
 mydata <- mydata[!mydata$state_name %in% c("Alaska", "Hawaii", "Guam", "Virgin Islands"), ]
-nrow(mydata) # 135980
 
 # Exclude MFIP and SSI_CAP cases
 # Due to non-standard benefits calculations
 if (exclude_MFIP)    mydata <- mydata[mydata$MN_FIP  %in% 0, ]
 if (exclude_SSI_CAP) mydata <- mydata[mydata$SSI_CAP %in% 0, ]
-nrow(mydata)
 
 # If you wanted to be very careful, you could drop all observations with second error elements 
 ## we lose even more signal from errors for most purposes so commenting out by default
 # (to focus on single error rows)
 #mydata <- mydata[is.na(mydata$ELEMENT2), ]
-#nrow(mydata) # 125307
 
 # Drop all rows if we can't get the amterr to be close 
 # to the difference between fsben and rawben
 mydata$absbendiff <- abs(mydata$RAWBEN - mydata$FSBEN)
 mydata <- mydata[abs(mydata$absbendiff - mydata$AMTERR) <= 5, ]
-nrow(mydata) # 117000
 
 # Deduction-field NAs come in state-level blocks (e.g., WA, MS, MN leave the
 # optional deduction fields unrecorded for a subset of cases) and almost
@@ -171,7 +156,6 @@ cat("rows with zero-filled deduction fields:", sum(mydata$ded_fields_imputed), "
 # Drop only rows where core shelter fields are NA (rarely triggers)
 mydata <- mydata %>%
   filter(!is.na(RENT), !is.na(UTIL))
-nrow(mydata) # was 113754 when the deduction fields were dropped instead
 
 # Track whether a second error element was reported. Multi-element cases are
 # KEPT (they are ~30% of error cases); the indicator is for QA/reporting, not
