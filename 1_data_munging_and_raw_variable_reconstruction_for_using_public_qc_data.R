@@ -140,7 +140,6 @@ if (exclude_SSI_CAP) mydata <- mydata[mydata$SSI_CAP %in% 0, ]
 
 # Drop all rows if we can't get the amterr to be close 
 # to the difference between fsben and rawben
-mydata$absbendiff <- abs(mydata$RAWBEN - mydata$FSBEN)
 mydata <- mydata[abs(mydata$absbendiff - mydata$AMTERR) <= 5, ]
 
 # Deduction-field NAs come in state-level blocks (e.g., WA, MS, MN leave the
@@ -162,18 +161,6 @@ mydata <- mydata %>%
 # recommended as a mining feature — states report second elements very
 # inconsistently, so it would encode reporting practice, not error risk.
 mydata$second_element_i <- !is.na(mydata$ELEMENT2)
-
-# 3. Create error threshold by year
-year_data <- read.csv(paste0(folder, "additional_data/year_data.csv"))
-threshold_by_year <- setNames(year_data$error_threshold, as.character(year_data$year))
-
-# Create over_threshold using the correct threshold for each row's year
-# Make sure to use fiscal year created earlier.
-mydata$threshold <- threshold_by_year[as.character(mydata$fiscal_year)]
-mydata$over_threshold <- as.factor(ifelse(
-  abs(mydata$absbendiff) > threshold_by_year[as.character(mydata$fiscal_year)],
-  1, 0
-))
 
 # Max shelter deduction by year
 max_shelter_by_year <- setNames(year_data$max_shelter_deduction, as.character(year_data$year))

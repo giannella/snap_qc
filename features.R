@@ -18,7 +18,9 @@ state_col_map <- c(
   rawdepded   = "DEPENDENT_CARE_DEDUCTION",
   rawcsded    = "CHILD_SUPPORT_DEDUCTION",
   rawrent     = "RENT",
-  rawutil     = "UTILITY_COSTS"
+  rawutil     = "UTILITY_COSTS",
+  RAWBEN      = "ORIGINAL_BENEFIT_AMOUNT",
+  FSBEN       = "CORRECTED_BENEFIT_AMOUNT"
 )
 
 rename_cols <- function(data, map = state_col_map, qc = using_qc_data) {
@@ -51,6 +53,12 @@ add_state_year_col <- function(data, lookup, value_col,
   dplyr::left_join(data, long, by = c(key, year_col))
 }
 
+#' Join a variable by year column onto a frame.
+add_year_col <- function(data, value_col, new_col = value_col) {
+  map <- setNames(year_data[[value_col]], as.character(year_data$year))
+  data[[new_col]] <- unname(map[as.character(data$fiscal_year)])
+  data
+}
 
 #' Add a within-cell percentile column. For `col`, adds 
 #' `<col>_p`: the proportion of non-missing observations in the
@@ -90,6 +98,12 @@ add_sua_tier <- function(data, util_col = "rawutil", anchor_col = "max_sua") {
 add_external_data <- function(data) {
   data |>
     rename_cols() |>
+    add_year_col("error_threshold", new_col = "threshold") |>
+    dplyr::mutate(
+      absbendiff     = abs(RAWBEN - FSBEN),
+      over_threshold = factor(as.integer(absbendiff > threshold),
+                              levels = c(0, 1))
+    ) |>
     add_state_year_col(state_sua, "max_sua") |>
     add_state_year_col(smd_by_year, "smd_amt") |>
     dplyr::left_join(dplyr::select(year_data, year, cpi),       
