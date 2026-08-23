@@ -52,7 +52,7 @@ import pandas as pd
 import states as STATE_REGISTRY
 import tuning
 import rule_selection
-from workbook_layout import (DATA_SHEET, BLENDED_SHEET, EXPORT_SHEET,
+from workbook_layout import (DATA_SHEET, BLENDED_SHEET, DICT_SHEET, EXPORT_SHEET,
                              VIEWER_SHEET, RAW_COLS, RAW_OFF, qref)
 
 DQ = qref(DATA_SHEET)                # the Data sheet as written in formulas
@@ -236,7 +236,7 @@ PLAIN_VARS = {
     'medical_deductions':         ('medical deduction', '$'),
     'shelter_expenses_by_hh_size': ('shelter costs per person', '$'),
     'utilities':                  ('utility costs', '$'),
-    'utilities_sua':              ('SUA tier (0 none / 1 low / 2 high)', 'n'),
+    'utilities_sua':              ('SUA tier', 't'),
     'married':                    ('spouse present', 'i'),
     'homeless':                   ('homeless', 'i'),
     'earned_by_hh_size':          ('earned income per person', '$'),
@@ -249,13 +249,43 @@ PLAIN_VARS = {
 }
 
 
-# negation phrasings that read better than 'not <phrase>'
-PLAIN_NEG = {'bbce_state_i': 'rule applies to non-BBCE states'}
+# negation phrasings that read better than 'not <phrase>' (feedback
+# 2026-08-22: "no children present", not "not children present")
+PLAIN_NEG = {'bbce_state_i': 'rule applies to non-BBCE states',
+             'children_i': 'no children present',
+             'elderly_disabled_i': 'no elderly or disabled member',
+             'married': 'no spouse present',
+             'homeless': 'not homeless',
+             'expedited_i': 'no expedited service'}
+
+# the SUA tier's levels, for rendering a tier cut as the set of levels it
+# admits ("SUA tier 0 or 1") rather than the miner's midpoint threshold
+# ("at most 1.5"): the mined cuts sit between integer levels
+TIER_LEVELS = {'utilities_sua': {0: 'none', 1: 'low', 2: 'high'}}
 
 
 def _plain_val(v, kind):
     s = f'{v:g}'
     return f'${s}' if kind == '$' else s
+
+
+def _tier_phrase(phrase, var, cs):
+    """'SUA tier 0 or 1 (none/low)' for the levels the conditions admit."""
+    levels = sorted(TIER_LEVELS[var])
+    keep = []
+    for lv in levels:
+        ok = True
+        for c in cs:
+            ok &= {'>=': lv >= c['thr'], '>': lv > c['thr'],
+                   '<=': lv <= c['thr'], '<': lv < c['thr']}[c['op']]
+        if ok:
+            keep.append(lv)
+    if not keep or len(keep) == len(levels):
+        return f'{phrase} any'
+    names = TIER_LEVELS[var]
+    nums = ' or '.join(str(k) for k in keep)
+    labels = '/'.join(names[k] for k in keep)
+    return f'{phrase} {nums} ({labels})'
 
 
 def render_plain(conds):
@@ -271,6 +301,9 @@ def render_plain(conds):
     for v in order:
         phrase, kind = PLAIN_VARS.get(v, (v, 'n'))
         cs = by_var[v]
+        if kind == 't':
+            parts.append(_tier_phrase(phrase, v, cs))
+            continue
         if kind == 'i' and len(cs) == 1:
             up = cs[0]['op'] in ('>=', '>')
             thr = cs[0]['thr']
@@ -1000,16 +1033,16 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     merge(ws,2,1,2,11, value=intro,
           fill=GRAY, font=Font(name=FONT,size=12,color='000000'), align=wrapped)
     ws.row_dimensions[2].height = 66
+    # the per-column definitions moved to the Step 1 dictionary (feedback
+    # 2026-08-22); the headers below hyperlink to their rows there, and this
+    # row keeps only the two facts a reader needs before reading any column
     merge(ws,3,1,3,11,
           value=f'Rules are sorted by total error dollars caught on the data in the "{DATA_SHEET}" '
-                'tab. For individual rules, Recall and $ Recall are that rule ALONE as a share of '
-                'ALL errors / error dollars in the pasted data; rules overlap, so these columns do '
-                'not sum to the combined rows above. (In the orange rows, Recall and $ Recall are '
-                'within that row\'s household-size scope.) A rule\'s Workload % is the share of its '
-                'own household-size stratum; in the orange summary rows it is the share of ALL '
-                'cases. The exact machine expression of every rule is in the last column.',
+                'tab. Per-rule figures are for that rule ALONE (rules overlap, so they do not add '
+                'up to the orange combined rows). Every column header below is a link to its '
+                f'definition on the "{DICT_SHEET}" tab.',
           fill=GRAY, font=Font(name=FONT,size=12,color='000000'), align=wrapped)
-    ws.row_dimensions[3].height = 66
+    ws.row_dimensions[3].height = 40
     for col, txt in enumerate(['Rule','HH size','What the rule says','Precision','Recall',
                                '$ Recall','Flagged','Errors','Error $ caught','Workload %',
                                'Expected error $ by case','Include?'] +
@@ -1336,7 +1369,9 @@ ws_x.row_dimensions[2].height = 50
 # full machine logic per rule, in tab order: the exact expression plus the
 # household-size stratum as a conjunct, so an exported rule is complete on
 # its own (feedback 2026-08-21)
-HH_CLAUSE = {'1': 'HH_size_n <= 1',
+# household-size strata as exact conjuncts (feedback 2026-08-22: "= 1",
+# not "<= 1"; household size is never below 1)
+HH_CLAUSE = {'1': 'HH_size_n = 1',
              '2-3': 'HH_size_n >= 2 & HH_size_n <= 3',
              '4+': 'HH_size_n >= 4'}
 for j, rule in enumerate(RULES):

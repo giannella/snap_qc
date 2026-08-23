@@ -419,7 +419,10 @@ def background_tab(wb, state_name):
         'input column and gives the QC technical-manual crosswalk.',
         f'2.  Import your testing data: paste your cases into the yellow columns of '
         f'the "{DATA_SHEET}" tab. Every figure in the workbook recomputes on your '
-        'data.',
+        'data. The gray columns to the right of the yellow ones are computed '
+        'values (the variables the rules actually test, such as income per '
+        'person): do not paste over them, and look there, not in your own '
+        'columns, for what a rule is reading.',
         f'3.  Select rules on the "{BLENDED_SHEET}" tab: set the yellow Include? cell '
         'to FALSE for any rule you do not want. The combined results update in the '
         'orange rows at the top of that tab and in the figures above. At any point, '
@@ -614,34 +617,164 @@ HELPER_NOTE = ('_c_* columns (hidden): the benefit-recomputation chain — fisca
                'elderly/disabled uncapping, and the recomputed benefit.')
 
 
+# data type + example per input column (feedback 2026-08-22)
+RAW_TYPE = {
+    'CASE_ID': ('text or number', 'A123456'),
+    'REVIEW_FISCAL_YEAR': ('whole number', '2025'),
+    'HOUSEHOLD_SIZE': ('whole number', '3'),
+    'NUM_CHILDREN': ('whole number', '2'), 'NUM_ELDERLY': ('whole number', '0'),
+    'NUM_DISABLED': ('whole number', '1'), 'NUM_ABAWD': ('whole number', '0'),
+    'MARRIED_FLAG': ('0 or 1', '1'), 'EXPEDITED': ('0 or 1', '0'),
+    'CATEGORICALLY_ELIGIBLE': ('0 or 1', '1'), 'HOMELESS_FLAG': ('0 or 1', '0'),
+    'MONTHS_SINCE_CERT': ('whole number', '7'),
+    'EARNED_INCOME': ('dollars, monthly', '1450'),
+    'UNEARNED_INCOME': ('dollars, monthly', '0'),
+    'MEDICAL_DEDUCTION': ('dollars, monthly', '0'),
+    'DEPENDENT_CARE_DEDUCTION': ('dollars, monthly', '250'),
+    'CHILD_SUPPORT_DEDUCTION': ('dollars, monthly', '0'),
+    'CHILD_SUPPORT_EXPENSES': ('dollars, monthly', '0'),
+    'HOMELESS_DEDUCTION': ('dollars, monthly', '0'),
+    'RENT': ('dollars, monthly', '950'), 'UTILITY_COSTS': ('dollars, monthly', '459'),
+    'ORIGINAL_BENEFIT_AMOUNT': ('dollars, monthly', '512'),
+    'CORRECTED_BENEFIT_AMOUNT': ('dollars, monthly', '468'),
+    'STATUS': ('code 1 / 2 / 3 / 4', '2'),
+}
+FEAT_TYPE = {
+    'fiscal_year': ('whole number', '2025'), 'hh_size_raw': ('whole number', '3'),
+    'hh_group': ('text: 1, 2-3 or 4+', '2-3'), 'HH_size_n': ('whole number', '3'),
+    'bbce_state_i': ('0 or 1', '1'), 'children_i': ('0 or 1', '1'),
+    'elderly_disabled_i': ('0 or 1', '1'), 'expedited_i': ('0 or 1', '0'),
+    'homeless': ('0 or 1', '0'), 'married': ('0 or 1', '1'),
+    'medical_deductions': ('dollars', '0'), 'months_since_cert_n': ('whole number', '7'),
+    'percent_abawd': ('share 0 to 1', '0.33'), 'earned_by_hh_size': ('dollars', '483.33'),
+    'unearned_by_hh_size': ('dollars', '0'), 'gross_by_hh_size': ('dollars', '483.33'),
+    'rawben_rel_max': ('ratio', '0.62'), 'unc_rawben_rel_max': ('ratio', '0.62'),
+    'shelter_expenses_by_hh_size': ('dollars', '469.67'),
+    'total_deductions_by_hh_size': ('dollars', '312.50'),
+    'utilities': ('dollars', '459'), 'utilities_sua': ('tier 0 / 1 / 2', '2'),
+    'over_threshold': ('0 or 1', '1'), 'total_error_amount': ('dollars', '44'),
+}
+
+# the Step 3 tab's columns, one dictionary row each (feedback 2026-08-22:
+# a per-column dictionary instead of a long box at the top of the chart;
+# the headers on Step 3 hyperlink to these rows). Characterization
+# definitions follow state_delivery_lists/README.md.
+STEP3_COLS = [
+    ('Rule', 'text', 'Rule 42',
+     'The rule\'s id: its rank in the delivery list it came from. Stable across '
+     'workbook versions, so you can refer to a rule by number.'),
+    ('HH size', 'text: 1, 2-3 or 4+', '2-3',
+     'The household-size group the rule applies to. Every rule is mined and '
+     'applied within one group; a case outside it is never flagged by the rule.'),
+    ('What the rule says', 'text', 'no children present; earned income per person over $526',
+     'The rule\'s conditions in plain English; all conditions must hold for a '
+     'case to be flagged. The exact machine form is in the last column.'),
+    ('Precision', 'text: counts', '12 errors of 30 cases flagged',
+     'On the pasted data: of the cases this rule ALONE flags, how many are '
+     'payment errors. Shown as counts so small numbers read as small numbers.'),
+    ('Recall', 'percent', '6.4%',
+     'On the pasted data: the share of ALL error cases that this rule ALONE '
+     'catches. Rules overlap, so these do not add up to the combined rows.'),
+    ('$ Recall', 'percent', '8.1%',
+     'On the pasted data: the share of ALL error dollars that this rule ALONE '
+     'catches.'),
+    ('Flagged', 'whole number', '30',
+     'Cases on the pasted data this rule flags.'),
+    ('Errors', 'whole number', '12',
+     'Of those flagged cases, how many are payment errors.'),
+    ('Error $ caught', 'dollars', '$4,120',
+     'The error dollars on the flagged cases.'),
+    ('Workload %', 'percent', '2.5%',
+     'Flagged cases as a share of the rule\'s own household-size group on the '
+     'pasted data (in the orange combined rows: a share of ALL cases).'),
+    ('Expected error $ by case', 'dollars', '$137',
+     'Error $ caught divided by cases flagged: the average error dollars per '
+     'case you would review under this rule.'),
+    ('Include?', 'TRUE / FALSE', 'TRUE',
+     'Set to FALSE to drop the rule from the combined results and from the '
+     'export. The yellow cell is the only thing to edit on this tab.'),
+    ('Rule source pool', 'text', 'national',
+     'Where the rule was mined: "national" (all 49 states\' public QC data) or '
+     '"state" (this state\'s own public QC data).'),
+    ('Train precision (natl.)', 'percent', '77.6%',
+     'Precision when the rule was mined, on the national training data '
+     '(FY2022-2024). Fixed context; does not recompute from pasted data.'),
+    ('Train precision lower bound', 'percent', '61.4%',
+     'A conservative (99% lower confidence bound) version of train precision; '
+     'the statistic the rules were ranked on. Fixed context.'),
+    ('Train error $ per flagged case', 'dollars', '$210',
+     'Average error dollars per flagged case on the national training data. '
+     'Fixed context.'),
+    ('Natl. error cases behind rule', 'whole number', '38',
+     'How many error cases nationwide (FY2022-2024) the rule matched; the '
+     'sample behind the four share columns that follow. NOT this state\'s count.'),
+    ('Error elements caught (to 75%)', 'text: element and share', 'shelter deduction 0.49; medical deduction 0.19',
+     'Of the rule\'s national error cases, which QC error ELEMENTS (the part of '
+     'the case that was wrong) they involved, with each element\'s share, '
+     'listed until 75% of the cases are covered. "shelter deduction 0.49" '
+     'means 49% of the rule\'s error cases involved the shelter deduction.'),
+    ('Error natures caught (to 75%)', 'text: nature and share', 'wrong amount, known item 0.42',
+     'Same, for the QC error NATURE (how the error happened): for example '
+     'the item was known but the amount was wrong, or an include/exclude '
+     'decision was wrong. Shares listed until 75% of the cases are covered.'),
+    ('Share overissuance', 'percent', '100%',
+     'Of the rule\'s national error cases, the share that were overissuances '
+     '(the household was paid more than the correct amount).'),
+    ('Share agency-caused', 'percent', '60%',
+     'Of the rule\'s national error cases, the share QC coded as agency-caused '
+     '(client-caused is roughly the rest).'),
+    ('Share discovered in case file', 'percent', '34%',
+     'Of the rule\'s national error cases, the share the QC reviewer found '
+     'from the case record itself rather than from client contact or a fresh '
+     'data match: a rough guide to which errors a desk review can find.'),
+    ('Share at certification', 'percent', '79%',
+     'Of the rule\'s national error cases, the share that arose at the '
+     'agency\'s certification or recertification action rather than later.'),
+    ('Exact expression', 'text', 'children_i <= 0 & earned_by_hh_size > 526',
+     'The rule\'s conditions as machine logic, using the constructed-variable '
+     'names defined above. This is what the Export tab carries.'),
+]
+
+
 def data_dictionary(wb, hdr):
-    """A visible tab documenting every Data column: the input fields a state
-    supplies and the constructed model variables computed from them, each
-    cross-referenced to the SNAP QC technical documentation's variables."""
+    """A visible tab documenting every Data column (the input fields a state
+    supplies and the constructed model variables), then every column of the
+    Step 3 rules tab. Returns {Step 3 header text: dictionary row} so the
+    rules tab's headers can hyperlink to their definitions."""
     ws = wb.create_sheet(DICT_SHEET, wb.sheetnames.index(DATA_SHEET) + 1)
     ws.sheet_view.showGridLines = False
     blue = PatternFill('solid', fgColor='2F5496')
     gray = PatternFill('solid', fgColor='F2F2F2')
-    ws.column_dimensions['A'].width = 30
-    ws.column_dimensions['B'].width = 16
-    ws.column_dimensions['C'].width = 120
-    ws.merge_cells('A1:C1')
+    wrap = Alignment(wrap_text=True, vertical='top')
+    for cl, w in (('A', 30), ('B', 20), ('C', 26), ('D', 100)):
+        ws.column_dimensions[cl].width = w
+    ws.merge_cells('A1:D1')
     c = ws['A1']
     c.value = (f'Step 1: map your data to this dictionary — every column on the '
-               f'"{DATA_SHEET}" tab')
+               f'"{DATA_SHEET}" tab, then every column on the "{BLENDED_SHEET}" tab')
     c.fill = blue; c.font = Font(bold=True, size=14, color='FFFFFF')
     ws.row_dimensions[1].height = 28
 
     def header(r, txt):
-        ws.merge_cells(f'A{r}:C{r}')
+        ws.merge_cells(f'A{r}:D{r}')
         c = ws.cell(row=r, column=1, value=txt)
-        c.fill = blue; c.font = Font(bold=True, color='FFFFFF')
+        c.fill = blue; c.font = Font(bold=True, color='FFFFFF'); c.alignment = wrap
+        ws.row_dimensions[r].height = max(18, 15 * -(-len(txt) // 150))
         return r + 1
 
     def cols(r):
-        for ci, t in enumerate(('column', 'type', 'definition'), 1):
+        for ci, t in enumerate(('column', 'data type', 'example', 'definition'), 1):
             c = ws.cell(row=r, column=ci, value=t)
             c.fill = gray; c.font = Font(bold=True, size=10)
+        return r + 1
+
+    def entry(r, name, typ, example, definition):
+        ws.cell(row=r, column=1, value=name).font = Font(bold=True, size=10)
+        ws.cell(row=r, column=2, value=typ).font = Font(size=10)
+        ws.cell(row=r, column=3, value=example).font = Font(size=10)
+        c = ws.cell(row=r, column=4, value=definition)
+        c.font = Font(size=10); c.alignment = wrap
+        ws.row_dimensions[r].height = max(15, 13 * -(-len(definition) // 115))
         return r + 1
 
     r = header(3, 'Input fields (yellow block) — what a state supplies: its own '
@@ -655,26 +788,33 @@ def data_dictionary(wb, hdr):
                   'flagging). Enter zeros as zeros.')
     r = cols(r)
     for name in RAW_COLS:
-        ws.cell(row=r, column=1, value=name)
-        ws.cell(row=r, column=2, value='input value')
-        ws.cell(row=r, column=3, value=RAW_DESC.get(name, ''))
-        r += 1
+        typ, ex = RAW_TYPE.get(name, ('value', ''))
+        r = entry(r, name, typ, ex, RAW_DESC.get(name, ''))
     r = header(r + 1, 'Constructed variables (gray block) — computed by formula from the '
                       'input fields; the rules reference these. Do not paste over them.')
     r = cols(r)
     for name in hdr:
         if name.startswith('_') or name not in FEAT_DESC:
             continue
-        ws.cell(row=r, column=1, value=name)
-        ws.cell(row=r, column=2, value='formula')
-        ws.cell(row=r, column=3, value=FEAT_DESC[name])
-        r += 1
+        typ, ex = FEAT_TYPE.get(name, ('formula', ''))
+        r = entry(r, name, typ, ex, FEAT_DESC[name])
     r += 1
-    ws.merge_cells(f'A{r}:C{r}')
+    ws.merge_cells(f'A{r}:D{r}')
     c = ws.cell(row=r, column=1, value=HELPER_NOTE)
     c.font = Font(size=9, color='808080')
+    r += 2
+    r = header(r, f'Columns on the "{BLENDED_SHEET}" tab — one row per column. The '
+                  'first twelve recompute from the pasted data; the columns from '
+                  '"Rule source pool" onward describe each rule as mined on NATIONAL '
+                  'data and do not change when you paste. Click a column header on '
+                  f'the "{BLENDED_SHEET}" tab to jump to its row here.')
+    r = cols(r)
+    step3_rows = {}
+    for name, typ, ex, definition in STEP3_COLS:
+        step3_rows[name] = r
+        r = entry(r, name, typ, ex, definition)
     ws.freeze_panes = 'A2'
-    return ws
+    return step3_rows
 
 
 # ── Step 5.1 / 5.2: screen new cases, list the flagged case x rule pairs ─────
@@ -1320,7 +1460,19 @@ def main():
     dat.cell(row=1, column=1).comment = Comment(note, 'snap_dashboard')
     dat.freeze_panes = 'B2'
 
-    data_dictionary(wb, hdr)
+    step3_rows = data_dictionary(wb, hdr)
+    # Step 3 column headers hyperlink to their dictionary rows (feedback
+    # 2026-08-22); the header row is row 4 on the rules tab
+    rules_ws = wb[BLENDED_SHEET]
+    linked = 0
+    for ci in range(1, rules_ws.max_column + 1):
+        h = rules_ws.cell(row=4, column=ci)
+        if h.value in step3_rows:
+            h.hyperlink = f"#'{DICT_SHEET}'!A{step3_rows[h.value]}"
+            h.font = Font(name='Calibri', bold=True, size=10, color='0563C1',
+                          underline='single')
+            linked += 1
+    print(f'Step 3 headers linked to the dictionary: {linked}')
     background_tab(wb, cfg['name'])
     n51 = screening_tabs(wb, R, hdr)
     n6 = share_tab(wb, cfg['name'])
