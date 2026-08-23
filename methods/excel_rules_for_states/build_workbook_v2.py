@@ -1104,19 +1104,17 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
         set_cell(ws,r,11,(round(sc['dollars']/sc['n'], 2) if sc['n'] else '—'),
                  align=center, border=thin(), number_format='$#,##0', fill=GREEN)
         set_cell(ws,r,12,True, fill=YELLOW, align=center, border=thin(), font=Font(name=FONT))
-        # the four share columns (T-W) read left-aligned so their content is
-        # legible before any column resize (feedback 2026-08-21)
-        LEFT_KEYS = {'share_overissuance', 'cause_agency',
-                     'found_in_case_record', 'timing_at_certification'}
+        # the whole characterization block (M onward) reads left-aligned so
+        # its content is legible before any column resize (feedback
+        # 2026-08-21 for T-W, extended to M-Q 2026-08-22)
         for ci, (key, _, fmt, _) in enumerate(CHAR_COLS, 13):
             v = rule.get('char', {}).get(key)
             if v is None or (isinstance(v, float) and np.isnan(v)):
                 v = ''
             elif fmt != '@':
                 v = float(v)
-            set_cell(ws,r,ci,v,
-                     align=(left if fmt == '@' or key in LEFT_KEYS else center),
-                     border=thin(), number_format=fmt, font=Font(name=FONT,size=10))
+            set_cell(ws,r,ci,v, align=left, border=thin(), number_format=fmt,
+                     font=Font(name=FONT,size=10))
         set_cell(ws,r,LASTC,conds_text[j], align=left,
                  font=Font(name=FONT,size=8,color='808080'))
     ws.freeze_panes = 'D5'
