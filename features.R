@@ -20,7 +20,9 @@ state_col_map <- c(
   rawrent     = "RENT",
   rawutil     = "UTILITY_COSTS",
   RAWBEN      = "ORIGINAL_BENEFIT_AMOUNT",
-  FSBEN       = "CORRECTED_BENEFIT_AMOUNT"
+  FSBEN       = "CORRECTED_BENEFIT_AMOUNT",
+  FSNDIS      = "NUM_DISABLED",
+  FSNELDER    = "NUM_ELDERLY"
 )
 
 rename_cols <- function(data, map = state_col_map, qc = using_qc_data) {
@@ -98,12 +100,16 @@ add_sua_tier <- function(data, util_col = "rawutil", anchor_col = "max_sua") {
 add_external_data <- function(data) {
   data |>
     rename_cols() |>
-    add_year_col("medicare_part_b_premium", new_col = "medicare_part_b_premium") |>
+    add_year_col("medicare_part_b_premium") |>
     add_year_col("error_threshold", new_col = "threshold") |>
+    add_year_col("max_shelter_deduction") |>
     dplyr::mutate(
       absbendiff     = abs(RAWBEN - FSBEN),
       over_threshold = factor(as.integer(absbendiff > threshold),
-                              levels = c(0, 1))
+                              levels = c(0, 1)),
+      max_shelter_deduction = ifelse(FSNELDER + FSNDIS > 0,
+                                     Inf,
+                                     max_shelter_deduction)
     ) |>
     add_state_year_col(state_sua, "max_sua") |>
     add_state_year_col(smd_by_year, "smd_amt") |>

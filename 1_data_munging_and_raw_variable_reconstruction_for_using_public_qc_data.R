@@ -160,17 +160,6 @@ mydata <- mydata %>%
 # inconsistently, so it would encode reporting practice, not error risk.
 mydata$second_element_i <- !is.na(mydata$ELEMENT2)
 
-# Max shelter deduction by year
-max_shelter_by_year <- setNames(year_data$max_shelter_deduction, as.character(year_data$year))
-mydata$max_shelter_deduction <- max_shelter_by_year[as.character(mydata$fiscal_year)]
-
-# No max shelter deduction if a household member is elderly or has a disability
-mydata$max_shelter_deduction <- ifelse(
-  mydata$FSNELDER + mydata$FSNDIS > 0,
-  Inf,
-  mydata$max_shelter_deduction
-)
-
 # Step 4. Recreate the FS benefit using the formula inputs
 
 # Adjust minimum ben (it should be $0 for households >2)
