@@ -98,6 +98,7 @@ add_sua_tier <- function(data, util_col = "rawutil", anchor_col = "max_sua") {
 add_external_data <- function(data) {
   data |>
     rename_cols() |>
+    add_year_col("medicare_part_b_premium", new_col = "medicare_part_b_premium") |>
     add_year_col("error_threshold", new_col = "threshold") |>
     dplyr::mutate(
       absbendiff     = abs(RAWBEN - FSBEN),

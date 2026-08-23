@@ -87,9 +87,7 @@ mydata <- mydata %>%
     by = c("NATURE1" = "code")
   )
 
-# Add in external data including
-# - Maximum SUA amounts
-# - Standard Medical Deduction amounts
+# Add in external SNAP data
 source("features.R")
 mydata <- add_external_data(mydata)
 
@@ -172,10 +170,6 @@ mydata$max_shelter_deduction <- ifelse(
   Inf,
   mydata$max_shelter_deduction
 )
-
-# Medicare Part B Premium by Year
-medicare_part_b_premium_by_year <- setNames(year_data$medicare_part_b_premium, as.character(year_data$year))
-mydata$medicare_part_b_premium <- medicare_part_b_premium_by_year[as.character(mydata$fiscal_year)]
 
 # Step 4. Recreate the FS benefit using the formula inputs
 
