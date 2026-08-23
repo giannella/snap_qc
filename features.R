@@ -30,6 +30,7 @@ rename_cols <- function(data, map = state_col_map, qc = using_qc_data) {
 folder <- paste0(here(), "/")
 year_data <- read.csv(paste0(folder, "additional_data/year_data.csv"))
 state_sua <- read.csv(paste0(folder, "additional_data/state_sua.csv"))
+smd_by_year <- read.csv(paste0(folder, "additional_data/standard_medical_deductions.csv"))
 
 #' Join a wide state x year lookup (state_name + X2017...X2026) onto a frame.
 add_state_year_col <- function(data, lookup, value_col,
@@ -90,6 +91,7 @@ add_external_data <- function(data) {
   data |>
     rename_cols() |>
     add_state_year_col(state_sua, "max_sua") |>
+    add_state_year_col(smd_by_year, "smd_amt") |>
     dplyr::left_join(dplyr::select(year_data, year, cpi),       
                      by = c("fiscal_year" = "year")) |>
     dplyr::select(-cpi)                                    
