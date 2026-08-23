@@ -8,21 +8,28 @@ using_qc_data <- TRUE
 # If using_qc_data is false, set the following variables with 
 # your dataset's column names
 state_col_map <- c(
-  fiscal_year = "FISCAL_YEAR",
+  fiscal_year = "REVIEW_FISCAL_YEAR",
   state_name  = "STATE",
   rawusize    = "HOUSEHOLD_SIZE",
-  rawgrinc    = "GROSS_INCOME",
+  FSNKID      = "NUM_CHILDREN",
+  FSNELDER    = "NUM_ELDERLY",
+  FSNDIS      = "NUM_DISABLED",
+  count_abawd = "NUM_ABAWD",
+  married     = "MARRIED_FLAG",
+  expedited_i = "EXPEDITED",
+  CAT_ELIG    = "CATEGORICALLY_ELIGIBLE",
+  homeless    = "HOMELESS_FLAG",
+  LASTCER     = "MONTHS_SINCE_CERT",
   rawearn     = "EARNED_INCOME",
   rawunearn   = "UNEARNED_INCOME",
   rawmedded   = "MEDICAL_DEDUCTION",
   rawdepded   = "DEPENDENT_CARE_DEDUCTION",
   rawcsded    = "CHILD_SUPPORT_DEDUCTION",
+  rawhomeless_ded = "HOMELESS_DEDUCTION",
   rawrent     = "RENT",
   rawutil     = "UTILITY_COSTS",
   RAWBEN      = "ORIGINAL_BENEFIT_AMOUNT",
-  FSBEN       = "CORRECTED_BENEFIT_AMOUNT",
-  FSNDIS      = "NUM_DISABLED",
-  FSNELDER    = "NUM_ELDERLY"
+  FSBEN       = "CORRECTED_BENEFIT_AMOUNT"
 )
 
 rename_cols <- function(data, map = state_col_map, qc = using_qc_data) {
