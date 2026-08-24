@@ -68,7 +68,6 @@ mydata$state_name <- fips_to_state[as.character(mydata$STATE)]
 mydata$year <- as.integer(substr(mydata$YRMONTH, 1, 4))
 mydata$month <- as.integer(substr(mydata$YRMONTH, 5, 6))
 mydata$fiscal_year <- ifelse(mydata$month >= 10, mydata$year + 1, mydata$year)
-nrow(mydata) # 272416
 
 # Add element and nature labels
 qc_elements <- read.csv(paste0(folder, "additional_data/qc_elements.csv"))
@@ -88,32 +87,13 @@ mydata <- mydata %>%
     by = c("NATURE1" = "code")
   )
 
-# Add standard medical deduction amounts by year
-smd_by_year <- read.csv(paste0(folder, "additional_data/standard_medical_deductions.csv"))
-smd_long <- smd_by_year %>%
-  pivot_longer(
-    cols = starts_with("X"),
-    names_to = "fiscal_year",
-    names_prefix = "X",
-    values_to = "smd_amt"
-  ) %>%
-  mutate(
-    fiscal_year = as.integer(fiscal_year),
-    smd_amt = na_if(smd_amt, 0)
-  )
+# Add in external SNAP data
+source("features.R")
+mydata <- add_external_data(mydata)
 
-mydata <- mydata %>%
-  left_join(smd_long, by = c("state_name", "fiscal_year"))
-
-# Correlations between variables
-mean(abs(mydata$FSBEN - mydata$RAWBEN) <= 1, na.rm = TRUE) * 100 # 61.93%
-mean(abs(mydata$FSNETINC - mydata$RAWNET) <= 1, na.rm = TRUE) * 100 # 93.52%
-mean(abs(mydata$FSUSIZE - mydata$RAWHSIZE) <= 1, na.rm = TRUE) * 100 # 95.71%
-mean(abs(mydata$FSGRINC - mydata$RAWGROSS) <= 1, na.rm = TRUE) * 100 # 99.40%
-mean(abs(mydata$FSERNDED - mydata$RAWERND) <= 1, na.rm = TRUE) * 100 # 99.62%
-mean(abs(mydata$FSMEDDED - mydata$FSMEDEXP) <= 1, na.rm = TRUE) * 100 # 99.96%
-mean(abs(mydata$FSCSDED - mydata$FSCSEXP) <= 1, na.rm = TRUE) * 100 # 99.94%
-mean(abs(mydata$FSSLTDED - mydata$SHELDED) <= 1, na.rm = TRUE) * 100 # 92.36%
+# Save data as a checkpoint
+saveRDS(mydata, paste0(folder, "all_years.rds"))
+mydata <- readRDS(paste0(folder, "all_years.rds"))
 
 # 2. Filter dataset 
 
@@ -142,29 +122,23 @@ mydata <- mydata %>%
 
 # Drop all states with below 30% - optional
 # mydata <- mydata[mydata$pct_element2 >= 0.30, ]
-# nrow(mydata)
 
 # Keep 48 states and DC only (related to max allotment)
 mydata <- mydata[!mydata$state_name %in% c("Alaska", "Hawaii", "Guam", "Virgin Islands"), ]
-nrow(mydata) # 135980
 
 # Exclude MFIP and SSI_CAP cases
 # Due to non-standard benefits calculations
 if (exclude_MFIP)    mydata <- mydata[mydata$MN_FIP  %in% 0, ]
 if (exclude_SSI_CAP) mydata <- mydata[mydata$SSI_CAP %in% 0, ]
-nrow(mydata)
 
 # If you wanted to be very careful, you could drop all observations with second error elements 
 ## we lose even more signal from errors for most purposes so commenting out by default
 # (to focus on single error rows)
 #mydata <- mydata[is.na(mydata$ELEMENT2), ]
-#nrow(mydata) # 125307
 
 # Drop all rows if we can't get the amterr to be close 
 # to the difference between fsben and rawben
-mydata$absbendiff <- abs(mydata$RAWBEN - mydata$FSBEN)
 mydata <- mydata[abs(mydata$absbendiff - mydata$AMTERR) <= 5, ]
-nrow(mydata) # 117000
 
 # Deduction-field NAs come in state-level blocks (e.g., WA, MS, MN leave the
 # optional deduction fields unrecorded for a subset of cases) and almost
@@ -179,7 +153,6 @@ cat("rows with zero-filled deduction fields:", sum(mydata$ded_fields_imputed), "
 # Drop only rows where core shelter fields are NA (rarely triggers)
 mydata <- mydata %>%
   filter(!is.na(RENT), !is.na(UTIL))
-nrow(mydata) # was 113754 when the deduction fields were dropped instead
 
 # Track whether a second error element was reported. Multi-element cases are
 # KEPT (they are ~30% of error cases); the indicator is for QA/reporting, not
@@ -187,45 +160,13 @@ nrow(mydata) # was 113754 when the deduction fields were dropped instead
 # inconsistently, so it would encode reporting practice, not error risk.
 mydata$second_element_i <- !is.na(mydata$ELEMENT2)
 
-# 3. Create error threshold by year
-year_data <- read.csv(paste0(folder, "additional_data/year_data.csv"))
-threshold_by_year <- setNames(year_data$error_threshold, as.character(year_data$year))
-
-# Create over_threshold using the correct threshold for each row's year
-# Make sure to use fiscal year created earlier.
-mydata$threshold <- threshold_by_year[as.character(mydata$fiscal_year)]
-mydata$over_threshold <- as.factor(ifelse(
-  abs(mydata$absbendiff) > threshold_by_year[as.character(mydata$fiscal_year)],
-  1, 0
-))
-
-# Max shelter deduction by year
-max_shelter_by_year <- setNames(year_data$max_shelter_deduction, as.character(year_data$year))
-mydata$max_shelter_deduction <- max_shelter_by_year[as.character(mydata$fiscal_year)]
-
-# No max shelter deduction if a household member is elderly or has a disability
-mydata$max_shelter_deduction <- ifelse(
-  mydata$FSNELDER + mydata$FSNDIS > 0,
-  Inf,
-  mydata$max_shelter_deduction
-)
-
-# Medicare Part B Premium by Year
-medicare_part_b_premium_by_year <- setNames(year_data$medicare_part_b_premium, as.character(year_data$year))
-mydata$medicare_part_b_premium <- medicare_part_b_premium_by_year[as.character(mydata$fiscal_year)]
+# Step 3. Standardize data
+mydata <- standardize_data(mydata)
 
 # Step 4. Recreate the FS benefit using the formula inputs
 
 # Adjust minimum ben (it should be $0 for households >2)
 mydata$fsminimum_ben <- ifelse(mydata$FSUSIZE < 3, mydata$MINIMUM_BEN, 0)
-
-# Standardize child support treatment options (always DEDUCT)
-mydata <- mydata %>%
-  mutate(
-    cs_exclusion_state = coalesce(FSCSDED == 0 & FSCSEXP > 0, FALSE),
-    FSCSDED = if_else(cs_exclusion_state, FSCSEXP, FSCSDED),
-    FSGRINC = if_else(cs_exclusion_state, FSEARN + FSUNEARN, FSGRINC)
-  )
 
 # Recalculate FSBEN uncapped
 mydata$fsnet_before_shelter <- mydata$FSGRINC - (
@@ -818,17 +759,12 @@ if (apply_correction_smoothing) {
 mydata <- mydata %>% mutate(raw_total_deductions = rawdepded + rawcsded +
                               rawsltded + rawmedded + rawernded)
 
-#### Add additional features from features.R
-source("features.R")
-mydata <- add_features(mydata)
-
 # Save data
-#write_sav(mydata, paste0(folder, "final.sav"))
 saveRDS(mydata, paste0(folder, "final.rds"))
+mydata <- readRDS(paste0(folder, "final.rds"))
 
-#df <- mydata
-#rm(mydata)
-df <- readRDS(paste0(folder, "final.rds"))
+#### Add additional features from features.R
+mydata <- add_features(mydata)
 
 #### variable cleaning / recoding ###
 names(df) <- tolower(names(df))
