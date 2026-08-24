@@ -25,6 +25,7 @@ state_col_map <- c(
   rawmedded   = "MEDICAL_DEDUCTION",
   rawdepded   = "DEPENDENT_CARE_DEDUCTION",
   rawcsded    = "CHILD_SUPPORT_DEDUCTION",
+  rawcsexp    = "CHILD_SUPPORT_EXPENSES",
   rawhomeless_ded = "HOMELESS_DEDUCTION",
   rawrent     = "RENT",
   rawutil     = "UTILITY_COSTS",
@@ -123,6 +124,24 @@ add_external_data <- function(data) {
     dplyr::left_join(dplyr::select(year_data, year, cpi),       
                      by = c("fiscal_year" = "year")) |>
     dplyr::select(-cpi)                                    
+}
+
+standardize_data <- function(data, using_qc_data = TRUE) {
+  if (using_qc_data) {
+    data |>
+      dplyr::mutate(
+        cs_exclusion_case= dplyr::coalesce(FSCSDED == 0 & FSCSEXP > 0, FALSE),
+        FSCSDED = dplyr::if_else(cs_exclusion_case, FSCSEXP, FSCSDED),
+        FSGRINC = FSEARN + FSUNEARN
+      )
+  } else {
+    data |>
+      dplyr::mutate(
+        cs_exclusion_case = dplyr::coalesce(rawcsded == 0 & rawcsexp > 0, FALSE),
+        rawcsded = dplyr::if_else(cs_exclusion_case, rawcsexp, rawcsded),
+        rawgrinc = rawearn + rawunearn
+      )
+  }
 }
 
 #' Add all engineered features
