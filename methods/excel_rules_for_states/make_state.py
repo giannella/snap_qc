@@ -46,7 +46,7 @@ from workbook_layout import (BLENDED_SHEET, DATA_SHEET, EXPORT_SHEET,  # noqa: E
 
 BUILD_DIR = os.path.join(PKG, '.build')
 PY = sys.executable
-PROBES = [f"{BLENDED_SHEET}!C6", f"{BLENDED_SHEET}!G6", f"{BLENDED_SHEET}!H6",
+PROBES = [f"{BLENDED_SHEET}!C5", f"{BLENDED_SHEET}!G5", f"{BLENDED_SHEET}!H5",
           f"{VIEWER_SHEET}!A1", f"{VIEWER_SHEET}!A4",
           f"{EXPORT_SHEET}!A4"]
 # the delivered (stage-3) workbook additionally carries Start Here and the
@@ -139,10 +139,10 @@ def build_one(state, refresh, want_verify):
         # matrix (every rule selected) and the Data tab's static
         # over_threshold column, the same quantities crosscheck_rules.py
         # verifies against R, so no Excel evaluation is involved.
-        g6, h6 = static_union(out)
-        expect = [f"{BLENDED_SHEET}!G6={g6}", f"{BLENDED_SHEET}!H6={h6}"]
+        g5, h5 = static_union(out)
+        expect = [f"{BLENDED_SHEET}!G5={g5}", f"{BLENDED_SHEET}!H5={h5}"]
         probes = [p for p in PROBES_FINAL
-                  if p not in (f"{BLENDED_SHEET}!G6", f"{BLENDED_SHEET}!H6")] + expect
+                  if p not in (f"{BLENDED_SHEET}!G5", f"{BLENDED_SHEET}!H5")] + expect
         verify(deliver, probes)
     print(f'\nDone: {deliver}')
 

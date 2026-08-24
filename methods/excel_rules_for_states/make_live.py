@@ -51,7 +51,7 @@ def main():
     print(f'Data: {NROW-1} cases x {NCOL} columns')
 
     # ── 1. read the rules straight out of the Exact expression column ────────
-    N0 = 11
+    N0 = 10
     nt_rules = read_delivery_tab(nat, first_row=N0)
     print(f'rules: {len(nt_rules)}')
 
@@ -124,7 +124,7 @@ def main():
     NT = dict(prec=4, rec=5, drec=6, flagged=7, errors=8, dollars=9, work=10, exp=11)
     for i, hh in enumerate(['all', '1', '2-3', '4+']):
         if nat:
-            combined(nat, 6 + i, hh, 'nat', NT)
+            combined(nat, 5 + i, hh, 'nat', NT)
 
     # ── 4. per-rule rows ─────────────────────────────────────────────────────
     def rule_row(ws, row, conds, hh, cols):

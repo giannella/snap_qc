@@ -72,13 +72,13 @@ def pack_chunks(terms, limit=CHUNK_LIMIT):
     return chunks or [[]]
 
 
-def read_delivery_tab(ws, first_row=11):
+def read_delivery_tab(ws, first_row=10):
     """(conds, hh) per rule row, read from a rules tab's Exact-expression
     column (found by header rather than assumed position)."""
     if ws is None:
         return []
     expr_col = next((c for c in range(1, ws.max_column + 1)
-                     if ws.cell(row=4, column=c).value == 'Exact expression'),
+                     if ws.cell(row=3, column=c).value == 'Exact expression'),
                     13)
     out, r = [], first_row
     while ws.cell(row=r, column=1).value:

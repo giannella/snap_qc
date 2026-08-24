@@ -49,7 +49,6 @@ from openpyxl.comments import Comment
 from openpyxl.styles import Alignment, PatternFill, Font
 from openpyxl.utils import get_column_letter as CL
 from openpyxl.worksheet.datavalidation import DataValidation
-from openpyxl.worksheet.formula import ArrayFormula
 
 import states as STATE_REGISTRY
 from workbook_layout import (DATA_SHEET, BLENDED_SHEET, DICT_SHEET,
@@ -244,29 +243,32 @@ def federal_tables(wb, state_name=None):
                 elif hasattr(v, 'item'):        # numpy scalar -> python scalar
                     v = v.item()
                 ws.cell(row=opt0 + 2 + ri, column=ci, value=v).font = Font(size=9)
-    # hidden per-year SUA-mode block (2026-08-22): one ARRAY-entered
-    # MODE.SNGL per fiscal year over the CaseData columns, so the mode is
-    # evaluated as an array exactly once per year and each Data row reads
-    # it with a plain INDEX/MATCH (see feature_formulas: an in-row array
-    # silently collapses). Years span the FederalTables year list so any
-    # pasted year resolves; a year with no positive utilities reads 0.
-    # Written AFTER the CaseData table exists (main() calls
-    # write_sua_mode_block once the table is rebound), since the array
-    # formulas reference the table's columns.
+    # hidden per-year max-SUA block (2026-08-23, state-options merge): the
+    # SUA tier anchors on the state's heating/cooling standard utility
+    # allowance (additional_data/state_sua.csv, features.R add_sua_tier),
+    # not on a mode computed from the pasted data, so the block is static
+    # values. A 0 in the csv means no published standard for that year;
+    # the tier formula reads any <= 0 anchor as "no standard" and leaves
+    # the tier blank.
     sua0 = opt0 + (len(rows) + 3 if rows is not None and len(rows) else 0) + 2
-    ws.cell(row=sua0, column=12, value='SUA mode by fiscal year (hidden helper; '
-            'array formulas over the pasted data)').font = Font(bold=True, size=9)
+    sua = pd.read_csv(os.path.join(ad, 'state_sua.csv'))
+    sua.columns = [str(c).strip() for c in sua.columns]
+    srow = sua[sua['state_name'] == state_name]
+    sua_years = sorted(int(c) for c in sua.columns if c != 'state_name')
+    ws.cell(row=sua0, column=12, value='max SUA (heating/cooling standard) by '
+            'fiscal year (hidden helper; state_sua.csv)').font = Font(bold=True, size=9)
     ws.cell(row=sua0 + 1, column=12, value='year').fill = gray
-    ws.cell(row=sua0 + 1, column=13, value='mode of positive UTILITY_COSTS').fill = gray
-    for i, y in enumerate(years):
+    ws.cell(row=sua0 + 1, column=13, value='max_sua').fill = gray
+    for i, y in enumerate(sua_years):
         ws.cell(row=sua0 + 2 + i, column=12, value=int(y))
+        v = float(srow.iloc[0][str(y)]) if len(srow) else 0.0
+        ws.cell(row=sua0 + 2 + i, column=13, value=v)
     ws.column_dimensions['L'].width = 8
     ws.column_dimensions['M'].width = 30
     ws.freeze_panes = 'A3'
     return {
-        'SUAYRS':  f'FederalTables!$L${sua0 + 2}:$L${sua0 + 1 + ny}',
-        'SUAMODE': f'FederalTables!$M${sua0 + 2}:$M${sua0 + 1 + ny}',
-        'SUAROW0': sua0 + 2,
+        'SUAYRS':  f'FederalTables!$L${sua0 + 2}:$L${sua0 + 1 + len(sua_years)}',
+        'SUAMAX':  f'FederalTables!$M${sua0 + 2}:$M${sua0 + 1 + len(sua_years)}',
         'YEARS':  f'FederalTables!$A$6:$A${5 + ny}',
         'MAXSH':  f'FederalTables!$B$6:$B${5 + ny}',
         'MINAL':  f'FederalTables!$C$6:$C${5 + ny}',
@@ -277,37 +279,6 @@ def federal_tables(wb, state_name=None):
         'MABLK':  f'FederalTables!$F${ma0}:$Y${ma0 + n_ma - 1}',
         'HOLDOUT': 'FederalTables!$B$3',
     }
-
-
-def write_sua_mode_block(wb, R, nrow):
-    """The per-year SUA-mode cells on FederalTables, ARRAY-entered so the
-    IF(...) inside MODE.SNGL evaluates as an array (a plain table cell would
-    collapse it). References are absolute Data-sheet column ranges rather
-    than structured refs: Excel is free to rewrite structured refs inside an
-    array formula, and a fixed generous range (rows 2..MAXR) covers pasted
-    rows; blanks contribute neither to the year test nor the positive test.
-    MAXR is sized to the 250k-row design ceiling."""
-    from openpyxl.utils import get_column_letter
-    ws = wb['FederalTables']
-    dat = wb[DATA_SHEET]
-    hdr = [c.value for c in next(dat.iter_rows(min_row=1, max_row=1))]
-    cy = get_column_letter(hdr.index('REVIEW_FISCAL_YEAR') + 1)
-    cu = get_column_letter(hdr.index('UTILITY_COSTS') + 1)
-    dq = qref(DATA_SHEET)
-    MAXR = 250000
-    yrs = f'{dq}!${cy}$2:${cy}${MAXR}'
-    uts = f'{dq}!${cu}$2:${cu}${MAXR}'
-    r0 = R['SUAROW0']
-    n = 0
-    r = r0
-    while ws.cell(row=r, column=12).value is not None:
-        ref = f'M{r}'
-        ws[ref] = ArrayFormula(
-            ref,
-            f'=IFERROR(_xlfn.MODE.SNGL(IF(({yrs}=$L{r})*({uts}>0),ROUND({uts},0))),0)')
-        n += 1
-        r += 1
-    return n
 
 
 # ── Start Here: KPIs, how-to, and background ─────────────────────────────────
@@ -354,17 +325,17 @@ def background_tab(wb, state_name):
         ('Cases in this workbook',
          f'=COUNTA({TABLE}[CASE_ID])', '#,##0'),
         ('Cases flagged by the selected rules',
-         f"='{BLENDED_SHEET}'!G6", '#,##0'),
+         f"='{BLENDED_SHEET}'!G5", '#,##0'),
         ('Errors flagged by the selected rules',
-         f"='{BLENDED_SHEET}'!H6", '#,##0'),
+         f"='{BLENDED_SHEET}'!H5", '#,##0'),
         ('Precision: share of flagged cases that are true errors',
-         f"='{BLENDED_SHEET}'!D6", '0.0%'),
+         f"='{BLENDED_SHEET}'!D5", '0.0%'),
         ('Base error rate, all cases (compare precision against this)',
          f'=COUNTIF({TABLE}[over_threshold],1)/COUNTA({TABLE}[CASE_ID])', '0.0%'),
         # feedback 2026-08-21: the per-case average reads better than the
-        # raw total (K6 = the union row's error dollars caught / cases flagged)
+        # raw total (K5 = the union row's error dollars caught / cases flagged)
         ('Average error $ per case flagged (includes $0 error cases)',
-         f"='{BLENDED_SHEET}'!K6", '$#,##0'),
+         f"='{BLENDED_SHEET}'!K5", '$#,##0'),
         # overissuance share from the benefit pair (revision 2026-08-18): the
         # demo fills it automatically because the shipped input block carries
         # ORIGINAL/CORRECTED_BENEFIT_AMOUNT for every case
@@ -421,8 +392,8 @@ def background_tab(wb, state_name):
         f'the "{DATA_SHEET}" tab. Every figure in the workbook recomputes on your '
         'data. The gray columns to the right of the yellow ones are computed '
         'values (the variables the rules actually test, such as income per '
-        'person): do not paste over them, and look there, not in your own '
-        'columns, for what a rule is reading.',
+        'person), which the rules rely on. We encourage leaving the gray '
+        'columns as-is.',
         f'3.  Select rules on the "{BLENDED_SHEET}" tab: set the yellow Include? cell '
         'to FALSE for any rule you do not want. The combined results update in the '
         'orange rows at the top of that tab and in the figures above. At any point, '
@@ -435,18 +406,18 @@ def background_tab(wb, state_name):
         f'      4.  Export the selected rules (the "{EXPORT_SHEET}" tab): the rules '
         'still set to TRUE, with their exact logic. Filter your caseload in Excel, '
         'turn them into a query, or send them to your vendor.',
-        f'      5.1  Screen new cases (the "{SCREEN_SHEET}" tab): paste cases with '
-        'no review outcome into its yellow columns.',
+        f'      5.1  Input new cases to screen (the "{SCREEN_SHEET}" tab): paste '
+        'cases with no review outcome into its yellow columns.',
         f'      5.2  See the flagged cases (the "{FLAGGED_SHEET}" tab): every new '
         'case a selected rule flags, with the rule that flagged it.',
         f'6.  Optional: share aggregate results back (the "{SHARE_SHEET}" tab): '
         'whichever path you took, this tab summarizes each rule\'s performance on '
-        'your data. If you do not mind sending us back these aggregate performance '
-        'numbers by rule, that will help us improve the models and the rules we '
-        'generate for you as well as other states. Please copy/paste as values into '
-        'a new workbook (do not send internal case-level data) in order to send '
-        'these results back to us. If you have trouble, please reach out to '
-        'eric.giannella@georgetown.edu.',
+        'your data. You can send this tab back to us and we\'ll gladly send a '
+        'revised set of rules back based on which rules performed well versus '
+        'poorly. We\'ll also use this to improve the models and results for other '
+        'states. Please copy/paste as values into a new workbook (do not send '
+        'internal case-level data) to share results back. If you have trouble, '
+        'please reach out to eric.giannella@georgetown.edu.',
     ]:
         ws.merge_cells(f'A{r}:B{r}')
         c = ws.cell(row=r, column=1, value=step)
@@ -457,7 +428,7 @@ def background_tab(wb, state_name):
         r += 1
     r += 1
 
-    para('Why to use internal data, not just the public file', bold=True)
+    para('Why to use internal data, not just rely on the public file', bold=True)
     para('The public QC files are only available through FY24 and do not contain cases '
          'that were deemed ineligible, which in a few states represents a large share of '
          'errors. In addition, there are not that many observations per state per year '
@@ -505,11 +476,9 @@ def background_tab(wb, state_name):
 RAW_DESC = {
     'CASE_ID':   'case / review identifier — row identity only. QC manual: HHLDNO.',
     'REVIEW_FISCAL_YEAR': 'federal fiscal year of the review month (Oct-Sep).',
-    'HOUSEHOLD_SIZE': 'certified SNAP unit size: the members ON THE CASE, as reported. '
-                      'QC manual: CERTHHSZ (Origin R, reported); FSUSIZE is the post-QC '
-                      'corrected household size. Do NOT supply the household\'s total '
-                      'person count (the manual\'s RAWHSIZE) — people in the home who '
-                      'are not unit members do not count. The demo carries the '
+    'HOUSEHOLD_SIZE': 'certified SNAP unit size: household members ON THE CASE, as '
+                      'reported. QC manual: CERTHHSZ (Origin R, reported); FSUSIZE is '
+                      'the post-QC corrected household size. The included data has a '
                       'reconstructed pre-QC-review unit size.',
     'NUM_CHILDREN': 'children in the unit. QC manual: FSNKID.',
     'NUM_ELDERLY': 'members aged 60+. QC manual: FSNELDER.',
@@ -589,21 +558,22 @@ FEAT_DESC = {
                            'reported data this is the manual\'s RAWGROSS / CERTHHSZ',
     'rawben_rel_max':      'recomputed benefit / maximum allotment for the unit size '
                            '(via the hidden benefit-recomputation chain and FederalTables)',
-    'unc_rawben_rel_max':  'recomputed benefit BEFORE the minimum/maximum caps / maximum allotment',
+    'unc_rawben_rel_max':  'recomputed benefit BEFORE the minimum/maximum caps / maximum '
+                           'allotment (see Uncapped Benefit Analysis pdf on '
+                           'bettergovernmentlab.org/resources/snap for more background)',
     'shelter_expenses_by_hh_size': '(RENT + UTILITY_COSTS) / HOUSEHOLD_SIZE',
     'total_deductions_by_hh_size': '(dependent care + child support + recomputed shelter + medical '
                                    '+ earned-income deductions) / HOUSEHOLD_SIZE',
     'utilities':   'UTILITY_COSTS, unchanged',
-    'utilities_sua': 'standard utility allowance tier, computed from the pasted data: '
-                     '0 = no utility amount; 1 = positive but more than $200 below '
-                     'the most common positive UTILITY_COSTS value among cases in the '
-                     'same fiscal year; 2 = within $200 of or above that value (the '
-                     'high-SUA cluster, which in states with household-size or '
-                     'regional SUA schedules covers all of the high variants). Rules '
-                     'use this tier instead of utility dollars so they keep meaning '
-                     'the same thing when SUA levels reset each October. Paste whole '
-                     'fiscal years rather than a handful of cases: the anchor is '
-                     'recomputed from what you paste.',
+    'utilities_sua': 'standard utility allowance tier: UTILITY_COSTS compared to the '
+                     'state\'s heating/cooling standard utility allowance for the '
+                     'review year (the hidden FederalTables sheet carries the '
+                     'per-year standard): 0 = no utility amount; 1 = positive but '
+                     'below the standard; 2 = at or above the standard. Rules use '
+                     'this tier instead of utility dollars so they keep meaning the '
+                     'same thing when SUA levels reset each October. A year with no '
+                     'published standard leaves the tier blank (rules that use it '
+                     'do not flag).',
     'over_threshold':     '1 when total_error_amount exceeds the review year\'s federal '
                           'QC tolerance (FederalTables error_threshold) — what the rules '
                           'aim to catch',
@@ -668,22 +638,23 @@ STEP3_COLS = [
      'applied within one group; a case outside it is never flagged by the rule.'),
     ('What the rule says', 'text', 'no children present; earned income per person over $526',
      'The rule\'s conditions in plain English; all conditions must hold for a '
-     'case to be flagged. The exact machine form is in the last column.'),
+     'case to be flagged. The exact query-like expression is in the last column.'),
     ('Precision', 'text: counts', '12 errors of 30 cases flagged',
-     'On the pasted data: of the cases this rule ALONE flags, how many are '
-     'payment errors. Shown as counts so small numbers read as small numbers.'),
+     'On the pasted data: of the cases this rule flags, how many are payment '
+     'errors (regardless of overlapping with other rules). Shown as counts so '
+     'small numbers are not misleading.'),
     ('Recall', 'percent', '6.4%',
-     'On the pasted data: the share of ALL error cases that this rule ALONE '
-     'catches. Rules overlap, so these do not add up to the combined rows.'),
+     'On the pasted data: the share of ALL error cases that this rule would '
+     'catch by itself. Rules overlap, so these do not add up to the combined rows.'),
     ('$ Recall', 'percent', '8.1%',
-     'On the pasted data: the share of ALL error dollars that this rule ALONE '
-     'catches.'),
+     'On the pasted data: the share of ALL error dollars that this rule '
+     'catches by itself.'),
     ('Flagged', 'whole number', '30',
-     'Cases on the pasted data this rule flags.'),
+     'Cases this rule flags in the pasted data.'),
     ('Errors', 'whole number', '12',
      'Of those flagged cases, how many are payment errors.'),
     ('Error $ caught', 'dollars', '$4,120',
-     'The error dollars on the flagged cases.'),
+     'The sum of error dollars on the flagged cases.'),
     ('Workload %', 'percent', '2.5%',
      'Flagged cases as a share of the rule\'s own household-size group on the '
      'pasted data (in the orange combined rows: a share of ALL cases).'),
@@ -692,7 +663,7 @@ STEP3_COLS = [
      'case you would review under this rule.'),
     ('Include?', 'TRUE / FALSE', 'TRUE',
      'Set to FALSE to drop the rule from the combined results and from the '
-     'export. The yellow cell is the only thing to edit on this tab.'),
+     'export. These yellow cells are the only thing to edit on this tab.'),
     ('Rule source pool', 'text', 'national',
      'Where the rule was mined: "national" (all 49 states\' public QC data) or '
      '"state" (this state\'s own public QC data).'),
@@ -708,12 +679,15 @@ STEP3_COLS = [
     ('Natl. error cases behind rule', 'whole number', '38',
      'How many error cases nationwide (FY2022-2024) the rule matched; the '
      'sample behind the four share columns that follow. NOT this state\'s count.'),
-    ('Error elements caught (to 75%)', 'text: element and share', 'shelter deduction 0.49; medical deduction 0.19',
+    ('Error elements caught (to 75%)', 'text: element and share',
+     'shelter deduction 0.49; medical deduction 0.19; earned income 0.17',
      'Of the rule\'s national error cases, which QC error ELEMENTS (the part of '
      'the case that was wrong) they involved, with each element\'s share, '
      'listed until 75% of the cases are covered. "shelter deduction 0.49" '
      'means 49% of the rule\'s error cases involved the shelter deduction.'),
-    ('Error natures caught (to 75%)', 'text: nature and share', 'wrong amount, known item 0.42',
+    ('Error natures caught (to 75%)', 'text: nature and share',
+     'wrong amount, known item 0.39; wrong include/exclude decision 0.20; '
+     'unreported source of income 0.19',
      'Same, for the QC error NATURE (how the error happened): for example '
      'the item was known but the amount was wrong, or an include/exclude '
      'decision was wrong. Shares listed until 75% of the cases are covered.'),
@@ -722,17 +696,20 @@ STEP3_COLS = [
      '(the household was paid more than the correct amount).'),
     ('Share agency-caused', 'percent', '60%',
      'Of the rule\'s national error cases, the share QC coded as agency-caused '
-     '(client-caused is roughly the rest).'),
+     '(client-caused makes up nearly all of the rest).'),
     ('Share discovered in case file', 'percent', '34%',
      'Of the rule\'s national error cases, the share the QC reviewer found '
      'from the case record itself rather than from client contact or a fresh '
-     'data match: a rough guide to which errors a desk review can find.'),
+     'data match: a potential proxy for which errors a desk review can find.'),
     ('Share at certification', 'percent', '79%',
      'Of the rule\'s national error cases, the share that arose at the '
      'agency\'s certification or recertification action rather than later.'),
     ('Exact expression', 'text', 'children_i <= 0 & earned_by_hh_size > 526',
-     'The rule\'s conditions as machine logic, using the constructed-variable '
-     'names defined above. This is what the Export tab carries.'),
+     'The rule\'s conditions in query form, using the constructed-variable '
+     'names defined above. The expressions for all of the rules that have TRUE '
+     'under "Include?" will show up in the "Step 4. Export Rules" tab. The '
+     'Step 4 tab also adds the appropriate HH_size_n parameter to the '
+     'expression.'),
 ]
 
 
@@ -750,8 +727,8 @@ def data_dictionary(wb, hdr):
         ws.column_dimensions[cl].width = w
     ws.merge_cells('A1:D1')
     c = ws['A1']
-    c.value = (f'Step 1: map your data to this dictionary — every column on the '
-               f'"{DATA_SHEET}" tab, then every column on the "{BLENDED_SHEET}" tab')
+    c.value = (f'Step 1: Data Dictionary for "{DATA_SHEET}" as well as Column '
+               f'Definitions for "{BLENDED_SHEET}"')
     c.fill = blue; c.font = Font(bold=True, size=14, color='FFFFFF')
     ws.row_dimensions[1].height = 28
 
@@ -777,15 +754,19 @@ def data_dictionary(wb, hdr):
         ws.row_dimensions[r].height = max(15, 13 * -(-len(definition) // 115))
         return r + 1
 
-    r = header(3, 'Input fields (yellow block) — what a state supplies: its own '
-                  'as-reported values, mapped onto these columns. Each '
-                  'definition cross-references the SNAP QC technical '
-                  'documentation; this public-data copy carries the research '
-                  'frame\'s reconstructed pre-QC-review values. A blank cell '
-                  'means MISSING, not zero: a case missing an input a rule '
-                  'needs is not flagged by that rule, and a column you do not '
-                  'collect can be left entirely empty (rules that use it stop '
-                  'flagging). Enter zeros as zeros.')
+    r = header(3, f'Data you will need to input into the "{DATA_SHEET}" tab. To '
+                  'establish some 1:1 correspondence, we cross-reference '
+                  'definitions to the SNAP QC technical documentation, but be '
+                  'sure to use uncorrected data (i.e., has not gone through '
+                  'SNAP QC). The demo data included uses reconstructed '
+                  'pre-QC-review values. Note that blank cells are treated as '
+                  'missing (not zero). Some missing values or an entire column '
+                  'missing is all right if the variable is less commonly used '
+                  'in rules (e.g., CATEGORICALLY_ELIGIBLE, HOMELESS_FLAG, '
+                  'NUM_ABAWD, MARRIED_FLAG, CHILD_SUPPORT_DEDUCTION, '
+                  'DEPENDENT_CARE_DEDUCTION, HOMELESS_DEDUCTION). As soon as '
+                  'you paste in new data, you\'ll see the overall results at '
+                  f'the top of the "Start Here" and the "{BLENDED_SHEET}" tabs.')
     r = cols(r)
     for name in RAW_COLS:
         typ, ex = RAW_TYPE.get(name, ('value', ''))
@@ -861,7 +842,7 @@ def screening_tabs(wb, R, dat_hdr):
     for name, f in list(helpers) + [(n, feats[n]) for n in feat_cols]:
         ws.cell(row=2, column=hdr.index(name) + 1, value=f)
     for j, (conds, hh) in enumerate(rules):
-        f = (f'={sel[11 + j]}*{rule_term(conds, hh, SCREEN_TABLE)}'
+        f = (f'={sel[10 + j]}*{rule_term(conds, hh, SCREEN_TABLE)}'
              if conds else '=0')
         ws.cell(row=2, column=hdr.index(f'_r{j + 1}') + 1, value=f)
     ws.cell(row=2, column=hdr.index('_hits') + 1,
@@ -936,9 +917,9 @@ def screening_tabs(wb, R, dat_hdr):
             f'=IF($I{r}="","",INDEX({SCREEN_TABLE}[ORIGINAL_BENEFIT_AMOUNT],$G{r}))'))
         c.number_format = '$#,##0'
         wsf.cell(row=r, column=4, value=(
-            f'=IF($I{r}="","",INDEX({bq}!$A$11:$A${10 + nr},$I{r}))'))
+            f'=IF($I{r}="","",INDEX({bq}!$A$10:$A${9 + nr},$I{r}))'))
         c = wsf.cell(row=r, column=5, value=(
-            f'=IF($I{r}="","",INDEX({bq}!$C$11:$C${10 + nr},$I{r}))'))
+            f'=IF($I{r}="","",INDEX({bq}!$C$10:$C${9 + nr},$I{r}))'))
         c.font = Font(size=10)
     wsf.freeze_panes = 'A5'
     return nr
@@ -970,18 +951,18 @@ def share_tab(wb, state_name):
     ws.row_dimensions[1].height = 30
     ws.merge_cells('A2:H2')
     c = ws['A2']
-    # wording agreed 2026-08-19
+    # wording from Eric's WA edits 2026-08-23
     c.value = ('Optional: this tab displays aggregate performance of every rule on the '
-               f'data pasted into the "{DATA_SHEET}" tab. It would help us improve the '
-               'models (for your state and others) if you can share back the aggregate '
-               'performance by rule - that will tell us what kinds of errors can be '
-               'reliably found out of sample or what kinds of rules might be more '
-               'robust out of sample. Fill in the yellow cells so we know what the '
-               'numbers cover. Ineligible cases are not included in the public QC '
-               'sample, which is why we want a separate count of them and which rule '
-               'might capture them. To send the results back to us, please copy / '
-               'paste the whole sheet into a new excel workbook (paste as values) and '
-               'send it back to us.')
+               f'data pasted into the "{DATA_SHEET}" tab. If you want a refined list '
+               'of rules based on performance with your internal data, send these '
+               'aggregate numbers back to us and we\'ll send you new rules. This will '
+               'also help us improve the models and rules for other states. Fill in '
+               'the yellow cells so we know what the numbers cover. Ineligible cases '
+               'are not included in the public QC sample, which is why we want a '
+               'separate count of them and which rule might capture them. To send the '
+               'results back to us, please copy / paste the whole sheet into a new '
+               'excel workbook (paste as values). See the "Start Here" tab for more '
+               'background and our contact information.')
     c.fill = grayF; c.font = Font(size=12); c.alignment = wrap
     ws.row_dimensions[2].height = 80
     meta = [('State', state_name, False),
@@ -1019,7 +1000,7 @@ def share_tab(wb, state_name):
     tot_ed = f'SUMIFS({TABLE}[total_error_amount],{TABLE}[over_threshold],1)'
     for j, (conds, hh) in enumerate(rules):
         r = HR + 1 + j
-        src = 11 + j
+        src = 10 + j
         # rule id / stratum / plain text are static on the rules tab — copy
         # the values so this block pastes cleanly as text
         ws.cell(row=r, column=1, value=rules_ws.cell(row=src, column=1).value)
@@ -1163,27 +1144,20 @@ def feature_formulas(R, table=TABLE):
             f'+{T("_c_sltded")}+{T("MEDICAL_DEDUCTION")}+{T("_c_ernded")})/{hh}',
         'unc_rawben_rel_max': f'={T("_c_benunc")}/{T("_c_benmax")}',
         'utilities':   f'={T("UTILITY_COSTS")}',
-        # SUA tier (vocabulary variant staged 2026-08-22; design + result in
-        # methods/v250_benchmark_2024_utilrel/): 0 = no utility amount,
-        # 1 = positive below (state-year mode - 200), 2 = at/above that
-        # (the HIGH-SUA cluster). The anchor is the MODE of positive
-        # UTILITY_COSTS within the row's fiscal year, computed from the
-        # pasted data itself. The mode is NOT computed inside this row
-        # formula: an IF(...) array inside MODE.SNGL in a non-array table
-        # cell collapses to a single cell under implicit intersection and
-        # IFERROR hides the failure (every row read tier 0 in the first
-        # build, 2026-08-22, while the pandas mirror passed). It lives in
-        # the hidden per-year mode block on FederalTables (R["SUAMODE"] /
-        # R["SUAYRS"], array-entered there), and each row does a plain
-        # INDEX/MATCH; a year absent from the block yields mode 0 -> tier 2
-        # for every positive row, handled by the IFERROR->0 below only for
-        # real lookup errors. Tie rule: MODE.SNGL returns the first-
-        # occurring tied value (the build frame's mode_pos the smallest);
-        # the frame has no tied state-year cells, so the demo matches.
+        # SUA tier (redefined 2026-08-23, state-options merge; features.R
+        # add_sua_tier): 0 = no utility amount, 1 = positive but below the
+        # state's heating/cooling standard for the review year, 2 = at or
+        # above it. The anchor is the static per-year max_sua block on
+        # FederalTables (R["SUAMAX"] / R["SUAYRS"], from state_sua.csv) —
+        # an external standard, no longer computed from the pasted data. A
+        # year with no published standard (anchor <= 0) or absent from the
+        # block leaves the tier blank, mirroring the NA tier in features.R.
         'utilities_sua':
-            f'=IF({T("UTILITY_COSTS")}<=0,0,IFERROR(IF({T("UTILITY_COSTS")}'
-            f'<INDEX({R["SUAMODE"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["SUAYRS"]},0))'
-            f'-200,1,2),0))',
+            f'=IF({T("UTILITY_COSTS")}<=0,0,IFERROR(IF('
+            f'INDEX({R["SUAMAX"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["SUAYRS"]},0))'
+            f'<=0,"",IF({T("UTILITY_COSTS")}'
+            f'<INDEX({R["SUAMAX"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["SUAYRS"]},0)),'
+            f'1,2)),""))',
         # the QC outcome, recomputed from the benefit pair exactly as the
         # munging script defines it: error amount = |RAWBEN - FSBEN| rounded,
         # error flag = amount STRICTLY OVER the year's federal QC tolerance
@@ -1216,8 +1190,9 @@ def _excel_floor(x, sig=1.0):
     return np.floor(np.asarray(x, float) / sig) * sig
 
 
-def mirror_features(raw, ftabs):
-    """Compute what the Excel formulas will produce, from the raw block."""
+def mirror_features(raw, ftabs, sua_by_year):
+    """Compute what the Excel formulas will produce, from the raw block.
+    `sua_by_year` maps fiscal year -> the state's max SUA (state_sua.csv)."""
     g = lambda c: raw[c].fillna(0).astype(float).values     # Excel blank -> 0
     yd, sd, ma = ftabs
     fy = g('REVIEW_FISCAL_YEAR').astype(int)
@@ -1265,22 +1240,18 @@ def mirror_features(raw, ftabs):
         'unc_rawben_rel_max': benunc / benmax,
         'utilities': g('UTILITY_COSTS'),
     }
-    # SUA tier mirror of the EXCEL formula (mode of positive rounded
-    # utilities within fiscal year, smallest tied value, $200 band). The
-    # validation gate compares this against the frame's canonical
-    # utilities_sua column (features.R add_sua_tier, promoted 2026-08-22),
-    # so a drift between the workbook formula and the canonical definition
-    # fails the build. Keep this in step with features.R.
+    # SUA tier mirror of the EXCEL formula (UTILITY_COSTS against the
+    # state's per-year heating/cooling standard, state_sua.csv; redefined
+    # 2026-08-23, state-options merge). The validation gate compares this
+    # against the frame's canonical utilities_sua column (features.R
+    # add_sua_tier), so a drift between the workbook formula and the
+    # canonical definition fails the build. A year with no published
+    # standard (csv value 0) gives a blank tier (NaN here).
     util = g('UTILITY_COSTS')
-    tier = np.zeros(len(util), dtype=int)
-    for y in np.unique(fy):
-        sel = fy == y
-        pos = np.round(util[sel & (util > 0)])
-        if len(pos):
-            vals, cnt = np.unique(pos, return_counts=True)
-            mode = vals[cnt == cnt.max()].min()
-            t = np.where(util[sel] <= 0, 0, np.where(util[sel] < mode - 200, 1, 2))
-            tier[sel] = t
+    anchor = np.array([sua_by_year.get(int(y), 0.0) for y in fy], dtype=float)
+    tier = np.where(util <= 0, 0.0,
+                    np.where(anchor <= 0, np.nan,
+                             np.where(util < anchor, 1.0, 2.0)))
     out['utilities_sua'] = tier
     # QC outcome recomputed from the benefit pair, mirroring the Excel
     # formulas (and the munging script's own definition)
@@ -1291,14 +1262,19 @@ def mirror_features(raw, ftabs):
     return pd.DataFrame(out)
 
 
-def validate(raw, frame, elem_free, feat_names):
+def validate(raw, frame, elem_free, feat_names, state_name):
     ad = os.path.join(REPO, 'additional_data')
     yd = pd.read_csv(os.path.join(ad, 'year_data.csv')).sort_values('year')
     sd = pd.read_csv(os.path.join(ad, 'standard_deductions.csv')).sort_values('year')
     ma = pd.read_csv(os.path.join(ad, 'max_allotments.csv')).sort_values('year')
     for t in (sd, ma):
         t.columns = [str(c).strip() for c in t.columns]
-    mir = mirror_features(raw, (yd, sd, ma))
+    sua = pd.read_csv(os.path.join(ad, 'state_sua.csv'))
+    sua.columns = [str(c).strip() for c in sua.columns]
+    srow = sua[sua['state_name'] == state_name]
+    sua_by_year = ({int(c): float(srow.iloc[0][c]) for c in sua.columns
+                    if c != 'state_name'} if len(srow) else {})
+    mir = mirror_features(raw, (yd, sd, ma), sua_by_year)
     print(f'\nformula validation vs the munged frame '
           f'({len(frame)} rows, reconstructed pre-QC-review inputs):')
     print(f'  {"feature":32s} {"all rows":>9s}')
@@ -1308,6 +1284,14 @@ def validate(raw, frame, elem_free, feat_names):
             continue
         if c == 'hh_group':
             ok = mir[c].astype(str).values == frame[c].astype(str).values
+        elif c == 'utilities_sua':
+            # NaN-aware: a blank tier (no published standard for the year)
+            # must match the frame's NA, and never match a real 0
+            a = mir[c].astype(float).values
+            bn = pd.to_numeric(frame[c], errors='coerce').values
+            ok = ((np.isnan(a) & np.isnan(bn)) |
+                  np.isclose(np.nan_to_num(a, nan=-1.0),
+                             np.nan_to_num(bn, nan=-2.0), atol=1e-6, rtol=1e-9))
         else:
             a = mir[c].astype(float).values
             # over_threshold / total_error_amount live in the workbook in
@@ -1364,7 +1348,8 @@ def main():
     low = [n.lower() for n in names]
     dups = sorted({n for n in low if low.count(n) > 1})
     assert not dups, f'case-insensitive duplicate Data columns: {dups}'
-    ok = validate(raw, frame, elem_free, [h for h in hdr if h in feats])
+    ok = validate(raw, frame, elem_free, [h for h in hdr if h in feats],
+                  cfg['name'])
     if not ok:
         # HARD GATE (2026-08-16): the demo must sit on the reconstructed
         # pre-QC-review scale the rules were mined on — a state's internal
@@ -1420,8 +1405,6 @@ def main():
     for t in list(dat.tables):
         del dat.tables[t]
     make_table(dat, TABLE, f'A1:{LAST}{NROW}')
-    n_modes = write_sua_mode_block(wb, R, NROW)
-    print(f'SUA mode block: {n_modes} array-entered per-year cells on FederalTables')
 
     # 4. presentation: inputs (left block) light yellow — the workbook-wide
     #    "yellow means interactive" convention (revision 2026-08-18); computed
@@ -1462,11 +1445,12 @@ def main():
 
     step3_rows = data_dictionary(wb, hdr)
     # Step 3 column headers hyperlink to their dictionary rows (feedback
-    # 2026-08-22); the header row is row 4 on the rules tab
+    # 2026-08-22); the header row is row 3 on the rules tab since the note
+    # row was dropped (Eric's WA edits 2026-08-23)
     rules_ws = wb[BLENDED_SHEET]
     linked = 0
     for ci in range(1, rules_ws.max_column + 1):
-        h = rules_ws.cell(row=4, column=ci)
+        h = rules_ws.cell(row=3, column=ci)
         if h.value in step3_rows:
             h.hyperlink = f"#'{DICT_SHEET}'!A{step3_rows[h.value]}"
             h.font = Font(name='Calibri', bold=True, size=10, color='0563C1',

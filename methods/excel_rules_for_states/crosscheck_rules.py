@@ -36,7 +36,7 @@ import states as STATE_REGISTRY
 from workbook_layout import BLENDED_SHEET
 
 PKG = os.path.dirname(os.path.abspath(__file__))
-NAT_ROW0, FLAG0 = 11, 5
+NAT_ROW0, FLAG0 = 10, 5
 
 
 def find_repo(start):

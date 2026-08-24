@@ -52,7 +52,7 @@ import pandas as pd
 import states as STATE_REGISTRY
 import tuning
 import rule_selection
-from workbook_layout import (DATA_SHEET, BLENDED_SHEET, DICT_SHEET, EXPORT_SHEET,
+from workbook_layout import (DATA_SHEET, BLENDED_SHEET, EXPORT_SHEET,
                              VIEWER_SHEET, RAW_COLS, RAW_OFF, qref)
 
 DQ = qref(DATA_SHEET)                # the Data sheet as written in formulas
@@ -971,7 +971,7 @@ orig_masks, blended_scores, blended_conds = score_list(RULES)
 # row 1 rule nums | row 2 selected (from the rules tabs' Include? cols)
 # row 4 target stratum | rows FLAG0.. one per Data case (only 1s written)
 NR, NDATA = len(RULES), len(df)
-NAT_ROW0 = 11                  # Blended Rules / National Rules row of the first rule
+NAT_ROW0 = 10                  # Blended Rules / National Rules row of the first rule
 FLAG0 = 5
 
 ws_f = wb.create_sheet('RuleFlags')
@@ -1034,22 +1034,16 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
           fill=GRAY, font=Font(name=FONT,size=12,color='000000'), align=wrapped)
     ws.row_dimensions[2].height = 66
     # the per-column definitions moved to the Step 1 dictionary (feedback
-    # 2026-08-22); the headers below hyperlink to their rows there, and this
-    # row keeps only the two facts a reader needs before reading any column
-    merge(ws,3,1,3,11,
-          value=f'Rules are sorted by total error dollars caught on the data in the "{DATA_SHEET}" '
-                'tab. Per-rule figures are for that rule ALONE (rules overlap, so they do not add '
-                'up to the orange combined rows). Every column header below is a link to its '
-                f'definition on the "{DICT_SHEET}" tab.',
-          fill=GRAY, font=Font(name=FONT,size=12,color='000000'), align=wrapped)
-    ws.row_dimensions[3].height = 40
+    # 2026-08-22); the sort/overlap note row was dropped entirely (Eric's WA
+    # edits 2026-08-23), so the headers sit directly under the intro. The
+    # headers hyperlink to their dictionary rows.
     for col, txt in enumerate(['Rule','HH size','What the rule says','Precision','Recall',
                                '$ Recall','Flagged','Errors','Error $ caught','Workload %',
                                'Expected error $ by case','Include?'] +
                               [h for _, h, _, _ in CHAR_COLS] + ['Exact expression'], 1):
-        set_cell(ws,4,col,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
+        set_cell(ws,3,col,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
 
-    merge(ws,5,1,5,LASTC,
+    merge(ws,4,1,4,LASTC,
           value='All rules combined (a case is flagged if ANY rule with Include? = TRUE flags it, '
                 'at delivered thresholds)',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
@@ -1059,7 +1053,7 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     u_rng = f'RuleFlags!${union_col}${FLAG0}:${union_col}${FLAG0+NDATA-1}'
     for i, (scope_hh, sel) in enumerate([('all', np.ones(len(df), bool))] +
                                         [(lbl, (df['hh_group'] == lbl).values) for lbl in STRATA]):
-        r = 6 + i
+        r = 5 + i
         tot_err = max(int((is_err_all & sel).sum()), 1)
         tot_ed  = round(float(ed_all[sel].sum()), 2) or 1
         # workload in the summary rows is the share of ALL cases, so the
@@ -1085,7 +1079,7 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                      number_format=fmt, fill=ORANGE60)
         set_cell(ws,r,12,None, align=center, border=thin(), fill=ORANGE60)
 
-    merge(ws,10,1,10,LASTC, value='Individual rules — delivered thresholds, no tuning',
+    merge(ws,9,1,9,LASTC, value='Individual rules — delivered thresholds, no tuning',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
     plain_align = Alignment(horizontal='left', vertical='top', wrap_text=True)
     for j, rule in enumerate(rules_list):   # already sorted by error $ caught
@@ -1117,7 +1111,7 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                      font=Font(name=FONT,size=10))
         set_cell(ws,r,LASTC,conds_text[j], align=left,
                  font=Font(name=FONT,size=8,color='808080'))
-    ws.freeze_panes = 'D5'
+    ws.freeze_panes = 'D4'
     # Include? is plain TRUE/FALSE text (no native checkboxes since
     # 2026-08-18); the dropdown constrains typing without needing Excel 365
     dv_incl = DataValidation(type='list', formula1='"TRUE,FALSE"', allow_blank=False)
@@ -1133,13 +1127,14 @@ ws_n = delivery_list_tab(
     conds_text=blended_conds,
     sel_rng=NATSEL, hh_rng=HHRNG, union_col=NATU,
     title='Select Rules',
-    intro=('A list of potential rules, selected from state and national rules, prioritized by '
-           'precision and filled to a default 10% caseload. Expected error $ by case = error '
-           'dollars caught / cases flagged. To remove a rule, set the text in the yellow '
-           '"Include?" column to FALSE, which will decrease the workload % in cell J6. Columns '
-           'to the right of "Include?" characterize each rule as applied to NATIONAL data (what '
-           'error elements and natures it catches, who caused them, whether the error was '
-           'discovered in the case file); they are fixed context and do not recompute from '
+    # wording from Eric's WA edits 2026-08-23; the workload cell is J5 now
+    # that the sort/overlap note row is gone (his edited file still said J6)
+    intro=('This is the list of flagging rules to test with your internal data and to select '
+           'with judgment about what the rules flag and what can be found and fixed in '
+           'secondary review (see the "Start Here" tab for background). To remove a rule, set '
+           'the text in the yellow "Include?" column to FALSE, which will decrease the '
+           'workload % in cell J5. Columns to the right of "Include?" characterize each rule '
+           'as applied to NATIONAL data; they are fixed context and do not recompute from '
            'pasted data. If removing rules for a smaller workload percentage, start from '
            'the bottom.'))
 
@@ -1189,7 +1184,7 @@ merge(ws_e,2,1,2,2, value='sorted by cases matched — updates live',
       align=Alignment(horizontal='left', vertical='top', wrap_text=True))
 ws_e.row_dimensions[2].height = 36
 set_cell(ws_e,3,1,'Rule', font=bold_font(10), fill=GRAY, align=center, border=thin())
-set_cell(ws_e,3,2,'matches', font=bold_font(10), fill=GRAY, align=center, border=thin())
+set_cell(ws_e,3,2,'flagged', font=bold_font(10), fill=GRAY, align=center, border=thin())
 for k in range(1, LISTN+1):
     r = 3 + k
     set_cell(ws_e,r,1,formula=f'=IF({k}>${SC_B}$1,"",INDEX(${SC_D}$2:${SC_D}${1+NR},{k}))',
@@ -1202,10 +1197,12 @@ merge(ws_e,1,G0,1,G0+11,
       fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=16,color='FFFFFF'), align=center)
 # merged C:N with wrap (feedback 2026-08-21) rather than the full grid width
 merge(ws_e,2,G0,2,14,
-      value='Pick a rule (the dropdown lists rules currently matching, sorted by matches) and '
-            'choose whether to see only flagged cases that are true payment errors, or every '
-            'flagged case. Pasted rows appear here too; the columns the rule uses are '
-            f'highlighted in blue, and the first {GRIDN} matching cases are shown.',
+      value='The dropdown list (click on the wide yellow cell with a rule number in it, then '
+            'click the arrow that appears) lists rules that flag cases in the '
+            f'"{DATA_SHEET}" tab, sorted by number flagged. To the right of that dropdown, '
+            'click on the yellow "true errors only" to see the dropdown that allows viewing '
+            'every case the rule flags. The columns the rule uses are highlighted in blue, '
+            f'and the first {GRIDN} flagged cases are shown.',
       fill=GRAY, font=Font(name=FONT,size=13,color='000000'),
       align=Alignment(horizontal='left', vertical='top', wrap_text=True))
 ws_e.row_dimensions[2].height = 60
@@ -1383,15 +1380,15 @@ for col, txt in enumerate(['Rule', 'HH size', 'What the rule says',
 XCUM = f'$I$4:$I${3 + NR}'
 for k in range(1, NR + 1):
     r = 3 + k
-    ws_x.cell(row=r, column=8).value = f'=IF({BQ}!$L${10 + k}=TRUE,1,0)'
+    ws_x.cell(row=r, column=8).value = f'=IF({BQ}!$L${9 + k}=TRUE,1,0)'
     ws_x.cell(row=r, column=9).value = f'=$H{r}+N($I{r - 1})'
     idx = f'MATCH(ROW()-3,{XCUM},0)'
     ws_x.cell(row=r, column=1).value = (
-        f'=IFERROR(INDEX({BQ}!$A$11:$A${10 + NR},{idx}),"")')
+        f'=IFERROR(INDEX({BQ}!$A$10:$A${9 + NR},{idx}),"")')
     ws_x.cell(row=r, column=2).value = (
-        f'=IFERROR(INDEX({BQ}!$B$11:$B${10 + NR},{idx}),"")')
+        f'=IFERROR(INDEX({BQ}!$B$10:$B${9 + NR},{idx}),"")')
     c3 = set_cell(ws_x, r, 3,
-                  formula=f'=IFERROR(INDEX({BQ}!$C$11:$C${10 + NR},{idx}),"")',
+                  formula=f'=IFERROR(INDEX({BQ}!$C$10:$C${9 + NR},{idx}),"")',
                   align=Alignment(horizontal='left', vertical='top', wrap_text=True),
                   font=Font(name=FONT, size=10))
     ws_x.cell(row=r, column=4).value = (
