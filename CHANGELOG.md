@@ -41,6 +41,18 @@ as downloadable release assets.
   munging script. Gross income is now recomputed as earned plus unearned
   for every row (previously only for child-support-exclusion rows); the
   frame's row universe and error rate are unchanged.
+- **Delivery-transform gates in the workbook build** (2026-08-22): the
+  rule list a workbook carries is the state's delivery list after four
+  quality gates. Rules conditioning on `count_divisible_by_100` are
+  dropped; `bbce_state_i` conditions trivially true for the state are
+  stripped (a single state's data is single-regime), with rules that
+  then never fire dropped; rules whose `medical_deductions` threshold
+  falls in the state's standard-medical-deduction dead zone (between the
+  training-era and current SMD, where meaning silently shifts when the
+  SMD moves) are dropped; and rules testing a dollar interval with
+  relative width under 5% are dropped (pre-registered bar in
+  `methods/width_floor_rewalk/`). The delivery CSVs themselves are
+  untransformed.
 - The Step 3 tab of the state workbooks drops its sort/overlap note row
   (headers move up one row), and instruction text throughout the
   workbook was rewritten for clarity.
@@ -70,6 +82,12 @@ as downloadable release assets.
   default.
 - `additional_data/state_sua.csv`: the per-state, per-year heating/cooling
   standard utility allowance table that anchors `utilities_sua`.
+- `INCL_mine_internal_and_blend_with_national_v2.R` (2026-08-18): mines a
+  state's INTERNAL case file with the shipped recipe and blends the
+  result with the published national pool artifact
+  (`state_delivery_lists/national_rule_pool_2022_2024_v250.rds`); no
+  public frame needed, with validity judged only by the state's held-out
+  internal period.
 
 ### Fixed
 - The munging script's tail referenced `df` before it was assigned after
