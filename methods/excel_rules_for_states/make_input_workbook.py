@@ -452,8 +452,8 @@ def background_tab(wb, state_name):
          f'{GITHUB}/tree/main/methods/excel_rules_for_states')
     link('The delivery rule lists, one CSV per state (GitHub)',
          f'{GITHUB}/tree/main/state_delivery_lists')
-    link('The finished state workbooks (GitHub)',
-         f'{GITHUB}/tree/main/methods/excel_rules_for_states/state_workbooks')
+    link('Download latest state workbooks',
+         f'{GITHUB}/releases/latest')
     r += 2
     para('Made by the Better Government Lab at Georgetown University and the '
          'University of Michigan', bold=True)
