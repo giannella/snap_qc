@@ -10,7 +10,50 @@ moved or behaves differently.
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-08-24
+
+If you use the ready-built blended lists, re-download them: every blended
+list was replaced with the SUA-tier vocabulary version. Filenames and
+columns are unchanged. The per-state Excel workbooks debut in this release
+as downloadable release assets.
+
+### Changed
+- **All 98 blended delivery lists replaced with the SUA-tier vocabulary
+  versions**: `utilities_sua` (a three-level standard-utility-allowance
+  tier) replaces raw `utilities` dollars among the mined features, so
+  utility rules keep meaning the same thing when SUA levels reset each
+  October. The one-year-ahead benchmark behind the swap is
+  `methods/v250_benchmark_2024_utilrel/result_2026-08-22.md` (the utility
+  family's held-out reach-collapse fell from about 3.0x the non-utilities
+  reference to 0.16x, list medians non-inferior at both budgets).
+  Filenames, schema, walk, and gates are unchanged.
+- **`utilities_sua` is redefined to an external anchor**: the tier now
+  compares a case's utility amount to the state's published
+  heating/cooling standard for the review year (new
+  `additional_data/state_sua.csv`), replacing the modal anchor computed
+  from the data and its $200 band. A state-year with no published
+  standard yields a missing tier. The benchmark above ran under the
+  earlier definition; its replication under this one is pending.
+- **Feature construction consolidated into `features.R`**
+  (`add_external_data`, `standardize_data`): the error threshold and
+  flag, standard medical deduction, Medicare Part B premium, maximum
+  shelter deduction, and child-support standardization moved out of the
+  munging script. Gross income is now recomputed as earned plus unearned
+  for every row (previously only for child-support-exclusion rows); the
+  frame's row universe and error rate are unchanged.
+- The Step 3 tab of the state workbooks drops its sort/overlap note row
+  (headers move up one row), and instruction text throughout the
+  workbook was rewritten for clarity.
+
 ### Added
+- **Per-state Excel workbooks as release assets**: one
+  `SNAP_flagging_rules_<ST>.xlsx` per state with a delivery list,
+  downloadable from this release's Assets section. Paste internal cases
+  into the yellow columns and every figure recomputes; rules are kept or
+  dropped in the Include? column. Built by
+  `methods/excel_rules_for_states/make_state.py`; the workbook carries
+  the new `utilities_sua` definition with the state's per-year standard
+  on a hidden reference sheet.
 - **National-only delivery lists** (`national_delivery_<State>_2022_2024_budgetXX.csv`)
   in `state_delivery_lists/`, for the 43 states (5% budget; 36 at 10%)
   where a three-arm one-year-ahead evaluation showed the national pool
@@ -22,6 +65,16 @@ moved or behaves differently.
   between the July study and the current evaluation - not stable, so
   both list types ship. Blended lists are unchanged and remain the
   default.
+- `additional_data/state_sua.csv`: the per-state, per-year heating/cooling
+  standard utility allowance table that anchors `utilities_sua`.
+
+### Fixed
+- The munging script's tail referenced `df` before it was assigned after
+  the feature-construction refactor; the feature output now lands in
+  `df` directly.
+
+### Removed
+- `first5_splits_by_state.csv` (unused).
 
 ## [2.5.0] - 2026-08-14
 

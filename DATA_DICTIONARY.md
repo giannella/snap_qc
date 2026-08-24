@@ -91,7 +91,7 @@ shelter_expenses           # sourced from: rawrent + utilities                  
 
 ```text
 utilities                  # sourced from: rawutil                                    # Per FNS: UTIL = Utility amount
-utilities_sua              # features.R add_sua_tier(): 0 = no utility amount; 1 = positive below (state-year anchor - 200); 2 = at/above that (HIGH-SUA cluster). Anchor = mode of positive rawutil per state-year (sua_anchor(): whole dollars, ties to the smallest). v1 2026-08-22; mined in place of `utilities` in the SUA-tier vocabulary (methods/v250_benchmark_2024_utilrel/)
+utilities_sua              # features.R add_sua_tier(): 0 = no utility amount; 1 = positive below the state-year anchor; 2 = at or above it; NA when the state-year has no anchor. Anchor = the state's published heating/cooling standard utility allowance for the fiscal year (additional_data/state_sua.csv `max_sua`; a zero in that table means no published standard). Redefined 2026-08-23 (state-options merge) from the v1 modal anchor of 2026-08-22 (mode of positive rawutil per state-year, $200 band); mined in place of `utilities` in the SUA-tier vocabulary (methods/v250_benchmark_2024_utilrel/, studied under the v1 definition)
 ```
 
 ### `married`

@@ -10,7 +10,7 @@ Source: `INCL_build_blended_delivery_list_v2.R`, `rule_mining_helpers.R`. Counts
 the any-error 2022-24 build. Numbers cite the findings section they come from; the
 findings docs own every number and this document restates rather than originates them.
 
-Last revised 4 August 2026.
+Last revised 23 August 2026.
 
 ---
 
@@ -39,9 +39,14 @@ threshold, because a threshold is not a thing an agency can staff.
 
 | | |
 |---|---|
-| median holdout precision at a 5% budget, 49 states | **0.31** |
-| lift over the caseload base error rate of about 12% | **2.6x** |
-| rules delivered per state at that budget, core plus substitutes | **137** |
+| median one-year-ahead precision at a 5% budget, 49 states (v2.5.0) | **0.318** |
+| at the 10% budget | **0.298** |
+
+The lists shipped since 2026-08-14 are the **v2.5.0 package**: the corrected frame (the
+2026-08-12/13 benefit-reconstruction repairs), the per-size 19-feature vocabulary with the
+state-level BBCE regime flag, the artifact gates below, and the fresh-share walk. A year
+ahead it beats the v2.4.0 lists it replaced, paired per state: median precision +0.0232 at
+the 5% budget and +0.0300 at 10%, with dollar recall also up at both (findings 39).
 
 ---
 
@@ -57,6 +62,12 @@ source of the second open question at the bottom of this document.
 | **The state's own** | One state's rows from the same frame, or its internal case files, which include the ineligible determinations the public files omit. | about 1,000 to 4,000 cases |
 
 Both pools then run stages 1 to 6 below, independently.
+
+A state that wants the internal-data version without the public frame runs
+`INCL_mine_internal_and_blend_with_national_v2.R` (added 2026-08-18): it mines the state's
+internal case file with this same recipe and blends against the published national pool
+artifact (`state_delivery_lists/national_rule_pool_2022_2024_v250.rds`); validity is
+judged only by the state's held-out internal period.
 
 ---
 
@@ -183,6 +194,14 @@ descending 99% lower bound. Where the same rule was mined by both pools, the cop
 higher bound is kept. Ties break deterministically on stratum then rule text, so a rerun
 reproduces the list exactly.
 
+**Drop artifact magnets.** A residue of 571 imperfectly reconstructed rows runs an error
+rate of 0.750 against the frame's 0.114, and rules can key on it. Before the fill, any
+rule with at least a 0.25 share of its training flags or caught errors on those rows is
+tagged and dropped, and a removal-invariance re-walk confirms the delivered list does not
+depend on them. The v2.5.0 record: 0.03% of national rules trip the flag-share trigger,
+no tagged rule reaches any list's top 10, and the re-walk moves the median state's
+benchmark precision by 0.000 (findings 38).
+
 **Fill to the review budget.** Walking in rank order, a rule is taken only if it flags
 cases no earlier rule already flagged, a greedy set cover against a capacity constraint.
 Rules fill the **core** until the budget is reached, 5% or 10% of the state's caseload, and
@@ -207,10 +226,19 @@ assumption. Across all 49 states at both budgets it held in 98 of 98 cases and r
 every list identically, while cutting a research-scale evaluation from 77 minutes per state
 to about one.
 
-**Deliver.** Thirteen columns per rule, ending in `rank` and `role`. Each row carries its
-provenance: which pool mined it, which engines found it, which frames it came from, how
+**Deliver.** Twenty-three columns per rule, led by `rank` and `role`. Each row carries its
+provenance (which pool mined it, which engines found it, which frames it came from, how
 many training and state cases it flags, and how many *new* cases it adds at its position in
-the walk.
+the walk), the measurement-artifact audit shares behind the gate above, and since v2.5.0
+seven curated characterization columns: what elements and natures the rule's national
+error cases involve, who caused them, whether the reviewer found them in the case record,
+the overissuance share, and the timing (findings 29; the full sheet with intervals ships
+alongside as `state_delivery_lists/rule_characterization.csv`).
+
+The lists also ship as a per-state Excel workbook
+(`methods/excel_rules_for_states/`, one `SNAP_flagging_rules_<ST>.xlsx` per state): the
+state pastes its internal cases into the data tab, every figure recomputes, and rules are
+kept or dropped in a yellow Include? column; no Python or R runs on the state's side.
 
 ---
 
@@ -339,6 +367,18 @@ A variant vocabulary that mines four typed error frames alongside the pooled one
 roughly three times the candidates at every stage. It was built for all 49 states and
 measured against this one: precision was a wash and dollar recall slightly worse, so it is
 kept as a labelled option rather than the default (findings 17).
+
+Since 2026-08-23 the delivered lists come from the SUA-tier vocabulary: `utilities_sua`, a
+three-level standard-utility-allowance tier, replaces raw `utilities` dollars among the
+mined features, so utility rules keep meaning the same thing when SUA levels reset each
+October. The one-year-ahead benchmark that cleared the swap is
+`methods/v250_benchmark_2024_utilrel/result_2026-08-22.md`: the utility-rule family's
+held-out reach-collapse fell from about 3.0x the non-utilities reference to 0.16x with
+list medians non-inferior at both budgets. The tier is defined once, in `features.R`
+(`add_sua_tier`). On 2026-08-23 its anchor changed from a modal value computed from the
+data to the state's published heating/cooling standard
+(`additional_data/state_sua.csv`); the benchmark above was run under the earlier
+definition, and its replication under this one is pending.
 
 Two performance figures appear in this project and are not interchangeable. A list frozen
 on 2022-23 and scored on 2024 without refilling carries only about 86% of its budgeted
