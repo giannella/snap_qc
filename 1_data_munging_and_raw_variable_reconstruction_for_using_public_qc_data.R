@@ -87,10 +87,9 @@ mydata <- mydata %>%
     by = c("NATURE1" = "code")
   )
 
-# Add in external SNAP data; standardize data
+# Add in external SNAP data
 source("features.R")
 mydata <- add_external_data(mydata)
-mydata <- standardize_data(mydata)
 
 # Save data as a checkpoint
 saveRDS(mydata, paste0(folder, "all_years.rds"))
@@ -160,6 +159,9 @@ mydata <- mydata %>%
 # recommended as a mining feature — states report second elements very
 # inconsistently, so it would encode reporting practice, not error risk.
 mydata$second_element_i <- !is.na(mydata$ELEMENT2)
+
+# Step 3. Standardize data
+mydata <- standardize_data(mydata)
 
 # Step 4. Recreate the FS benefit using the formula inputs
 
