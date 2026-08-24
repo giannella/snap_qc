@@ -764,7 +764,7 @@ saveRDS(mydata, paste0(folder, "final.rds"))
 mydata <- readRDS(paste0(folder, "final.rds"))
 
 #### Add additional features from features.R
-mydata <- add_features(mydata)
+df <- add_features(mydata)
 
 #### variable cleaning / recoding ###
 names(df) <- tolower(names(df))
