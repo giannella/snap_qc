@@ -49,10 +49,13 @@ as downloadable release assets.
   then never fire dropped; rules whose `medical_deductions` threshold
   falls in the state's standard-medical-deduction dead zone (between the
   training-era and current SMD, where meaning silently shifts when the
-  SMD moves) are dropped; and rules testing a dollar interval with
+  SMD moves) are dropped; rules testing a dollar interval with
   relative width under 5% are dropped (pre-registered bar in
-  `methods/width_floor_rewalk/`). The delivery CSVs themselves are
-  untransformed.
+  `methods/width_floor_rewalk/`); and rules whose interval on
+  `rawben_rel_max` or `unc_rawben_rel_max` spans less than 0.10 absolute
+  are dropped unless the interval contains 1.0, the at/over-maximum
+  boundary (2026-08-24; the relative floor cannot see thin ratio slices
+  near 1.0). The delivery CSVs themselves are untransformed.
 - The Step 3 tab of the state workbooks drops its sort/overlap note row
   (headers move up one row), and instruction text throughout the
   workbook was rewritten for clarity.
