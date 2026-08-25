@@ -256,6 +256,7 @@ calculate_raw_benefits <- function(mydata) {
   mydata$rawben_recreated <- pmin(mydata$rawben_recreated, mydata$rawbenmax)
   mydata$rawnet_capped = pmax(mydata$rawnet_allow_negative, 0) 
   mydata$unc_rawben_rel_max <- mydata$rawben_uncapped / mydata$rawbenmax
+  mydata$at_max_ben <- as.integer(mydata$rawben_uncapped >= mydata$rawbenmax)
   mydata
 
 }
@@ -667,10 +668,33 @@ cat(overthr_num, "of", overthr_den, "=", overthr, "%\n")
 saveRDS(mydata, paste0(folder, "corrected.rds"))
 mydata <- readRDS(paste0(folder, "corrected.rds"))
 
-# Create a flag for at_max_benefit
-mydata$at_max_ben <- as.integer(mydata$rawben_uncapped >= mydata$rawbenmax)
-
 ### Variable smoothing
+mydata <- calculate_raw_benefits(mydata)
+
+# If a value was cut by >80% and is now <=$5, set it to $0
+if (apply_correction_smoothing) {
+  raw_map <- c(
+    rawunearn = "FSUNEARN",
+    rawearn   = "FSEARN",
+    rawrent   = "RENT",
+    rawmedded = "FSMEDDED",
+    rawdepded = "FSDEPDED",
+    rawcsded  = "FSCSDED"
+  )
+  
+  for (raw in names(raw_map)) {
+    orig <- mydata[[raw_map[[raw]]]]
+    cur  <- mydata[[raw]]
+    mydata[[raw]] <- ifelse(
+      !is.na(orig) & !is.na(cur) & orig > 0 & cur > 0 &
+        cur <= 5 & cur < 0.2 * orig,
+      0,
+      cur
+    )
+  }
+  mydata <- calculate_raw_benefits(mydata)
+}
+
 # If we reduced earned income down by over 75%, and at max, set it to $0
 if (apply_correction_smoothing) {
   mydata$rawearn <- ifelse(
