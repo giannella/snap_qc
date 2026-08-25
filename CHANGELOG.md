@@ -55,7 +55,11 @@ as downloadable release assets.
   `rawben_rel_max` or `unc_rawben_rel_max` spans less than 0.10 absolute
   are dropped unless the interval contains 1.0, the at/over-maximum
   boundary (2026-08-24; the relative floor cannot see thin ratio slices
-  near 1.0). The delivery CSVs themselves are untransformed.
+  near 1.0); and rules with a two-sided dollar interval sitting entirely
+  at or below $5 (e.g. earned income per person between $0.06 and $1.27)
+  are dropped — the crumbs-not-income region, an artifact signature
+  under investigation, held out pending a pipeline fix (2026-08-24).
+  The delivery CSVs themselves are untransformed.
 - The Step 3 tab of the state workbooks drops its sort/overlap note row
   (headers move up one row), and instruction text throughout the
   workbook was rewritten for clarity.

@@ -18,6 +18,9 @@ state_delivery_lists/ are untouched; this reshapes what the WORKBOOK ships:
      (excess held-out decay, 8-36% reach collapse on two eras); the
      49-state re-walk shipped the floor as removal-invariant hygiene
      (median paired change +0.0000, zero states harmed).
+  2a''. DROP rules with a two-sided dollar interval sitting entirely at or
+     below $5 (2026-08-24): the crumbs-not-income region, an artifact
+     signature under investigation; dropped pending the pipeline fix.
   2a'. DROP rules whose two-sided interval on rawben_rel_max or
      unc_rawben_rel_max spans less than 0.10 absolute (2026-08-24; a span
      of exactly 0.10 passes) unless the interval contains 1.0, the
@@ -67,6 +70,25 @@ WIDTH_FLOOR = 0.05
 DOLLAR_VARS = {'medical_deductions', 'utilities', 'earned_by_hh_size',
                'unearned_by_hh_size', 'gross_by_hh_size',
                'shelter_expenses_by_hh_size', 'total_deductions_by_hh_size'}
+
+
+# Low-dollar band drop (2026-08-24): a two-sided interval on a dollar
+# variable that sits entirely at or below $5 (e.g. earned_by_hh_size in
+# (0.0556, 1.27]) selects the "recorded amount is crumbs, not income"
+# region — a reconstruction/proration artifact signature under
+# investigation, not a risk signal. Dropped pending the pipeline fix;
+# one-sided conditions (e.g. medical_deductions < 3) are untouched.
+LOW_DOLLAR_CAP = 5.0
+
+
+def low_dollar_band(conds, cap=LOW_DOLLAR_CAP):
+    """True when a two-sided dollar interval has its upper bound <= cap."""
+    for v in DOLLAR_VARS:
+        lo = [c['thr'] for c in conds if c['var'] == v and c['op'] in ('>', '>=')]
+        hi = [c['thr'] for c in conds if c['var'] == v and c['op'] in ('<', '<=')]
+        if lo and hi and min(hi) > max(lo) and min(hi) <= cap:
+            return True
+    return False
 
 
 # Absolute span floor on the two benefit-ratio variables (2026-08-24):
@@ -198,7 +220,7 @@ def _transform(rules, df, log, med_zone=None):
     """Steps 1-2 on one role's rules: div-100 drop + bbce strip/drop, plus
     the SMD dead-zone drop when a zone is known for this state."""
     out, n_div, n_strip, n_never = [], 0, 0, 0
-    n_smd = n_narrow = n_ratio = 0
+    n_smd = n_narrow = n_ratio = n_lowd = 0
     for r in rules:
         if any(c['var'] in DROP_VARS for c in r['conds']):
             n_div += 1
@@ -208,6 +230,9 @@ def _transform(rules, df, log, med_zone=None):
             continue
         if ratio_span_too_small(r['conds']):
             n_ratio += 1
+            continue
+        if low_dollar_band(r['conds']):
+            n_lowd += 1
             continue
         if med_zone and any(
                 c['var'] == 'medical_deductions'
@@ -233,7 +258,7 @@ def _transform(rules, df, log, med_zone=None):
                 log(f'  warn: rule {r["num"]} keeps its {STRIP_VAR} conjunct '
                     f'(mixed within the state frame: {int(sat.sum())}/{len(sat)} rows)')
         out.append(r)
-    return out, n_div, n_strip, n_never, n_smd, n_narrow, n_ratio
+    return out, n_div, n_strip, n_never, n_smd, n_narrow, n_ratio, n_lowd
 
 
 def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
@@ -255,15 +280,16 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
         log(f'SMD dead zone for {state_name}: '
             f'[{med_zone[0]:g}, {med_zone[1]:g}]')
 
-    kept, n_div_c, n_strip_c, n_never_c, n_smd_c, n_nar_c, n_rat_c = _transform(
+    kept, n_div_c, n_strip_c, n_never_c, n_smd_c, n_nar_c, n_rat_c, n_lowd_c = _transform(
         core, df, log, med_zone)
-    promotable, n_div_b, n_strip_b, n_never_b, n_smd_b, n_nar_b, n_rat_b = _transform(
+    promotable, n_div_b, n_strip_b, n_never_b, n_smd_b, n_nar_b, n_rat_b, n_lowd_b = _transform(
         buffer, df, log, med_zone)
     log(f'core: {len(core)} -> {len(kept)} '
         f'(dropped {n_div_c} count_divisible_by_100, {n_never_c} never-firing, '
         f'{n_smd_c} in the SMD dead zone, {n_nar_c} narrow dollar intervals '
         f'(< {WIDTH_FLOOR:.0%} rel width), {n_rat_c} thin benefit-ratio intervals '
-        f'(span < {RATIO_SPAN_FLOOR} off 1.0); stripped {STRIP_VAR} from {n_strip_c})')
+        f'(span < {RATIO_SPAN_FLOOR} off 1.0), {n_lowd_c} low-dollar bands '
+        f'(<= ${LOW_DOLLAR_CAP:.0f}); stripped {STRIP_VAR} from {n_strip_c})')
 
     union = np.zeros(len(df), bool)
     for r in kept:
