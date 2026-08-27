@@ -46,6 +46,7 @@ written to .build/effective_rules_<ABBR>.csv in the delivery-CSV schema
 (with rule text regenerated after stripping) — crosscheck_rules consumes
 that file, not the raw delivery CSV.
 """
+import os
 import re
 
 import numpy as np
@@ -306,6 +307,29 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
         f'(union {int(union.sum())} of target {target} flagged rows, '
         f'{int(union.sum())/max(len(df),1):.1%} of the frame)')
 
+    # measurement tier (2026-08-27, share_back_transfer_plan.md): rules
+    # appended for the Step 6 read-out only. They ship Include? = FALSE and
+    # are appended AFTER the capacity walk above, so the deployed
+    # core+promoted set is byte-identical with or without them. Same
+    # transform gates apply; duplicates of deployed rules are skipped.
+    mcsv = os.environ.get('SNAP_MEASURE_CSV')
+    if mcsv and os.path.isfile(mcsv):
+        mrows = _parse_rows(mcsv, char_keys)
+        mkept = _transform(mrows, df, log, med_zone)[0]
+        seen = {(r['hh'], rule_text(r['conds'])) for r in kept}
+        added = 0
+        for r in mkept:
+            key = (r['hh'], rule_text(r['conds']))
+            if key in seen:
+                continue
+            r['ship'] = False
+            kept.append(r)
+            seen.add(key)
+            added += 1
+        log(f'measurement tier: {added} of {len(mrows)} appended from '
+            f'{os.path.basename(mcsv)} (Include? = FALSE, zero deployed '
+            'capacity)')
+
     # dollars caught on the frame at delivered thresholds -> Step 3 sort order
     is_err = (pd.to_numeric(df['over_threshold'], errors='coerce')
               .fillna(0).values == 1) if 'over_threshold' in df else \
@@ -325,6 +349,7 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
         for r in kept:
             rec = r['_row'].copy()
             rec['rule'] = rule_text(r['conds'])
+            rec['ship'] = bool(r.get('ship', True))
             recs.append(rec)
         pd.DataFrame(recs).to_csv(out_csv, index=False)
         log(f'effective list written: {out_csv} ({len(recs)} rules)')

@@ -139,7 +139,7 @@ def build_one(state, refresh, want_verify):
         # matrix (every rule selected) and the Data tab's static
         # over_threshold column, the same quantities crosscheck_rules.py
         # verifies against R, so no Excel evaluation is involved.
-        g5, h5 = static_union(out)
+        g5, h5 = static_union(out, state)
         expect = [f"{BLENDED_SHEET}!G5={g5}", f"{BLENDED_SHEET}!H5={h5}"]
         probes = [p for p in PROBES_FINAL
                   if p not in (f"{BLENDED_SHEET}!G5", f"{BLENDED_SHEET}!H5")] + expect
@@ -147,15 +147,30 @@ def build_one(state, refresh, want_verify):
     print(f'\nDone: {deliver}')
 
 
-def static_union(plain_xlsx):
-    """(cases flagged, errors caught) by the union of ALL rules, from the
-    plain build's static RuleFlags hit matrix (rows FLAG0.., one 0/1 column
-    per rule starting at column B) and the Data tab's over_threshold."""
+def static_union(plain_xlsx, state=None):
+    """(cases flagged, errors caught) by the union of the SHIPPED rules, from
+    the plain build's static RuleFlags hit matrix (rows FLAG0.., one 0/1
+    column per rule starting at column B) and the Data tab's over_threshold.
+    Measurement-tier rules (ship = FALSE in the effective list) are excluded,
+    matching the live union's Include? defaults."""
     import openpyxl
     wb = openpyxl.load_workbook(plain_xlsx, read_only=True)
     rf = wb['RuleFlags']
     nr = sum(1 for c in next(rf.iter_rows(min_row=1, max_row=1))[1:]
              if isinstance(c.value, int))
+    # RuleFlags column j (1-based after the lead column) is effective-list
+    # rule j; the ship column says which columns count toward the deployed
+    # union. No ship column (or no csv) means every rule ships.
+    keep = [True] * nr
+    if state:
+        eff = os.path.join(BUILD_DIR, f'effective_rules_{state}.csv')
+        if os.path.isfile(eff):
+            import csv as _csv
+            with open(eff, newline='', encoding='utf-8') as fh:
+                rows = list(_csv.DictReader(fh))
+            if rows and 'ship' in rows[0]:
+                keep = [str(r.get('ship', 'True')).strip().lower()
+                        not in ('false', '0') for r in rows[:nr]]
     dat = wb[DATA_SHEET]
     hdr = [c.value for c in next(dat.iter_rows(min_row=1, max_row=1))]
     ov = hdr.index('over_threshold')
@@ -164,7 +179,7 @@ def static_union(plain_xlsx):
     for i, row in enumerate(rf.iter_rows(min_row=5, max_col=1 + nr, values_only=True)):
         if i >= len(err):
             break
-        if any(v == 1 for v in row[1:]):
+        if any(v == 1 for v, k in zip(row[1:], keep) if k):
             flagged += 1
             if err[i] == 1:
                 errors += 1

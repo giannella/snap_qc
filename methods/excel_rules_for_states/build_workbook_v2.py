@@ -39,7 +39,6 @@ import subprocess
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
-from openpyxl.chart import ScatterChart, Reference, Series
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.workbook.defined_name import DefinedName
@@ -542,22 +541,11 @@ for bi, rule in enumerate(RULES):
                      fill=fill_r, align=center, border=thin())
         if fmt: c.number_format = fmt
 
-# precision-recall chart (79 points; labels off — identify via the table)
-chart = ScatterChart()
-chart.title = 'Precision vs Recall (current Dashboard thresholds)'
-chart.x_axis.title = 'Recall'; chart.y_axis.title = 'Precision'
-chart.x_axis.numFmt = '0%';   chart.y_axis.numFmt = '0%'
-chart.width, chart.height = 15, 12
-for bi, rule in enumerate(RULES):
-    rec_c, prec_c = summary_cells[bi]['recall (count)'], summary_cells[bi]['precision']
-    xv = Reference(ws, min_col=7, min_row=int(rec_c[1:]),  max_row=int(rec_c[1:]))
-    yv = Reference(ws, min_col=7, min_row=int(prec_c[1:]), max_row=int(prec_c[1:]))
-    s = Series(yv, xv, title=f'Rule {rule["num"]}')
-    s.marker.symbol, s.marker.size = 'circle', 7
-    s.graphicalProperties.line.noFill = True
-    chart.series.append(s)
-chart.legend = None
-ws.add_chart(chart, 'J3')
+# the Dashboard's precision-recall scatter was removed 2026-08-27: one
+# series per rule hit Excel's 255-series chart cap on the first 300-rule
+# measurement build, corrupting the package (Excel refused to open the
+# file until repair amputated the drawing). The per-rule numbers live in
+# the comparison table on this sheet; nothing else referenced the chart.
 ws.freeze_panes = 'A9'
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1097,7 +1085,10 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                  number_format='0.0%', fill=GREEN)
         set_cell(ws,r,11,(round(sc['dollars']/sc['n'], 2) if sc['n'] else '—'),
                  align=center, border=thin(), number_format='$#,##0', fill=GREEN)
-        set_cell(ws,r,12,True, fill=YELLOW, align=center, border=thin(), font=Font(name=FONT))
+        # measurement-tier rules ship Include? = FALSE (zero deployed
+        # capacity; present for the Step 6 read-out only)
+        set_cell(ws,r,12,bool(rule.get('ship', True)), fill=YELLOW, align=center,
+                 border=thin(), font=Font(name=FONT))
         # the whole characterization block (M onward) reads left-aligned so
         # its content is legible before any column resize (feedback
         # 2026-08-21 for T-W, extended to M-Q 2026-08-22)
