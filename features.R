@@ -24,8 +24,7 @@ state_col_map <- c(
   rawunearn   = "UNEARNED_INCOME",
   rawmedded   = "MEDICAL_DEDUCTION",
   rawdepded   = "DEPENDENT_CARE_DEDUCTION",
-  rawcsded    = "CHILD_SUPPORT_DEDUCTION",
-  rawcsexp    = "CHILD_SUPPORT_EXPENSES",
+  rawcsded    = "CHILD_SUPPORT_EXPENSES",
   rawhomeless_ded = "HOMELESS_DEDUCTION",
   rawrent     = "RENT",
   rawutil     = "UTILITY_COSTS",
@@ -130,16 +129,8 @@ standardize_data <- function(data, using_qc_data = TRUE) {
   if (using_qc_data) {
     data |>
       dplyr::mutate(
-        cs_exclusion_case= dplyr::coalesce(FSCSDED == 0 & FSCSEXP > 0, FALSE),
-        FSCSDED = dplyr::if_else(cs_exclusion_case, FSCSEXP, FSCSDED),
+        FSCSDED = FSCSEXP,
         FSGRINC = FSEARN + FSUNEARN
-      )
-  } else {
-    data |>
-      dplyr::mutate(
-        cs_exclusion_case = dplyr::coalesce(rawcsded == 0 & rawcsexp > 0, FALSE),
-        rawcsded = dplyr::if_else(cs_exclusion_case, rawcsexp, rawcsded),
-        rawgrinc = rawearn + rawunearn
       )
   }
 }
