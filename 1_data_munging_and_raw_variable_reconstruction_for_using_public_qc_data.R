@@ -758,7 +758,7 @@ scale_by_ratio <- function(data, notes_value, col_name) {
     size <- data$rawusize[i]
     ratio <- ratios$ratio[ratios$rawusize == size]
     if (length(ratio) == 0 || is.na(ratio)) ratio <- 1
-    data[[col_name]][i] * ratio
+    round(data[[col_name]][i] * ratio)
   })
   
   data
