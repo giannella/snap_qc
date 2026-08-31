@@ -256,6 +256,7 @@ calculate_raw_benefits <- function(mydata) {
   mydata$rawben_recreated <- pmin(mydata$rawben_recreated, mydata$rawbenmax)
   mydata$rawnet_capped = pmax(mydata$rawnet_allow_negative, 0) 
   mydata$unc_rawben_rel_max <- mydata$rawben_uncapped / mydata$rawbenmax
+  mydata$at_max_ben <- as.integer(mydata$rawben_uncapped >= mydata$rawbenmax)
   mydata
 
 }
@@ -564,6 +565,27 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
   mydata
 }
 
+fix_smd_adjustments <- function(mydata) {
+  mydata <- mydata |>
+    mutate(
+      rawmedded = case_when(
+        rawmedded == FSMEDDED          ~ rawmedded,
+        is.na(smd_amt) | smd_amt <= 0  ~ rawmedded,
+        abs(smd_amt - rawmedded) <= 5  ~ smd_amt,
+        smd_amt <= rawmedded           ~ rawmedded,
+        correctednotes == "med_up"     ~ smd_amt,
+        correctednotes == "med_down"   ~ case_when(
+          smd_amt < FSMEDDED & abs(smd_amt - rawmedded) <= 30 ~ smd_amt, 
+          .default = 0
+        ),
+        .default = rawmedded
+      )
+    )
+  
+  mydata <- calculate_raw_benefits(mydata)
+  
+  mydata
+}
 
 if (correct_variables){
   
@@ -587,6 +609,7 @@ if (correct_variables){
                          col = "rawmedded", 
                          elements = c(365), 
                          prefix = "med")
+  mydata <- fix_smd_adjustments(mydata)
   mydata <- adjust_other(mydata, 
                          col = "rawdepded", 
                          elements = c(323), 
@@ -667,10 +690,33 @@ cat(overthr_num, "of", overthr_den, "=", overthr, "%\n")
 saveRDS(mydata, paste0(folder, "corrected.rds"))
 mydata <- readRDS(paste0(folder, "corrected.rds"))
 
-# Create a flag for at_max_benefit
-mydata$at_max_ben <- as.integer(mydata$rawben_uncapped >= mydata$rawbenmax)
-
 ### Variable smoothing
+mydata <- calculate_raw_benefits(mydata)
+
+# If a value was cut by >80% and is now <=$5, set it to $0
+if (apply_correction_smoothing) {
+  raw_map <- c(
+    rawunearn = "FSUNEARN",
+    rawearn   = "FSEARN",
+    rawrent   = "RENT",
+    rawmedded = "FSMEDDED",
+    rawdepded = "FSDEPDED",
+    rawcsded  = "FSCSDED"
+  )
+  
+  for (raw in names(raw_map)) {
+    orig <- mydata[[raw_map[[raw]]]]
+    cur  <- mydata[[raw]]
+    mydata[[raw]] <- ifelse(
+      !is.na(orig) & !is.na(cur) & orig > 0 & cur > 0 &
+        cur <= 5 & cur < 0.2 * orig,
+      0,
+      cur
+    )
+  }
+  mydata <- calculate_raw_benefits(mydata)
+}
+
 # If we reduced earned income down by over 75%, and at max, set it to $0
 if (apply_correction_smoothing) {
   mydata$rawearn <- ifelse(
@@ -734,7 +780,7 @@ scale_by_ratio <- function(data, notes_value, col_name) {
     size <- data$rawusize[i]
     ratio <- ratios$ratio[ratios$rawusize == size]
     if (length(ratio) == 0 || is.na(ratio)) ratio <- 1
-    data[[col_name]][i] * ratio
+    round(data[[col_name]][i] * ratio)
   })
   
   data
@@ -747,8 +793,6 @@ if (apply_correction_smoothing) {
   mydata <- scale_by_ratio(mydata, "cs_up", "rawcsded")
   mydata <- calculate_raw_benefits(mydata)
   mydata <- scale_by_ratio(mydata, "rent_up", "rawsltded")
-  mydata <- calculate_raw_benefits(mydata)
-  mydata <- scale_by_ratio(mydata, "med_up", "rawmedded")
   mydata <- calculate_raw_benefits(mydata)
   mydata <- scale_by_ratio(mydata, "earn_down", "rawearn")
   mydata <- calculate_raw_benefits(mydata)
