@@ -565,6 +565,27 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
   mydata
 }
 
+fix_smd_adjustments <- function(mydata) {
+  mydata <- mydata |>
+    mutate(
+      rawmedded = case_when(
+        rawmedded == FSMEDDED          ~ rawmedded,
+        is.na(smd_amt) | smd_amt <= 0  ~ rawmedded,
+        abs(smd_amt - rawmedded) <= 5  ~ smd_amt,
+        smd_amt <= rawmedded           ~ rawmedded,
+        correctednotes == "med_up"     ~ smd_amt,
+        correctednotes == "med_down"   ~ case_when(
+          smd_amt < FSMEDDED & abs(smd_amt - rawmedded) <= 30 ~ rawmedded, 
+          .default = 0
+        ),
+        .default = rawmedded
+      )
+    )
+  
+  mydata <- calculate_raw_benefits(mydata)
+  
+  mydata
+}
 
 if (correct_variables){
   
@@ -588,6 +609,7 @@ if (correct_variables){
                          col = "rawmedded", 
                          elements = c(365), 
                          prefix = "med")
+  mydata <- fix_smd_adjustments(mydata)
   mydata <- adjust_other(mydata, 
                          col = "rawdepded", 
                          elements = c(323), 
@@ -771,8 +793,6 @@ if (apply_correction_smoothing) {
   mydata <- scale_by_ratio(mydata, "cs_up", "rawcsded")
   mydata <- calculate_raw_benefits(mydata)
   mydata <- scale_by_ratio(mydata, "rent_up", "rawsltded")
-  mydata <- calculate_raw_benefits(mydata)
-  mydata <- scale_by_ratio(mydata, "med_up", "rawmedded")
   mydata <- calculate_raw_benefits(mydata)
   mydata <- scale_by_ratio(mydata, "earn_down", "rawearn")
   mydata <- calculate_raw_benefits(mydata)

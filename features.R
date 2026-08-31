@@ -111,7 +111,8 @@ add_external_data <- function(data) {
     add_year_col("error_threshold", new_col = "threshold") |>
     add_year_col("max_shelter_deduction") |>
     dplyr::mutate(
-      absbendiff     = abs(RAWBEN - FSBEN),
+      bendiff        = RAWBEN - FSBEN,
+      absbendiff     = abs(bendiff),
       over_threshold = factor(as.integer(absbendiff > threshold),
                               levels = c(0, 1)),
       max_shelter_deduction = ifelse(FSNELDER + FSNDIS > 0,
