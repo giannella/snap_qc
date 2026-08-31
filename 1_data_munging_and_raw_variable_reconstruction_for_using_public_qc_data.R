@@ -575,7 +575,7 @@ fix_smd_adjustments <- function(mydata) {
         smd_amt <= rawmedded           ~ rawmedded,
         correctednotes == "med_up"     ~ smd_amt,
         correctednotes == "med_down"   ~ case_when(
-          smd_amt < FSMEDDED & abs(smd_amt - rawmedded) <= 30 ~ rawmedded, 
+          smd_amt < FSMEDDED & abs(smd_amt - rawmedded) <= 30 ~ smd_amt, 
           .default = 0
         ),
         .default = rawmedded
