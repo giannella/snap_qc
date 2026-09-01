@@ -94,8 +94,7 @@ def raw_frame(cfg, frame_csv):
     frame = pd.read_csv(frame_csv, dtype={'hhldno': str, 'stratum': str})
     need = ['rawearn', 'rawunearn', 'rawdepded', 'rawcsded', 'rawrent',
             'rawhomeless_ded', 'fsnkid', 'fsnelder', 'fsndis',
-            'count_abawd', 'cat_elig', 'rawben', 'benefit_amount_FS', 'status',
-            'fscsexp']
+            'count_abawd', 'cat_elig', 'rawben', 'benefit_amount_FS', 'status']
     missing = [c for c in need if c not in frame.columns]
     assert not missing, (f'frame export lacks reconstructed input fields '
                          f'{missing}; re-export it (make_state.py --refresh)')
@@ -118,10 +117,11 @@ def raw_frame(cfg, frame_csv):
         'UNEARNED_INCOME': g('rawunearn'),
         'MEDICAL_DEDUCTION': g('medical_deductions'),
         'DEPENDENT_CARE_DEDUCTION': g('rawdepded'),
-        'CHILD_SUPPORT_DEDUCTION': g('rawcsded'),
-        # informational input (no rule reads it): the QC expense field, for
-        # exclusion-state reconciliation — see its dictionary entry
-        'CHILD_SUPPORT_EXPENSES': g('fscsexp'),
+        # the frame's standardized child-support amount: features.R reads the
+        # pasted expenses as the deduction input (state_col_map, 2026-08-27),
+        # and on QC data the expense and deduction fields agree in most cases
+        # — see the dictionary entry
+        'CHILD_SUPPORT_EXPENSES': g('rawcsded'),
         'HOMELESS_DEDUCTION': g('rawhomeless_ded'),
         'RENT': g('rawrent'),
         'UTILITY_COSTS': g('utilities'),
@@ -500,19 +500,12 @@ RAW_DESC = {
     'MEDICAL_DEDUCTION': 'medical expense deduction, $/month. QC manual: FSMEDDED; the '
                          'demo carries the reconstructed pre-QC-review value.',
     'DEPENDENT_CARE_DEDUCTION': 'dependent care deduction, $/month. QC manual: FSDEPDED.',
-    'CHILD_SUPPORT_DEDUCTION': 'child support payment deduction, $/month. QC manual: FSCSDED.',
-    'CHILD_SUPPORT_EXPENSES': 'child support payments, $/month, for states that treat '
-                              'child support as an income EXCLUSION rather than a '
-                              'deduction. QC manual: FSCSEXP. No rule reads this column: '
-                              'the rules were mined on data standardized to the DEDUCTION '
-                              'treatment (exclusion-state records get the expense amount '
-                              'moved into the child support deduction and gross income '
-                              'recomputed), so if amounts appear here that are NOT in your '
-                              'CHILD_SUPPORT_DEDUCTION column, add them into '
-                              'CHILD_SUPPORT_DEDUCTION to match the scale the rules were '
-                              'mined on. The demo carries the QC file\'s expense field; '
-                              'for exclusion-state rows those amounts are already '
-                              'reflected in the demo\'s CHILD_SUPPORT_DEDUCTION.',
+    'CHILD_SUPPORT_EXPENSES': 'child support payments, $/month. QC manual: FSCSEXP. '
+                              'In most cases, this value is the same as the child '
+                              'support deduction amount (FSCSDED). Providing the '
+                              'original expenses is recommended to account for cases '
+                              'in which child support payments are excluded instead '
+                              'of deducted.',
     'HOMELESS_DEDUCTION': 'homeless household shelter deduction, $/month. '
                           'QC manual: HOMELESS_DED.',
     'RENT':      'rent / mortgage, $/month. QC manual: RENT; the demo carries the '
@@ -601,7 +594,6 @@ RAW_TYPE = {
     'UNEARNED_INCOME': ('dollars, monthly', '0'),
     'MEDICAL_DEDUCTION': ('dollars, monthly', '0'),
     'DEPENDENT_CARE_DEDUCTION': ('dollars, monthly', '250'),
-    'CHILD_SUPPORT_DEDUCTION': ('dollars, monthly', '0'),
     'CHILD_SUPPORT_EXPENSES': ('dollars, monthly', '0'),
     'HOMELESS_DEDUCTION': ('dollars, monthly', '0'),
     'RENT': ('dollars, monthly', '950'), 'UTILITY_COSTS': ('dollars, monthly', '459'),
@@ -763,7 +755,7 @@ def data_dictionary(wb, hdr):
                   'missing (not zero). Some missing values or an entire column '
                   'missing is all right if the variable is less commonly used '
                   'in rules (e.g., CATEGORICALLY_ELIGIBLE, HOMELESS_FLAG, '
-                  'NUM_ABAWD, MARRIED_FLAG, CHILD_SUPPORT_DEDUCTION, '
+                  'NUM_ABAWD, MARRIED_FLAG, CHILD_SUPPORT_EXPENSES, '
                   'DEPENDENT_CARE_DEDUCTION, HOMELESS_DEDUCTION). As soon as '
                   'you paste in new data, you\'ll see the overall results at '
                   f'the top of the "Start Here" and the "{BLENDED_SHEET}" tabs.')
@@ -935,6 +927,16 @@ def share_tab(wb, state_name):
     rules_ws = wb[BLENDED_SHEET]
     rules = read_delivery_tab(rules_ws)
     nr = len(rules)
+    # SNAP_SUPPRESS_SMALL=1: every count cell self-suppresses (0 shows 0,
+    # 1-9 shows "-", 10+ shows the number) so the state can share the tab
+    # without a small-cell review; ratio cells built on a suppressed
+    # errors-caught count show "-" too, or they would reveal it
+    suppress = os.environ.get('SNAP_SUPPRESS_SMALL') == '1'
+
+    def cens(expr):
+        if not suppress:
+            return f'={expr}'
+        return f'=IF({expr}=0,0,IF({expr}<10,"-",{expr}))'
     blue = PatternFill('solid', fgColor='2F5496')
     grayF = PatternFill('solid', fgColor='F2F2F2')
     yellow = PatternFill('solid', fgColor='FFFF99')
@@ -957,12 +959,20 @@ def share_tab(wb, state_name):
                'of rules based on performance with your internal data, send these '
                'aggregate numbers back to us and we\'ll send you new rules. This will '
                'also help us improve the models and rules for other states. Fill in '
-               'the yellow cells so we know what the numbers cover. Ineligible cases '
+               'the yellow cells so we know what the numbers cover. If you have more '
+               'than one kind of review data (for example QC and QA), paste each set '
+               f'into the "{DATA_SHEET}" tab in turn and send us this tab\'s results '
+               'separately for each, noting in the yellow cell which data it covers. '
+               'Ineligible cases '
                'are not included in the public QC sample, which is why we want a '
                'separate count of them and which rule might capture them. To send the '
                'results back to us, please copy / paste the whole sheet into a new '
                'excel workbook (paste as values). See the "Start Here" tab for more '
                'background and our contact information.')
+    if suppress:
+        c.value += (' Small cells are suppressed automatically: a count of '
+                    '0 shows as 0, counts of 1-9 show as "-", and counts of '
+                    '10 or more are shown.')
     c.fill = grayF; c.font = Font(size=12); c.alignment = wrap
     ws.row_dimensions[2].height = 80
     meta = [('State', state_name, False),
@@ -980,12 +990,15 @@ def share_tab(wb, state_name):
                         allow_blank=True)
     ws.add_data_validation(dv)
     dv.add('B6')
-    dens = [('Total cases', f'=COUNTA({TABLE}[CASE_ID])', '#,##0'),
-            ('Error cases', f'=COUNTIF({TABLE}[over_threshold],1)', '#,##0'),
-            ('Error $', f'=SUMIFS({TABLE}[total_error_amount],'
-                        f'{TABLE}[over_threshold],1)', '$#,##0'),
+    err_dollar = (f'SUMIFS({TABLE}[total_error_amount],'
+                  f'{TABLE}[over_threshold],1)')
+    dens = [('Total cases', cens(f'COUNTA({TABLE}[CASE_ID])'), '#,##0'),
+            ('Error cases', cens(f'COUNTIF({TABLE}[over_threshold],1)'),
+             '#,##0'),
+            ('Error $', (f'=IF($B$9="-","-",{err_dollar})' if suppress
+                         else f'={err_dollar}'), '$#,##0'),
             ('Ineligible-household cases (STATUS = 4)',
-             f'=COUNTIF({TABLE}[STATUS],4)', '#,##0')]
+             cens(f'COUNTIF({TABLE}[STATUS],4)'), '#,##0')]
     for i, (label, f, fmt) in enumerate(dens):
         r = 8 + i
         ws.cell(row=r, column=1, value=label).font = Font(bold=True)
@@ -1014,11 +1027,17 @@ def share_tab(wb, state_name):
         d = countifs(conds, hh, extra=f'{TABLE}[over_threshold],1',
                      col='total_error_amount', fn='SUMIFS')
         i4 = countifs(conds, hh, extra=f'{TABLE}[STATUS],4')
+        # a suppressed errors-caught cell ("-") must blank both ratios; a
+        # suppressed Flagged with a visible 0 errors still shows 0% (errors
+        # caught, being <= Flagged, is only suppressed when it is 1-9)
+        prec = (f'=IF($E{r}="-","-",IFERROR($E{r}/$D{r},0))' if suppress
+                else f'=IFERROR($E{r}/$D{r},0)')
+        drec = (f'=IF($E{r}="-","-",IFERROR({d}/{tot_ed},0))' if suppress
+                else f'=IFERROR({d}/{tot_ed},0)')
         for ci, (f, fmt) in enumerate([
-                (f'={n}', '#,##0'), (f'={e}', '#,##0'),
-                (f'=IFERROR($E{r}/$D{r},0)', '0.0%'),
-                (f'=IFERROR({d}/{tot_ed},0)', '0.0%'),
-                (f'={i4}', '#,##0')], 4):
+                (cens(n), '#,##0'), (cens(e), '#,##0'),
+                (prec, '0.0%'), (drec, '0.0%'),
+                (cens(i4), '#,##0')], 4):
             c = ws.cell(row=r, column=ci, value=f)
             c.number_format = fmt
     ws.freeze_panes = f'A{HR + 1}'
@@ -1038,7 +1057,7 @@ def share_tab(wb, state_name):
 # an error nor a clean case.
 BEN_INPUTS = ['REVIEW_FISCAL_YEAR', 'HOUSEHOLD_SIZE', 'EARNED_INCOME',
               'UNEARNED_INCOME', 'MEDICAL_DEDUCTION', 'DEPENDENT_CARE_DEDUCTION',
-              'CHILD_SUPPORT_DEDUCTION', 'HOMELESS_DEDUCTION', 'RENT',
+              'CHILD_SUPPORT_EXPENSES', 'HOMELESS_DEDUCTION', 'RENT',
               'UTILITY_COSTS', 'NUM_ELDERLY', 'NUM_DISABLED']
 FEATURE_INPUTS = {
     'fiscal_year': ['REVIEW_FISCAL_YEAR'],
@@ -1094,7 +1113,7 @@ def feature_formulas(R, table=TABLE):
         ('_c_stdded',  f'=INDEX({R["SDBLK"]},MATCH({T("_c_fy")},{R["SDYRS"]},1),{sz})'),
         ('_c_benmax',  f'=INDEX({R["MABLK"]},MATCH({T("_c_fy")},{R["MAYRS"]},1),{sz})'),
         ('_c_netbs',   f'={T("_c_gross")}-({T("_c_ernded")}+{T("DEPENDENT_CARE_DEDUCTION")}'
-                       f'+{T("MEDICAL_DEDUCTION")}+{T("CHILD_SUPPORT_DEDUCTION")}+{T("_c_stdded")})'),
+                       f'+{T("MEDICAL_DEDUCTION")}+{T("CHILD_SUPPORT_EXPENSES")}+{T("_c_stdded")})'),
         ('_c_maxsh',   f'=IF({T("_c_eld")}=1,1000000000,'
                        f'INDEX({R["MAXSH"]},MATCH({T("_c_fy")},{R["YEARS"]},1)))'),
         # NB: the munging script does NOT floor the shelter deduction; only the
@@ -1140,7 +1159,7 @@ def feature_formulas(R, table=TABLE):
         'rawben_rel_max':      f'={T("_c_benrec")}/{T("_c_benmax")}',
         'shelter_expenses_by_hh_size': f'=({T("RENT")}+{T("UTILITY_COSTS")})/{hh}',
         'total_deductions_by_hh_size':
-            f'=({T("DEPENDENT_CARE_DEDUCTION")}+{T("CHILD_SUPPORT_DEDUCTION")}'
+            f'=({T("DEPENDENT_CARE_DEDUCTION")}+{T("CHILD_SUPPORT_EXPENSES")}'
             f'+{T("_c_sltded")}+{T("MEDICAL_DEDUCTION")}+{T("_c_ernded")})/{hh}',
         'unc_rawben_rel_max': f'={T("_c_benunc")}/{T("_c_benmax")}',
         'utilities':   f'={T("UTILITY_COSTS")}',
@@ -1205,7 +1224,7 @@ def mirror_features(raw, ftabs, sua_by_year):
     ernded = _excel_floor(g('EARNED_INCOME') * 0.2)
     netbs = (g('EARNED_INCOME') + g('UNEARNED_INCOME')
              - (ernded + g('DEPENDENT_CARE_DEDUCTION') + g('MEDICAL_DEDUCTION')
-                + g('CHILD_SUPPORT_DEDUCTION') + stdded))
+                + g('CHILD_SUPPORT_EXPENSES') + stdded))
     maxsh = np.where(eld == 1, 1e9, lk(yd, 'max_shelter_deduction'))
     sltded = np.minimum(np.maximum(g('RENT') + g('UTILITY_COSTS')
                                    - np.maximum(netbs * 0.5, 0), 0), maxsh)
@@ -1235,7 +1254,7 @@ def mirror_features(raw, ftabs, sua_by_year):
         'rawben_rel_max': benrec / benmax,
         'shelter_expenses_by_hh_size': (g('RENT') + g('UTILITY_COSTS')) / hh,
         'total_deductions_by_hh_size': (g('DEPENDENT_CARE_DEDUCTION')
-                                        + g('CHILD_SUPPORT_DEDUCTION') + sltded
+                                        + g('CHILD_SUPPORT_EXPENSES') + sltded
                                         + g('MEDICAL_DEDUCTION') + ernded) / hh,
         'unc_rawben_rel_max': benunc / benmax,
         'utilities': g('UTILITY_COSTS'),

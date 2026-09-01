@@ -61,13 +61,13 @@ The rules tab presents a POTENTIAL rule list for the state to evaluate; nothing 
 
 ### The Data-tab contract
 
-The light-yellow block is what a state supplies: 24 columns carrying generic
+The light-yellow block is what a state supplies: 23 columns carrying generic
 reported-value concept names in `features.R`'s `state_col_map` style —
 `HOUSEHOLD_SIZE`, `EARNED_INCOME`, `UNEARNED_INCOME`, `MEDICAL_DEDUCTION`,
-`DEPENDENT_CARE_DEDUCTION`, `CHILD_SUPPORT_DEDUCTION`,
-`CHILD_SUPPORT_EXPENSES` (informational, for exclusion states: no rule reads
-it; its dictionary entry explains the manual add-back into the deduction
-column when the amounts are not already there), `RENT`,
+`DEPENDENT_CARE_DEDUCTION`, `CHILD_SUPPORT_EXPENSES` (child support
+payments; in most cases the same as the deduction amount, and the original
+expenses also cover cases where child support is excluded from income
+instead of deducted — see its dictionary entry), `RENT`,
 `UTILITY_COSTS`, unit counts (`NUM_CHILDREN`, `NUM_ELDERLY`, `NUM_DISABLED`,
 `NUM_ABAWD`), 0/1 indicators (`MARRIED_FLAG`, `EXPEDITED`,
 `CATEGORICALLY_ELIGIBLE`, `HOMELESS_FLAG`), `MONTHS_SINCE_CERT`, and the QC
