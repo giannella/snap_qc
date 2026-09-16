@@ -150,13 +150,18 @@ def raw_frame(cfg, frame_csv):
     return out, np.ones(len(frame), bool), frame
 
 
-def federal_tables(wb, state_name=None):
+def federal_tables(wb, state_name=None, offset_col=None, visible=False):
     """Hidden reference sheet (hidden again 2026-08-19 by request): the
     year-level parameters (max shelter, minimum allotment, QC error
     threshold), the year x size tables (standard deduction, max allotment),
     and the state's USDA state-options rows (BBCE and the other options).
     Formulas look values up by year with MATCH(..,1), so unhiding and
-    appending a row per new fiscal year updates everything."""
+    appending a row per new fiscal year updates everything.
+
+    `offset_col` (states.py OVERRIDES std_ded_offset_col; Illinois) names the
+    standard_deductions.csv column subtracted from the federal standard
+    deduction for this state's cases, written as the table's state_offset
+    column (0 elsewhere). `visible` ships the sheet unhidden."""
     ad = os.path.join(REPO, 'additional_data')
     yd = pd.read_csv(os.path.join(ad, 'year_data.csv')).dropna(axis=1, how='all')
     yd.columns = [str(c).strip() for c in yd.columns]
@@ -166,8 +171,10 @@ def federal_tables(wb, state_name=None):
         t.columns = [str(c).strip() for c in t.columns]
 
     ws = wb.create_sheet('FederalTables')
-    ws.sheet_state = 'hidden'          # reference plumbing; unhide to inspect
-                                       # or to append a new fiscal year
+    # reference plumbing, hidden by default; unhide to inspect or to append
+    # a new fiscal year. A state with a standard-deduction offset (Illinois)
+    # ships it visible so the offset is in view (2026-09-15).
+    ws.sheet_state = 'visible' if visible else 'hidden'
     ws.sheet_view.showGridLines = False
     blue = PatternFill('solid', fgColor='2F5496')
     gray = PatternFill('solid', fgColor='F2F2F2')
@@ -215,6 +222,31 @@ def federal_tables(wb, state_name=None):
                 ws.cell(row=row0 + 2 + i, column=5 + s, value=float(r[str(s)]))
         return len(yrs), row0 + 2
     n_sd, sd0 = block(sd.reset_index(), 5, 'standard deduction')
+    # state_offset (2026-09-15, Illinois): subtracted from the federal
+    # standard deduction for every household size, mirroring the munging
+    # script's get_standard_deduction(), which subtracts the csv's IL_OFFSET
+    # column for Illinois cases. Zero for every other state, so the
+    # _c_stdded formula is the same everywhere and only the values differ.
+    sd_years = sorted(int(y) for y in sd['year'])
+    if offset_col:
+        assert offset_col in sd.columns, (
+            f'{offset_col} is not a column of standard_deductions.csv')
+        offsets = {int(y): float(sd.loc[sd.year == y, offset_col].iloc[0])
+                   for y in sd_years}
+    else:
+        offsets = {y: 0.0 for y in sd_years}
+    hc = ws.cell(row=sd0 - 1, column=26, value='state_offset')
+    hc.fill = gray; hc.font = Font(bold=True, size=10)
+    for i, y in enumerate(sd_years):
+        ws.cell(row=sd0 + i, column=26, value=offsets[y])
+    ws.cell(row=sd0 - 2, column=26, value=(
+        'state_offset: subtracted from every size\'s standard deduction for '
+        'this state\'s cases'
+        + (f' ({state_name}: the {offset_col} column of '
+           'additional_data/standard_deductions.csv)' if offset_col
+           else ' (0: this state uses the federal table as is)'))
+    ).font = Font(size=9, italic=True)
+    ws.column_dimensions['Z'].width = 13
     n_ma, ma0 = block(ma.reset_index(), 5 + n_sd + 4, 'max allotment')
 
     # the state's rows from the USDA state-options panel, as reference only
@@ -275,6 +307,7 @@ def federal_tables(wb, state_name=None):
         'ERRTHR': f'FederalTables!$D$6:$D${5 + ny}',
         'SDYRS':  f'FederalTables!$E${sd0}:$E${sd0 + n_sd - 1}',
         'SDBLK':  f'FederalTables!$F${sd0}:$Y${sd0 + n_sd - 1}',
+        'SDOFF':  f'FederalTables!$Z${sd0}:$Z${sd0 + n_sd - 1}',
         'MAYRS':  f'FederalTables!$E${ma0}:$E${ma0 + n_ma - 1}',
         'MABLK':  f'FederalTables!$F${ma0}:$Y${ma0 + n_ma - 1}',
         'HOLDOUT': 'FederalTables!$B$3',
@@ -285,7 +318,9 @@ def federal_tables(wb, state_name=None):
 GITHUB = 'https://github.com/giannella/snap_qc'
 
 
-def background_tab(wb, state_name):
+def background_tab(wb, state_name, note=None):
+    """`note` = (title, body): a state-specific warning placed directly under
+    the summary (KPI) block (states.py OVERRIDES start_here_note)."""
     ws = wb.create_sheet('Start Here', 0)
     ws.sheet_view.showGridLines = False
     ws.sheet_properties.tabColor = '2F5496'
@@ -354,6 +389,21 @@ def background_tab(wb, state_name):
         ws.row_dimensions[r].height = 26
         r += 1
     r += 1
+
+    if note:
+        title, body = note
+        ws.merge_cells(f'A{r}:B{r}')
+        c = ws.cell(row=r, column=1, value=title)
+        c.font = Font(bold=True, size=14, color='C00000')
+        ws.row_dimensions[r].height = 20
+        r += 1
+        ws.merge_cells(f'A{r}:B{r}')
+        c = ws.cell(row=r, column=1, value=body)
+        c.font = Font(size=12)
+        c.fill = PatternFill('solid', fgColor='FCE4D6')   # accent 2, lighter 80%
+        c.alignment = Alignment(wrap_text=True, vertical='top')
+        ws.row_dimensions[r].height = max(30, 15 * -(-len(body) // 100))
+        r += 2
 
     para('What this is', bold=True)
     # wording agreed 2026-08-21; split into two paragraphs at "Paste in" and
@@ -575,9 +625,12 @@ FEAT_DESC = {
 }
 HELPER_NOTE = ('_c_* columns (hidden): the benefit-recomputation chain — fiscal year, '
                'gross income, earned-income deduction, standard deduction and maximum '
-               'allotment looked up per year x size from the hidden FederalTables sheet, '
-               'net income before and after shelter, the shelter deduction with its '
-               'elderly/disabled uncapping, and the recomputed benefit.')
+               'allotment looked up per year x size from the hidden FederalTables sheet '
+               '(the standard deduction less that sheet\'s state_offset column, which '
+               'is 0 unless the state\'s standard deduction differs from the federal '
+               'table; currently Illinois), net income before and after shelter, the '
+               'shelter deduction with its elderly/disabled uncapping, and the '
+               'recomputed benefit.')
 
 
 # data type + example per input column (feedback 2026-08-22)
@@ -705,11 +758,16 @@ STEP3_COLS = [
 ]
 
 
-def data_dictionary(wb, hdr):
+def data_dictionary(wb, hdr, ft_hidden=True):
     """A visible tab documenting every Data column (the input fields a state
     supplies and the constructed model variables), then every column of the
     Step 3 rules tab. Returns {Step 3 header text: dictionary row} so the
-    rules tab's headers can hyperlink to their definitions."""
+    rules tab's headers can hyperlink to their definitions. `ft_hidden`
+    False drops the word "hidden" from FederalTables references (a workbook
+    that ships the sheet visible)."""
+    def wording(txt):
+        return txt if ft_hidden else txt.replace('hidden FederalTables',
+                                                 'FederalTables')
     ws = wb.create_sheet(DICT_SHEET, wb.sheetnames.index(DATA_SHEET) + 1)
     ws.sheet_view.showGridLines = False
     blue = PatternFill('solid', fgColor='2F5496')
@@ -741,6 +799,7 @@ def data_dictionary(wb, hdr):
         ws.cell(row=r, column=1, value=name).font = Font(bold=True, size=10)
         ws.cell(row=r, column=2, value=typ).font = Font(size=10)
         ws.cell(row=r, column=3, value=example).font = Font(size=10)
+        definition = wording(definition)
         c = ws.cell(row=r, column=4, value=definition)
         c.font = Font(size=10); c.alignment = wrap
         ws.row_dimensions[r].height = max(15, 13 * -(-len(definition) // 115))
@@ -773,7 +832,7 @@ def data_dictionary(wb, hdr):
         r = entry(r, name, typ, ex, FEAT_DESC[name])
     r += 1
     ws.merge_cells(f'A{r}:D{r}')
-    c = ws.cell(row=r, column=1, value=HELPER_NOTE)
+    c = ws.cell(row=r, column=1, value=wording(HELPER_NOTE))
     c.font = Font(size=9, color='808080')
     r += 2
     r = header(r, f'Columns on the "{BLENDED_SHEET}" tab — one row per column. The '
@@ -1110,7 +1169,11 @@ def feature_formulas(R, table=TABLE):
         # _xlfn. prefix: post-2007 functions written straight into the XML
         # need it, or Excel renders #NAME?
         ('_c_ernded',  f'=_xlfn.FLOOR.MATH({T("EARNED_INCOME")}*0.2)'),
-        ('_c_stdded',  f'=INDEX({R["SDBLK"]},MATCH({T("_c_fy")},{R["SDYRS"]},1),{sz})'),
+        # the federal standard deduction for the year x size, less the
+        # FederalTables state_offset column (0 except where states.py sets a
+        # std_ded_offset_col: Illinois), mirroring get_standard_deduction()
+        ('_c_stdded',  f'=INDEX({R["SDBLK"]},MATCH({T("_c_fy")},{R["SDYRS"]},1),{sz})'
+                       f'-INDEX({R["SDOFF"]},MATCH({T("_c_fy")},{R["SDYRS"]},1))'),
         ('_c_benmax',  f'=INDEX({R["MABLK"]},MATCH({T("_c_fy")},{R["MAYRS"]},1),{sz})'),
         ('_c_netbs',   f'={T("_c_gross")}-({T("_c_ernded")}+{T("DEPENDENT_CARE_DEDUCTION")}'
                        f'+{T("MEDICAL_DEDUCTION")}+{T("CHILD_SUPPORT_EXPENSES")}+{T("_c_stdded")})'),
@@ -1209,9 +1272,11 @@ def _excel_floor(x, sig=1.0):
     return np.floor(np.asarray(x, float) / sig) * sig
 
 
-def mirror_features(raw, ftabs, sua_by_year):
+def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None):
     """Compute what the Excel formulas will produce, from the raw block.
-    `sua_by_year` maps fiscal year -> the state's max SUA (state_sua.csv)."""
+    `sua_by_year` maps fiscal year -> the state's max SUA (state_sua.csv);
+    `sd_offset_by_year` maps fiscal year -> the state's standard-deduction
+    offset (FederalTables state_offset; None or empty means 0)."""
     g = lambda c: raw[c].fillna(0).astype(float).values     # Excel blank -> 0
     yd, sd, ma = ftabs
     fy = g('REVIEW_FISCAL_YEAR').astype(int)
@@ -1219,6 +1284,11 @@ def mirror_features(raw, ftabs, sua_by_year):
     hh = np.maximum(g('HOUSEHOLD_SIZE'), 1)
     lk = lambda tbl, col: np.array([tbl.loc[tbl.year <= y, col].iloc[-1] for y in fy])
     stdded = np.array([sd.loc[sd.year <= y, str(s)].iloc[-1] for y, s in zip(fy, sz20)])
+    if sd_offset_by_year:
+        # same MATCH(..,1) year rule as the deduction itself
+        yrs = sorted(sd_offset_by_year)
+        stdded = stdded - np.array([sd_offset_by_year[max(y0 for y0 in yrs if y0 <= y)]
+                                    for y in fy], dtype=float)
     benmax = np.array([ma.loc[ma.year <= y, str(s)].iloc[-1] for y, s in zip(fy, sz20)])
     eld = ((g('NUM_ELDERLY') + g('NUM_DISABLED')) > 0).astype(int)
     ernded = _excel_floor(g('EARNED_INCOME') * 0.2)
@@ -1281,7 +1351,7 @@ def mirror_features(raw, ftabs, sua_by_year):
     return pd.DataFrame(out)
 
 
-def validate(raw, frame, elem_free, feat_names, state_name):
+def validate(raw, frame, elem_free, feat_names, state_name, offset_col=None):
     ad = os.path.join(REPO, 'additional_data')
     yd = pd.read_csv(os.path.join(ad, 'year_data.csv')).sort_values('year')
     sd = pd.read_csv(os.path.join(ad, 'standard_deductions.csv')).sort_values('year')
@@ -1293,7 +1363,9 @@ def validate(raw, frame, elem_free, feat_names, state_name):
     srow = sua[sua['state_name'] == state_name]
     sua_by_year = ({int(c): float(srow.iloc[0][c]) for c in sua.columns
                     if c != 'state_name'} if len(srow) else {})
-    mir = mirror_features(raw, (yd, sd, ma), sua_by_year)
+    sd_offset_by_year = ({int(y): float(v) for y, v in zip(sd['year'], sd[offset_col])}
+                         if offset_col else None)
+    mir = mirror_features(raw, (yd, sd, ma), sua_by_year, sd_offset_by_year)
     print(f'\nformula validation vs the munged frame '
           f'({len(frame)} rows, reconstructed pre-QC-review inputs):')
     print(f'  {"feature":32s} {"all rows":>9s}')
@@ -1332,6 +1404,20 @@ def validate(raw, frame, elem_free, feat_names, state_name):
     return not bad
 
 
+def effective_rule_counts(abbr):
+    """{n_rules, n_benefit_rules} for a state note: every rule on the Step 3
+    tab (the build's effective list, .build/effective_rules_<ABBR>.csv) and
+    those whose text tests a variable computed through the standard
+    deduction (rawben_rel_max, unc_rawben_rel_max, total_deductions_by_hh_size).
+    Zeros if the list is absent."""
+    p = os.path.join(PKG, '.build', f'effective_rules_{abbr}.csv')
+    if not os.path.isfile(p):
+        return {'n_rules': 0, 'n_benefit_rules': 0}
+    rules = pd.read_csv(p)['rule'].astype(str)
+    hit = rules.str.contains('rawben_rel_max|total_deductions_by_hh_size', regex=True)
+    return {'n_rules': int(len(rules)), 'n_benefit_rules': int(hit.sum())}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('live_workbook')
@@ -1354,7 +1440,9 @@ def main():
 
     hdr = [c.value for c in next(dat.iter_rows(min_row=1, max_row=1))]
     ncol0 = len(hdr)
-    R = federal_tables(wb, cfg['name'])
+    offset_col = cfg.get('std_ded_offset_col')          # Illinois: IL_OFFSET
+    ft_visible = bool(cfg.get('federal_tables_visible'))
+    R = federal_tables(wb, cfg['name'], offset_col=offset_col, visible=ft_visible)
     helpers, feats = feature_formulas(R)
 
     missing = [h for h in hdr
@@ -1368,7 +1456,7 @@ def main():
     dups = sorted({n for n in low if low.count(n) > 1})
     assert not dups, f'case-insensitive duplicate Data columns: {dups}'
     ok = validate(raw, frame, elem_free, [h for h in hdr if h in feats],
-                  cfg['name'])
+                  cfg['name'], offset_col=offset_col)
     if not ok:
         # HARD GATE (2026-08-16): the demo must sit on the reconstructed
         # pre-QC-review scale the rules were mined on — a state's internal
@@ -1462,7 +1550,7 @@ def main():
     dat.cell(row=1, column=1).comment = Comment(note, 'snap_dashboard')
     dat.freeze_panes = 'B2'
 
-    step3_rows = data_dictionary(wb, hdr)
+    step3_rows = data_dictionary(wb, hdr, ft_hidden=not ft_visible)
     # Step 3 column headers hyperlink to their dictionary rows (feedback
     # 2026-08-22); the header row is row 3 on the rules tab since the note
     # row was dropped (Eric's WA edits 2026-08-23)
@@ -1476,7 +1564,11 @@ def main():
                           underline='single')
             linked += 1
     print(f'Step 3 headers linked to the dictionary: {linked}')
-    background_tab(wb, cfg['name'])
+    note = cfg.get('start_here_note')
+    if note:
+        title, body = note
+        note = (title, body.format(**effective_rule_counts(cfg['abbr'])))
+    background_tab(wb, cfg['name'], note=note)
     n51 = screening_tabs(wb, R, hdr)
     n6 = share_tab(wb, cfg['name'])
     print(f'screening tabs: {n51} rule columns | share-back rows: {n6}')

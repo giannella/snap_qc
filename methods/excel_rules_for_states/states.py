@@ -69,15 +69,59 @@ def _default_entry(abbr):
 
 
 # Per-state deviations from the convention (merged over the default entry).
-OVERRIDES = {}
+# Keys beyond the default entry's, read by make_input_workbook.py:
+#   std_ded_offset_col      column of additional_data/standard_deductions.csv
+#                           subtracted from the federal standard deduction for
+#                           this state's cases, mirroring the munging script's
+#                           get_standard_deduction(); carried in the workbook as
+#                           the state_offset column of the FederalTables
+#                           standard-deduction table (0 for every other state)
+#   federal_tables_visible  ship the FederalTables sheet unhidden
+#   start_here_note         (title, body): a state-specific warning under the
+#                           Start Here summary block; {n_rules} and
+#                           {n_benefit_rules} in the body are filled from the
+#                           effective rule list at build time
+OVERRIDES = {
+    # Illinois: held back from the 2026-08-24 release because the munging
+    # subtracts IL_OFFSET from the federal standard deduction for Illinois
+    # cases and the workbook's benefit chain did not; added 2026-09-15 once
+    # the chain carried the offset (the validation gate fails on the
+    # benefit-ratio features without it).
+    'IL': {
+        'std_ded_offset_col': 'IL_OFFSET',
+        'federal_tables_visible': True,
+        'start_here_note': (
+            'Read this first: the Illinois standard deduction',
+            'The rules in this workbook were mined on a research frame built '
+            'from the public QC files. For Illinois cases, that frame subtracts '
+            'an offset from the federal standard deduction before it recomputes '
+            'the benefit: $7 per month for FY2017-2024 and $4 for FY2025-2026 '
+            '(the IL_OFFSET column of additional_data/standard_deductions.csv in '
+            'the repository). We added the offset after finding that Illinois '
+            'cases recomputed poorly without it: 27% of Illinois cases with no '
+            'payment error recomputed more than $1 away from the recorded '
+            'benefit, against about 2% in other states. With the offset the '
+            'Illinois rate is 5.2%, still above other states, so the '
+            'benefit-based variables carry more recomputation noise for Illinois '
+            'than elsewhere. This workbook applies the same offset through the '
+            'state_offset column of the standard-deduction table on the '
+            'FederalTables tab, which is left visible in this workbook so that '
+            'you can check and edit it. The offset matters for most of the list: '
+            '{n_benefit_rules} of the {n_rules} rules test a variable computed '
+            'through the standard deduction (rawben_rel_max, unc_rawben_rel_max '
+            'or total_deductions_by_hh_size). Before pasting internal data, '
+            'confirm that the offset matches the standard deduction your '
+            'eligibility system applied in each fiscal year, and change the '
+            'state_offset values if it does not: a wrong offset shifts every '
+            'benefit-based variable and the rules that test them. Illinois was '
+            'not in the first workbook release (2026-08-24) because its formulas '
+            'lacked this offset; this workbook was built 2026-09-15.'),
+    },
+}
 
 # States excluded from batch builds (make_state.py all), with the reason.
 # An explicit single-state build still works but prints the reason.
-EXCLUDE = {
-    'IL': ('the munging applies an Illinois-specific standard-deduction offset '
-           '(IL_OFFSET in standard_deductions.csv) that the RECON workbook '
-           'formulas do not implement; held back 2026-08-15'),
-}
+EXCLUDE = {}
 
 STATES = {a: {**_default_entry(a), **OVERRIDES.get(a, {})} for a in _STATES}
 

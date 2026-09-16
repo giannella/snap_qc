@@ -10,6 +10,29 @@ moved or behaves differently.
 
 ## [Unreleased]
 
+### Added
+- **Illinois workbook** (`SNAP_flagging_rules_IL.xlsx`), added to the
+  v2.6.0 release Assets on 2026-09-15. Illinois had been held back because
+  the munging subtracts an Illinois-specific offset from the federal
+  standard deduction (`IL_OFFSET` in
+  `additional_data/standard_deductions.csv`: $7 through FY2024, $4 for
+  FY2025-26) and the workbook's benefit chain did not. The chain now
+  subtracts it, and the build's validation gate matched the research
+  frame on every feature for all 2,448 Illinois rows (FY2022-24). The
+  effective list has 40 rules (39 core, 1 promoted buffer), 35 of which
+  test a variable computed through the standard deduction. The workbook
+  ships its FederalTables sheet visible, with the offset in the
+  standard-deduction table's `state_offset` column, and a warning under
+  the Start Here summary block (`states.py` `OVERRIDES['IL']`; `EXCLUDE`
+  is now empty, so `make_state.py all` builds 49 states).
+
+### Changed
+- The workbook builder's FederalTables standard-deduction table carries a
+  `state_offset` column that the `_c_stdded` helper subtracts. It is 0 for
+  every state but Illinois, so other states' figures are unchanged
+  (Wyoming rebuilt as the zero-offset check: gate 100% on every feature,
+  live union equal to the static one, FederalTables still hidden).
+
 ## [2.6.0] - 2026-08-24
 
 If you use the ready-built blended lists, re-download them: every blended
@@ -67,10 +90,11 @@ as downloadable release assets.
 ### Added
 - **Per-state Excel workbooks as release assets**: one
   `SNAP_flagging_rules_<ST>.xlsx` per state with a delivery list,
-  downloadable from this release's Assets section (46 states; Illinois
-  is held back until its workbook formulas implement the state's
-  standard-deduction offset, and the District of Columbia and Georgia
-  are held back pending review of their unusually short rule lists). Paste internal cases
+  downloadable from this release's Assets section (46 states at release;
+  Illinois's workbook joined the same Assets on 2026-09-15 once its
+  formulas carried the state's standard-deduction offset, see Unreleased;
+  the District of Columbia and Georgia are held back pending review of
+  their unusually short rule lists). Paste internal cases
   into the yellow columns and every figure recomputes; rules are kept or
   dropped in the Include? column. Built by
   `methods/excel_rules_for_states/make_state.py`; the workbook carries

@@ -14,8 +14,16 @@ Every state with a blended delivery list in the repo's tracked
 convention (`blended_delivery_<State>_2022_2024_budget10.csv`, the 10%
 review-budget list). Nothing needs adding to `states.py` for a new state;
 `OVERRIDES` there is for deviations, and `EXCLUDE` holds states withheld
-from batch builds (currently Illinois: the IL_OFFSET standard deduction is
-not implemented in the workbook formulas). All lists share one 19-variable
+from batch builds (currently none). The one override is Illinois
+(2026-09-15): the munging subtracts an Illinois-specific offset from the
+federal standard deduction (`IL_OFFSET` in
+`additional_data/standard_deductions.csv`: $7 through FY2024, $4 for
+FY2025-26), so its workbook carries the offset as the `state_offset` column
+of the FederalTables standard-deduction table (0 in every other state's
+workbook), the benefit chain subtracts it, the FederalTables sheet ships
+visible, and the Start Here tab carries a warning under the summary block.
+Illinois was held out of the 2026-08-24 release until this was in place.
+All lists share one 19-variable
 vocabulary with at most 4 conditions per rule (checked 2026-08-15;
 `bbce_state_i` replaced `cat_elig` in the 2026-08-13 list rebuild).
 
@@ -56,7 +64,7 @@ The rules tab presents a POTENTIAL rule list for the state to evaluate; nothing 
 | Step 5.2 Flagged New Cases (optional) | One row per flagged case × rule from Step 5.1 (case ID, household size, benefit amount, rule id, plain-English rule). First 5,000 pairs shown, total in B3; enumeration is a binary-search MATCH on a running pair count + AGGREGATE for the j-th matching rule (COM-verified 2026-08-18). |
 | Step 6. Share results back (optional) | Per-rule aggregates on the pasted Step 2 data to send back (copy the sheet as values into a new workbook): flagged, errors, precision, $ recall, and ineligible-household catches (STATUS = 4 — not in the public QC sample, so a separate count), plus metadata inputs (years, QC/QA/pre-auth) and poolable denominators. Every rule alone, independent of Include?. |
 | **See cases flagged by a rule** | Rules currently catching errors, sorted; the grid shows the cases the selected rule flags — including pasted rows (matching moved into hidden `_view_*` columns of the CaseData table, 2026-08-18; first 60 matches shown), with the rule's columns highlighted in blue. |
-| FederalTables (hidden) | Reference: max shelter, minimum allotment and the QC error threshold by fiscal year; standard deductions and max allotments by year × size; the state's USDA state-options rows (BBCE etc.). Unhide to inspect or to append a row per new fiscal year. |
+| FederalTables (hidden; visible in the Illinois workbook) | Reference: max shelter, minimum allotment and the QC error threshold by fiscal year; standard deductions and max allotments by year × size, plus the standard-deduction table's `state_offset` column (subtracted in the benefit chain; 0 except Illinois); the state's USDA state-options rows (BBCE etc.). Unhide to inspect or to append a row per new fiscal year. |
 | Dashboard, Grid Search, RuleFlags | Hidden engines: the per-rule threshold tuner, the bracket-bounded threshold search, the case × rule hit matrices. Unhide the Dashboard to tune thresholds interactively. |
 
 ### The Data-tab contract
