@@ -339,7 +339,8 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
                   .fillna(0).abs().values, 0.0)
     for r in kept:
         r['dollars_frame'] = float(ed[rule_mask(df, r)].sum())
-    kept.sort(key=lambda r: -r['dollars_frame'])
+    # deployed rules (Include? = TRUE) first, then measurement-only rules, each block by dollars caught (2026-09-17)
+    kept.sort(key=lambda r: (not bool(r.get('ship', True)), -r['dollars_frame']))
 
     for r in kept:
         assert not any(c['var'] in DROP_VARS for c in r['conds'])
