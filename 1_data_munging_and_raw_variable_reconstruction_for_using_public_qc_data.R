@@ -15,6 +15,8 @@ apply_correction_smoothing <- TRUE
 exclude_2020_2021 <- TRUE
 exclude_MFIP <- TRUE
 exclude_SSI_CAP <- TRUE
+cpi_inflate_vars <- TRUE
+modeling_target_year <- 2026
 
 # 1. Load data
 folder <- paste0(here(), "/")
@@ -809,6 +811,12 @@ mydata <- readRDS(paste0(folder, "final.rds"))
 
 #### Add additional features from features.R
 df <- add_features(mydata)
+
+#### CPI-inflate data from features.R
+if (cpi_inflate_vars) {
+  cpi_vars <- c("rawearn", "rawunearn", "rawmedded", "rawdepded", "rawcsded", "rawrent")
+  df <- cpi_inflate(df, cpi_vars, modeling_target_year, overwrite = TRUE)
+}
 
 #### variable cleaning / recoding ###
 names(df) <- tolower(names(df))

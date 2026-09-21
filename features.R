@@ -89,6 +89,27 @@ add_percentile <- function(data, col,
     dplyr::ungroup()
 }
 
+# CPI-inflate values
+cpi_inflate <- function(data, vars, base_year, year_col = "year",
+                        overwrite = TRUE, suffix = "_real") {
+  
+  cpi_table <- read.csv(here("additional_data/year_data.csv")) %>%
+    transmute(
+      year = as.integer(year),
+      cpi  = as.numeric(cpi)
+    )
+  
+  base_cpi <- cpi_table$cpi[match(base_year, cpi_table$year)]
+  f <- base_cpi / cpi_table$cpi[match(data[[year_col]], cpi_table$year)]
+  stopifnot(!is.na(base_cpi), !anyNA(f))
+  data[if (overwrite) vars else paste0(vars, suffix)] <- lapply(vars, function(v) {
+    fv <- f
+    if (v == "rawmedded") fv[!is.na(data$smd_amt) & data$rawmedded == data$smd_amt] <- 1
+    floor(data[[v]] * fv)
+  })
+  data
+}
+
 #' SUA tier, 3 levels, per state-year
 #'   0 = no utility amount
 #'   1 = below the heating/cooling standard
