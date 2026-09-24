@@ -804,8 +804,12 @@ if (apply_correction_smoothing) {
   mydata <- calculate_raw_benefits(mydata)
 }
 
-mydata <- mydata %>% mutate(raw_total_deductions = rawdepded + rawcsded +
-                              rawsltded + rawmedded + rawhomeless_ded + rawernded)
+add_total_deductions <- function(data) {
+  data$raw_total_deductions <- rowSums(data[c("rawdepded", "rawcsded", "rawsltded", "rawmedded",
+                                              "rawhomeless_ded", "rawernded", "rawstdded")], na.rm = TRUE)
+  data
+}
+mydata <- add_total_deductions(mydata)
 
 # Save data
 saveRDS(mydata, paste0(folder, "final.rds"))
@@ -833,8 +837,7 @@ if (cpi_inflate_vars) {
   df$max_shelter_deduction <- year_data$max_shelter_deduction[year_data$year == modeling_target_year]
   df$max_shelter_deduction <- ifelse(df$FSNELDER + df$FSNDIS > 0, Inf, df$max_shelter_deduction)
   df <- calculate_raw_benefits(df, skip_benefits = TRUE)
-  df <- df %>% mutate(raw_total_deductions = rawdepded + rawcsded +
-                                rawsltded + rawmedded + rawhomeless_ded + rawernded)
+  df <- add_total_deductions(df)
 }
 
 #### variable cleaning / recoding ###
