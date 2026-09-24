@@ -45,7 +45,8 @@ smd_by_year <- read.csv(paste0(folder, "additional_data/standard_medical_deducti
 
 #' Join a wide state x year lookup (state_name + X2017...X2026) onto a frame.
 add_state_year_col <- function(data, lookup, value_col,
-                               key = "state_name", year_col = "fiscal_year") {
+                               key = "state_name", year_col = "fiscal_year",
+                               year = NULL) {
   
   long <- lookup |>
     tidyr::pivot_longer(
@@ -58,6 +59,11 @@ add_state_year_col <- function(data, lookup, value_col,
   
   long <- dplyr::mutate(long,
                         dplyr::across(dplyr::all_of(value_col), \(x) dplyr::na_if(x, 0)))
+  
+  if (!is.null(year)) {
+    long <- dplyr::select(dplyr::filter(long, .data[[year_col]] == year), -dplyr::all_of(year_col))
+    return(dplyr::left_join(data, long, by = key))
+  }
   
   dplyr::left_join(data, long, by = c(key, year_col))
 }
@@ -103,9 +109,19 @@ cpi_inflate <- function(data, vars, base_year, year_col = "year",
   f <- base_cpi / cpi_table$cpi[match(data[[year_col]], cpi_table$year)]
   stopifnot(!is.na(base_cpi), !anyNA(f))
   data[if (overwrite) vars else paste0(vars, suffix)] <- lapply(vars, function(v) {
+    x  <- data[[v]]
     fv <- f
-    if (v == "rawmedded") fv[!is.na(data$smd_amt) & data$rawmedded == data$smd_amt] <- 1
-    floor(data[[v]] * fv)
+    if (v == "rawmedded") {
+      bump <- !is.na(data$smd_amt) & x > 0 & x < data$smd_amt
+      x[bump]  <- data$smd_amt[bump]
+      fv[bump] <- 1
+    }
+    if (v == "rawutil") {
+      sua <- !is.na(data$utilities_sua) & data$utilities_sua == 2
+      x[sua]  <- data$max_sua[sua]
+      fv[sua] <- 1
+    }
+    floor(x * fv)
   })
   data
 }

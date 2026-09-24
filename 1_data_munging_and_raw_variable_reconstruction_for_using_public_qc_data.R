@@ -228,7 +228,7 @@ for (v in vars) {
 }
 
 # Recalculate raw income formula
-calculate_raw_benefits <- function(mydata) {
+calculate_raw_benefits <- function(mydata, skip_benefits = FALSE) {
   
   mydata$rawernded <- floor(mydata$rawearn * 0.2)
   mydata$rawgrinc <- mydata$rawearn + mydata$rawunearn
@@ -247,20 +247,22 @@ calculate_raw_benefits <- function(mydata) {
     pmax(mydata$rawsltded_uncapped, 0),
     pmin(pmax(mydata$rawsltded_uncapped, 0), mydata$max_shelter_deduction)
   )
-  mydata$rawnet_allow_negative = mydata$rawnet_before_shelter - (
-    mydata$rawsltded +
-      mydata$rawhomeless_ded
-  )
-  mydata$rawnet_allow_negative <- floor(mydata$rawnet_allow_negative)
-  mydata$rawben_uncapped <- mydata$rawbenmax - (0.3 * mydata$rawnet_allow_negative)
-  mydata$rawben_uncapped <- floor(mydata$rawben_uncapped)
-  mydata$rawben_recreated <- pmax(mydata$rawben_uncapped, mydata$rawminimum_ben)
-  mydata$rawben_recreated <- pmin(mydata$rawben_recreated, mydata$rawbenmax)
-  mydata$rawnet_capped = pmax(mydata$rawnet_allow_negative, 0) 
-  mydata$unc_rawben_rel_max <- mydata$rawben_uncapped / mydata$rawbenmax
-  mydata$at_max_ben <- as.integer(mydata$rawben_uncapped >= mydata$rawbenmax)
+  
+  if (skip_benefits == FALSE){
+    mydata$rawnet_allow_negative = mydata$rawnet_before_shelter - (
+      mydata$rawsltded +
+        mydata$rawhomeless_ded
+    )
+    mydata$rawnet_allow_negative <- floor(mydata$rawnet_allow_negative)
+    mydata$rawben_uncapped <- mydata$rawbenmax - (0.3 * mydata$rawnet_allow_negative)
+    mydata$rawben_uncapped <- floor(mydata$rawben_uncapped)
+    mydata$rawben_recreated <- pmax(mydata$rawben_uncapped, mydata$rawminimum_ben)
+    mydata$rawben_recreated <- pmin(mydata$rawben_recreated, mydata$rawbenmax)
+    mydata$rawnet_capped = pmax(mydata$rawnet_allow_negative, 0) 
+    mydata$unc_rawben_rel_max <- mydata$rawben_uncapped / mydata$rawbenmax
+    mydata$at_max_ben <- as.integer(mydata$rawben_uncapped >= mydata$rawbenmax)
+  }
   mydata
-
 }
 
 # Corrected variable notes 
@@ -803,7 +805,7 @@ if (apply_correction_smoothing) {
 }
 
 mydata <- mydata %>% mutate(raw_total_deductions = rawdepded + rawcsded +
-                              rawsltded + rawmedded + rawernded)
+                              rawsltded + rawmedded + rawhomeless_ded + rawernded)
 
 # Save data
 saveRDS(mydata, paste0(folder, "final.rds"))
@@ -814,8 +816,25 @@ df <- add_features(mydata)
 
 #### CPI-inflate data from features.R
 if (cpi_inflate_vars) {
-  cpi_vars <- c("rawearn", "rawunearn", "rawmedded", "rawdepded", "rawcsded", "rawrent")
+  
+  # Reset max_sua and smd_amt amount to modeling_target_year
+  df$max_sua <- NULL
+  df <- add_state_year_col(df, state_sua, "max_sua", year = modeling_target_year)
+  df$smd_amt <- NULL
+  df <- add_state_year_col(df, smd_by_year, "smd_amt", year = modeling_target_year)
+  
+  # Inflation adjust variables
+  cpi_vars <- c("rawearn", "rawunearn", "rawmedded", "rawdepded", "rawcsded", "rawrent", "rawutil")
   df <- cpi_inflate(df, cpi_vars, modeling_target_year, overwrite = TRUE)
+  df$rawhomeless_ded[!is.na(df$rawhomeless_ded) & df$rawhomeless_ded > 0] <- year_data$homeless_standard[year_data$year == modeling_target_year]
+  df$rawstdded <- Vectorize(get_standard_deduction)(df$state_name, df$rawusize, modeling_target_year)
+  
+  # Additional calculations needed post-inflation
+  df$max_shelter_deduction <- year_data$max_shelter_deduction[year_data$year == modeling_target_year]
+  df$max_shelter_deduction <- ifelse(df$FSNELDER + df$FSNDIS > 0, Inf, df$max_shelter_deduction)
+  df <- calculate_raw_benefits(df, skip_benefits = TRUE)
+  df <- df %>% mutate(raw_total_deductions = rawdepded + rawcsded +
+                                rawsltded + rawmedded + rawhomeless_ded + rawernded)
 }
 
 #### variable cleaning / recoding ###
