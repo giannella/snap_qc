@@ -1,0 +1,13 @@
+"column","rows_at_target_year","n_changed","max_abs_change"
+"rawearn",28478,0,0
+"rawunearn",28478,0,0
+"medical_deductions",28478,0,0
+"rawdepded",28478,0,0
+"rawcsded",28478,0,0
+"rawrent",28478,0,0
+"earned_by_hh_size",28478,0,0
+"unearned_by_hh_size",28478,0,0
+"shelter_expenses",28478,0,0
+"shelter_to_gross_ratio",28478,0,0
+"shelter_expenses_by_hh_size",28478,0,0
+"medical_deductions_by_hh_size",28478,0,0

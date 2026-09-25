@@ -1,0 +1,7 @@
+"field","train_median_recorded","train_median_cpi_frame","fy2022_median_recorded","fy2022_median_cpi_frame","recorded_gap_pct","cpi_gap_pct"
+"earned_by_hh_size",394.666666666667,464.633333333333,469.583333333333,479,19,1.1
+"unearned_by_hh_size",733,870,824,841,12.4,-5.3
+"gross_by_hh_size",644,644,794,794,23.3,23.3
+"shelter_expenses_by_hh_size",423,458,500,502,18.2,9.2
+"medical_deductions",141,144,140,140,-0.7,-2.8
+"total_deductions_by_hh_size",252.3875,252.3875,283,283,12.1,12.1
