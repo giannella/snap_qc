@@ -832,6 +832,9 @@ if (cpi_inflate_vars) {
   df <- cpi_inflate(df, cpi_vars, modeling_target_year, overwrite = TRUE)
   df$rawhomeless_ded[!is.na(df$rawhomeless_ded) & df$rawhomeless_ded > 0] <- year_data$homeless_standard[year_data$year == modeling_target_year]
   df$rawstdded <- Vectorize(get_standard_deduction)(df$state_name, df$rawusize, modeling_target_year)
+  df$rawbenmax <- Vectorize(get_max_allotment)(df$rawusize, modeling_target_year)
+  df$rawminimum_ben <- year_data$min_allotment[year_data$year == modeling_target_year]
+  df$rawminimum_ben <- ifelse(df$rawusize < 3, df$rawminimum_ben, 0)
   
   # Additional calculations needed post-inflation
   df$max_shelter_deduction <- year_data$max_shelter_deduction[year_data$year == modeling_target_year]
