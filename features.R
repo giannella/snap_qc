@@ -45,7 +45,8 @@ smd_by_year <- read.csv(paste0(folder, "additional_data/standard_medical_deducti
 
 #' Join a wide state x year lookup (state_name + X2017...X2026) onto a frame.
 add_state_year_col <- function(data, lookup, value_col,
-                               key = "state_name", year_col = "fiscal_year") {
+                               key = "state_name", year_col = "fiscal_year",
+                               year = NULL) {
   
   long <- lookup |>
     tidyr::pivot_longer(
@@ -58,6 +59,11 @@ add_state_year_col <- function(data, lookup, value_col,
   
   long <- dplyr::mutate(long,
                         dplyr::across(dplyr::all_of(value_col), \(x) dplyr::na_if(x, 0)))
+  
+  if (!is.null(year)) {
+    long <- dplyr::select(dplyr::filter(long, .data[[year_col]] == year), -dplyr::all_of(year_col))
+    return(dplyr::left_join(data, long, by = key))
+  }
   
   dplyr::left_join(data, long, by = c(key, year_col))
 }
@@ -87,6 +93,37 @@ add_percentile <- function(data, col,
       dplyr::cume_dist(dplyr::na_if({{ col }}, 0) / cpi)
     )) |>
     dplyr::ungroup()
+}
+
+# CPI-inflate values
+cpi_inflate <- function(data, vars, base_year, year_col = "year",
+                        overwrite = TRUE, suffix = "_real") {
+  
+  cpi_table <- read.csv(here("additional_data/year_data.csv")) %>%
+    transmute(
+      year = as.integer(year),
+      cpi  = as.numeric(cpi)
+    )
+  
+  base_cpi <- cpi_table$cpi[match(base_year, cpi_table$year)]
+  f <- base_cpi / cpi_table$cpi[match(data[[year_col]], cpi_table$year)]
+  stopifnot(!is.na(base_cpi), !anyNA(f))
+  data[if (overwrite) vars else paste0(vars, suffix)] <- lapply(vars, function(v) {
+    x  <- data[[v]]
+    fv <- f
+    if (v == "rawmedded") {
+      bump <- !is.na(data$smd_amt) & x > 0 & x < data$smd_amt
+      x[bump]  <- data$smd_amt[bump]
+      fv[bump] <- 1
+    }
+    if (v == "rawutil") {
+      sua <- !is.na(data$utilities_sua) & data$utilities_sua == 2
+      x[sua]  <- data$max_sua[sua]
+      fv[sua] <- 1
+    }
+    floor(x * fv)
+  })
+  data
 }
 
 #' SUA tier, 3 levels, per state-year
