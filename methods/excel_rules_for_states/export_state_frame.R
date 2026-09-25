@@ -135,6 +135,19 @@ extra <- intersect(c("cert_HH_size_FS_n", "over_threshold", "total_error_amount"
                      # reflected in rawcsded for those rows
                      "fscsexp"), names(w))
 out <- w[, c(keys, extra, pf$features), drop = FALSE]
+# Workbook convention (2026-09-25): pasted dollars are modeling-year dollars,
+# so the workbook's benefit chain yields modeling-year-terms ratios. The
+# frame carries those under *_my beside the nominal columns the rules were
+# mined on; the demo rows ship the *_my values so the static hits, the
+# live formulas and the validation gate agree.
+for (v in c("rawben_rel_max", "unc_rawben_rel_max")) {
+  my <- paste0(v, "_my")
+  if (my %in% names(w) && v %in% names(out)) {
+    out[[v]] <- w[[my]]
+    cat(sprintf("%s: exported in modeling-year terms (%s)
+", v, my))
+  }
+}
 out$hh_group    <- hh_group_of(w$cert_HH_size_FS_n)
 out$hh_size_raw <- suppressWarnings(as.numeric(as.character(w$cert_HH_size_FS_n)))
 # is_error follows the pipeline's convention: over_threshold != 0, NA = not an error

@@ -617,7 +617,9 @@ FEAT_DESC = {
     'gross_by_hh_size':    '(EARNED_INCOME + UNEARNED_INCOME) / HOUSEHOLD_SIZE — on '
                            'reported data this is the manual\'s RAWGROSS / CERTHHSZ',
     'rawben_rel_max':      'recomputed benefit / maximum allotment for the unit size '
-                           '(via the hidden benefit-recomputation chain and FederalTables)',
+                           '(via the hidden benefit-recomputation chain and FederalTables, '
+                           'both at the modeling year; the rules were mined on each review '
+                           'year in its own terms)',
     'unc_rawben_rel_max':  'recomputed benefit BEFORE the minimum/maximum caps / maximum '
                            'allotment (see Uncapped Benefit Analysis pdf on '
                            'bettergovernmentlab.org/resources/snap for more background)',

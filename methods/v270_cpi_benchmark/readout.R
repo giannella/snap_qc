@@ -24,7 +24,7 @@
 suppressMessages(library(dplyr))
 setwd("C:/Users/ericg/snap_qc")
 D <- "methods/v270_cpi_benchmark"
-LABEL <- "CPI + total-deductions redefinition (staging-v2.7 frame, rebuilt 2026-09-24) vs nominal (main, 2026-09-21 frame)"
+LABEL <- "CPI + total-deductions redefinition, benefit ratios nominal (staging-v2.7 frame, rebuilt 2026-09-25) vs nominal (main, 2026-09-21 frame). Run 1 (2026-09-24, ratios in modeling-year terms) is kept as fy2024_cpi_run1_ratios_modeling_year/ and readout_run1_20260924.md"
 
 load_arm <- function(fn) {
   if (!file.exists(fn)) return(NULL)

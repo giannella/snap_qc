@@ -832,6 +832,14 @@ if (cpi_inflate_vars) {
   df <- cpi_inflate(df, cpi_vars, modeling_target_year, overwrite = TRUE)
   df$rawhomeless_ded[!is.na(df$rawhomeless_ded) & df$rawhomeless_ded > 0] <- year_data$homeless_standard[year_data$year == modeling_target_year]
   df$rawstdded <- Vectorize(get_standard_deduction)(df$state_name, df$rawusize, modeling_target_year)
+  # Nominal reconstruction kept (2026-09-24/25): the benefit ratios the rules
+  # are mined on, rawben_rel_max and unc_rawben_rel_max, stay in the review
+  # year's own terms (project lead, 2026-09-25: NOT CPI-adjusted), and the
+  # artifact check in the list builders reads this nominal chain.
+  df$rawben_uncapped_nominal  <- df$rawben_uncapped
+  df$rawben_recreated_nominal <- df$rawben_recreated
+  df$rawbenmax_nominal        <- df$rawbenmax
+  df$rawminimum_ben_nominal   <- df$rawminimum_ben
   df$rawbenmax <- Vectorize(get_max_allotment)(df$rawusize, modeling_target_year)
   df$rawminimum_ben <- year_data$min_allotment[year_data$year == modeling_target_year]
   df$rawminimum_ben <- ifelse(df$rawusize < 3, df$rawminimum_ben, 0)
@@ -839,25 +847,25 @@ if (cpi_inflate_vars) {
   # Additional calculations needed post-inflation
   df$max_shelter_deduction <- year_data$max_shelter_deduction[year_data$year == modeling_target_year]
   df$max_shelter_deduction <- ifelse(df$FSNELDER + df$FSNDIS > 0, Inf, df$max_shelter_deduction)
-  # Benefits in modeling-year terms as well (2026-09-24): keep the nominal
-  # reconstruction (recorded dollars against the review year's tables) under
-  # *_nominal names, because the artifact check in the list builders reads
-  # "recorded benefit at the maximum while the reconstruction lands below
-  # it" on that scale; then recompute the benefit chain with the modeling
-  # year's maximum and minimum allotments, so rawben_rel_max and
-  # unc_rawben_rel_max sit on the same scale as the inflated inputs (and as
-  # a state's workbook, which takes pasted dollars as modeling-year dollars).
-  df$rawben_uncapped_nominal  <- df$rawben_uncapped
-  df$rawben_recreated_nominal <- df$rawben_recreated
-  df$rawbenmax_nominal        <- df$rawbenmax
-  df$rawbenmax <- max_allotments_long$rawbenmax[match(
-    paste(df$rawusize, modeling_target_year),
-    paste(max_allotments_long$hh_size, max_allotments_long$year))]
-  stopifnot(!anyNA(df$rawbenmax))
-  df$rawminimum_ben <- ifelse(df$rawusize < 3,
-                              year_data$min_allotment[year_data$year == modeling_target_year], 0)
+  # the full chain on the inflated inputs with the modeling year's tables:
+  # deductions and net incomes in modeling-year terms (these feed the mined
+  # deduction features), plus a modeling-year-terms benefit chain kept under
+  # *_my names for the state workbook, whose pasted dollars are modeling-year
+  # dollars and whose formulas therefore reproduce these, not the nominal ones
   df <- calculate_raw_benefits(df, skip_benefits = FALSE)
   df <- add_total_deductions(df)
+  df$rawben_uncapped_my    <- df$rawben_uncapped
+  df$rawben_recreated_my   <- df$rawben_recreated
+  df$rawbenmax_my          <- df$rawbenmax
+  df$unc_rawben_rel_max_my <- df$rawben_uncapped_my / df$rawbenmax_my
+  df$rawben_rel_max_my     <- df$rawben_recreated_my / df$rawbenmax_my
+  # restore the nominal chain as the columns the rules are mined on
+  df$rawben_uncapped    <- df$rawben_uncapped_nominal
+  df$rawben_recreated   <- df$rawben_recreated_nominal
+  df$rawbenmax          <- df$rawbenmax_nominal
+  df$rawminimum_ben     <- df$rawminimum_ben_nominal
+  df$unc_rawben_rel_max <- df$rawben_uncapped / df$rawbenmax
+  df$at_max_ben         <- as.integer(df$rawben_uncapped >= df$rawbenmax)
   # the SUA tier against the modeling year's standard, on the inflated
   # utility amount (add_features computed it before the step)
   df$utilities_sua <- NULL
