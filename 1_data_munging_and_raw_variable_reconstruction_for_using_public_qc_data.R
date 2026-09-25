@@ -836,8 +836,29 @@ if (cpi_inflate_vars) {
   # Additional calculations needed post-inflation
   df$max_shelter_deduction <- year_data$max_shelter_deduction[year_data$year == modeling_target_year]
   df$max_shelter_deduction <- ifelse(df$FSNELDER + df$FSNDIS > 0, Inf, df$max_shelter_deduction)
-  df <- calculate_raw_benefits(df, skip_benefits = TRUE)
+  # Benefits in modeling-year terms as well (2026-09-24): keep the nominal
+  # reconstruction (recorded dollars against the review year's tables) under
+  # *_nominal names, because the artifact check in the list builders reads
+  # "recorded benefit at the maximum while the reconstruction lands below
+  # it" on that scale; then recompute the benefit chain with the modeling
+  # year's maximum and minimum allotments, so rawben_rel_max and
+  # unc_rawben_rel_max sit on the same scale as the inflated inputs (and as
+  # a state's workbook, which takes pasted dollars as modeling-year dollars).
+  df$rawben_uncapped_nominal  <- df$rawben_uncapped
+  df$rawben_recreated_nominal <- df$rawben_recreated
+  df$rawbenmax_nominal        <- df$rawbenmax
+  df$rawbenmax <- max_allotments_long$rawbenmax[match(
+    paste(df$rawusize, modeling_target_year),
+    paste(max_allotments_long$hh_size, max_allotments_long$year))]
+  stopifnot(!anyNA(df$rawbenmax))
+  df$rawminimum_ben <- ifelse(df$rawusize < 3,
+                              year_data$min_allotment[year_data$year == modeling_target_year], 0)
+  df <- calculate_raw_benefits(df, skip_benefits = FALSE)
   df <- add_total_deductions(df)
+  # the SUA tier against the modeling year's standard, on the inflated
+  # utility amount (add_features computed it before the step)
+  df$utilities_sua <- NULL
+  df <- add_sua_tier(df)
 }
 
 #### variable cleaning / recoding ###
@@ -877,7 +898,11 @@ df <- df %>%
 
 df <- df %>%
   mutate(count_abawd = rowSums(across(num_range("abwdst", 1:18), ~ .x %in% 2:5)),
-         pct_abawd = count_abawd / certhhsz)
+         # share of the RECONSTRUCTED unit (rawusize, the size every other
+         # per-member feature divides by; 2026-09-25, was certhhsz, the
+         # reported size, which differs on 0.6% of cases after the
+         # unit-composition correction)
+         pct_abawd = count_abawd / rawusize)
 #df %>% select(count_abawd, certhhsz, pct_abawd, abwdst1, age1) %>% sample_n(size=20)
 
 df$lf_composition <- factor(df$lf_composition)

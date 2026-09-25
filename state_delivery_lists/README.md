@@ -3,10 +3,24 @@
 One ranked rule list per state and review budget (5% and 10% of caseload).
 This is the default deployment deliverable described in the README and
 `methods/modeling_findings.md` (sections 14-16). The current lists are the
-v2.5.0 build (2026-08-13, `methods/v250_build_staged_lists_v2.R`), mined
-fresh on the reconstruction-fixed 2022-24 frame; the one-year-ahead
-benchmark for this exact recipe is `methods/v250_benchmark_2024/`
-(findings section 39).
+v2.7 build (2026-09-24, `runners/run_v270_build.R`, which runs the v2.5.0
+staged builder `methods/v250_build_staged_lists_utilsua_v2.R` verbatim),
+mined fresh on the 2022-24 frame after the CPI adjustment: dollar fields
+in 2026 dollars, 2026 deduction and utility-allowance anchors for every
+year, and the standard and homeless deductions counted in total deductions.
+`utilities_sua` (a three-level standard utility allowance tier, defined in
+[the data dictionary](../DATA_DICTIONARY.md)) replaces raw `utilities`
+dollars among the mined features, as since v2.6.0. Filenames, columns,
+walk, and gates are unchanged. The one-year-ahead readouts for this frame
+are in `methods/v270_cpi_benchmark/` (FY2024 and FY2019 windows, each
+beside the earlier benchmarks).
+
+The national pool artifact in this folder,
+`national_rule_pool_2022_2024_v270.rds`, is the admitted candidate pool
+behind these lists (rules test `utilities_sua`), and is what
+`INCL_mine_internal_and_blend_with_national_v2.R` blends against. The
+v2.5.0 pool (raw `utilities` dollars) is kept at
+`archive/national_rule_pool_2022_2024_v250.rds`.
 
 ## How each list is built
 

@@ -188,7 +188,9 @@ def federal_tables(wb, state_name=None, offset_col=None, visible=False):
                 'new fiscal year, append one row to each table below; everything '
                 'updates automatically. error_threshold is the federal QC tolerance: a '
                 'case is a payment error when its error amount EXCEEDS this dollar '
-                'amount for its review year.')
+                'amount for its review year. The deduction, allotment and SUA tables '
+                'are looked up at the modeling year in L3 for every case (see K4); '
+                'the error tolerance is looked up by the review year.')
     ws['A2'].font = Font(size=10)
     ws['A2'].alignment = Alignment(wrap_text=True, vertical='top')
     ws.merge_cells('A2:J2')
@@ -298,8 +300,18 @@ def federal_tables(wb, state_name=None, offset_col=None, visible=False):
         ws.cell(row=sua0 + 2 + i, column=13, value=v)
     ws.column_dimensions['L'].width = 8
     ws.column_dimensions['M'].width = 30
+    # modeling year (2026-09-24, v2.7): see MODELING_YEAR above
+    ws.cell(row=3, column=11, value='modeling_year').font = Font(bold=True, size=10)
+    ws.cell(row=3, column=12, value=MODELING_YEAR)
+    ws.cell(row=4, column=11, value=(
+        'dollar anchor year: the standard deduction, shelter cap, allotments and '
+        'heating/cooling standard are looked up at this year for every case, '
+        'because the rules were mined with every dollar field in that year. '
+        'Pasted dollar amounts must already be in the modeling year dollars. '
+        'The QC error tolerance stays at the review year.')).font = Font(size=9)
     ws.freeze_panes = 'A3'
     return {
+        'MODYR':  'FederalTables!$L$3',
         'SUAYRS':  f'FederalTables!$L${sua0 + 2}:$L${sua0 + 1 + len(sua_years)}',
         'SUAMAX':  f'FederalTables!$M${sua0 + 2}:$M${sua0 + 1 + len(sua_years)}',
         'YEARS':  f'FederalTables!$A$6:$A${5 + ny}',
@@ -598,8 +610,8 @@ FEAT_DESC = {
     'married':     'MARRIED_FLAG, unchanged',
     'medical_deductions': 'MEDICAL_DEDUCTION, unchanged',
     'months_since_cert_n': 'MONTHS_SINCE_CERT, unchanged',
-    'percent_abawd': 'NUM_ABAWD / HOUSEHOLD_SIZE (the research frame divides by CERTHHSZ, '
-                     'the certified unit size — the same concept HOUSEHOLD_SIZE carries)',
+    'percent_abawd': 'NUM_ABAWD / HOUSEHOLD_SIZE (the research frame divides by the same '
+                     'reconstructed unit size since 2026-09-25)',
     'earned_by_hh_size':   'EARNED_INCOME / HOUSEHOLD_SIZE',
     'unearned_by_hh_size': 'UNEARNED_INCOME / HOUSEHOLD_SIZE',
     'gross_by_hh_size':    '(EARNED_INCOME + UNEARNED_INCOME) / HOUSEHOLD_SIZE — on '
@@ -611,11 +623,11 @@ FEAT_DESC = {
                            'bettergovernmentlab.org/resources/snap for more background)',
     'shelter_expenses_by_hh_size': '(RENT + UTILITY_COSTS) / HOUSEHOLD_SIZE',
     'total_deductions_by_hh_size': '(dependent care + child support + recomputed shelter + medical '
-                                   '+ earned-income deductions) / HOUSEHOLD_SIZE',
+                                   '+ earned-income + standard + homeless deductions) / HOUSEHOLD_SIZE',
     'utilities':   'UTILITY_COSTS, unchanged',
     'utilities_sua': 'standard utility allowance tier: UTILITY_COSTS compared to the '
                      'state\'s heating/cooling standard utility allowance for the '
-                     'review year (the hidden FederalTables sheet carries the '
+                     'modeling year (FederalTables modeling_year; the sheet carries the '
                      'per-year standard): 0 = no utility amount; 1 = positive but '
                      'below the standard; 2 = at or above the standard. Rules use '
                      'this tier instead of utility dollars so they keep meaning the '
@@ -630,7 +642,7 @@ FEAT_DESC = {
 }
 HELPER_NOTE = ('_c_* columns (hidden): the benefit-recomputation chain — fiscal year, '
                'gross income, earned-income deduction, standard deduction and maximum '
-               'allotment looked up per year x size from the hidden FederalTables sheet '
+               'allotment looked up at the modeling year x size from the hidden FederalTables sheet '
                '(the standard deduction less that sheet\'s state_offset column, which '
                'is 0 unless the state\'s standard deduction differs from the federal '
                'table; currently Illinois), net income before and after shelter, the '
@@ -1246,7 +1258,16 @@ def share_tab(wb, state_name):
 # the benefit pair (2026-08-18): a case missing either benefit amount gets a
 # blank error amount and a blank over-threshold flag, so it counts as neither
 # an error nor a clean case.
-BEN_INPUTS = ['REVIEW_FISCAL_YEAR', 'HOUSEHOLD_SIZE', 'EARNED_INCOME',
+# Modeling year (2026-09-24, v2.7): the munging script inflates every dollar
+# field to this year's dollars (modeling_target_year) and applies this
+# year's standard deduction, shelter cap and SUA standard to every case, so
+# the workbook looks those tables up at this year for EVERY row and applies
+# no CPI adjustment of its own: pasted dollar amounts are used as-is and
+# must already be in this year's dollars. Only the QC error tolerance (and
+# the BBCE regime share) stay keyed to the review year. The validation
+# gate fails the build if this constant and the frame disagree.
+MODELING_YEAR = 2026
+BEN_INPUTS = ['HOUSEHOLD_SIZE', 'EARNED_INCOME',
               'UNEARNED_INCOME', 'MEDICAL_DEDUCTION', 'DEPENDENT_CARE_DEDUCTION',
               'CHILD_SUPPORT_EXPENSES', 'HOMELESS_DEDUCTION', 'RENT',
               'UTILITY_COSTS', 'NUM_ELDERLY', 'NUM_DISABLED']
@@ -1272,7 +1293,7 @@ FEATURE_INPUTS = {
     'shelter_expenses_by_hh_size': ['RENT', 'UTILITY_COSTS', 'HOUSEHOLD_SIZE'],
     'total_deductions_by_hh_size': BEN_INPUTS,
     'utilities': ['UTILITY_COSTS'],
-    'utilities_sua': ['UTILITY_COSTS', 'REVIEW_FISCAL_YEAR'],
+    'utilities_sua': ['UTILITY_COSTS'],
     'over_threshold': ['ORIGINAL_BENEFIT_AMOUNT', 'CORRECTED_BENEFIT_AMOUNT',
                        'REVIEW_FISCAL_YEAR'],
     'total_error_amount': ['ORIGINAL_BENEFIT_AMOUNT', 'CORRECTED_BENEFIT_AMOUNT'],
@@ -1304,13 +1325,13 @@ def feature_formulas(R, table=TABLE):
         # the federal standard deduction for the year x size, less the
         # FederalTables state_offset column (0 except where states.py sets a
         # std_ded_offset_col: Illinois), mirroring get_standard_deduction()
-        ('_c_stdded',  f'=INDEX({R["SDBLK"]},MATCH({T("_c_fy")},{R["SDYRS"]},1),{sz})'
-                       f'-INDEX({R["SDOFF"]},MATCH({T("_c_fy")},{R["SDYRS"]},1))'),
-        ('_c_benmax',  f'=INDEX({R["MABLK"]},MATCH({T("_c_fy")},{R["MAYRS"]},1),{sz})'),
+        ('_c_stdded',  f'=INDEX({R["SDBLK"]},MATCH({R["MODYR"]},{R["SDYRS"]},1),{sz})'
+                       f'-INDEX({R["SDOFF"]},MATCH({R["MODYR"]},{R["SDYRS"]},1))'),
+        ('_c_benmax',  f'=INDEX({R["MABLK"]},MATCH({R["MODYR"]},{R["MAYRS"]},1),{sz})'),
         ('_c_netbs',   f'={T("_c_gross")}-({T("_c_ernded")}+{T("DEPENDENT_CARE_DEDUCTION")}'
                        f'+{T("MEDICAL_DEDUCTION")}+{T("CHILD_SUPPORT_EXPENSES")}+{T("_c_stdded")})'),
         ('_c_maxsh',   f'=IF({T("_c_eld")}=1,1000000000,'
-                       f'INDEX({R["MAXSH"]},MATCH({T("_c_fy")},{R["YEARS"]},1)))'),
+                       f'INDEX({R["MAXSH"]},MATCH({R["MODYR"]},{R["YEARS"]},1)))'),
         # NB: the munging script does NOT floor the shelter deduction; only the
         # net incomes and the benefit are floored (calculate_raw_benefits)
         ('_c_sltded',  f'=MIN(MAX({T("RENT")}+{T("UTILITY_COSTS")}'
@@ -1319,7 +1340,7 @@ def feature_formulas(R, table=TABLE):
                        f'+{T("HOMELESS_DEDUCTION")}))'),
         ('_c_benunc',  f'=_xlfn.FLOOR.MATH({T("_c_benmax")}-0.3*{T("_c_netan")})'),
         ('_c_benrec',  f'=MIN(MAX({T("_c_benunc")},IF({T("HOUSEHOLD_SIZE")}<3,'
-                       f'INDEX({R["MINAL"]},MATCH({T("_c_fy")},{R["YEARS"]},1)),0)),'
+                       f'INDEX({R["MINAL"]},MATCH({R["MODYR"]},{R["YEARS"]},1)),0)),'
                        f'{T("_c_benmax")})'),
     ]
     # a row with blank inputs must never surface an ERROR cell: the year
@@ -1355,7 +1376,8 @@ def feature_formulas(R, table=TABLE):
         'shelter_expenses_by_hh_size': f'=({T("RENT")}+{T("UTILITY_COSTS")})/{hh}',
         'total_deductions_by_hh_size':
             f'=({T("DEPENDENT_CARE_DEDUCTION")}+{T("CHILD_SUPPORT_EXPENSES")}'
-            f'+{T("_c_sltded")}+{T("MEDICAL_DEDUCTION")}+{T("_c_ernded")})/{hh}',
+            f'+{T("_c_sltded")}+{T("MEDICAL_DEDUCTION")}+{T("_c_ernded")}'
+            f'+{T("HOMELESS_DEDUCTION")}+{T("_c_stdded")})/{hh}',
         'unc_rawben_rel_max': f'={T("_c_benunc")}/{T("_c_benmax")}',
         'utilities':   f'={T("UTILITY_COSTS")}',
         # SUA tier (redefined 2026-08-23, state-options merge; features.R
@@ -1368,9 +1390,9 @@ def feature_formulas(R, table=TABLE):
         # block leaves the tier blank, mirroring the NA tier in features.R.
         'utilities_sua':
             f'=IF({T("UTILITY_COSTS")}<=0,0,IFERROR(IF('
-            f'INDEX({R["SUAMAX"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["SUAYRS"]},0))'
+            f'INDEX({R["SUAMAX"]},MATCH({R["MODYR"]},{R["SUAYRS"]},0))'
             f'<=0,"",IF({T("UTILITY_COSTS")}'
-            f'<INDEX({R["SUAMAX"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["SUAYRS"]},0)),'
+            f'<INDEX({R["SUAMAX"]},MATCH({R["MODYR"]},{R["SUAYRS"]},0)),'
             f'1,2)),""))',
         # the QC outcome, recomputed from the benefit pair exactly as the
         # munging script defines it: error amount = |RAWBEN - FSBEN| rounded,
@@ -1415,24 +1437,28 @@ def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None):
     sz20 = np.clip(g('HOUSEHOLD_SIZE'), 1, 20).astype(int)
     hh = np.maximum(g('HOUSEHOLD_SIZE'), 1)
     lk = lambda tbl, col: np.array([tbl.loc[tbl.year <= y, col].iloc[-1] for y in fy])
-    stdded = np.array([sd.loc[sd.year <= y, str(s)].iloc[-1] for y, s in zip(fy, sz20)])
+    # the benefit chain and the SUA anchor run at the modeling year (see
+    # MODELING_YEAR); only the error tolerance uses the review year
+    my = np.full(len(fy), MODELING_YEAR, dtype=int)
+    lkm = lambda tbl, col: np.array([tbl.loc[tbl.year <= y, col].iloc[-1] for y in my])
+    stdded = np.array([sd.loc[sd.year <= y, str(s)].iloc[-1] for y, s in zip(my, sz20)])
     if sd_offset_by_year:
         # same MATCH(..,1) year rule as the deduction itself
         yrs = sorted(sd_offset_by_year)
         stdded = stdded - np.array([sd_offset_by_year[max(y0 for y0 in yrs if y0 <= y)]
-                                    for y in fy], dtype=float)
-    benmax = np.array([ma.loc[ma.year <= y, str(s)].iloc[-1] for y, s in zip(fy, sz20)])
+                                    for y in my], dtype=float)
+    benmax = np.array([ma.loc[ma.year <= y, str(s)].iloc[-1] for y, s in zip(my, sz20)])
     eld = ((g('NUM_ELDERLY') + g('NUM_DISABLED')) > 0).astype(int)
     ernded = _excel_floor(g('EARNED_INCOME') * 0.2)
     netbs = (g('EARNED_INCOME') + g('UNEARNED_INCOME')
              - (ernded + g('DEPENDENT_CARE_DEDUCTION') + g('MEDICAL_DEDUCTION')
                 + g('CHILD_SUPPORT_EXPENSES') + stdded))
-    maxsh = np.where(eld == 1, 1e9, lk(yd, 'max_shelter_deduction'))
+    maxsh = np.where(eld == 1, 1e9, lkm(yd, 'max_shelter_deduction'))
     sltded = np.minimum(np.maximum(g('RENT') + g('UTILITY_COSTS')
                                    - np.maximum(netbs * 0.5, 0), 0), maxsh)
     netan = _excel_floor(netbs - (sltded + g('HOMELESS_DEDUCTION')))
     benunc = _excel_floor(benmax - 0.3 * netan)
-    minal = lk(yd, 'min_allotment')
+    minal = lkm(yd, 'min_allotment')
     benrec = np.minimum(np.maximum(
         benunc, np.where(g('HOUSEHOLD_SIZE') < 3, minal, 0)), benmax)
     fyshare = pd.Series(g('CATEGORICALLY_ELIGIBLE')).groupby(fy).transform('mean')
@@ -1457,7 +1483,8 @@ def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None):
         'shelter_expenses_by_hh_size': (g('RENT') + g('UTILITY_COSTS')) / hh,
         'total_deductions_by_hh_size': (g('DEPENDENT_CARE_DEDUCTION')
                                         + g('CHILD_SUPPORT_EXPENSES') + sltded
-                                        + g('MEDICAL_DEDUCTION') + ernded) / hh,
+                                        + g('MEDICAL_DEDUCTION') + ernded
+                                        + g('HOMELESS_DEDUCTION') + stdded) / hh,
         'unc_rawben_rel_max': benunc / benmax,
         'utilities': g('UTILITY_COSTS'),
     }
@@ -1469,7 +1496,7 @@ def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None):
     # canonical definition fails the build. A year with no published
     # standard (csv value 0) gives a blank tier (NaN here).
     util = g('UTILITY_COSTS')
-    anchor = np.array([sua_by_year.get(int(y), 0.0) for y in fy], dtype=float)
+    anchor = np.array([sua_by_year.get(int(y), 0.0) for y in my], dtype=float)
     tier = np.where(util <= 0, 0.0,
                     np.where(anchor <= 0, np.nan,
                              np.where(util < anchor, 1.0, 2.0)))

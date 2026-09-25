@@ -29,6 +29,9 @@ Stages:
                             FederalTables, and runs the validation gate
   4. postprocess_workbook.py   calc-chain removal (checkboxes retired 2026-08-18)
   5. verify_workbook.py / verify_workbook_win.ps1   open-in-Excel probe
+  6. convert_xlsb_win.ps1  (Windows) Excel Binary copy of the delivered
+                           file, SNAP_flagging_rules_<ABBR>.xlsb, verified
+                           with the same probes
 
 Close the workbook in Excel first: writing underneath an open session produces
 OneDrive conflict copies and can clobber the new file.
@@ -144,6 +147,22 @@ def build_one(state, refresh, want_verify):
         probes = [p for p in PROBES_FINAL
                   if p not in (f"{BLENDED_SHEET}!G5", f"{BLENDED_SHEET}!H5")] + expect
         verify(deliver, probes)
+        # Excel Binary copy of the delivered workbook (2026-09-24, v2.7):
+        # the same workbook saved by desktop Excel via COM, with cached
+        # values. Windows only, and only after the xlsx has verified (the
+        # xlsx stays the source); verified with the same probes.
+        if sys.platform == 'win32':
+            xlsb = deliver.replace('.xlsx', '.xlsb')
+            if in_use(xlsb):
+                raise SystemExit(f'{xlsb} is open in Excel - close it and re-run.')
+            print(f'\n$ convert_xlsb_win.ps1 {os.path.basename(deliver)}')
+            p = subprocess.run(
+                ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                 '-File', os.path.join(PKG, 'convert_xlsb_win.ps1'),
+                 deliver, xlsb], cwd=PKG)
+            if p.returncode != 0:
+                raise SystemExit(f'xlsb export failed: {deliver}')
+            verify(xlsb, probes)
     print(f'\nDone: {deliver}')
 
 

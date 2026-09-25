@@ -38,14 +38,14 @@ MM_TOP40_MAX <- 1L; MM_TOP10_MAX <- 0L
 VOCAB19 <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
   "expedited_i", "bbce_state_i", "rawben_rel_max", "medical_deductions",
-  "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
+  "shelter_expenses_by_hh_size", Sys.getenv("V250_UTIL_FEATURE", "utilities"), "married", "homeless",
   "percent_abawd", "unc_rawben_rel_max", "months_since_cert_n",
   "count_divisible_by_100",
   "gross_by_hh_size", "earned_by_hh_size", "unearned_by_hh_size")
 
-CACHE_FN <- sprintf("methods/v250_candidate_lists/cache/national_pool_%d.rds", SEED)
+CACHE_FN <- Sys.getenv("NATL_POOL_CACHE", sprintf("methods/v250_candidate_lists/cache/national_pool_%d.rds", SEED))  # override per build (v2.7 runner)
 THREEARM <- "methods/threearm_2024/threearm_results_2024.csv"
-OUT_DIR  <- "methods/national_only_lists"
+OUT_DIR  <- Sys.getenv("NATL_OUT_DIR", "methods/national_only_lists")
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
 
 HH_LEVELS <- c("1", "2-3", "4+")
@@ -114,7 +114,7 @@ pool <- natl[!natl$artifact_i, , drop = FALSE]
 pool$pool <- "national"
 
 # the section-29 adapter needs the frame export beside the lists
-ffp_src <- "methods/v250_candidate_lists/frame_for_profiles.csv"
+ffp_src <- Sys.getenv("NATL_FFP_SRC", "methods/v250_candidate_lists/frame_for_profiles.csv")
 stopifnot(file.exists(ffp_src))
 file.copy(ffp_src, file.path(OUT_DIR, "frame_for_profiles.csv"), overwrite = TRUE)
 

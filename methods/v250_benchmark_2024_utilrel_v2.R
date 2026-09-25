@@ -91,7 +91,7 @@ MM_TAG_SHARE <- 0.25; MM_POOL_MAX <- 0.02
 MM_TOP40_MAX <- 1L;   MM_TOP10_MAX <- 0L
 HOLD_STATE_POOLS <- character(0)  # Illinois hold LIFTED 2026-08-13 (the IL standard-deduction offset fix landed and is verified by the recon diagnostics)
 
-OUT_DIR <- "methods/v250_benchmark_2024_utilrel"
+OUT_DIR <- Sys.getenv("BENCH_OUT_DIR", "methods/v250_benchmark_2024_utilrel")   # override per arm (v2.7 CPI measurement)
 if (!exists("RESUME_FROM_CHECKPOINT")) RESUME_FROM_CHECKPOINT <- FALSE
 if (SMOKE) {
   XGB$nrounds <- 40; RF$num_trees <- 40
@@ -154,7 +154,10 @@ stopifnot(sum(yr %in% TRAIN_YEARS) == EXPECT_TRAIN_ROWS,
           sum(ie_all[yr == TEST_YEAR]) == EXPECT_TEST_ERRS)
 hh_all <- hh_group_of(adf$cert_HH_size_FS_n)
 is_tr <- yr %in% TRAIN_YEARS
-mm_all <- adf$rawben >= adf$benmax & adf$rawben_uncapped < adf$benmax
+# on a CPI frame (2026-09-24) the reconstruction is in modeling-year terms;
+# the artifact check stays on the nominal scale via rawben_uncapped_nominal
+unc_nom <- if ("rawben_uncapped_nominal" %in% names(adf)) adf$rawben_uncapped_nominal else adf$rawben_uncapped
+mm_all <- adf$rawben >= adf$benmax & unc_nom < adf$benmax
 stamp("mismatch rows FY22-24: %d (train window: %d)", sum(mm_all),
       sum(mm_all & is_tr))
 stopifnot(sum(mm_all) < 1000)   # post-fix-frame assert: thousands = pre-fix frame

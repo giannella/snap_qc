@@ -6,14 +6,16 @@
 # judge any list this produces on a HELD-OUT slice of internal data (mine on
 # one period, score on a later one). The ranking alone is not evidence.
 #
-# Same recipe as the shipped v2.5.0 delivery lists: any-error target,
+# Same recipe as the shipped v2.7 delivery lists: any-error target,
 # household-size strata 1 / 2-3 / 4+, xgboost + ranger, admission by
 # Benjamini-Hochberg FDR 10% against the stratum base rate AND n >= 30,
 # ranked by the one-sided 99% Wilson lower confidence bound of precision.
 # The national side is the published pool artifact
-# state_delivery_lists/national_rule_pool_2022_2024_v250.rds (the 60,920
-# admitted candidate rules behind the shipped v2.5.0 lists, mined 2026-08-13
-# on the corrected public frame).
+# state_delivery_lists/national_rule_pool_2022_2024_v270.rds (the admitted
+# candidate rules behind the shipped v2.7 lists, mined 2026-09-24 on the
+# CPI-adjusted public frame: dollar fields in 2026 dollars, utilities as the
+# SUA tier). The v2.5.0 pool (raw utilities dollars, 60,920 rules) is kept
+# at archive/national_rule_pool_2022_2024_v250.rds.
 #
 # Run with the working directory at the top of a snap_qc download (needs
 # rule_mining_helpers.R and the packages dplyr, xgboost, ranger). Edit the
@@ -23,7 +25,7 @@
 #   the 19 model features (build them per features.R / DATA_DICTIONARY.md):
 #     HH_size_n, children_i, elderly_disabled_i, total_deductions_by_hh_size,
 #     expedited_i, bbce_state_i, rawben_rel_max, medical_deductions,
-#     shelter_expenses_by_hh_size, utilities, married, homeless,
+#     shelter_expenses_by_hh_size, utilities_sua, married, homeless,
 #     percent_abawd, unc_rawben_rel_max, months_since_cert_n,
 #     count_divisible_by_100, gross_by_hh_size, earned_by_hh_size,
 #     unearned_by_hh_size
@@ -44,7 +46,7 @@ source("rule_mining_helpers.R")
 if (!exists("INTERNAL_CSV"))
   INTERNAL_CSV  <- "internal_cases.csv"                # your case file
 if (!exists("NATIONAL_POOL"))
-  NATIONAL_POOL <- "state_delivery_lists/national_rule_pool_2022_2024_v250.rds"
+  NATIONAL_POOL <- "state_delivery_lists/national_rule_pool_2022_2024_v270.rds"
 if (!exists("OUT_CSV"))
   OUT_CSV       <- "blended_rules_ranked.csv"
 if (!exists("BUDGET"))
@@ -57,7 +59,7 @@ if (!exists("RF"))  RF  <- list(num_trees = 1000, max_depth = 4, mtry = 2, min_n
 VOCAB19 <- c("HH_size_n", "children_i", "elderly_disabled_i",
              "total_deductions_by_hh_size", "expedited_i", "bbce_state_i",
              "rawben_rel_max", "medical_deductions",
-             "shelter_expenses_by_hh_size", "utilities", "married", "homeless",
+             "shelter_expenses_by_hh_size", "utilities_sua", "married", "homeless",
              "percent_abawd", "unc_rawben_rel_max", "months_since_cert_n",
              "count_divisible_by_100", "gross_by_hh_size", "earned_by_hh_size",
              "unearned_by_hh_size")
