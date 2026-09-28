@@ -832,40 +832,39 @@ if (cpi_inflate_vars) {
   df <- cpi_inflate(df, cpi_vars, modeling_target_year, overwrite = TRUE)
   df$rawhomeless_ded[!is.na(df$rawhomeless_ded) & df$rawhomeless_ded > 0] <- year_data$homeless_standard[year_data$year == modeling_target_year]
   df$rawstdded <- Vectorize(get_standard_deduction)(df$state_name, df$rawusize, modeling_target_year)
-  # Nominal reconstruction kept (2026-09-24/25): the benefit ratios the rules
-  # are mined on, rawben_rel_max and unc_rawben_rel_max, stay in the review
-  # year's own terms (project lead, 2026-09-25: NOT CPI-adjusted), and the
-  # artifact check in the list builders reads this nominal chain.
-  df$rawben_uncapped_nominal  <- df$rawben_uncapped
-  df$rawben_recreated_nominal <- df$rawben_recreated
-  df$rawbenmax_nominal        <- df$rawbenmax
-  df$rawminimum_ben_nominal   <- df$rawminimum_ben
-  df$rawbenmax <- Vectorize(get_max_allotment)(df$rawusize, modeling_target_year)
-  df$rawminimum_ben <- year_data$min_allotment[year_data$year == modeling_target_year]
-  df$rawminimum_ben <- ifelse(df$rawusize < 3, df$rawminimum_ben, 0)
   
   # Additional calculations needed post-inflation
   df$max_shelter_deduction <- year_data$max_shelter_deduction[year_data$year == modeling_target_year]
   df$max_shelter_deduction <- ifelse(df$FSNELDER + df$FSNDIS > 0, Inf, df$max_shelter_deduction)
-  # the full chain on the inflated inputs with the modeling year's tables:
-  # deductions and net incomes in modeling-year terms (these feed the mined
-  # deduction features), plus a modeling-year-terms benefit chain kept under
-  # *_my names for the state workbook, whose pasted dollars are modeling-year
-  # dollars and whose formulas therefore reproduce these, not the nominal ones
-  df <- calculate_raw_benefits(df, skip_benefits = FALSE)
+  
+  # Benefit chain left nominal (project lead, 2026-09-25: the mined ratios
+  # rawben_rel_max and unc_rawben_rel_max are NOT CPI-adjusted): deductions
+  # are recomputed on the inflated inputs, the benefit amounts and max
+  # allotments are not
+  skip_benefits <- TRUE
+  if (skip_benefits == FALSE){
+    df$rawbenmax <- Vectorize(get_max_allotment)(df$rawusize, modeling_target_year)
+    df$rawminimum_ben <- year_data$min_allotment[year_data$year == modeling_target_year]
+    df$rawminimum_ben <- ifelse(df$rawusize < 3, df$rawminimum_ben, 0)
+  }
+  df <- calculate_raw_benefits(df, skip_benefits = skip_benefits)
   df <- add_total_deductions(df)
-  df$rawben_uncapped_my    <- df$rawben_uncapped
-  df$rawben_recreated_my   <- df$rawben_recreated
-  df$rawbenmax_my          <- df$rawbenmax
+
+  # Modeling-year benefit chain for the state workbook only, kept under *_my
+  # names: pasted dollars are modeling-year dollars, so the workbook formulas
+  # reproduce these ratios, not the nominal ones (export_state_frame.R).
+  # Computed on a copy so the mined columns above stay nominal.
+  my <- df
+  my$rawbenmax <- Vectorize(get_max_allotment)(my$rawusize, modeling_target_year)
+  my$rawminimum_ben <- year_data$min_allotment[year_data$year == modeling_target_year]
+  my$rawminimum_ben <- ifelse(my$rawusize < 3, my$rawminimum_ben, 0)
+  my <- calculate_raw_benefits(my, skip_benefits = FALSE)
+  df$rawben_uncapped_my    <- my$rawben_uncapped
+  df$rawben_recreated_my   <- my$rawben_recreated
+  df$rawbenmax_my          <- my$rawbenmax
   df$unc_rawben_rel_max_my <- df$rawben_uncapped_my / df$rawbenmax_my
   df$rawben_rel_max_my     <- df$rawben_recreated_my / df$rawbenmax_my
-  # restore the nominal chain as the columns the rules are mined on
-  df$rawben_uncapped    <- df$rawben_uncapped_nominal
-  df$rawben_recreated   <- df$rawben_recreated_nominal
-  df$rawbenmax          <- df$rawbenmax_nominal
-  df$rawminimum_ben     <- df$rawminimum_ben_nominal
-  df$unc_rawben_rel_max <- df$rawben_uncapped / df$rawbenmax
-  df$at_max_ben         <- as.integer(df$rawben_uncapped >= df$rawbenmax)
+  rm(my)
   # the SUA tier against the modeling year's standard, on the inflated
   # utility amount (add_features computed it before the step)
   df$utilities_sua <- NULL
