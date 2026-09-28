@@ -117,6 +117,12 @@ extra <- intersect(c("cert_HH_size_FS_n", "over_threshold", "total_error_amount"
                      # sit on the same scale the rules were mined on
                      "rawearn", "rawunearn", "rawdepded", "rawcsded", "rawrent",
                      "rawhomeless_ded", "fsnkid", "fsnelder", "fsndis",
+                     # the same amounts before the CPI step (2026-09-28): the
+                     # input block carries review-year dollars and the
+                     # workbook inflates them itself, as the munging does
+                     "rawearn_nominal", "rawunearn_nominal", "rawmedded_nominal",
+                     "rawdepded_nominal", "rawcsded_nominal", "rawrent_nominal",
+                     "rawutil_nominal", "rawhomeless_ded_nominal",
                      "count_abawd", "cat_elig",
                      # QC outcome pair + review disposition: rawben is the
                      # benefit as issued (reported, not reconstructed) and
@@ -135,19 +141,6 @@ extra <- intersect(c("cert_HH_size_FS_n", "over_threshold", "total_error_amount"
                      # reflected in rawcsded for those rows
                      "fscsexp"), names(w))
 out <- w[, c(keys, extra, pf$features), drop = FALSE]
-# Workbook convention (2026-09-25): pasted dollars are modeling-year dollars,
-# so the workbook's benefit chain yields modeling-year-terms ratios. The
-# frame carries those under *_my beside the nominal columns the rules were
-# mined on; the demo rows ship the *_my values so the static hits, the
-# live formulas and the validation gate agree.
-for (v in c("rawben_rel_max", "unc_rawben_rel_max")) {
-  my <- paste0(v, "_my")
-  if (my %in% names(w) && v %in% names(out)) {
-    out[[v]] <- w[[my]]
-    cat(sprintf("%s: exported in modeling-year terms (%s)
-", v, my))
-  }
-}
 out$hh_group    <- hh_group_of(w$cert_HH_size_FS_n)
 out$hh_size_raw <- suppressWarnings(as.numeric(as.character(w$cert_HH_size_FS_n)))
 # is_error follows the pipeline's convention: over_threshold != 0, NA = not an error

@@ -829,7 +829,15 @@ if (cpi_inflate_vars) {
   
   # Inflation adjust variables
   cpi_vars <- c("rawearn", "rawunearn", "rawmedded", "rawdepded", "rawcsded", "rawrent", "rawutil")
-  df <- cpi_inflate(df, cpi_vars, modeling_target_year, overwrite = TRUE)
+  # the review-year amounts, kept for the state workbook's input block: a
+  # state pastes amounts in its own review year's dollars and the workbook
+  # repeats this inflation step itself (2026-09-28)
+  for (v in c(cpi_vars, "rawhomeless_ded")) df[[paste0(v, "_nominal")]] <- df[[v]]
+  # inflated by the review's fiscal year (2026-09-28; was the calendar year
+  # of the sample month), so the workbook can repeat it from
+  # REVIEW_FISCAL_YEAR alone
+  df <- cpi_inflate(df, cpi_vars, modeling_target_year, year_col = "fiscal_year",
+                    overwrite = TRUE)
   df$rawhomeless_ded[!is.na(df$rawhomeless_ded) & df$rawhomeless_ded > 0] <- year_data$homeless_standard[year_data$year == modeling_target_year]
   df$rawstdded <- Vectorize(get_standard_deduction)(df$state_name, df$rawusize, modeling_target_year)
   
@@ -849,26 +857,6 @@ if (cpi_inflate_vars) {
   }
   df <- calculate_raw_benefits(df, skip_benefits = skip_benefits)
   df <- add_total_deductions(df)
-
-  # Modeling-year benefit chain for the state workbook only, kept under *_my
-  # names: pasted dollars are modeling-year dollars, so the workbook formulas
-  # reproduce these ratios, not the nominal ones (export_state_frame.R).
-  # Computed on a copy so the mined columns above stay nominal.
-  my <- df
-  my$rawbenmax <- Vectorize(get_max_allotment)(my$rawusize, modeling_target_year)
-  my$rawminimum_ben <- year_data$min_allotment[year_data$year == modeling_target_year]
-  my$rawminimum_ben <- ifelse(my$rawusize < 3, my$rawminimum_ben, 0)
-  my <- calculate_raw_benefits(my, skip_benefits = FALSE)
-  df$rawben_uncapped_my    <- my$rawben_uncapped
-  df$rawben_recreated_my   <- my$rawben_recreated
-  df$rawbenmax_my          <- my$rawbenmax
-  df$unc_rawben_rel_max_my <- df$rawben_uncapped_my / df$rawbenmax_my
-  df$rawben_rel_max_my     <- df$rawben_recreated_my / df$rawbenmax_my
-  rm(my)
-  # the SUA tier against the modeling year's standard, on the inflated
-  # utility amount (add_features computed it before the step)
-  df$utilities_sua <- NULL
-  df <- add_sua_tier(df)
 }
 
 #### variable cleaning / recoding ###
