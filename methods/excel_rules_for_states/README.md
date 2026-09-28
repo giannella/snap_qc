@@ -66,7 +66,7 @@ The rules tab presents a POTENTIAL rule list for the state to evaluate; nothing 
 | Step 6. Share results back (optional) | Per-rule aggregates on the pasted Step 2 data to send back (copy the sheet as values into a new workbook): flagged, errors, precision, $ recall, average error $ per flagged case, and ineligible-household catches (STATUS = 4 — not in the public QC sample, so a separate count), plus metadata inputs (years, QC/QA/pre-auth) and poolable denominators. Every rule alone, independent of Include?. |
 | **See cases flagged by a rule** | Rules currently catching errors, sorted; the grid shows the cases the selected rule flags — including pasted rows (matching moved into hidden `_view_*` columns of the CaseData table, 2026-08-18; first 60 matches shown), with the rule's columns highlighted in blue. |
 | FederalTables (hidden; visible in the Illinois workbook) | Reference: max shelter, minimum allotment and the QC error threshold by fiscal year; standard deductions and max allotments by year × size, plus the standard-deduction table's `state_offset` column (subtracted in the benefit chain; 0 except Illinois); the state's USDA state-options rows (BBCE etc.). Unhide to inspect or to append a row per new fiscal year. |
-| Dashboard, Grid Search, RuleFlags | Hidden engines: the per-rule threshold tuner, the bracket-bounded threshold search, the case × rule hit matrices. Unhide the Dashboard to tune thresholds interactively. |
+| Dashboard, Grid Search, RuleFlags | Hidden plumbing. The case viewer reads each rule's conditions and per-rule counts from the Dashboard and its rule dropdown from a name list on Grid Search; RuleFlags holds the case × rule hit matrices behind the union rows. The Dashboard's editable threshold cells and the rest of Grid Search are leftovers of the retired tuner (see "Why the workbook carries no tuning"). Leave them alone: editing a Dashboard threshold changes what the case viewer shows without changing the Step 3 rules. |
 
 ### The Data-tab contract
 
@@ -159,7 +159,9 @@ untouched list held 0.364 — CHANGES_AND_RATIONALE.md records the full case.
 `tuning.py` stays in the package for pipeline-side use on a state's internal
 data, with its own regression test (`python tuning.py --selfcheck`), and
 `compare_splits.py` / `support_floor_sweep.py` reproduce the studies behind
-the removal decision.
+the removal decision. The builder still writes the hidden Dashboard and Grid
+Search sheets because the case viewer reads from them; their threshold cells
+are not a supported way to change a rule.
 
 ## How it works
 
