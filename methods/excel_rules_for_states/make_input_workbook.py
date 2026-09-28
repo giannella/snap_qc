@@ -1312,10 +1312,8 @@ def share_tab(wb, state_name):
 # the benefit pair (2026-08-18): a case missing either benefit amount gets a
 # blank error amount and a blank over-threshold flag, so it counts as neither
 # an error nor a clean case.
-# Modeling year (2026-09-28; replaces the 2026-09-24 convention that pasted
-# amounts were already modeling-year dollars): pasted dollar amounts are in
-# each case's own review-year dollars, and the workbook repeats the munging
-# script's CPI step itself. The benefit ratios (rawben_rel_max,
+# Modeling year: pasted dollar amounts are in each case's own review-year
+# dollars, and the workbook repeats the munging script's CPI step itself. The benefit ratios (rawben_rel_max,
 # unc_rawben_rel_max) and the SUA tier come from the pasted amounts with the
 # review year's tables, as the munging computes them before the CPI step.
 # Every other dollar feature is inflated to MODELING_YEAR by fiscal year
@@ -1642,6 +1640,15 @@ def validate(raw, frame, elem_free, feat_names, state_name, offset_col=None):
     srow = sua[sua['state_name'] == state_name]
     sua_by_year = ({int(c): float(srow.iloc[0][c]) for c in sua.columns
                     if c != 'state_name'} if len(srow) else {})
+    # a state with an SUA standard in a review year but none at the modeling
+    # year would pin tier-2 utilities to a missing value, where R's
+    # rowSums(na.rm) and the workbook's blank diverge; excluded by
+    # construction (none in state_sua.csv as of 2026-09-28)
+    review_years = {int(y) for y in raw['REVIEW_FISCAL_YEAR'].dropna()}
+    assert not (any(sua_by_year.get(y, 0.0) > 0 for y in review_years)
+                and sua_by_year.get(MODELING_YEAR, 0.0) <= 0), (
+        f'{state_name}: SUA standard in a review year but none for '
+        f'{MODELING_YEAR} in state_sua.csv')
     sd_offset_by_year = ({int(y): float(v) for y, v in zip(sd['year'], sd[offset_col])}
                          if offset_col else None)
     smd = pd.read_csv(os.path.join(ad, 'standard_medical_deductions.csv'))

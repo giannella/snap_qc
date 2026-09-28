@@ -155,9 +155,9 @@ stopifnot(sum(yr %in% TRAIN_YEARS) == EXPECT_TRAIN_ROWS,
           sum(ie_all[yr == TEST_YEAR]) == EXPECT_TEST_ERRS)
 hh_all <- hh_group_of(adf$cert_HH_size_FS_n)
 is_tr <- yr %in% TRAIN_YEARS
-# on a CPI frame (2026-09-24) the reconstruction is in modeling-year terms;
-# the artifact check stays on the nominal scale via rawben_uncapped_nominal
-unc_nom <- if ("rawben_uncapped_nominal" %in% names(adf)) adf$rawben_uncapped_nominal else adf$rawben_uncapped
+# the benefit reconstruction is nominal on every frame (the CPI step leaves
+# benefits in review-year terms)
+unc_nom <- adf$rawben_uncapped
 mm_all <- adf$rawben >= adf$benmax & unc_nom < adf$benmax
 stamp("mismatch rows FY22-24: %d (train window: %d)", sum(mm_all),
       sum(mm_all & is_tr))

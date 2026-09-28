@@ -831,11 +831,10 @@ if (cpi_inflate_vars) {
   cpi_vars <- c("rawearn", "rawunearn", "rawmedded", "rawdepded", "rawcsded", "rawrent", "rawutil")
   # the review-year amounts, kept for the state workbook's input block: a
   # state pastes amounts in its own review year's dollars and the workbook
-  # repeats this inflation step itself (2026-09-28)
+  # repeats this inflation step itself
   for (v in c(cpi_vars, "rawhomeless_ded")) df[[paste0(v, "_nominal")]] <- df[[v]]
-  # inflated by the review's fiscal year (2026-09-28; was the calendar year
-  # of the sample month), so the workbook can repeat it from
-  # REVIEW_FISCAL_YEAR alone
+  # keyed on the review's fiscal year, so the workbook can repeat the step
+  # from REVIEW_FISCAL_YEAR alone
   df <- cpi_inflate(df, cpi_vars, modeling_target_year, year_col = "fiscal_year",
                     overwrite = TRUE)
   df$rawhomeless_ded[!is.na(df$rawhomeless_ded) & df$rawhomeless_ded > 0] <- year_data$homeless_standard[year_data$year == modeling_target_year]

@@ -94,21 +94,21 @@ seed, with the seed-only movement beside them.
   0.5% (FY2019), 0.4% to 0.6% (FY2024), 1.3% to 2.4% (FY2022). The rise sits
   in rules with 30-99 training cases (FY2022: 13% to 19%); rules with 300 or
   more training cases stayed under 0.1%. Cause not traced.
-- **Scoring convention.** The step keys on the calendar year of the review
-  month, so the test year's October-December cases are inflated too (1.8-2.9%
-  one year ahead, 8% in the FY2022 window). One year ahead, scoring the CPI
-  rule sets on the recorded test rows instead changed nothing to four
-  decimals; the FY2022 window reports the as-recorded reading as its
-  headline.
+- **Scoring convention.** The step as tested keyed on the calendar year of
+  the review month, so the test year's October-December cases were inflated
+  too (1.8-2.9% one year ahead, 8% in the FY2022 window). One year ahead,
+  scoring the CPI rule sets on the recorded test rows instead changed nothing
+  to four decimals; the FY2022 window reports the as-recorded reading as its
+  headline. v2.7 keys the step on the fiscal year (next section).
 
 ## Limits
 
 - One national mine per arm, no state pools, so the list-level numbers are
   national-only lists, not the blended deliverable. The v2.7 measurement
   (`methods/v270_cpi_benchmark/`, FY2024 window 2026-09-24 night, FY2019
-  window 2026-09-25 night) repeats the contrast with the full blended
-  recipe on the shipped v2.7 frame, and is the number that belongs in the
-  evolution record beside the v2.5.0 and v2.6.0 benchmarks.
+  window) repeats the contrast with the full blended recipe on the shipped
+  v2.7 frame, and is the number that belongs in the evolution record beside
+  the v2.5.0 and v2.6.0 benchmarks.
 - The three windows differ in horizon, training size and test year at
   once; the larger FY2022 effect is not a dose-response reading.
 - The FY2022 window was read once, after the first two, at the project
@@ -121,14 +121,15 @@ seed, with the seed-only movement beside them.
 
 ## Where the step stands in v2.7
 
-Shipped in v2.7 with `modeling_target_year = 2026`: every year's dollar
-fields in 2026 dollars, 2026 standard-deduction, SUA and standard-medical
-anchors for every year, benefits nominal. The state workbooks apply no CPI
-adjustment of their own; pasted dollar amounts are taken as already in
-2026 dollars, and the workbook looks its deduction, allotment and SUA
-tables up at the modeling year for every case (`MODELING_YEAR` in
-`make_input_workbook.py`, FederalTables L3), with the QC error tolerance
-still keyed to the review year.
+Shipped in v2.7 with `modeling_target_year = 2026`, keyed on each case's
+fiscal year: the income, deduction, rent and utility amounts in 2026
+dollars, with the 2026 standard deduction, shelter cap, homeless standard,
+SUA and standard medical deduction. The two benefit ratios and the SUA tier
+stay in each review year's own terms. The state workbooks take pasted
+amounts in their review year's dollars and repeat the same step
+(`MODELING_YEAR` in `make_input_workbook.py`, FederalTables L3 and K4), so
+every workbook feature equals the frame's column; the build's validation
+gate checks this on every row.
 
 ## Artifacts
 
