@@ -24,7 +24,7 @@
 suppressMessages(library(dplyr))
 setwd("C:/Users/ericg/snap_qc")
 D <- "methods/v270_cpi_benchmark"
-LABEL <- "CPI + total-deductions redefinition, benefit ratios nominal (staging-v2.7 frame, rebuilt 2026-09-25) vs nominal (main, 2026-09-21 frame). Run 1 (2026-09-24, ratios in modeling-year terms) is kept as fy2024_cpi_run1_ratios_modeling_year/ and readout_run1_20260924.md"
+LABEL <- "v2.7 frame (dollar amounts CPI-inflated to 2026 by fiscal year, total deductions including the standard and homeless deductions, benefit ratios and SUA tier in review-year terms; rebuilt 2026-09-28) vs nominal (main, 2026-09-21 frame)"
 
 load_arm <- function(fn) {
   if (!file.exists(fn)) return(NULL)

@@ -1,8 +1,8 @@
-# Runner: the v2.7 production build (2026-09-24). A FRESH FY2022-24 mine on
-# the CPI-inflated frame (origin/ben/state-options merged into staging-v2.7:
-# dollar fields inflated to 2026 dollars, 2026 standard deduction / SUA / SMD
-# anchors for every year, standard and homeless deductions included in total
-# deductions), with the shipped recipe verbatim
+# Runner: the v2.7 production build. A FRESH FY2022-24 mine on the v2.7
+# frame (dollar amounts inflated to 2026 by fiscal year with the 2026
+# deduction, shelter, SUA and SMD tables; standard and homeless deductions in
+# total deductions; benefit ratios and SUA tier in review-year terms), with
+# the shipped recipe verbatim
 # (methods/v250_build_staged_lists_utilsua_v2.R: xgboost + ranger, 19-variable
 # vocabulary with utilities_sua, joint BH FDR 10% + n >= 30, 99% LCB ordering,
 # artifact gates, fresh-share walk f = 0.50, seed 117).
