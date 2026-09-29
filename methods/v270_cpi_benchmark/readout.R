@@ -48,12 +48,12 @@ md <- c("# v2.7 frame measurement: readout", "",
         "Blended lists (national + state pools), shipped recipe, seed 117; per window the two arms differ only in the frame file.",
         "Rows, error flags, error dollars and utilities_sua are identical across arms, so any-error and frame-relative readings coincide.",
         "Harmed / helped count states whose paired change is below -0.05 / above +0.05 (absolute); for recall rows a relative cut of -20% / +20% is also given, since 0.05 absolute is about 40% of a 5%-budget recall.", "")
-for (w in c("fy2024", "fy2019")) {
+for (w in c("fy2024", "fy2019", "fy2022")) {
   A <- load_arm(file.path(D, paste0(w, "_nominal"), "v250_benchmark_2024.csv"))
   B <- load_arm(file.path(D, paste0(w, "_cpi"), "v250_benchmark_2024.csv"))
   if (is.null(A) || is.null(B)) { md <- c(md, sprintf("## %s: arm(s) not finished", w), ""); next }
   md <- c(md, sprintf("## %s window (%s)", toupper(w),
-                      if (w == "fy2024") "mined FY2022-23, walked FY2024" else "mined FY2017-18, walked FY2019; the nominal arm doubles as the era-2 replication of the utilities_sua tier under the max_sua anchor"), "",
+                      switch(w, fy2024 = "mined FY2022-23, walked FY2024", fy2019 = "mined FY2017-18, walked FY2019; the nominal arm doubles as the era-2 replication of the utilities_sua tier under the max_sua anchor", fy2022 = "mined FY2017-19, walked FY2022, three years ahead across the excluded FY2020-21")), "",
           "| budget | metric | nominal median | v2.7 median | paired d median | d mean | harmed (< -0.05) | helped (> +0.05) | harmed rel (< -20%) | helped rel (> +20%) | states |",
           "|---|---|---|---|---|---|---|---|---|---|---|")
   for (b in c(0.05, 0.10)) {
