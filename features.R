@@ -128,14 +128,19 @@ cpi_inflate <- function(data, vars, base_year, year_col = "year",
 
 #' SUA tier, 3 levels, per state-year
 #'   0 = no utility amount
-#'   1 = below the heating/cooling standard
-#'   2 = at or above the heating/cooling standard
-add_sua_tier <- function(data, util_col = "rawutil", anchor_col = "max_sua") {
+#'   1 = more than `tolerance` dollars below the heating/cooling standard
+#'   2 = within `tolerance` of the standard, or above it
+#' The tolerance covers standards that change within a fiscal year while
+#' state_sua.csv holds one value per year (FY2023: Michigan $620 then $624,
+#' Louisiana $414 then $410). The workbook's tier formula mirrors it
+#' (make_input_workbook.py SUA_TOLERANCE).
+add_sua_tier <- function(data, util_col = "rawutil", anchor_col = "max_sua",
+                         tolerance = 10) {
   data |>
     dplyr::mutate(utilities_sua = dplyr::case_when(
       is.na(.data[[util_col]])   | .data[[util_col]]   <= 0 ~ 0L,
       is.na(.data[[anchor_col]]) | .data[[anchor_col]] <= 0 ~ NA_integer_,
-      .data[[util_col]] < .data[[anchor_col]]               ~ 1L,
+      .data[[util_col]] + tolerance < .data[[anchor_col]]   ~ 1L,
       TRUE                                                  ~ 2L
     ))
 }
