@@ -10,28 +10,40 @@ moved or behaves differently.
 
 ## [Unreleased]
 
-### Added
-- **Illinois workbook** (`SNAP_flagging_rules_IL.xlsx`), added to the
-  v2.6.0 release Assets on 2026-09-15. Illinois had been held back because
-  the munging subtracts an Illinois-specific offset from the federal
-  standard deduction (`IL_OFFSET` in
-  `additional_data/standard_deductions.csv`: $7 through FY2024, $4 for
-  FY2025-26) and the workbook's benefit chain did not. The chain now
-  subtracts it, and the build's validation gate matched the research
-  frame on every feature for all 2,448 Illinois rows (FY2022-24). The
-  effective list has 40 rules (39 core, 1 promoted buffer), 35 of which
-  test a variable computed through the standard deduction. The workbook
-  ships its FederalTables sheet visible, with the offset in the
-  standard-deduction table's `state_offset` column, and a warning under
-  the Start Here summary block (`states.py` `OVERRIDES['IL']`; `EXCLUDE`
-  is now empty, so `make_state.py all` builds 49 states).
+## [2.7.0] - 2026-10-06
+
+If you use the delivery lists or the state workbooks, re-download them:
+every list was re-mined, so rules and rule numbers differ from v2.6.0. The
+workbooks are on the v2.7.0 release page.
 
 ### Changed
-- The workbook builder's FederalTables standard-deduction table carries a
-  `state_offset` column that the `_c_stdded` helper subtracts. It is 0 for
-  every state but Illinois, so other states' figures are unchanged
-  (Wyoming rebuilt as the zero-offset check: gate 100% on every feature,
-  live union equal to the static one, FederalTables still hidden).
+- **Rule cutoffs on dollar amounts are in 2026 dollars.** This covers
+  income, deductions, rent and utilities. The workbooks convert for you:
+  paste each case's amounts in its own review year's dollars. If you apply
+  the rules outside the workbook, or build features from your own case file
+  for `INCL_mine_internal_and_blend_with_national_v2.R`, convert amounts the
+  way the munging script's CPI step does (the `cpi_inflate_vars` block; CPI
+  values in `additional_data/year_data.csv`). On rules applied three years
+  after their data, this raised precision about 7% and error dollars caught
+  14-16% (findings section 41).
+- **Total deductions include the standard and homeless deductions**, so
+  rules on `total_deductions_by_hh_size` are not comparable with v2.6.0
+  rules on the same variable.
+- **The SUA tier counts utility costs within $10 of the state standard as
+  at the standard.**
+- **All delivery lists re-mined** on the updated data: 98 blended lists, 83
+  national-only lists, and the rule sheet.
+
+### Added
+- Workbooks for every state except DC and Georgia, as `.xlsx` and as
+  `.xlsb` (saved by Excel, usually smaller), with federal tables through FY2027.
+  Illinois is included.
+
+### Moved
+- The national pool artifact is now
+  `state_delivery_lists/national_rule_pool_2022_2024_v270.rds`; the v2.5.0
+  pool moved to `archive/`. `INCL_mine_internal_and_blend_with_national_v2.R`
+  reads the new one.
 
 ## [2.6.0] - 2026-08-24
 
