@@ -18,8 +18,8 @@ workbooks are on the v2.7.0 release page.
 
 ### Changed
 - **Rule cutoffs on dollar amounts are in 2026 dollars.** This covers
-  income, deductions, rent and utilities. The workbooks convert for you:
-  paste each case's amounts in its own review year's dollars. If you apply
+  income, deductions, rent and utilities. The workbooks adjust pasted
+  amounts automatically, based on each case's fiscal year. If you apply
   the rules outside the workbook, or build features from your own case file
   for `INCL_mine_internal_and_blend_with_national_v2.R`, convert amounts the
   way the munging script's CPI step does (the `cpi_inflate_vars` block; CPI
@@ -35,9 +35,8 @@ workbooks are on the v2.7.0 release page.
   national-only lists, and the rule sheet.
 
 ### Added
-- Workbooks for every state except DC and Georgia, as `.xlsx` and as
-  `.xlsb` (saved by Excel, usually smaller), with federal tables through FY2027.
-  Illinois is included.
+- Workbooks for every state except DC and Georgia, as `.xlsb` files, with
+  federal tables through FY2027. Illinois is included.
 
 ### Moved
 - The national pool artifact is now
