@@ -113,6 +113,13 @@ or changes a constraint.
   use, and Illinois's standard-deduction offset comes from the `IL_OFFSET`
   column of `additional_data/standard_deductions.csv`. Reintroducing any of
   them re-opens the mismatch families (4,011 rows pre-fix vs 571 post; §38).
+- The CPI step (`cpi_inflate_vars <- TRUE`, dollar amounts in
+  `modeling_target_year` prices keyed on fiscal year) stays on. Measured
+  against the same code with it off: no cost one year ahead, +7% list
+  precision and +14-16% error dollars caught three years ahead (§41).
+  Building with `cpi_inflate_vars <- FALSE` is how the clean comparison
+  frame was made (a copy of this script with outputs redirected, so the
+  live frame is never overwritten); never flip it in the tracked script.
 - `cat_elig` is a valid frame column but must NOT be a mining feature: the
   FY2024 file recoded it, so rules on it read the data era. The mining
   feature is `bbce_state_i`, computed here as the state-year share of

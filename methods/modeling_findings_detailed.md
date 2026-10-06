@@ -287,6 +287,11 @@ we learned is recoverable. Each points to its numbered section.
   encoding to the state-year MODE; the mode-anchored variant mine
   launched overnight (design note in
   methods/v250_benchmark_2024_utilrel/).
+- **09-24 to 10-06**: The v2.7 CPI frame measured (#41): the CPI step
+  alone (final frame against the same code with CPI switched off) and the
+  three frame refinements, at three seeds, one year and three years ahead.
+  No change one year ahead; +7% precision and +14-16% error dollars three
+  years ahead; the refinements are not separable from seed noise.
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -3910,3 +3915,145 @@ not improvement claims. Artifacts: methods/width_floor_rewalk/
 {width_floor_results_2024.csv, per_state_paired.csv, summary.txt
 (recovered from width_floor_rewalk.log; the in-script sink wrote an empty
 file), design_note.md}; log width_floor_rewalk.log (untracked).
+
+## 41. The v2.7 CPI step helps three years ahead, the gap that matches deployment, and is neutral one year ahead; the three frame refinements are kept for realism and are not separable from seed noise (2026-10-06)
+
+> **Takeaway (about our pipeline).** Expressing every dollar amount in 2026
+> prices (the CPI step shipped in v2.7) improves the state lists when the
+> rules are applied three years after the data they were mined on, which is
+> the gap that matches how the lists are used: the newest public data are
+> FY2024, and states apply the rules to FY2027 cases. Against the same
+> munging code with the CPI step switched off, three years ahead, list
+> precision rises 7.0% (10% budget) and 7.3% (5% budget) and error dollars
+> caught rise 13.8% and 16.2%, at all three seeds; one year ahead the step
+> makes no difference (-0.1% and +1.1%). The three refinements made between
+> the 09-25 and final frames (fiscal-year keying with an SUA-tier fix,
+> October CPI values, the $10 SUA tolerance) are kept because they make the
+> frame's dollar values more realistic; measured, each moved errors caught
+> by less than a change of random seed moves them, in both windows. The
+> final frame's small one-year-ahead shortfall against the 09-25 frame (21
+> of 3,930 errors, at all three seeds) is not attributable to any one
+> refinement and reverses three years ahead (+26 of 3,660).
+
+**Question.** The final v2.7 frame's FY2024 benchmark came in slightly below
+the 2026-09-25 frame's. Is that a mistake in the munging changes, and what
+does each change do to held-out list performance?
+
+**Frames compared** (same 231,619 cases in the same order; hashes are the
+first 16 hex digits of sha256):
+
+| Frame | Hash | What it is |
+|---|---|---|
+| CPI-off | 2093ce1e7a817208 | the final frame's munging code with its `cpi_inflate_vars` switch off (built 2026-10-03); frame check: every column outside the CPI block identical to the final frame, raw dollar inputs equal to the final frame's review-year copies (`archive_data/frame_check_cpioff_2026-10-03.log`) |
+| 09-25 | c4f715f59aef8291 | annual-average CPI keyed on the review month's calendar year |
+| 09-28 | fdbc4508a2136370 | step 1: CPI keyed on fiscal year, and the SUA tier computed on review-year amounts (439 FY2022-24 rows move from tier 2 to tier 1) |
+| 09-29 | a0fd4f4dd643a0b2 | step 2: October CPI values instead of annual averages |
+| final | 1dbe8733ad0f30bc | step 3: the $10 SUA-tier tolerance (593 FY2022-24 rows move from tier 1 to tier 2) |
+
+"The CPI step alone" is final minus CPI-off. The three steps are measured in
+order, each with the earlier changes in place, so they add up to final minus
+09-25. Step 1 bundles two changes.
+
+**Recipe and design.** Each frame is mined at seeds 117, 118 and 119 with the
+shipped recipe read by name from the benchmark scripts (xgboost 1000 rounds
+plus ranger 1000 trees, depth 4; 19-feature vocabulary; one BH pass at FDR
+10% with n >= 30; 99% Wilson LCB ordering; mismatch-artifact tag; fresh-share
+fill walk at 0.50 with buffer to 3x). National pool only: each of 49 states'
+lists is the national pool walked against that state's training-year rows
+and scored on its test-year rows, at the 5% and 10% budgets. State pools are
+left out (in the FY2024 v2.7 benchmark arms they supplied 22 of 1,459 and 17
+of 1,531 core rules at 5%), so the numbers do not carry to the blended
+benchmark. The frame is any-error, so frame-relative and any-error precision
+coincide. Two windows, both true future years:
+
+| Window | Training | Test | Lists flag (5% / 10%) |
+|---|---|---|---|
+| one year ahead | FY2022-23: 76,031 rows, 8,397 errors | FY2024: 39,528 rows, 4,764 errors | 1,949 / 3,930 cases |
+| three years ahead | FY2017-19: 116,060 rows, 10,920 errors | FY2022: 36,851 rows, 3,985 errors | 1,822 / 3,660 cases |
+
+Checks: re-mining seed 117 reproduced the v2.7 benchmark's cached national
+pools exactly for the 09-25, final and 09-21 (no CPI step, older code)
+frames; the national-only walk reproduced the benchmark in 8 of 8 cells for
+the four states whose own pool is empty. In the three-year window the
+seed-117 pools for the final and 09-28 frames are the cached benchmark pools
+(same recipe and frames, verified by hash). Two fresh statistician reviews
+revised the design before launch (window certificate, cut-off, step-1
+labelling).
+
+**The CPI step alone** (final minus CPI-off; precision by seed 117 / 118 / 119):
+
+| Window | Budget | CPI-off | Final | Errors caught, change | Relative precision | Relative error dollars |
+|---|---|---|---|---|---|---|
+| one year ahead | 10% | 0.2929 / 0.3013 / 0.2936 | 0.2913 / 0.2967 / 0.2985 | -6 / -18 / +19 | -0.1% | +0.0% |
+| one year ahead | 5% | 0.3345 / 0.3335 / 0.3402 | 0.3391 / 0.3412 / 0.3391 | +9 / +15 / -2 | +1.1% | +0.7% |
+| three years ahead | 10% | 0.2377 / 0.2377 / 0.2361 | 0.2585 / 0.2467 / 0.2557 | +76 / +33 / +72 | +7.0% | +13.8% |
+| three years ahead | 5% | 0.2503 / 0.2563 / 0.2640 | 0.2794 / 0.2680 / 0.2794 | +53 / +21 / +28 | +7.3% | +16.2% |
+
+- Three years ahead, all three final values exceed all three CPI-off values
+  at both budgets. At 10%, 23-34 states gain and 13-17 lose (harmed / helped
+  beyond 0.05: 2/14, 5/8, 2/11); at 5%, 23-28 gain and 10-16 lose (5/16,
+  9/11, 5/16). The 10% lists catch $157,727-$168,419 of the FY2022 sample's
+  $639,790 in error dollars against $141,702-$147,235 without the CPI step
+  (25.7% of error dollars against 22.5%).
+- One year ahead, the paired state changes are centered on zero (states up /
+  down at 10%: 21/19, 18/20, 21/21; harmed / helped 4/4, 4/4, 3/6).
+- Rule level: the share of the top 1,000 rules whose test-year precision
+  falls below their own 99% bound is 0.54-0.56 with the CPI step against
+  0.62-0.66 without it three years ahead, and 0.30-0.31 against 0.31-0.33 one
+  year ahead.
+
+**The three refinements** (change in errors caught at the 10% budget, by
+seed; steps 1 and 2 ran at two seeds in the three-year window):
+
+| Step | One year ahead | Three years ahead |
+|---|---|---|
+| 1: fiscal-year keying + SUA-tier fix | -36 / +13 / +16 (mean -2.3) | +4 / +15 (mean +9.5) |
+| 2: October CPI values | +23 / -17 / -26 (mean -6.7) | -7 / -4 (mean -5.5) |
+| 3: $10 SUA tolerance | -22 / -15 / +1 (mean -12.0) | +35 / +8 / -16 (mean +9.0) |
+| 1-3 together (final minus 09-25) | -35 / -19 / -9 (mean -21.0) | +32 / +19 (mean +25.5) |
+
+- Yardstick: within one frame, the three seeds' errors caught at 10% span 5
+  to 54 (one year ahead) and 6 to 57 (three years ahead), depending on the
+  frame. No single step's change exceeds that, and steps 1 and 3 change sign
+  between the windows.
+- At the 5% budget the steps are equally mixed (mean change in errors, one
+  year ahead: +1.7, -6.0, -0.3; three years ahead: +5.0, +15.5, -4.0).
+- The one separation among the steps is at the rule level, one year ahead:
+  step 1 raised the share of the top 1,000 rules falling below their bound
+  from 0.25-0.26 to 0.30-0.34 at all three seeds, and step 2 recovered part
+  of it. It did not reach the lists.
+
+**Replication and pre-registration status.** The one statistic named before
+the first run (pooled precision of the 10% lists, final below 09-25 at all
+three seeds, one year ahead) met its rule: 0.2913 / 0.2967 / 0.2985 against
+0.3003 / 0.3015 / 0.3008. Because seed 117 was the draw that raised the
+question, the chance of that ordering under no difference was about 1 in 10.
+The decomposition did not attribute it to any one step, and the three-year
+window reversed it. Everything else is descriptive, read against seed
+spread.
+
+**Decision (2026-10-06).** The three-years-ahead window is the one that
+matches deployment: the lists are mined on FY2022-24, the newest public
+data, and states apply them to FY2027 cases, a gap of three years or more.
+The CPI step and the three refinements all stay in the frame. The
+refinements are kept because they make the frame's dollar values more
+realistic, a judgment about data correctness; this finding shows they cost
+nothing measurable in either window.
+
+**Caveats.** National-pool lists only, one test year per window; three
+seeds per frame, two for steps 1 and 2 in the three-year window; step 1
+bundles the fiscal-year keying with the SUA-tier fix; the steps were
+measured in one order. An earlier exploratory test (national-only, CPI frame
+against the pre-CPI frame, two seeds, 2026-09-21;
+`methods/cpi_inflate_test/findings_draft_2026-09-24.md`) found its clearest
+list-level effect in the same three-year window. The 09-21 frame (no CPI
+step, older code) ran at seed 117 only: 0.2931 at 10% and 0.3279 at 5% one
+year ahead.
+
+**Artifacts.** `methods/v270_seed_replicates/` (`design_note.md`; scripts
+`common.R`, `mine_national_seed.R`, `score_pool.R`, `readout.R`,
+`readout_window.R`, `cpi_summary.R`, `frame_check_cpioff.R`; chains
+`run_seed_replicates.sh`, `run_decomposition.sh`, `run_fy2022.sh`; outputs
+`states_*.csv`, `rules_*.rds`, `readout.md`, `fy2022/readout.md`,
+`cpi_summary_by_seed.csv`, `cpi_summary_contrasts.csv`). Frames in
+`archive_data/` (gitignored; hashes above).

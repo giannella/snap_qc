@@ -1,0 +1,5 @@
+"step","top1000_below_bound_before","top1000_below_bound_after","d_by_seed","d_mean","reading"
+"step 1: fiscal-year CPI keying + SUA tier on review-year amounts (09-28 minus 09-25)","0.2500 / 0.2533 / 0.2594","0.3016 / 0.3378 / 0.3156","+0.0516 / +0.0845 / +0.0562",0.0641,"all three 09-28 values above all three 09-25 values"
+"step 2: October CPI values (09-29 minus 09-28)","0.3016 / 0.3378 / 0.3156","0.3044 / 0.2974 / 0.3005","+0.0028 / -0.0404 / -0.0151",-0.0176,"ranges overlap"
+"step 3: $10 SUA-tier tolerance (final minus 09-29)","0.3044 / 0.2974 / 0.3005","0.3058 / 0.3061 / 0.2989","+0.0014 / +0.0087 / -0.0016",0.0028,"ranges overlap"
+"clean: the CPI step alone (final minus CPI-off; same munging code, CPI switched off)","0.3337 / 0.3132 / 0.3095","0.3058 / 0.3061 / 0.2989","-0.0279 / -0.0071 / -0.0106",-0.0152,"all three final values below all three CPI-off values"
