@@ -38,6 +38,8 @@ apply_correction_smoothing <- TRUE
 exclude_2020_2021 <- TRUE
 exclude_MFIP <- TRUE
 exclude_SSI_CAP <- TRUE
+cpi_inflate_vars <- TRUE
+modeling_target_year <- 2026
 
 # 1. Load data
 folder <- paste0(here(), "/")
@@ -249,7 +251,7 @@ for (v in vars) {
 }
 
 # Recalculate raw income formula
-calculate_raw_benefits <- function(mydata) {
+calculate_raw_benefits <- function(mydata, skip_benefits = FALSE) {
   
   mydata$rawernded <- floor(mydata$rawearn * 0.2)
   mydata$rawgrinc <- mydata$rawearn + mydata$rawunearn
@@ -268,20 +270,22 @@ calculate_raw_benefits <- function(mydata) {
     pmax(mydata$rawsltded_uncapped, 0),
     pmin(pmax(mydata$rawsltded_uncapped, 0), mydata$max_shelter_deduction)
   )
-  mydata$rawnet_allow_negative = mydata$rawnet_before_shelter - (
-    mydata$rawsltded +
-      mydata$rawhomeless_ded
-  )
-  mydata$rawnet_allow_negative <- floor(mydata$rawnet_allow_negative)
-  mydata$rawben_uncapped <- mydata$rawbenmax - (0.3 * mydata$rawnet_allow_negative)
-  mydata$rawben_uncapped <- floor(mydata$rawben_uncapped)
-  mydata$rawben_recreated <- pmax(mydata$rawben_uncapped, mydata$rawminimum_ben)
-  mydata$rawben_recreated <- pmin(mydata$rawben_recreated, mydata$rawbenmax)
-  mydata$rawnet_capped = pmax(mydata$rawnet_allow_negative, 0) 
-  mydata$unc_rawben_rel_max <- mydata$rawben_uncapped / mydata$rawbenmax
-  mydata$at_max_ben <- as.integer(mydata$rawben_uncapped >= mydata$rawbenmax)
+  
+  if (skip_benefits == FALSE){
+    mydata$rawnet_allow_negative = mydata$rawnet_before_shelter - (
+      mydata$rawsltded +
+        mydata$rawhomeless_ded
+    )
+    mydata$rawnet_allow_negative <- floor(mydata$rawnet_allow_negative)
+    mydata$rawben_uncapped <- mydata$rawbenmax - (0.3 * mydata$rawnet_allow_negative)
+    mydata$rawben_uncapped <- floor(mydata$rawben_uncapped)
+    mydata$rawben_recreated <- pmax(mydata$rawben_uncapped, mydata$rawminimum_ben)
+    mydata$rawben_recreated <- pmin(mydata$rawben_recreated, mydata$rawbenmax)
+    mydata$rawnet_capped = pmax(mydata$rawnet_allow_negative, 0) 
+    mydata$unc_rawben_rel_max <- mydata$rawben_uncapped / mydata$rawbenmax
+    mydata$at_max_ben <- as.integer(mydata$rawben_uncapped >= mydata$rawbenmax)
+  }
   mydata
-
 }
 
 # Corrected variable notes 
@@ -823,8 +827,12 @@ if (apply_correction_smoothing) {
   mydata <- calculate_raw_benefits(mydata)
 }
 
-mydata <- mydata %>% mutate(raw_total_deductions = rawdepded + rawcsded +
-                              rawsltded + rawmedded + rawernded)
+add_total_deductions <- function(data) {
+  data$raw_total_deductions <- rowSums(data[c("rawdepded", "rawcsded", "rawsltded", "rawmedded",
+                                              "rawhomeless_ded", "rawernded", "rawstdded")], na.rm = TRUE)
+  data
+}
+mydata <- add_total_deductions(mydata)
 
 # Save data
 saveRDS(mydata, paste0(folder, "final.rds"))
@@ -832,6 +840,46 @@ mydata <- readRDS(paste0(folder, "final.rds"))
 
 #### Add additional features from features.R
 df <- add_features(mydata)
+
+#### CPI-inflate data from features.R
+if (cpi_inflate_vars) {
+  
+  # Reset max_sua and smd_amt amount to modeling_target_year
+  df$max_sua <- NULL
+  df <- add_state_year_col(df, state_sua, "max_sua", year = modeling_target_year)
+  df$smd_amt <- NULL
+  df <- add_state_year_col(df, smd_by_year, "smd_amt", year = modeling_target_year)
+  
+  # Inflation adjust variables
+  cpi_vars <- c("rawearn", "rawunearn", "rawmedded", "rawdepded", "rawcsded", "rawrent", "rawutil")
+  # the review-year amounts, kept for the state workbook's input block: a
+  # state pastes amounts in its own review year's dollars and the workbook
+  # repeats this inflation step itself
+  for (v in c(cpi_vars, "rawhomeless_ded")) df[[paste0(v, "_nominal")]] <- df[[v]]
+  # keyed on the review's fiscal year, so the workbook can repeat the step
+  # from REVIEW_FISCAL_YEAR alone
+  df <- cpi_inflate(df, cpi_vars, modeling_target_year, year_col = "fiscal_year",
+                    overwrite = TRUE)
+  df$rawhomeless_ded[!is.na(df$rawhomeless_ded) & df$rawhomeless_ded > 0] <- year_data$homeless_standard[year_data$year == modeling_target_year]
+  df$rawstdded <- Vectorize(get_standard_deduction)(df$state_name, df$rawusize, modeling_target_year)
+  
+  # Additional calculations needed post-inflation
+  df$max_shelter_deduction <- year_data$max_shelter_deduction[year_data$year == modeling_target_year]
+  df$max_shelter_deduction <- ifelse(df$FSNELDER + df$FSNDIS > 0, Inf, df$max_shelter_deduction)
+  
+  # Benefit chain left nominal (project lead, 2026-09-25: the mined ratios
+  # rawben_rel_max and unc_rawben_rel_max are NOT CPI-adjusted): deductions
+  # are recomputed on the inflated inputs, the benefit amounts and max
+  # allotments are not
+  skip_benefits <- TRUE
+  if (skip_benefits == FALSE){
+    df$rawbenmax <- Vectorize(get_max_allotment)(df$rawusize, modeling_target_year)
+    df$rawminimum_ben <- year_data$min_allotment[year_data$year == modeling_target_year]
+    df$rawminimum_ben <- ifelse(df$rawusize < 3, df$rawminimum_ben, 0)
+  }
+  df <- calculate_raw_benefits(df, skip_benefits = skip_benefits)
+  df <- add_total_deductions(df)
+}
 
 #### variable cleaning / recoding ###
 names(df) <- tolower(names(df))
@@ -870,7 +918,11 @@ df <- df %>%
 
 df <- df %>%
   mutate(count_abawd = rowSums(across(num_range("abwdst", 1:18), ~ .x %in% 2:5)),
-         pct_abawd = count_abawd / certhhsz)
+         # share of the RECONSTRUCTED unit (rawusize, the size every other
+         # per-member feature divides by; 2026-09-25, was certhhsz, the
+         # reported size, which differs on 0.6% of cases after the
+         # unit-composition correction)
+         pct_abawd = count_abawd / rawusize)
 #df %>% select(count_abawd, certhhsz, pct_abawd, abwdst1, age1) %>% sample_n(size=20)
 
 df$lf_composition <- factor(df$lf_composition)

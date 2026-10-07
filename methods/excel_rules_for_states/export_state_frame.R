@@ -117,6 +117,12 @@ extra <- intersect(c("cert_HH_size_FS_n", "over_threshold", "total_error_amount"
                      # sit on the same scale the rules were mined on
                      "rawearn", "rawunearn", "rawdepded", "rawcsded", "rawrent",
                      "rawhomeless_ded", "fsnkid", "fsnelder", "fsndis",
+                     # the same amounts before the CPI step (2026-09-28): the
+                     # input block carries review-year dollars and the
+                     # workbook inflates them itself, as the munging does
+                     "rawearn_nominal", "rawunearn_nominal", "rawmedded_nominal",
+                     "rawdepded_nominal", "rawcsded_nominal", "rawrent_nominal",
+                     "rawutil_nominal", "rawhomeless_ded_nominal",
                      "count_abawd", "cat_elig",
                      # QC outcome pair + review disposition: rawben is the
                      # benefit as issued (reported, not reconstructed) and

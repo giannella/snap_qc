@@ -95,7 +95,7 @@ def main():
         subprocess.run([os.environ.get('RSCRIPT', r'C:\Program Files\R\R-4.5.1'
                                        r'\bin\Rscript.exe'), '-e',
                         "p <- readRDS('state_delivery_lists/"
-                        "national_rule_pool_2022_2024_v250.rds'); "
+                        "national_rule_pool_2022_2024_v270.rds'); "
                         f"write.csv(p, '{POOL_CSV.replace(os.sep, '/')}', "
                         "row.names = FALSE)"], cwd=REPO, check=True)
     pool = pd.read_csv(POOL_CSV)

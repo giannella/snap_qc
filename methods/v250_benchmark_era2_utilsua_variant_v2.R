@@ -67,12 +67,25 @@ FDR_ALPHA   <- 0.10
 MIN_N       <- 30
 TRAIN_YEARS <- c("2017", "2018")
 TEST_YEAR   <- "2019"
+# another window (runners/run_v270_cpi_bench.R): BENCH_TRAIN_YEARS="2017,2018,2019",
+# BENCH_TEST_YEAR="2022", BENCH_EXPECT="train rows,train errors,test rows,test errors"
+if (nzchar(Sys.getenv("BENCH_TRAIN_YEARS"))) {
+  TRAIN_YEARS <- strsplit(Sys.getenv("BENCH_TRAIN_YEARS"), ",")[[1]]
+  TEST_YEAR   <- Sys.getenv("BENCH_TEST_YEAR")
+  stopifnot(nzchar(TEST_YEAR), nzchar(Sys.getenv("BENCH_EXPECT")))
+}
 XGB <- list(nrounds = 1000, max_depth = 4, eta = 0.02, subsample = 0.20)
 RF  <- list(num_trees = 1000, max_depth = 4, mtry = 2, min_node_size = 20)
 SIGNIF_DIGITS <- 3
 
 EXPECT_TRAIN_ROWS <- 77905L; EXPECT_TRAIN_ERRS <- 7048L
 EXPECT_TEST_ROWS  <- 38155L; EXPECT_TEST_ERRS  <- 3872L
+if (nzchar(Sys.getenv("BENCH_EXPECT"))) {
+  ex <- as.integer(strsplit(Sys.getenv("BENCH_EXPECT"), ",")[[1]])
+  stopifnot(length(ex) == 4, !anyNA(ex))
+  EXPECT_TRAIN_ROWS <- ex[1]; EXPECT_TRAIN_ERRS <- ex[2]
+  EXPECT_TEST_ROWS  <- ex[3]; EXPECT_TEST_ERRS  <- ex[4]
+}
 
 BASE_FEATURES <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
@@ -92,7 +105,7 @@ MM_TAG_SHARE <- 0.25; MM_POOL_MAX <- 0.02
 MM_TOP40_MAX <- 1L;   MM_TOP10_MAX <- 0L
 HOLD_STATE_POOLS <- character(0)  # Illinois hold LIFTED 2026-08-13 (the IL standard-deduction offset fix landed and is verified by the recon diagnostics)
 
-OUT_DIR <- "methods/v250_benchmark_2024_utilrel/era2_variant"
+OUT_DIR <- Sys.getenv("BENCH_OUT_DIR", "methods/v250_benchmark_2024_utilrel/era2_variant")   # override per arm (v2.7 CPI measurement)
 if (!exists("RESUME_FROM_CHECKPOINT")) RESUME_FROM_CHECKPOINT <- FALSE
 if (SMOKE) {
   XGB$nrounds <- 40; RF$num_trees <- 40
@@ -155,7 +168,10 @@ stopifnot(sum(yr %in% TRAIN_YEARS) == EXPECT_TRAIN_ROWS,
           sum(ie_all[yr == TEST_YEAR]) == EXPECT_TEST_ERRS)
 hh_all <- hh_group_of(adf$cert_HH_size_FS_n)
 is_tr <- yr %in% TRAIN_YEARS
-mm_all <- adf$rawben >= adf$benmax & adf$rawben_uncapped < adf$benmax
+# the benefit reconstruction is nominal on every frame (the CPI step leaves
+# benefits in review-year terms)
+unc_nom <- adf$rawben_uncapped
+mm_all <- adf$rawben >= adf$benmax & unc_nom < adf$benmax
 stamp("mismatch rows FY22-24: %d (train window: %d)", sum(mm_all),
       sum(mm_all & is_tr))
 stopifnot(sum(mm_all) < 1000)   # post-fix-frame assert: thousands = pre-fix frame
@@ -296,7 +312,8 @@ if (RESUME_FROM_CHECKPOINT && file.exists(nat_fn)) {
   stopifnot("mm_n" %in% names(natl))
   stamp("national bench pool resumed: %d rules", nrow(natl))
 } else {
-  stamp("mining the national bench pool (FY2022-23, %d rows) ...", nrow(trn))
+  stamp("mining the national bench pool (FY%s, %d rows) ...",
+        paste(TRAIN_YEARS, collapse = "+"), nrow(trn))
   rdf <- mine_rule_vocabulary(
     trn, list(any_error = list(rows = seq_len(nrow(trn)), ie = ie_tr)),
     strata_tr_nat, VOCAB19, xgb = XGB, rf = RF,
@@ -428,7 +445,8 @@ inv <- if (length(inv_rows)) bind_rows(inv_rows) else
 write.csv(inv, file.path(OUT_DIR, "invariance_check.csv"), row.names = FALSE)
 if (requireNamespace("jsonlite", quietly = TRUE))
   jsonlite::write_json(
-    list(built = "era-2 replication, VARIANT utilities_sua: fresh mines train FY2017-18, walk FY2019, seed 117, current frame",
+    list(built = sprintf("VARIANT utilities_sua: fresh mines train FY%s, walk FY%s, seed 117, current frame",
+                         paste(TRAIN_YEARS, collapse = "+"), TEST_YEAR),
          recipe = "v2.5.0 candidate (per-size 19-var, state + national blend, fresh-share walk f=0.50, artifact check; holds per HOLD_STATE_POOLS, see records$state_pool_held)",
          v240_comparison_note = "paired deltas span vocabulary + pool source + build walk (~+0.0118 median at 5% for fresh-share, findings 34) + pool dedup + the frame rebuild; error flags identical across frames, error dollars redefined (absbendiff)",
          records = bench),

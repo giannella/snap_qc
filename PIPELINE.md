@@ -66,7 +66,7 @@ Both pools then run stages 1 to 6 below, independently.
 A state that wants the internal-data version without the public frame runs
 `INCL_mine_internal_and_blend_with_national_v2.R` (added 2026-08-18): it mines the state's
 internal case file with this same recipe and blends against the published national pool
-artifact (`state_delivery_lists/national_rule_pool_2022_2024_v250.rds`); validity is
+artifact (`state_delivery_lists/national_rule_pool_2022_2024_v270.rds`); validity is
 judged only by the state's held-out internal period.
 
 ---

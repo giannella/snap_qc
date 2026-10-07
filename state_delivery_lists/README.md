@@ -3,10 +3,25 @@
 One ranked rule list per state and review budget (5% and 10% of caseload).
 This is the default deployment deliverable described in the README and
 `methods/modeling_findings.md` (sections 14-16). The current lists are the
-v2.5.0 build (2026-08-13, `methods/v250_build_staged_lists_v2.R`), mined
-fresh on the reconstruction-fixed 2022-24 frame; the one-year-ahead
-benchmark for this exact recipe is `methods/v250_benchmark_2024/`
-(findings section 39).
+v2.7 build (2026-09-30, `runners/run_v270_build.R`, which runs the v2.5.0
+staged builder `methods/v250_build_staged_lists_utilsua_v2.R` verbatim),
+mined fresh on the 2022-24 frame rebuilt 2026-09-29: dollar fields in 2026
+dollars, converted by each case's fiscal year with the October CPI, 2026
+deduction and utility-allowance anchors for every year, and the standard
+and homeless deductions counted in total deductions. `utilities_sua` (a
+three-level standard utility allowance tier with a $10 tolerance, defined in
+[the data dictionary](../DATA_DICTIONARY.md)) replaces raw `utilities`
+dollars among the mined features, as since v2.6.0. Filenames, columns,
+walk, and gates are unchanged. How the CPI conversion and the frame
+refinements perform one and three years ahead is section 41 of
+`methods/modeling_findings.md`.
+
+The national pool artifact in this folder,
+`national_rule_pool_2022_2024_v270.rds`, is the admitted candidate pool
+behind these lists (rules test `utilities_sua`), and is what
+`INCL_mine_internal_and_blend_with_national_v2.R` blends against. The
+v2.5.0 pool (raw `utilities` dollars) is kept at
+`archive/national_rule_pool_2022_2024_v250.rds`.
 
 ## How each list is built
 
@@ -72,36 +87,34 @@ passes the same validation.
 
 ## National-only lists (`national_delivery_*`)
 
-For the states where the one-year-ahead test shows the national pool
-alone matching or beating the blend, the folder also carries
+Every state also gets a national-only list at each budget:
 
 ```
 national_delivery_<State>_2022_2024_budget05.csv
 ```
 
-built from the national pool only (every row has `pool = national`),
+built from the national pool alone (every row has `pool = national`),
 with the same columns, walk, artifact gates, and characterization as the
-blended lists. Selection (2026-08-14): a state x budget cell gets a
-national-only file when the three-arm evaluation (all three list types
-mined on FY2022-23, frozen, walked on the state's FY2024 cases;
-`methods/threearm_2024/threearm_results_2024.csv`, selection table
-`methods/national_only_lists/selection_2024.csv`) shows national
-precision at or above blended precision, ties included - where the
-blend deployed no state rules the two lists coincide and the national
-file is an explicit copy. That is 43 of 49 states at the 5% budget and
-36 at 10%, so some states carry a national-only file at one budget
-only. The selection rests on a single test year and one mining draw; a
-state's own internal validation on newer data remains the deciding test
-between its blended and national-only list.
+blended list. The blended list stays the default, and the state
+workbooks use it. The public file holds few cases per state (a median of
+847 cases and 97 errors per state in FY2024), so a state's own pool is
+mined from a small sample, and the state's internal data may show its own
+rules doing better than the public data can. A state can check both lists
+against its own newer cases and use the one that performs better there.
 
-Four additional cells carry a national-only file even though the
-current evaluation favors their blend: Michigan (both budgets),
-California (10%), and Maine (10%). For these the strict
-national-vs-blended verdict REVERSED between the July study and the
-current evaluation (`methods/national_only_lists/selection_flips_2024.csv`),
-so the verdict is not stable and both list types ship. Two states
-flipped the other way (Connecticut and Missouri at 5%) and already
-carry national-only files under the benchmark rule.
+On public data the two list types perform about the same for most states.
+We walked both from the same pools in two tests: mined on FY2022-23 and
+scored on FY2024; and mined on FY2017-19 and scored on FY2022, FY2023 and
+FY2024, each year at its own budget. The national-only list's precision
+was at or above the blended list's in 42 and 41 of 49 states at the 5%
+budget, and in 37 and 38 at 10%. The blend won both tests in four cells,
+all at the 10% budget: the District of Columbia, Maine, Maryland, and
+Oklahoma. Results by state and budget, with the list each cell's tests
+favored, are in `methods/v270_national_only_selection/`
+(`paired_by_window.csv`, `selection_v270.csv`; scored by
+`score_windows.R`). Each test rests on one mining draw. Where a blended
+list contains no state rule (18 of the 98), the two files list the same
+rules in the same order.
 
 ## Columns
 

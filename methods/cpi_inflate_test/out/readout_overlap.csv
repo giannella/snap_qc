@@ -1,0 +1,37 @@
+"era","contrast","group","n_rules","share_verbatim_in_reference"
+"1718_19","frame (CPI - nominal), seed 117","affected",36372,0.0313977785109425
+"1718_19","frame (CPI - nominal), seed 117","names a CPI-changed field, same cases flagged on both frames",720,0.786111111111111
+"1718_19","frame (CPI - nominal), seed 117","not affected",16517,0.834534116364957
+"1718_19","frame (CPI - nominal), seed 118","affected",36247,0.0280299059232488
+"1718_19","frame (CPI - nominal), seed 118","names a CPI-changed field, same cases flagged on both frames",773,0.800776196636481
+"1718_19","frame (CPI - nominal), seed 118","not affected",16450,0.83531914893617
+"1718_19","seed (118 - 117), nominal frame","affected",36084,0.0256346303070613
+"1718_19","seed (118 - 117), nominal frame","names a CPI-changed field, same cases flagged on both frames",820,0.0353658536585366
+"1718_19","seed (118 - 117), nominal frame","not affected",16824,0.0943889681407513
+"1718_19","seed (118 - 117), CPI frame","affected",36247,0.0265125389687422
+"1718_19","seed (118 - 117), CPI frame","names a CPI-changed field, same cases flagged on both frames",773,0.0349288486416559
+"1718_19","seed (118 - 117), CPI frame","not affected",16450,0.0948936170212766
+"2223_24","frame (CPI - nominal), seed 117","affected",37637,0.0271806998432394
+"2223_24","frame (CPI - nominal), seed 117","names a CPI-changed field, same cases flagged on both frames",620,0.824193548387097
+"2223_24","frame (CPI - nominal), seed 117","not affected",15902,0.793799522072695
+"2223_24","frame (CPI - nominal), seed 118","affected",37246,0.0280030070343124
+"2223_24","frame (CPI - nominal), seed 118","names a CPI-changed field, same cases flagged on both frames",555,0.769369369369369
+"2223_24","frame (CPI - nominal), seed 118","not affected",16419,0.791339302028138
+"2223_24","seed (118 - 117), nominal frame","affected",37158,0.023332795091232
+"2223_24","seed (118 - 117), nominal frame","names a CPI-changed field, same cases flagged on both frames",580,0.0551724137931034
+"2223_24","seed (118 - 117), nominal frame","not affected",16313,0.0950162447128057
+"2223_24","seed (118 - 117), CPI frame","affected",37246,0.0244321537883263
+"2223_24","seed (118 - 117), CPI frame","names a CPI-changed field, same cases flagged on both frames",555,0.0576576576576577
+"2223_24","seed (118 - 117), CPI frame","not affected",16419,0.092149339180218
+"1719_22","frame (CPI - nominal), seed 117","affected",40444,0.0142171891998813
+"1719_22","frame (CPI - nominal), seed 117","names a CPI-changed field, same cases flagged on both frames",275,0.589090909090909
+"1719_22","frame (CPI - nominal), seed 117","not affected",17275,0.809146164978292
+"1719_22","frame (CPI - nominal), seed 118","affected",39942,0.0145210555305193
+"1719_22","frame (CPI - nominal), seed 118","names a CPI-changed field, same cases flagged on both frames",291,0.487972508591065
+"1719_22","frame (CPI - nominal), seed 118","not affected",17295,0.809713790112749
+"1719_22","seed (118 - 117), nominal frame","affected",39571,0.0249172373708018
+"1719_22","seed (118 - 117), nominal frame","names a CPI-changed field, same cases flagged on both frames",324,0.0339506172839506
+"1719_22","seed (118 - 117), nominal frame","not affected",17668,0.0948041657233416
+"1719_22","seed (118 - 117), CPI frame","affected",39942,0.0244103950728556
+"1719_22","seed (118 - 117), CPI frame","names a CPI-changed field, same cases flagged on both frames",291,0.0343642611683849
+"1719_22","seed (118 - 117), CPI frame","not affected",17295,0.0947094535993062

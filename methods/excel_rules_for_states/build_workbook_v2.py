@@ -732,7 +732,7 @@ set_cell(ws_g,14,8,'Search bracket', font=bold_font(), fill=GRAY, align=left)
 set_cell(ws_g,14,9,f'{TCFG.factors_fine[0]:g}x - {TCFG.factors_fine[-1]:g}x',
          fill=GRAY, align=center, border=thin(), font=bold_font())
 set_cell(ws_g,14,10,'← fixed: every threshold is searched only inside this multiple of its '
-                    'delivered value (coarser for rules with 4+ conditions). Structure never moves.',
+                    'original value (coarser for rules with 4+ conditions). Structure never moves.',
          font=Font(name=FONT,size=9,color='808080'), align=left)
 dv_floor = DataValidation(type='decimal', operator='between', formula1='0', formula2='1')
 ws_g.add_data_validation(dv_floor); dv_floor.add('B12')
@@ -768,7 +768,7 @@ def fs(s): return F0 + s*18
 
 merge(ws_g,21,1,21,13,
       value='Best per Stratum — max reach among combinations whose precision BOUND clears the '
-            'floor and which flag at least the support minimum (vs delivered thresholds)',
+            'floor and which flag at least the support minimum (vs original thresholds)',
       fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=12,color='FFFFFF'), align=left)
 for col, txt in [(1,'HH size'),(2,'thr 1'),(3,'thr 2'),(4,'thr 3'),(5,'thr 4'),
                  (6,'precision'),(7,'recall'),(8,'dollar recall'),(9,'n_flagged'),
@@ -842,11 +842,11 @@ for s, lbl in enumerate(STRATA):
                      align=center, border=thin(), number_format=fmt)
 
 NOTES = [
-    f'This sheet is an EXPLORATION aid, searching all years at once. Nothing in this workbook adopts what it finds: at public-QC sample sizes a searched threshold is mostly noise (the delivered thresholds always sit in the grid, and "leave it alone" is the expected outcome).',
-    f'Each threshold is searched only inside {TCFG.factors_fine[0]:g}x-{TCFG.factors_fine[-1]:g}x its delivered value ({TCFG.factors_coarse[0]:g}x-{TCFG.factors_coarse[-1]:g}x for rules with more than {TCFG.fine_max_conds} conditions). Variables, operators, condition count and stratum never move: this perturbs an already-validated rule, it does not search for a new one.',
+    f'This sheet is an EXPLORATION aid, searching all years at once. Nothing in this workbook adopts what it finds: at public-QC sample sizes a searched threshold is mostly noise (the original thresholds always sit in the grid, and "leave it alone" is the expected outcome).',
+    f'Each threshold is searched only inside {TCFG.factors_fine[0]:g}x-{TCFG.factors_fine[-1]:g}x its original value ({TCFG.factors_coarse[0]:g}x-{TCFG.factors_coarse[-1]:g}x for rules with more than {TCFG.fine_max_conds} conditions). Variables, operators, condition count and stratum never move: this perturbs an already-validated rule, it does not search for a new one.',
     'The stratum matching the rule\'s "HH" tag is the one the delivery list targets.',
     f'Qualification is the precision BOUND (column L, hidden) at a confidence set from the search alpha divided by the number of combinations searched, plus n_flagged >= the support floor. Raw precision on searched rows is optimistic by construction and is not the gate.',
-    f'Best row = most reach (chosen basis) among qualifying combinations; ties by grid order. The delivered thresholds are always in the grid, so "leave it alone" is always available.',
+    f'Best row = most reach (chosen basis) among qualifying combinations; ties by grid order. The original thresholds are always in the grid, so "leave it alone" is always available.',
     f'Capacity: up to {MAXG:,} combinations per stratum; the bracket keeps every rule well inside it.',
     f'The full scored grid lives in the blocks from row {GRID0} down (helper rows 100-119 are hidden).',
 ]
@@ -1033,7 +1033,7 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
 
     merge(ws,4,1,4,LASTC,
           value='All rules combined (a case is flagged if ANY rule with Include? = TRUE flags it, '
-                'at delivered thresholds)',
+                'at the original thresholds)',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
     # the overall-results rows: orange (accent 6, lighter 60%), matching the
     # orange step tabs
@@ -1067,7 +1067,7 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                      number_format=fmt, fill=ORANGE60)
         set_cell(ws,r,12,None, align=center, border=thin(), fill=ORANGE60)
 
-    merge(ws,9,1,9,LASTC, value='Individual rules — delivered thresholds, no tuning',
+    merge(ws,9,1,9,LASTC, value='Individual rules — original thresholds, no tuning',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
     plain_align = Alignment(horizontal='left', vertical='top', wrap_text=True)
     for j, rule in enumerate(rules_list):   # already sorted by error $ caught

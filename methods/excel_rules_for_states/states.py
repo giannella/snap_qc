@@ -90,32 +90,7 @@ OVERRIDES = {
     'IL': {
         'std_ded_offset_col': 'IL_OFFSET',
         'federal_tables_visible': True,
-        'start_here_note': (
-            'Read this first: the Illinois standard deduction',
-            'The rules in this workbook were mined on a research frame built '
-            'from the public QC files. For Illinois cases, that frame subtracts '
-            'an offset from the federal standard deduction before it recomputes '
-            'the benefit: $7 per month for FY2017-2024 and $4 for FY2025-2026 '
-            '(the IL_OFFSET column of additional_data/standard_deductions.csv in '
-            'the repository). We added the offset after finding that Illinois '
-            'cases recomputed poorly without it: 27% of Illinois cases with no '
-            'payment error recomputed more than $1 away from the recorded '
-            'benefit, against about 2% in other states. With the offset the '
-            'Illinois rate is 5.2%, still above other states, so the '
-            'benefit-based variables carry more recomputation noise for Illinois '
-            'than elsewhere. This workbook applies the same offset through the '
-            'state_offset column of the standard-deduction table on the '
-            'FederalTables tab, which is left visible in this workbook so that '
-            'you can check and edit it. The offset matters for most of the list: '
-            '{n_benefit_rules} of the {n_rules} rules test a variable computed '
-            'through the standard deduction (rawben_rel_max, unc_rawben_rel_max '
-            'or total_deductions_by_hh_size). Before pasting internal data, '
-            'confirm that the offset matches the standard deduction your '
-            'eligibility system applied in each fiscal year, and change the '
-            'state_offset values if it does not: a wrong offset shifts every '
-            'benefit-based variable and the rules that test them. Illinois was '
-            'not in the first workbook release (2026-08-24) because its formulas '
-            'lacked this offset; this workbook was built 2026-09-15.'),
+        # start_here_note removed 2026-09-18 (Eric): the standard-deduction offset is explained to Illinois directly, not in the workbook
     },
 }
 

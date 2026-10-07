@@ -39,6 +39,7 @@ Usage:  python make_input_workbook.py <LIVE_workbook.xlsx> -o <out.xlsx> [--stat
 Then:   python postprocess_workbook.py <out.xlsx>   (drops the stale calc chain)
 """
 import argparse
+import json
 import os
 import shutil
 
@@ -52,7 +53,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 
 import states as STATE_REGISTRY
 from workbook_layout import (DATA_SHEET, BLENDED_SHEET, DICT_SHEET,
-                             EXPORT_SHEET, SCREEN_SHEET, FLAGGED_SHEET,
+                             EXPORT_SHEET, SCREEN_SHEET, FLAGGED_SHEET, PRIORITY_SHEET,
                              SHARE_SHEET, VIEWER_SHEET, RAW_COLS, qref)
 from live_formulas import (countifs, make_table, read_delivery_tab,
                            rule_term, selection_refs)
@@ -92,8 +93,13 @@ def raw_frame(cfg, frame_csv):
     Everything comes from the frame export; the .sav files are not read.
     """
     frame = pd.read_csv(frame_csv, dtype={'hhldno': str, 'stratum': str})
-    need = ['rawearn', 'rawunearn', 'rawdepded', 'rawcsded', 'rawrent',
-            'rawhomeless_ded', 'fsnkid', 'fsnelder', 'fsndis',
+    # dollar inputs in the review year's own dollars (2026-09-28): the frame's
+    # raw* amounts are CPI-inflated to the modeling year, so the demo block
+    # takes the munging's pre-inflation copies and the workbook formulas
+    # repeat the inflation, exactly as a state's pasted data will go through
+    need = ['rawearn_nominal', 'rawunearn_nominal', 'rawmedded_nominal',
+            'rawdepded_nominal', 'rawcsded_nominal', 'rawrent_nominal',
+            'rawutil_nominal', 'rawhomeless_ded_nominal', 'fsnkid', 'fsnelder', 'fsndis',
             'count_abawd', 'cat_elig', 'rawben', 'benefit_amount_FS', 'status']
     missing = [c for c in need if c not in frame.columns]
     assert not missing, (f'frame export lacks reconstructed input fields '
@@ -113,18 +119,18 @@ def raw_frame(cfg, frame_csv):
         'CATEGORICALLY_ELIGIBLE': (g('cat_elig') >= 1).fillna(False).astype(int),
         'HOMELESS_FLAG': g('homeless').fillna(0).astype(int),
         'MONTHS_SINCE_CERT': g('months_since_cert_n'),
-        'EARNED_INCOME': g('rawearn'),
-        'UNEARNED_INCOME': g('rawunearn'),
-        'MEDICAL_DEDUCTION': g('medical_deductions'),
-        'DEPENDENT_CARE_DEDUCTION': g('rawdepded'),
+        'EARNED_INCOME': g('rawearn_nominal'),
+        'UNEARNED_INCOME': g('rawunearn_nominal'),
+        'MEDICAL_DEDUCTION': g('rawmedded_nominal'),
+        'DEPENDENT_CARE_DEDUCTION': g('rawdepded_nominal'),
         # the frame's standardized child-support amount: features.R reads the
         # pasted expenses as the deduction input (state_col_map, 2026-08-27),
         # and on QC data the expense and deduction fields agree in most cases
         # — see the dictionary entry
-        'CHILD_SUPPORT_EXPENSES': g('rawcsded'),
-        'HOMELESS_DEDUCTION': g('rawhomeless_ded'),
-        'RENT': g('rawrent'),
-        'UTILITY_COSTS': g('utilities'),
+        'CHILD_SUPPORT_EXPENSES': g('rawcsded_nominal'),
+        'HOMELESS_DEDUCTION': g('rawhomeless_ded_nominal'),
+        'RENT': g('rawrent_nominal'),
+        'UTILITY_COSTS': g('rawutil_nominal'),
         # QC outcome: the benefit as issued (QC manual RAWBEN — the reported
         # value, exactly what a state's own system holds) and the QC-corrected
         # benefit (FSBEN). Their rounded absolute difference IS the frame's
@@ -187,7 +193,10 @@ def federal_tables(wb, state_name=None, offset_col=None, visible=False):
                 'new fiscal year, append one row to each table below; everything '
                 'updates automatically. error_threshold is the federal QC tolerance: a '
                 'case is a payment error when its error amount EXCEEDS this dollar '
-                'amount for its review year.')
+                'amount for its review year. The benefit ratios and the SUA tier use '
+                "each case's review year; the other dollar features are inflated "
+                "to the modeling year in L3 by the CPI table and use that year's "
+                'tables (see K4).')
     ws['A2'].font = Font(size=10)
     ws['A2'].alignment = Alignment(wrap_text=True, vertical='top')
     ws.merge_cells('A2:J2')
@@ -297,8 +306,54 @@ def federal_tables(wb, state_name=None, offset_col=None, visible=False):
         ws.cell(row=sua0 + 2 + i, column=13, value=v)
     ws.column_dimensions['L'].width = 8
     ws.column_dimensions['M'].width = 30
+    # the state's standard medical deduction by fiscal year (2026-09-28;
+    # standard_medical_deductions.csv, features.R smd_amt): the CPI step
+    # raises a positive medical amount below the modeling year's SMD to it.
+    # 0 in the csv means no SMD (R reads it as NA: no raise).
+    smd = pd.read_csv(os.path.join(ad, 'standard_medical_deductions.csv'))
+    smd.columns = [str(c).strip() for c in smd.columns]
+    mrow = smd[smd['state_name'] == state_name]
+    smd_years = sorted(int(c) for c in smd.columns if c != 'state_name')
+    ws.cell(row=sua0, column=15, value='standard medical deduction by fiscal year '
+            '(hidden helper; standard_medical_deductions.csv)').font = Font(bold=True, size=9)
+    ws.cell(row=sua0 + 1, column=15, value='year').fill = gray
+    ws.cell(row=sua0 + 1, column=16, value='smd').fill = gray
+    for i, y in enumerate(smd_years):
+        ws.cell(row=sua0 + 2 + i, column=15, value=int(y))
+        v = float(mrow.iloc[0][str(y)]) if len(mrow) else 0.0
+        ws.cell(row=sua0 + 2 + i, column=16, value=v)
+    # CPI and homeless standard by year (2026-09-28; year_data.csv columns
+    # cpi and homeless_standard), beside the standard-deduction offset
+    for ci, h in enumerate(('year', 'cpi', 'homeless_standard'), 28):
+        hc = ws.cell(row=5, column=ci, value=h)
+        hc.fill = gray; hc.font = Font(bold=True, size=10)
+    for i, y in enumerate(years):
+        r = yd[yd.year == y].iloc[0]
+        ws.cell(row=6 + i, column=28, value=int(y))
+        ws.cell(row=6 + i, column=29, value=float(r['cpi']))
+        ws.cell(row=6 + i, column=30, value=float(r['homeless_standard']))
+    ws.column_dimensions['AD'].width = 18
+    # modeling year: the year every inflated dollar feature is expressed in
+    # (munging modeling_target_year); see MODELING_YEAR below
+    ws.cell(row=3, column=11, value='modeling_year').font = Font(bold=True, size=10)
+    ws.cell(row=3, column=12, value=MODELING_YEAR)
+    ws.cell(row=4, column=11, value=(
+        "Pasted dollar amounts are in each case's own review-year dollars. "
+        'The benefit ratios and the SUA tier use them as pasted, with the '
+        "review year's tables. Every other dollar feature is inflated to this "
+        'year by the cpi column (cpi at this year / cpi at the review year, '
+        "rounded down) and uses this year's standard deduction, shelter cap, "
+        'homeless standard, SUA and standard medical deduction, as the research '
+        'pipeline does. A review year after the last cpi row uses the last '
+        'row.')).font = Font(size=9)
     ws.freeze_panes = 'A3'
     return {
+        'MODYR':  'FederalTables!$L$3',
+        'CPIYRS': f'FederalTables!$AB$6:$AB${5 + ny}',
+        'CPI':    f'FederalTables!$AC$6:$AC${5 + ny}',
+        'HLSTD':  f'FederalTables!$AD$6:$AD${5 + ny}',
+        'SMDYRS': f'FederalTables!$O${sua0 + 2}:$O${sua0 + 1 + len(smd_years)}',
+        'SMD':    f'FederalTables!$P${sua0 + 2}:$P${sua0 + 1 + len(smd_years)}',
         'SUAYRS':  f'FederalTables!$L${sua0 + 2}:$L${sua0 + 1 + len(sua_years)}',
         'SUAMAX':  f'FederalTables!$M${sua0 + 2}:$M${sua0 + 1 + len(sua_years)}',
         'YEARS':  f'FederalTables!$A$6:$A${5 + ny}',
@@ -460,6 +515,10 @@ def background_tab(wb, state_name, note=None):
         'cases with no review outcome into its yellow columns.',
         f'      5.2  See the flagged cases (the "{FLAGGED_SHEET}" tab): every new '
         'case a selected rule flags, with the rule that flagged it.',
+    ] + ([f'      5.3  Prioritize the flagged cases (the "{PRIORITY_SHEET}" tab): every new '
+          'case any rule in the list flags (rules set to FALSE count too), ranked by how many rules flag it times its benefit '
+          'amount, with a running share of the pasted cases so you can stop at your review budget.']
+         if os.environ.get('SNAP_PRIORITY_SHEET') == '1' else []) + [
         f'6.  Optional: share aggregate results back (the "{SHARE_SHEET}" tab): '
         'whichever path you took, this tab summarizes each rule\'s performance on '
         'your data. You can send this tab back to us and we\'ll gladly send a '
@@ -525,7 +584,9 @@ def background_tab(wb, state_name, note=None):
 # workbook's figures on the same scale the rules were mined on.
 RAW_DESC = {
     'CASE_ID':   'case / review identifier — row identity only. QC manual: HHLDNO.',
-    'REVIEW_FISCAL_YEAR': 'federal fiscal year of the review month (Oct-Sep).',
+    'REVIEW_FISCAL_YEAR': ('federal fiscal year of the review month (Oct-Sep). Also '
+                           'sets the inflation of the dollar amounts to FY2026 dollars: '
+                           'paste every amount in its own review year\'s dollars.'),
     'HOUSEHOLD_SIZE': 'certified SNAP unit size: household members ON THE CASE, as '
                       'reported. QC manual: CERTHHSZ (Origin R, reported); FSUSIZE is '
                       'the post-QC corrected household size. The included data has a '
@@ -591,28 +652,37 @@ FEAT_DESC = {
     'expedited_i': 'EXPEDITED, unchanged',
     'homeless':    'HOMELESS_FLAG, unchanged',
     'married':     'MARRIED_FLAG, unchanged',
-    'medical_deductions': 'MEDICAL_DEDUCTION, unchanged',
+    'medical_deductions': ('MEDICAL_DEDUCTION inflated to FY2026 dollars; a positive '
+                           'amount below the FY2026 standard medical deduction is raised '
+                           'to it (see FederalTables K4)'),
     'months_since_cert_n': 'MONTHS_SINCE_CERT, unchanged',
-    'percent_abawd': 'NUM_ABAWD / HOUSEHOLD_SIZE (the research frame divides by CERTHHSZ, '
-                     'the certified unit size — the same concept HOUSEHOLD_SIZE carries)',
-    'earned_by_hh_size':   'EARNED_INCOME / HOUSEHOLD_SIZE',
-    'unearned_by_hh_size': 'UNEARNED_INCOME / HOUSEHOLD_SIZE',
-    'gross_by_hh_size':    '(EARNED_INCOME + UNEARNED_INCOME) / HOUSEHOLD_SIZE — on '
-                           'reported data this is the manual\'s RAWGROSS / CERTHHSZ',
+    'percent_abawd': 'NUM_ABAWD / HOUSEHOLD_SIZE (the research frame divides by the same '
+                     'reconstructed unit size since 2026-09-25)',
+    'earned_by_hh_size':   'EARNED_INCOME / HOUSEHOLD_SIZE, in FY2026 dollars (see FederalTables K4)',
+    'unearned_by_hh_size': 'UNEARNED_INCOME / HOUSEHOLD_SIZE, in FY2026 dollars (see FederalTables K4)',
+    'gross_by_hh_size':    '(EARNED_INCOME + UNEARNED_INCOME) / HOUSEHOLD_SIZE, in FY2026 dollars (see FederalTables K4)',
     'rawben_rel_max':      'recomputed benefit / maximum allotment for the unit size '
-                           '(via the hidden benefit-recomputation chain and FederalTables)',
+                           '(via the hidden benefit-recomputation chain, on the amounts as '
+                           'pasted, with the review year\'s FederalTables values)',
     'unc_rawben_rel_max':  'recomputed benefit BEFORE the minimum/maximum caps / maximum '
                            'allotment (see Uncapped Benefit Analysis pdf on '
                            'bettergovernmentlab.org/resources/snap for more background)',
-    'shelter_expenses_by_hh_size': '(RENT + UTILITY_COSTS) / HOUSEHOLD_SIZE',
-    'total_deductions_by_hh_size': '(dependent care + child support + recomputed shelter + medical '
-                                   '+ earned-income deductions) / HOUSEHOLD_SIZE',
-    'utilities':   'UTILITY_COSTS, unchanged',
+    'shelter_expenses_by_hh_size': '(RENT + UTILITY_COSTS) / HOUSEHOLD_SIZE, in FY2026 dollars (see FederalTables K4)',
+    'total_deductions_by_hh_size': ('(dependent care + child support + recomputed shelter + medical '
+                                    '+ earned-income + standard + homeless deductions) / '
+                                    'HOUSEHOLD_SIZE, with every amount in FY2026 dollars and '
+                                    'the FY2026 standard deduction, shelter cap and homeless '
+                                    'standard (see FederalTables K4)'),
+    'utilities':   ('UTILITY_COSTS inflated to FY2026 dollars; an amount at SUA tier 2 '
+                    '(within $10 of the review year\'s heating/cooling standard, or '
+                    'above it) is set to the FY2026 standard (see FederalTables K4)'),
     'utilities_sua': 'standard utility allowance tier: UTILITY_COSTS compared to the '
                      'state\'s heating/cooling standard utility allowance for the '
                      'review year (the hidden FederalTables sheet carries the '
-                     'per-year standard): 0 = no utility amount; 1 = positive but '
-                     'below the standard; 2 = at or above the standard. Rules use '
+                     'per-year standard): 0 = no utility amount; 1 = positive and '
+                     'more than $10 below the standard; 2 = within $10 of the '
+                     'standard or above it (the $10 covers standards that change '
+                     'during a fiscal year). Rules use '
                      'this tier instead of utility dollars so they keep meaning the '
                      'same thing when SUA levels reset each October. A year with no '
                      'published standard leaves the tier blank (rules that use it '
@@ -623,14 +693,17 @@ FEAT_DESC = {
     'total_error_amount': 'ABS(ORIGINAL_BENEFIT_AMOUNT - CORRECTED_BENEFIT_AMOUNT), '
                           'rounded to whole dollars (QC manual: AMTERR)',
 }
-HELPER_NOTE = ('_c_* columns (hidden): the benefit-recomputation chain — fiscal year, '
-               'gross income, earned-income deduction, standard deduction and maximum '
-               'allotment looked up per year x size from the hidden FederalTables sheet '
-               '(the standard deduction less that sheet\'s state_offset column, which '
-               'is 0 unless the state\'s standard deduction differs from the federal '
-               'table; currently Illinois), net income before and after shelter, the '
-               'shelter deduction with its elderly/disabled uncapping, and the '
-               'recomputed benefit.')
+HELPER_NOTE = ('_c_* columns (hidden): two chains. The benefit-recomputation chain '
+               'works on the amounts as pasted with the review year\'s values from the '
+               'hidden FederalTables sheet: fiscal year, gross income, earned-income '
+               'deduction, standard deduction and maximum allotment by year x size (the '
+               'standard deduction less that sheet\'s state_offset column, which is 0 '
+               'unless the state\'s standard deduction differs from the federal table; '
+               'currently Illinois), net income before and after shelter, the shelter '
+               'deduction with its elderly/disabled uncapping, the recomputed benefit, '
+               'and the SUA tier. The _i columns are the same amounts inflated to FY2026 '
+               'dollars by the cpi column, with the FY2026 standard deduction, shelter '
+               'cap and homeless standard; they feed the other dollar features.')
 
 
 # data type + example per input column (feedback 2026-08-22)
@@ -875,8 +948,24 @@ def screening_tabs(wb, R, dat_hdr):
     helpers, feats = feature_formulas(R, SCREEN_TABLE)
     feat_cols = [h for h in dat_hdr
                  if h in feats and h not in ('over_threshold', 'total_error_amount')]
-    hdr = (SCREEN_COLS + feat_cols + [h for h, _ in helpers]
-           + [f'_r{j + 1}' for j in range(nr)] + ['_hits', '_cum'])
+    # SNAP_PRIORITY_SHEET=1 (2026-09-17, built for one state): four visible priority columns right after the inputs,
+    # one hidden unweighted counting column per rule (_v = the rule's test, 0/1; _r = Include? x _v), a hidden
+    # tie-broken score, and the Step 5.3 case priority list. OFF by default: the error-rate constants below were
+    # measured for one state's rule list (all states FY2017-19) and must be re-measured for another rule set
+    # (size_group_hit_curves.txt in the gitignored .build/ share-back folder) before the sheet ships to another state.
+    PRIO_ON = os.environ.get('SNAP_PRIORITY_SHEET') == '1'
+    PRIO = ['Rules flagging this case', 'Priority score', 'Priority rank', 'Priority rank in size group'] if PRIO_ON else []
+    if PRIO_ON:
+        hdr = (SCREEN_COLS + PRIO + feat_cols + [h for h, _ in helpers]
+               + [f'_v{j + 1}' for j in range(nr)] + [f'_r{j + 1}' for j in range(nr)] + ['_hits', '_cum', '_ps', '_hship'])
+        # the shipped rules (Include? = TRUE) come first on the rules tab (rule_selection sorts them first); their hit
+        # count feeds the error-size multiplier below
+        ship_flags = [wb[BLENDED_SHEET].cell(row=10 + j, column=12).value in (True, 'True', 'TRUE') for j in range(nr)]
+        n_ship = sum(ship_flags)
+        assert all(ship_flags[:n_ship]) and not any(ship_flags[n_ship:]), 'shipped rules must lead the rules tab'
+    else:
+        hdr = (SCREEN_COLS + feat_cols + [h for h, _ in helpers]
+               + [f'_r{j + 1}' for j in range(nr)] + ['_hits', '_cum'])
     ws = wb.create_sheet(SCREEN_SHEET)
     yellow = PatternFill('solid', fgColor='FFFF99')
     gray = PatternFill('solid', fgColor='D9D9D9')
@@ -885,6 +974,8 @@ def screening_tabs(wb, R, dat_hdr):
         c.font = Font(bold=True)
         if name in SCREEN_COLS:
             c.fill = yellow
+        elif name in PRIO:
+            c.fill = PatternFill('solid', fgColor='C6E0B4')
         elif not name.startswith('_'):
             c.fill = gray
     hlet = lambda name: get_column_letter(hdr.index(name) + 1)
@@ -893,9 +984,44 @@ def screening_tabs(wb, R, dat_hdr):
     for name, f in list(helpers) + [(n, feats[n]) for n in feat_cols]:
         ws.cell(row=2, column=hdr.index(name) + 1, value=f)
     for j, (conds, hh) in enumerate(rules):
-        f = (f'={sel[10 + j]}*{rule_term(conds, hh, SCREEN_TABLE)}'
-             if conds else '=0')
-        ws.cell(row=2, column=hdr.index(f'_r{j + 1}') + 1, value=f)
+        if PRIO_ON:
+            ws.cell(row=2, column=hdr.index(f'_v{j + 1}') + 1,
+                    value=(f'={rule_term(conds, hh, SCREEN_TABLE)}' if conds else '=0'))
+            ws.cell(row=2, column=hdr.index(f'_r{j + 1}') + 1,
+                    value=f'={sel[10 + j]}*{SCREEN_TABLE}[[#This Row],[_v{j + 1}]]')
+        else:
+            ws.cell(row=2, column=hdr.index(f'_r{j + 1}') + 1,
+                    value=(f'={sel[10 + j]}*{rule_term(conds, hh, SCREEN_TABLE)}' if conds else '=0'))
+    T5 = lambda col: f'{SCREEN_TABLE}[[#This Row],[{col}]]'
+    if PRIO_ON:
+      ws.cell(row=2, column=hdr.index('Rules flagging this case') + 1,
+              value=f'=SUM({SCREEN_TABLE}[[#This Row],[_v1]:[_v{nr}]])')
+      ws.cell(row=2, column=hdr.index('_hship') + 1,
+              value=(f'=SUM({SCREEN_TABLE}[[#This Row],[_v1]:[_v{n_ship}]])' if n_ship else '=0'))
+      # priority = error rate for that many flagging rules, for the case's household-size group, x benefit amount. The
+      # rates are the error rates of cases flagged by exactly 1, 2, ... 7 and by 8 or more of the rules in this workbook
+      # (36 yield + 138 counting rules) on public QC data the rules never saw (all states FY2017-19), by size group,
+      # monotone-smoothed (size_group_hit_curves.txt; unflagged cases ran 0.05 / 0.09 / 0.09). Out of sample, size-specific
+      # curves beat one pooled curve at a 0.5% budget ($48 vs $38 per case; score_variants_out_of_sample.txt). Zero when no
+      # rule flags the case or the benefit amount is not a number.
+      c = ws.cell(row=2, column=hdr.index('Priority score') + 1, value=(
+          f'=IF(OR({T5("Rules flagging this case")}=0,NOT(ISNUMBER({T5("ORIGINAL_BENEFIT_AMOUNT")}))),0,'
+          f'CHOOSE(MATCH({T5("hh_group")},{{"1","2-3","4+"}},0),'
+          f'LOOKUP({T5("Rules flagging this case")},{{1,2,3,4,5,6,7,8}},{{0.12,0.18,0.18,0.26,0.32,0.36,0.37,0.37}}),'
+          f'LOOKUP({T5("Rules flagging this case")},{{1,2,3,4,5,6,7,8}},{{0.15,0.21,0.21,0.21,0.21,0.27,0.28,0.40}}),'
+          f'LOOKUP({T5("Rules flagging this case")},{{1,2,3,4,5,6,7,8}},{{0.15,0.18,0.21,0.22,0.23,0.24,0.24,0.24}}))'
+          f'*{T5("ORIGINAL_BENEFIT_AMOUNT")}*1.085^MIN({T5("_hship")},3))'))
+      # x 1.085 per flag from a shipped rule, capped at three: among error cases on the same public data (benefit and size
+      # held fixed) each such flag multiplied the error amount by 1.065-1.085; observed 1.12 / 1.05 / 1.23 / 1.32 at 1-4
+      # flags, 21 errors at 4 and 1 at 5, so the cap sits where the data end (severity_term_test.txt)
+      c.number_format = '$#,##0'
+      ws.cell(row=2, column=hdr.index('_ps') + 1,
+              value=f'=IF({T5("Priority score")}>0,{T5("Priority score")}+ROW()/1E9,0)')
+      ws.cell(row=2, column=hdr.index('Priority rank') + 1, value=(
+          f'=IF({T5("Priority score")}=0,"",COUNTIF({SCREEN_TABLE}[_ps],">"&{T5("_ps")})+1)'))
+      ws.cell(row=2, column=hdr.index('Priority rank in size group') + 1, value=(
+          f'=IF({T5("Priority score")}=0,"",COUNTIFS({SCREEN_TABLE}[hh_group],{T5("hh_group")},'
+          f'{SCREEN_TABLE}[_ps],">"&{T5("_ps")})+1)'))
     ws.cell(row=2, column=hdr.index('_hits') + 1,
             value=f'=SUM({SCREEN_TABLE}[[#This Row],[_r1]:[_r{nr}]])')
     ws.cell(row=2, column=hdr.index('_cum') + 1,
@@ -903,6 +1029,9 @@ def screening_tabs(wb, R, dat_hdr):
     for ci, name in enumerate(hdr, 1):
         if name in feats:
             ws.cell(row=2, column=ci).fill = gray
+        if name in PRIO:
+            ws.cell(row=2, column=ci).fill = PatternFill('solid', fgColor='E2EFDA')
+            ws.column_dimensions[get_column_letter(ci)].width = 16
         if name.startswith('_'):
             ws.column_dimensions[get_column_letter(ci)].hidden = True
     make_table(ws, SCREEN_TABLE, f'A1:{get_column_letter(len(hdr))}2')
@@ -912,7 +1041,10 @@ def screening_tabs(wb, R, dat_hdr):
         f'yellow input columns as the "{DATA_SHEET}" tab minus the outcome '
         'columns (new cases have no review outcome yet); definitions on the '
         f'"{DICT_SHEET}" tab. The gray columns are formulas — do not paste '
-        f'over them. Flagged cases appear on the "{FLAGGED_SHEET}" tab. NB '
+        f'over them. Flagged cases appear on the "{FLAGGED_SHEET}" tab' + (('; the green '
+        'columns give each case a priority (how many rules flag it, counting rules set to FALSE '
+        'included, times its benefit '
+        f'amount), listed best-first on the "{PRIORITY_SHEET}" tab') if PRIO_ON else '') + '. NB '
         'bbce_state_i recomputes from the pasted rows themselves, so paste '
         'full years rather than a handful of cases.', 'snap_dashboard')
 
@@ -973,6 +1105,65 @@ def screening_tabs(wb, R, dat_hdr):
             f'=IF($I{r}="","",INDEX({bq}!$C$10:$C${9 + nr},$I{r}))'))
         c.font = Font(size=10)
     wsf.freeze_panes = 'A5'
+
+    if not PRIO_ON:
+        return nr
+
+    # ── Step 5.3 (2026-09-17): every pasted case with a priority > 0, best first ─
+    PRIO_CAP = 1000
+    wsp = wb.create_sheet(PRIORITY_SHEET)
+    wsp.sheet_view.showGridLines = False
+    for cl, w in {'A': 8, 'B': 16, 'C': 12, 'D': 14, 'E': 14, 'F': 14, 'G': 18}.items():
+        wsp.column_dimensions[cl].width = w
+    for cl in ('I', 'J'):
+        wsp.column_dimensions[cl].hidden = True
+    wsp.merge_cells('A1:G1')
+    c = wsp['A1']; c.value = 'Case Priority List'
+    c.fill = blue; c.font = Font(bold=True, size=16, color='FFFFFF')
+    wsp.row_dimensions[1].height = 30
+    wsp.merge_cells('A2:G2')
+    c = wsp['A2']
+    c.value = (f'Every case pasted into the "{SCREEN_SHEET}" tab that at least one rule flags, best first. '
+               'Priority = the error rate for that many flagging rules, times the benefit amount. On public QC data '
+               'the rules never saw (all states, FY2017-19), the error rate rose with the number of rules in this workbook flagging a case: '
+               'for size 4+ households from 0.15 (one rule) to 0.24 (six or more); for size 2-3 from 0.15 to 0.40 (eight or more); '
+               'for one-person households from 0.12 to 0.37 (seven or more); against 0.05 to 0.09 for cases no rule '
+               'flagged. Each flag from a rule set to TRUE also raises the expected size of an error by about 8%, up to three '
+               'flags, because on the same data those rules pointed to larger errors. '
+               'The size of an error tracks the benefit amount. Every rule in the list adds to the number '
+               'flagging a case, whatever its Include? setting: rules set to FALSE act as counting rules and do not '
+               'appear on Step 5.2 by themselves. To review a share of your caseload, take the '
+               f'rows down to where column G reaches that share. Showing the first {PRIO_CAP:,} cases.')
+    c.fill = grayF; c.font = Font(size=12); c.alignment = wrap
+    wsp.row_dimensions[2].height = 96
+    wsp['A3'] = 'Cases with a priority:'
+    wsp['A3'].font = Font(bold=True)
+    wsp['B3'] = f'=COUNTIF({SCREEN_TABLE}[_ps],">0")'
+    wsp['B3'].font = Font(bold=True); wsp['B3'].number_format = '#,##0'
+    wsp['D3'] = 'Cases pasted:'
+    wsp['D3'].font = Font(bold=True)
+    wsp['E3'] = f'=COUNTA({SCREEN_TABLE}[CASE_ID])'
+    wsp['E3'].font = Font(bold=True); wsp['E3'].number_format = '#,##0'
+    for ci, txt in enumerate(['Rank', 'Case ID', 'Household size', 'Benefit amount', 'Rules flagging',
+                              'Priority score', 'Share of pasted cases (this row and above)'], 1):
+        c = wsp.cell(row=4, column=ci, value=txt)
+        c.fill = grayF; c.font = Font(bold=True, size=10); c.alignment = wrap
+    wsp.row_dimensions[4].height = 32
+    for k in range(1, PRIO_CAP + 1):
+        r = 4 + k
+        wsp.cell(row=r, column=9, value=f'=IF(ROW()-4>$B$3,"",LARGE({SCREEN_TABLE}[_ps],ROW()-4))')
+        wsp.cell(row=r, column=10, value=f'=IF($I{r}="","",MATCH($I{r},{SCREEN_TABLE}[_ps],0))')
+        wsp.cell(row=r, column=1, value=f'=IF($J{r}="","",ROW()-4)')
+        wsp.cell(row=r, column=2, value=f'=IF($J{r}="","",INDEX({SCREEN_TABLE}[CASE_ID],$J{r}))')
+        wsp.cell(row=r, column=3, value=f'=IF($J{r}="","",INDEX({SCREEN_TABLE}[HOUSEHOLD_SIZE],$J{r}))')
+        c = wsp.cell(row=r, column=4, value=f'=IF($J{r}="","",INDEX({SCREEN_TABLE}[ORIGINAL_BENEFIT_AMOUNT],$J{r}))')
+        c.number_format = '$#,##0'
+        wsp.cell(row=r, column=5, value=f'=IF($J{r}="","",INDEX({SCREEN_TABLE}[Rules flagging this case],$J{r}))')
+        c = wsp.cell(row=r, column=6, value=f'=IF($J{r}="","",INDEX({SCREEN_TABLE}[Priority score],$J{r}))')
+        c.number_format = '$#,##0'
+        c = wsp.cell(row=r, column=7, value=f'=IF($J{r}="","",(ROW()-4)/$E$3)')
+        c.number_format = '0.0%'
+    wsp.freeze_panes = 'A5'
     return nr
 
 
@@ -1004,13 +1195,13 @@ def share_tab(wb, state_name):
     ws = wb.create_sheet(SHARE_SHEET)
     ws.sheet_view.showGridLines = False
     for cl, w in {'A': 30, 'B': 9, 'C': 60, 'D': 11, 'E': 12, 'F': 11,
-                  'G': 11, 'H': 18}.items():
+                  'G': 11, 'H': 18, 'I': 16}.items():
         ws.column_dimensions[cl].width = w
-    ws.merge_cells('A1:H1')
+    ws.merge_cells('A1:I1')
     c = ws['A1']; c.value = f'Share aggregate results back — {state_name}'
     c.fill = blue; c.font = Font(bold=True, size=16, color='FFFFFF')
     ws.row_dimensions[1].height = 30
-    ws.merge_cells('A2:H2')
+    ws.merge_cells('A2:I2')
     c = ws['A2']
     # wording from Eric's WA edits 2026-08-23
     c.value = ('Optional: this tab displays aggregate performance of every rule on the '
@@ -1063,8 +1254,12 @@ def share_tab(wb, state_name):
         ws.cell(row=r, column=1, value=label).font = Font(bold=True)
         c = ws.cell(row=r, column=2, value=f)
         c.fill = orange; c.number_format = fmt
+    # 'Average error $ per flagged case' (Eric 2026-09-16): error dollars caught
+    # divided by cases flagged, the same quantity Step 3 shows as 'Expected
+    # error $ by case'; blank when the rule flags nothing
     hdrs = ['Rule', 'HH size', 'What the rule says', 'Flagged', 'Errors caught',
-            'Precision', '$ Recall', 'Ineligible households flagged (STATUS=4)']
+            'Precision', '$ Recall', 'Ineligible households flagged (STATUS=4)',
+            'Average error $ per flagged case']
     HR = 13
     for ci, txt in enumerate(hdrs, 1):
         c = ws.cell(row=HR, column=ci, value=txt)
@@ -1093,10 +1288,15 @@ def share_tab(wb, state_name):
                 else f'=IFERROR($E{r}/$D{r},0)')
         drec = (f'=IF($E{r}="-","-",IFERROR({d}/{tot_ed},0))' if suppress
                 else f'=IFERROR({d}/{tot_ed},0)')
+        # average error $ per flagged case: dollars caught / cases flagged,
+        # from the raw counts (not the displayed cells); blank when nothing
+        # is flagged, $0 when flagged cases hold no error
+        avg = (f'=IF($E{r}="-","-",IFERROR({d}/({n}),""))' if suppress
+               else f'=IFERROR({d}/({n}),"")')
         for ci, (f, fmt) in enumerate([
                 (cens(n), '#,##0'), (cens(e), '#,##0'),
                 (prec, '0.0%'), (drec, '0.0%'),
-                (cens(i4), '#,##0')], 4):
+                (cens(i4), '#,##0'), (avg, '$#,##0')], 4):
             c = ws.cell(row=r, column=ci, value=f)
             c.number_format = fmt
     ws.freeze_panes = f'A{HR + 1}'
@@ -1114,6 +1314,21 @@ def share_tab(wb, state_name):
 # the benefit pair (2026-08-18): a case missing either benefit amount gets a
 # blank error amount and a blank over-threshold flag, so it counts as neither
 # an error nor a clean case.
+# Modeling year: pasted dollar amounts are in each case's own review-year
+# dollars, and the workbook repeats the munging script's CPI step itself. The benefit ratios (rawben_rel_max,
+# unc_rawben_rel_max) and the SUA tier come from the pasted amounts with the
+# review year's tables, as the munging computes them before the CPI step.
+# Every other dollar feature is inflated to MODELING_YEAR by fiscal year
+# (cpi_inflate(): FLOOR(x * cpi[MODELING_YEAR] / cpi[review year]), with a
+# positive medical amount below the modeling year's SMD raised to it and a
+# tier-2 utility amount set to the modeling year's SUA) and uses the
+# modeling year's standard deduction, shelter cap and homeless standard.
+# The validation gate compares every feature with the frame's canonical
+# column, so a drift from the munging script fails the build.
+MODELING_YEAR = 2026
+# SUA tier 2 = utility costs within this many dollars of the review year's
+# heating/cooling standard, or above it (features.R add_sua_tier tolerance)
+SUA_TOLERANCE = 10
 BEN_INPUTS = ['REVIEW_FISCAL_YEAR', 'HOUSEHOLD_SIZE', 'EARNED_INCOME',
               'UNEARNED_INCOME', 'MEDICAL_DEDUCTION', 'DEPENDENT_CARE_DEDUCTION',
               'CHILD_SUPPORT_EXPENSES', 'HOMELESS_DEDUCTION', 'RENT',
@@ -1129,17 +1344,19 @@ FEATURE_INPUTS = {
     'expedited_i': ['EXPEDITED'],
     'homeless': ['HOMELESS_FLAG'],
     'married': ['MARRIED_FLAG'],
-    'medical_deductions': ['MEDICAL_DEDUCTION'],
+    'medical_deductions': ['MEDICAL_DEDUCTION', 'REVIEW_FISCAL_YEAR'],
     'months_since_cert_n': ['MONTHS_SINCE_CERT'],
     'percent_abawd': ['NUM_ABAWD', 'HOUSEHOLD_SIZE'],
-    'earned_by_hh_size': ['EARNED_INCOME', 'HOUSEHOLD_SIZE'],
-    'unearned_by_hh_size': ['UNEARNED_INCOME', 'HOUSEHOLD_SIZE'],
-    'gross_by_hh_size': ['EARNED_INCOME', 'UNEARNED_INCOME', 'HOUSEHOLD_SIZE'],
+    'earned_by_hh_size': ['EARNED_INCOME', 'HOUSEHOLD_SIZE', 'REVIEW_FISCAL_YEAR'],
+    'unearned_by_hh_size': ['UNEARNED_INCOME', 'HOUSEHOLD_SIZE', 'REVIEW_FISCAL_YEAR'],
+    'gross_by_hh_size': ['EARNED_INCOME', 'UNEARNED_INCOME', 'HOUSEHOLD_SIZE',
+                         'REVIEW_FISCAL_YEAR'],
     'rawben_rel_max': BEN_INPUTS,
     'unc_rawben_rel_max': BEN_INPUTS,
-    'shelter_expenses_by_hh_size': ['RENT', 'UTILITY_COSTS', 'HOUSEHOLD_SIZE'],
+    'shelter_expenses_by_hh_size': ['RENT', 'UTILITY_COSTS', 'HOUSEHOLD_SIZE',
+                                    'REVIEW_FISCAL_YEAR'],
     'total_deductions_by_hh_size': BEN_INPUTS,
-    'utilities': ['UTILITY_COSTS'],
+    'utilities': ['UTILITY_COSTS', 'REVIEW_FISCAL_YEAR'],
     'utilities_sua': ['UTILITY_COSTS', 'REVIEW_FISCAL_YEAR'],
     'over_threshold': ['ORIGINAL_BENEFIT_AMOUNT', 'CORRECTED_BENEFIT_AMOUNT',
                        'REVIEW_FISCAL_YEAR'],
@@ -1169,6 +1386,9 @@ def feature_formulas(R, table=TABLE):
         # _xlfn. prefix: post-2007 functions written straight into the XML
         # need it, or Excel renders #NAME?
         ('_c_ernded',  f'=_xlfn.FLOOR.MATH({T("EARNED_INCOME")}*0.2)'),
+        # -- nominal chain: the pasted review-year amounts with the review
+        # year's tables (munging calculate_raw_benefits before the CPI step);
+        # feeds the two benefit ratios.
         # the federal standard deduction for the year x size, less the
         # FederalTables state_offset column (0 except where states.py sets a
         # std_ded_offset_col: Illinois), mirroring get_standard_deduction()
@@ -1189,6 +1409,49 @@ def feature_formulas(R, table=TABLE):
         ('_c_benrec',  f'=MIN(MAX({T("_c_benunc")},IF({T("HOUSEHOLD_SIZE")}<3,'
                        f'INDEX({R["MINAL"]},MATCH({T("_c_fy")},{R["YEARS"]},1)),0)),'
                        f'{T("_c_benmax")})'),
+        # SUA tier on the pasted amount against the review year's standard
+        # (add_sua_tier runs before the CPI step): 2 within SUA_TOLERANCE of
+        # the standard or above it; blank when the year has no published
+        # standard, mirroring the NA tier in features.R
+        ('_c_tier',    f'=IF({T("UTILITY_COSTS")}<=0,0,IF('
+                       f'INDEX({R["SUAMAX"]},MATCH({T("_c_fy")},{R["SUAYRS"]},0))'
+                       f'<=0,"",IF({T("UTILITY_COSTS")}+{SUA_TOLERANCE}'
+                       f'<INDEX({R["SUAMAX"]},MATCH({T("_c_fy")},{R["SUAYRS"]},0)),1,2)))'),
+        # -- CPI step (munging cpi_inflate block): amounts inflated to the
+        # modeling year by fiscal year, then deductions with that year's
+        # tables. A review year past the last cpi row uses the last row.
+        ('_c_cpif',    f'=INDEX({R["CPI"]},MATCH({R["MODYR"]},{R["CPIYRS"]},1))'
+                       f'/INDEX({R["CPI"]},MATCH({T("_c_fy")},{R["CPIYRS"]},1))'),
+        ('_c_earn_i',  f'=_xlfn.FLOOR.MATH({T("EARNED_INCOME")}*{T("_c_cpif")})'),
+        ('_c_unearn_i', f'=_xlfn.FLOOR.MATH({T("UNEARNED_INCOME")}*{T("_c_cpif")})'),
+        ('_c_dep_i',   f'=_xlfn.FLOOR.MATH({T("DEPENDENT_CARE_DEDUCTION")}*{T("_c_cpif")})'),
+        ('_c_cs_i',    f'=_xlfn.FLOOR.MATH({T("CHILD_SUPPORT_EXPENSES")}*{T("_c_cpif")})'),
+        ('_c_rent_i',  f'=_xlfn.FLOOR.MATH({T("RENT")}*{T("_c_cpif")})'),
+        # a positive medical amount below the modeling year's standard medical
+        # deduction is raised to it, not inflated (0 = the state has no SMD)
+        ('_c_smd',     f'=INDEX({R["SMD"]},MATCH({R["MODYR"]},{R["SMDYRS"]},0))'),
+        ('_c_med_i',   f'=IF(AND({T("_c_smd")}>0,{T("MEDICAL_DEDUCTION")}>0,'
+                       f'{T("MEDICAL_DEDUCTION")}<{T("_c_smd")}),_xlfn.FLOOR.MATH({T("_c_smd")}),'
+                       f'_xlfn.FLOOR.MATH({T("MEDICAL_DEDUCTION")}*{T("_c_cpif")}))'),
+        # a tier-2 utility amount is set to the modeling year's SUA, not
+        # inflated; with no modeling-year SUA R leaves it missing (blank here)
+        ('_c_util_i',  f'=IF({T("_c_tier")}=2,IF(INDEX({R["SUAMAX"]},MATCH({R["MODYR"]},'
+                       f'{R["SUAYRS"]},0))>0,_xlfn.FLOOR.MATH(INDEX({R["SUAMAX"]},'
+                       f'MATCH({R["MODYR"]},{R["SUAYRS"]},0))),""),'
+                       f'_xlfn.FLOOR.MATH({T("UTILITY_COSTS")}*{T("_c_cpif")}))'),
+        ('_c_hless_i', f'=IF({T("HOMELESS_DEDUCTION")}>0,'
+                       f'INDEX({R["HLSTD"]},MATCH({R["MODYR"]},{R["CPIYRS"]},1)),'
+                       f'{T("HOMELESS_DEDUCTION")})'),
+        ('_c_stdded_i', f'=INDEX({R["SDBLK"]},MATCH({R["MODYR"]},{R["SDYRS"]},1),{sz})'
+                        f'-INDEX({R["SDOFF"]},MATCH({R["MODYR"]},{R["SDYRS"]},1))'),
+        ('_c_ernded_i', f'=_xlfn.FLOOR.MATH({T("_c_earn_i")}*0.2)'),
+        ('_c_gross_i', f'={T("_c_earn_i")}+{T("_c_unearn_i")}'),
+        ('_c_netbs_i', f'={T("_c_gross_i")}-({T("_c_ernded_i")}+{T("_c_dep_i")}'
+                       f'+{T("_c_med_i")}+{T("_c_cs_i")}+{T("_c_stdded_i")})'),
+        ('_c_maxsh_i', f'=IF({T("_c_eld")}=1,1000000000,'
+                       f'INDEX({R["MAXSH"]},MATCH({R["MODYR"]},{R["YEARS"]},1)))'),
+        ('_c_sltded_i', f'=MIN(MAX({T("_c_rent_i")}+{T("_c_util_i")}'
+                        f'-MAX({T("_c_netbs_i")}*0.5,0),0),{T("_c_maxsh_i")})'),
     ]
     # a row with blank inputs must never surface an ERROR cell: the year
     # lookups return #N/A on a blank fiscal year and cascade down the chain
@@ -1213,33 +1476,25 @@ def feature_formulas(R, table=TABLE):
         'expedited_i': f'={T("EXPEDITED")}',
         'homeless':    f'={T("HOMELESS_FLAG")}',
         'married':     f'={T("MARRIED_FLAG")}',
-        'medical_deductions':  f'={T("MEDICAL_DEDUCTION")}',
+        'medical_deductions':  f'={T("_c_med_i")}',
         'months_since_cert_n': f'={T("MONTHS_SINCE_CERT")}',
         'percent_abawd': f'={T("NUM_ABAWD")}/{hh}',
-        'earned_by_hh_size':   f'={T("EARNED_INCOME")}/{hh}',
-        'unearned_by_hh_size': f'={T("UNEARNED_INCOME")}/{hh}',
-        'gross_by_hh_size':    f'=({T("EARNED_INCOME")}+{T("UNEARNED_INCOME")})/{hh}',
+        'earned_by_hh_size':   f'={T("_c_earn_i")}/{hh}',
+        'unearned_by_hh_size': f'={T("_c_unearn_i")}/{hh}',
+        'gross_by_hh_size':    f'={T("_c_gross_i")}/{hh}',
         'rawben_rel_max':      f'={T("_c_benrec")}/{T("_c_benmax")}',
-        'shelter_expenses_by_hh_size': f'=({T("RENT")}+{T("UTILITY_COSTS")})/{hh}',
+        'shelter_expenses_by_hh_size': f'=({T("_c_rent_i")}+{T("_c_util_i")})/{hh}',
         'total_deductions_by_hh_size':
-            f'=({T("DEPENDENT_CARE_DEDUCTION")}+{T("CHILD_SUPPORT_EXPENSES")}'
-            f'+{T("_c_sltded")}+{T("MEDICAL_DEDUCTION")}+{T("_c_ernded")})/{hh}',
+            f'=({T("_c_dep_i")}+{T("_c_cs_i")}+{T("_c_sltded_i")}+{T("_c_med_i")}'
+            f'+{T("_c_hless_i")}+{T("_c_ernded_i")}+{T("_c_stdded_i")})/{hh}',
         'unc_rawben_rel_max': f'={T("_c_benunc")}/{T("_c_benmax")}',
-        'utilities':   f'={T("UTILITY_COSTS")}',
-        # SUA tier (redefined 2026-08-23, state-options merge; features.R
-        # add_sua_tier): 0 = no utility amount, 1 = positive but below the
-        # state's heating/cooling standard for the review year, 2 = at or
-        # above it. The anchor is the static per-year max_sua block on
-        # FederalTables (R["SUAMAX"] / R["SUAYRS"], from state_sua.csv) —
-        # an external standard, no longer computed from the pasted data. A
-        # year with no published standard (anchor <= 0) or absent from the
-        # block leaves the tier blank, mirroring the NA tier in features.R.
-        'utilities_sua':
-            f'=IF({T("UTILITY_COSTS")}<=0,0,IFERROR(IF('
-            f'INDEX({R["SUAMAX"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["SUAYRS"]},0))'
-            f'<=0,"",IF({T("UTILITY_COSTS")}'
-            f'<INDEX({R["SUAMAX"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["SUAYRS"]},0)),'
-            f'1,2)),""))',
+        'utilities':   f'={T("_c_util_i")}',
+        # SUA tier (features.R add_sua_tier; helper _c_tier above): 0 = no
+        # utility amount, 1 = more than SUA_TOLERANCE below the state's
+        # heating/cooling standard for the REVIEW year, 2 = within it or
+        # above. The anchor is the
+        # static per-year max_sua block on FederalTables (state_sua.csv).
+        'utilities_sua': f'={T("_c_tier")}',
         # the QC outcome, recomputed from the benefit pair exactly as the
         # munging script defines it: error amount = |RAWBEN - FSBEN| rounded,
         # error flag = amount STRICTLY OVER the year's federal QC tolerance
@@ -1272,25 +1527,36 @@ def _excel_floor(x, sig=1.0):
     return np.floor(np.asarray(x, float) / sig) * sig
 
 
-def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None):
+def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None,
+                    smd_by_year=None):
     """Compute what the Excel formulas will produce, from the raw block.
     `sua_by_year` maps fiscal year -> the state's max SUA (state_sua.csv);
     `sd_offset_by_year` maps fiscal year -> the state's standard-deduction
-    offset (FederalTables state_offset; None or empty means 0)."""
+    offset (FederalTables state_offset; None or empty means 0);
+    `smd_by_year` maps fiscal year -> the state's standard medical deduction
+    (standard_medical_deductions.csv; 0 or absent means none)."""
     g = lambda c: raw[c].fillna(0).astype(float).values     # Excel blank -> 0
     yd, sd, ma = ftabs
     fy = g('REVIEW_FISCAL_YEAR').astype(int)
     sz20 = np.clip(g('HOUSEHOLD_SIZE'), 1, 20).astype(int)
     hh = np.maximum(g('HOUSEHOLD_SIZE'), 1)
     lk = lambda tbl, col: np.array([tbl.loc[tbl.year <= y, col].iloc[-1] for y in fy])
-    stdded = np.array([sd.loc[sd.year <= y, str(s)].iloc[-1] for y, s in zip(fy, sz20)])
-    if sd_offset_by_year:
-        # same MATCH(..,1) year rule as the deduction itself
-        yrs = sorted(sd_offset_by_year)
-        stdded = stdded - np.array([sd_offset_by_year[max(y0 for y0 in yrs if y0 <= y)]
-                                    for y in fy], dtype=float)
-    benmax = np.array([ma.loc[ma.year <= y, str(s)].iloc[-1] for y, s in zip(fy, sz20)])
+    my = np.full(len(fy), MODELING_YEAR, dtype=int)
+    lkm = lambda tbl, col: np.array([tbl.loc[tbl.year <= y, col].iloc[-1] for y in my])
+
+    def stdded_at(years):
+        v = np.array([sd.loc[sd.year <= y, str(s)].iloc[-1] for y, s in zip(years, sz20)])
+        if sd_offset_by_year:
+            # same MATCH(..,1) year rule as the deduction itself
+            yrs = sorted(sd_offset_by_year)
+            v = v - np.array([sd_offset_by_year[max(y0 for y0 in yrs if y0 <= y)]
+                              for y in years], dtype=float)
+        return v
+
     eld = ((g('NUM_ELDERLY') + g('NUM_DISABLED')) > 0).astype(int)
+    # nominal chain: pasted review-year amounts, review-year tables
+    stdded = stdded_at(fy)
+    benmax = np.array([ma.loc[ma.year <= y, str(s)].iloc[-1] for y, s in zip(fy, sz20)])
     ernded = _excel_floor(g('EARNED_INCOME') * 0.2)
     netbs = (g('EARNED_INCOME') + g('UNEARNED_INCOME')
              - (ernded + g('DEPENDENT_CARE_DEDUCTION') + g('MEDICAL_DEDUCTION')
@@ -1303,6 +1569,37 @@ def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None):
     minal = lk(yd, 'min_allotment')
     benrec = np.minimum(np.maximum(
         benunc, np.where(g('HOUSEHOLD_SIZE') < 3, minal, 0)), benmax)
+    # SUA tier: pasted amount against the review year's standard. A year
+    # with no published standard (csv value 0) gives a blank tier (NaN).
+    util = g('UTILITY_COSTS')
+    anchor = np.array([sua_by_year.get(int(y), 0.0) for y in fy], dtype=float)
+    tier = np.where(util <= 0, 0.0,
+                    np.where(anchor <= 0, np.nan,
+                             np.where(util + SUA_TOLERANCE < anchor, 1.0, 2.0)))
+    # CPI step (munging cpi_inflate block), by fiscal year; a year past the
+    # last cpi row uses the last row, like MATCH(..,1)
+    cpif = lkm(yd, 'cpi') / lk(yd, 'cpi')
+    infl = lambda c: _excel_floor(g(c) * cpif)
+    earn_i, unearn_i = infl('EARNED_INCOME'), infl('UNEARNED_INCOME')
+    dep_i, cs_i, rent_i = (infl('DEPENDENT_CARE_DEDUCTION'),
+                           infl('CHILD_SUPPORT_EXPENSES'), infl('RENT'))
+    smd = float((smd_by_year or {}).get(MODELING_YEAR, 0.0))
+    med = g('MEDICAL_DEDUCTION')
+    med_i = np.where((smd > 0) & (med > 0) & (med < smd),
+                     _excel_floor(np.full(len(med), smd)), _excel_floor(med * cpif))
+    sua_my = float(sua_by_year.get(MODELING_YEAR, 0.0))
+    util_i = np.where(tier == 2,
+                      _excel_floor(sua_my) if sua_my > 0 else np.nan,
+                      _excel_floor(util * cpif))
+    hless_i = np.where(g('HOMELESS_DEDUCTION') > 0,
+                       lkm(yd, 'homeless_standard'), g('HOMELESS_DEDUCTION'))
+    stdded_i = stdded_at(my)
+    ernded_i = _excel_floor(earn_i * 0.2)
+    gross_i = earn_i + unearn_i
+    netbs_i = gross_i - (ernded_i + dep_i + med_i + cs_i + stdded_i)
+    maxsh_i = np.where(eld == 1, 1e9, lkm(yd, 'max_shelter_deduction'))
+    sltded_i = np.minimum(np.maximum(rent_i + util_i
+                                     - np.maximum(netbs_i * 0.5, 0), 0), maxsh_i)
     fyshare = pd.Series(g('CATEGORICALLY_ELIGIBLE')).groupby(fy).transform('mean')
     out = {
         'fiscal_year': fy, 'hh_size_raw': g('HOUSEHOLD_SIZE'),
@@ -1315,33 +1612,20 @@ def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None):
         'expedited_i': g('EXPEDITED'),
         'homeless': g('HOMELESS_FLAG'),
         'married': g('MARRIED_FLAG'),
-        'medical_deductions': g('MEDICAL_DEDUCTION'),
+        'medical_deductions': med_i,
         'months_since_cert_n': g('MONTHS_SINCE_CERT'),
         'percent_abawd': g('NUM_ABAWD') / hh,
-        'earned_by_hh_size': g('EARNED_INCOME') / hh,
-        'unearned_by_hh_size': g('UNEARNED_INCOME') / hh,
-        'gross_by_hh_size': (g('EARNED_INCOME') + g('UNEARNED_INCOME')) / hh,
+        'earned_by_hh_size': earn_i / hh,
+        'unearned_by_hh_size': unearn_i / hh,
+        'gross_by_hh_size': gross_i / hh,
         'rawben_rel_max': benrec / benmax,
-        'shelter_expenses_by_hh_size': (g('RENT') + g('UTILITY_COSTS')) / hh,
-        'total_deductions_by_hh_size': (g('DEPENDENT_CARE_DEDUCTION')
-                                        + g('CHILD_SUPPORT_EXPENSES') + sltded
-                                        + g('MEDICAL_DEDUCTION') + ernded) / hh,
+        'shelter_expenses_by_hh_size': (rent_i + util_i) / hh,
+        'total_deductions_by_hh_size': (dep_i + cs_i + sltded_i + med_i + hless_i
+                                        + ernded_i + stdded_i) / hh,
         'unc_rawben_rel_max': benunc / benmax,
-        'utilities': g('UTILITY_COSTS'),
+        'utilities': util_i,
+        'utilities_sua': tier,
     }
-    # SUA tier mirror of the EXCEL formula (UTILITY_COSTS against the
-    # state's per-year heating/cooling standard, state_sua.csv; redefined
-    # 2026-08-23, state-options merge). The validation gate compares this
-    # against the frame's canonical utilities_sua column (features.R
-    # add_sua_tier), so a drift between the workbook formula and the
-    # canonical definition fails the build. A year with no published
-    # standard (csv value 0) gives a blank tier (NaN here).
-    util = g('UTILITY_COSTS')
-    anchor = np.array([sua_by_year.get(int(y), 0.0) for y in fy], dtype=float)
-    tier = np.where(util <= 0, 0.0,
-                    np.where(anchor <= 0, np.nan,
-                             np.where(util < anchor, 1.0, 2.0)))
-    out['utilities_sua'] = tier
     # QC outcome recomputed from the benefit pair, mirroring the Excel
     # formulas (and the munging script's own definition)
     errdiff = np.round(np.abs(g('ORIGINAL_BENEFIT_AMOUNT')
@@ -1363,9 +1647,24 @@ def validate(raw, frame, elem_free, feat_names, state_name, offset_col=None):
     srow = sua[sua['state_name'] == state_name]
     sua_by_year = ({int(c): float(srow.iloc[0][c]) for c in sua.columns
                     if c != 'state_name'} if len(srow) else {})
+    # a state with an SUA standard in a review year but none at the modeling
+    # year would pin tier-2 utilities to a missing value, where R's
+    # rowSums(na.rm) and the workbook's blank diverge; excluded by
+    # construction (none in state_sua.csv as of 2026-09-28)
+    review_years = {int(y) for y in raw['REVIEW_FISCAL_YEAR'].dropna()}
+    assert not (any(sua_by_year.get(y, 0.0) > 0 for y in review_years)
+                and sua_by_year.get(MODELING_YEAR, 0.0) <= 0), (
+        f'{state_name}: SUA standard in a review year but none for '
+        f'{MODELING_YEAR} in state_sua.csv')
     sd_offset_by_year = ({int(y): float(v) for y, v in zip(sd['year'], sd[offset_col])}
                          if offset_col else None)
-    mir = mirror_features(raw, (yd, sd, ma), sua_by_year, sd_offset_by_year)
+    smd = pd.read_csv(os.path.join(ad, 'standard_medical_deductions.csv'))
+    smd.columns = [str(c).strip() for c in smd.columns]
+    mrow = smd[smd['state_name'] == state_name]
+    smd_by_year = ({int(c): float(mrow.iloc[0][c]) for c in smd.columns
+                    if c != 'state_name'} if len(mrow) else {})
+    mir = mirror_features(raw, (yd, sd, ma), sua_by_year, sd_offset_by_year,
+                          smd_by_year)
     print(f'\nformula validation vs the munged frame '
           f'({len(frame)} rows, reconstructed pre-QC-review inputs):')
     print(f'  {"feature":32s} {"all rows":>9s}')
@@ -1565,6 +1864,8 @@ def main():
             linked += 1
     print(f'Step 3 headers linked to the dictionary: {linked}')
     note = cfg.get('start_here_note')
+    if os.environ.get('SNAP_START_HERE_NOTE'):      # (title, body) as JSON, for a one-off state build
+        note = tuple(json.loads(os.environ['SNAP_START_HERE_NOTE']))
     if note:
         title, body = note
         note = (title, body.format(**effective_rule_counts(cfg['abbr'])))

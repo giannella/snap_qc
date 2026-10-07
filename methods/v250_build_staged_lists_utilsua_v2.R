@@ -84,7 +84,7 @@ VOCAB19 <- c(BASE_FEATURES, PS_FEATURES)
 BINARY_FEATURES <- c("children_i", "elderly_disabled_i", "expedited_i",
                      "married", "homeless", "bbce_state_i")
 
-OUT_DIR <- "methods/v250_candidate_lists_utilsua"
+OUT_DIR <- Sys.getenv("V250_OUT_DIR", "methods/v250_candidate_lists_utilsua")   # override per build (v2.7: methods/v270_candidate_lists)
 if (!exists("RESUME_FROM_CHECKPOINT")) RESUME_FROM_CHECKPOINT <- FALSE
 if (SMOKE) {
   XGB$nrounds <- 40; RF$num_trees <- 40
@@ -122,7 +122,10 @@ ed_all <- ifelse(ie_all, abs(ifelse(is.na(adf$total_error_amount), 0,
 stopifnot(nrow(adf) == EXPECT_ROWS, sum(ie_all) == EXPECT_ERRS)
 hh_all <- hh_group_of(adf$cert_HH_size_FS_n)
 # mismatch rows: reconstruction-failure population (see header)
-mm_all <- adf$rawben >= adf$benmax & adf$rawben_uncapped < adf$benmax
+# the benefit reconstruction is nominal on every frame (the CPI step leaves
+# benefits in review-year terms)
+unc_nom <- adf$rawben_uncapped
+mm_all <- adf$rawben >= adf$benmax & unc_nom < adf$benmax
 stamp("mismatch rows on this frame: %d (%.2f%% of rows, %.2f%% of errors)",
       sum(mm_all), 100 * mean(mm_all), 100 * sum(mm_all & ie_all) / sum(ie_all))
 stopifnot(sum(mm_all) < 1000)   # the post-fix-frame assert: thousands = pre-fix frame

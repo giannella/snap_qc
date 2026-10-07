@@ -1,0 +1,99 @@
+state,budget,ge_w2224,ge_w1719,selected,reason,current
+Alabama,0.05,True,True,True,national at or above blended in both windows,True
+Alabama,0.1,True,True,True,national at or above blended in both windows,True
+Arizona,0.05,False,True,True,windows disagree,True
+Arizona,0.1,True,True,True,national at or above blended in both windows,True
+Arkansas,0.05,True,False,True,windows disagree,True
+Arkansas,0.1,True,False,True,windows disagree,True
+California,0.05,False,True,True,windows disagree,True
+California,0.1,False,True,True,windows disagree,True
+Colorado,0.05,True,True,True,national at or above blended in both windows,True
+Colorado,0.1,True,True,True,national at or above blended in both windows,True
+Connecticut,0.05,True,True,True,national at or above blended in both windows,True
+Connecticut,0.1,False,True,True,windows disagree,True
+Delaware,0.05,True,True,True,national at or above blended in both windows,True
+Delaware,0.1,True,True,True,national at or above blended in both windows,False
+District of Columbia,0.05,False,True,True,windows disagree,False
+District of Columbia,0.1,False,False,True,blended higher in both windows,False
+Florida,0.05,True,True,True,national at or above blended in both windows,True
+Florida,0.1,False,True,True,windows disagree,True
+Georgia,0.05,True,True,True,national at or above blended in both windows,True
+Georgia,0.1,True,True,True,national at or above blended in both windows,True
+Idaho,0.05,True,True,True,national at or above blended in both windows,True
+Idaho,0.1,True,True,True,national at or above blended in both windows,True
+Illinois,0.05,True,False,True,windows disagree,True
+Illinois,0.1,True,True,True,national at or above blended in both windows,True
+Indiana,0.05,True,False,True,windows disagree,True
+Indiana,0.1,False,True,True,windows disagree,True
+Iowa,0.05,True,True,True,national at or above blended in both windows,True
+Iowa,0.1,True,True,True,national at or above blended in both windows,False
+Kansas,0.05,True,True,True,national at or above blended in both windows,True
+Kansas,0.1,True,True,True,national at or above blended in both windows,True
+Kentucky,0.05,True,False,True,windows disagree,True
+Kentucky,0.1,True,False,True,windows disagree,True
+Louisiana,0.05,True,True,True,national at or above blended in both windows,True
+Louisiana,0.1,True,True,True,national at or above blended in both windows,True
+Maine,0.05,True,False,True,windows disagree,False
+Maine,0.1,False,False,True,blended higher in both windows,True
+Maryland,0.05,False,True,True,windows disagree,False
+Maryland,0.1,False,False,True,blended higher in both windows,False
+Massachusetts,0.05,True,True,True,national at or above blended in both windows,True
+Massachusetts,0.1,True,False,True,windows disagree,True
+Michigan,0.05,False,True,True,windows disagree,True
+Michigan,0.1,False,True,True,windows disagree,True
+Minnesota,0.05,True,False,True,windows disagree,True
+Minnesota,0.1,True,True,True,national at or above blended in both windows,True
+Mississippi,0.05,False,True,True,windows disagree,False
+Mississippi,0.1,False,True,True,windows disagree,False
+Missouri,0.05,True,True,True,national at or above blended in both windows,True
+Missouri,0.1,True,True,True,national at or above blended in both windows,True
+Montana,0.05,True,True,True,national at or above blended in both windows,True
+Montana,0.1,True,False,True,windows disagree,True
+Nebraska,0.05,True,True,True,national at or above blended in both windows,True
+Nebraska,0.1,True,True,True,national at or above blended in both windows,True
+Nevada,0.05,True,True,True,national at or above blended in both windows,True
+Nevada,0.1,True,True,True,national at or above blended in both windows,True
+New Hampshire,0.05,True,True,True,national at or above blended in both windows,True
+New Hampshire,0.1,True,True,True,national at or above blended in both windows,True
+New Jersey,0.05,True,False,True,windows disagree,True
+New Jersey,0.1,True,False,True,windows disagree,True
+New Mexico,0.05,False,True,True,windows disagree,True
+New Mexico,0.1,True,True,True,national at or above blended in both windows,False
+New York,0.05,True,True,True,national at or above blended in both windows,True
+New York,0.1,True,True,True,national at or above blended in both windows,True
+North Carolina,0.05,True,True,True,national at or above blended in both windows,True
+North Carolina,0.1,True,True,True,national at or above blended in both windows,True
+North Dakota,0.05,True,True,True,national at or above blended in both windows,True
+North Dakota,0.1,True,True,True,national at or above blended in both windows,True
+Ohio,0.05,True,True,True,national at or above blended in both windows,True
+Ohio,0.1,True,True,True,national at or above blended in both windows,True
+Oklahoma,0.05,True,True,True,national at or above blended in both windows,True
+Oklahoma,0.1,False,False,True,blended higher in both windows,True
+Oregon,0.05,True,True,True,national at or above blended in both windows,True
+Oregon,0.1,True,True,True,national at or above blended in both windows,True
+Pennsylvania,0.05,True,True,True,national at or above blended in both windows,True
+Pennsylvania,0.1,True,True,True,national at or above blended in both windows,True
+Rhode Island,0.05,True,True,True,national at or above blended in both windows,True
+Rhode Island,0.1,True,True,True,national at or above blended in both windows,False
+South Carolina,0.05,True,True,True,national at or above blended in both windows,True
+South Carolina,0.1,False,True,True,windows disagree,False
+South Dakota,0.05,True,True,True,national at or above blended in both windows,True
+South Dakota,0.1,True,True,True,national at or above blended in both windows,True
+Tennessee,0.05,True,True,True,national at or above blended in both windows,True
+Tennessee,0.1,True,False,True,windows disagree,True
+Texas,0.05,True,True,True,national at or above blended in both windows,False
+Texas,0.1,False,True,True,windows disagree,False
+Utah,0.05,True,False,True,windows disagree,True
+Utah,0.1,True,True,True,national at or above blended in both windows,True
+Vermont,0.05,True,True,True,national at or above blended in both windows,True
+Vermont,0.1,True,True,True,national at or above blended in both windows,True
+Virginia,0.05,True,True,True,national at or above blended in both windows,True
+Virginia,0.1,True,True,True,national at or above blended in both windows,False
+Washington,0.05,True,True,True,national at or above blended in both windows,True
+Washington,0.1,True,True,True,national at or above blended in both windows,True
+West Virginia,0.05,True,True,True,national at or above blended in both windows,True
+West Virginia,0.1,True,True,True,national at or above blended in both windows,True
+Wisconsin,0.05,True,True,True,national at or above blended in both windows,True
+Wisconsin,0.1,True,False,True,windows disagree,True
+Wyoming,0.05,True,True,True,national at or above blended in both windows,True
+Wyoming,0.1,True,True,True,national at or above blended in both windows,True

@@ -31,7 +31,7 @@ parse_conds <- function(txt) {
 }
 
 # ── inputs ───────────────────────────────────────────────────────────────────
-pool <- readRDS("state_delivery_lists/national_rule_pool_2022_2024_v250.rds")
+pool <- readRDS("archive/national_rule_pool_2022_2024_v250.rds")   # the v2.5.0 pool this census was run on (moved 2026-09-24)
 cat(sprintf("pool: %d rules\n", nrow(pool)))
 
 files <- Sys.glob("state_delivery_lists/blended_delivery_*_budget10.csv")

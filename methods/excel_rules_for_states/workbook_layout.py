@@ -23,6 +23,7 @@ BLENDED_SHEET = 'Step 3. Select Rules'
 EXPORT_SHEET  = 'Step 4. Export Rules'
 SCREEN_SHEET  = 'Step 5.1 Screen New Cases'
 FLAGGED_SHEET = 'Step 5.2 Flagged New Cases'
+PRIORITY_SHEET = 'Step 5.3 Case Priority List'   # 2026-09-17: pasted cases ranked by rules-flagging x benefit
 # "Share aggregate results back" exceeds Excel's 31-char sheet-name cap;
 # the full phrase lives in the sheet's title band instead
 SHARE_SHEET   = 'Step 6. Share results back'
