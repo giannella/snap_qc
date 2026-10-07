@@ -42,10 +42,14 @@ state_delivery_lists/ are untouched; this reshapes what the WORKBOOK ships:
 
   0. PINNED rules (role = "pinned" in the CSV; opt-in, 2026-10-07): a rule a
      state validated on its own data, placed at the top by hand. Pinned
-     rules pass the same gates (the build stops if one would be dropped),
-     count toward the union before the buffer refill, and always sort
-     first, in their CSV rank order. No standard delivery list carries the
-     role, so standard builds are unchanged.
+     rules pass the same gates (the build stops if one would be dropped)
+     and take capacity first: the core rules then enter in delivery-rank
+     order only while the union stays within the ORIGINAL core list's
+     workload (a rule that would overshoot is skipped, the walk continues),
+     so the review budget holds. Core rules that no longer fit stay in the
+     workbook with Include? = FALSE. Pinned rules always sort first, in
+     their CSV rank order. No standard delivery list carries the role, so
+     standard builds are unchanged.
 
 Rule ids ("num") stay the delivery-CSV rank, so an id refers to the same
 rule across workbook releases regardless of the sort. The result is also
@@ -300,13 +304,27 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
         f'(span < {RATIO_SPAN_FLOOR} off 1.0), {n_lowd_c} low-dollar bands '
         f'(<= ${LOW_DOLLAR_CAP:.0f}); stripped {STRIP_VAR} from {n_strip_c})')
 
+    displaced = []
     if pinned:
         kept_p = _transform(pinned, df, log, med_zone)[0]
         if len(kept_p) != len(pinned):
             raise SystemExit('a pinned rule fails the delivery gates; fix it in the CSV')
-        kept = [dict(r, pinned=True) for r in kept_p] + kept
+        u = np.zeros(len(df), bool)
+        for r in kept_p:
+            u |= rule_mask(df, r)
+        n_pin = int(u.sum())
+        fit = []
+        for r in kept:                      # transformed core, delivery-rank order
+            cand = u | rule_mask(df, r)
+            if int(cand.sum()) <= target:
+                u = cand
+                fit.append(r)
+            else:
+                displaced.append(dict(r, ship=False))
+        kept = [dict(r, pinned=True) for r in kept_p] + fit
         log(f'pinned: {len(kept_p)} rule(s) placed first (ids '
-            f'{", ".join(str(r["num"]) for r in kept_p)})')
+            f'{", ".join(str(r["num"]) for r in kept_p)}) flagging {n_pin} of target {target}; '
+            f'core rules within the original workload {len(fit)}, moved to Include? = FALSE {len(displaced)}')
 
     union = np.zeros(len(df), bool)
     for r in kept:
@@ -322,6 +340,7 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
     log(f'buffer promoted: {promoted} of {len(promotable)} '
         f'(union {int(union.sum())} of target {target} flagged rows, '
         f'{int(union.sum())/max(len(df),1):.1%} of the frame)')
+    kept += displaced                      # pinned builds only: Include? = FALSE
 
     # measurement tier (2026-08-27, share_back_transfer_plan.md): rules
     # appended for the Step 6 read-out only. They ship Include? = FALSE and
