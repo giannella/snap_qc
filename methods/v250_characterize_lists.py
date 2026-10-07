@@ -68,7 +68,7 @@ def main():
     lists = sorted(glob.glob(os.path.join(
         STAGE_DIR, os.getenv("V250_LIST_GLOB", "blended_delivery_*.csv"))))
     assert lists, "no staged lists found in %s" % STAGE_DIR
-    dep = pd.concat([pd.read_csv(p, usecols=["hh", "rule"]) for p in lists],
+    dep = pd.concat([pd.read_csv(p, usecols=["hh", "rule"], dtype={"hh": str}) for p in lists],
                     ignore_index=True)
     # usecols returns FILE-ordered columns; select explicitly so itertuples
     # yields (hh, rule) and not (rule, hh)
