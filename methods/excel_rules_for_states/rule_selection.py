@@ -40,6 +40,13 @@ state_delivery_lists/ are untouched; this reshapes what the WORKBOOK ships:
   4. SORT the final list descending by error dollars caught on the state
      frame at delivered thresholds (the Step 3 tab's static order).
 
+  0. PINNED rules (role = "pinned" in the CSV; opt-in, 2026-10-07): a rule a
+     state validated on its own data, placed at the top by hand. Pinned
+     rules pass the same gates (the build stops if one would be dropped),
+     count toward the union before the buffer refill, and always sort
+     first, in their CSV rank order. No standard delivery list carries the
+     role, so standard builds are unchanged.
+
 Rule ids ("num") stay the delivery-CSV rank, so an id refers to the same
 rule across workbook releases regardless of the sort. The result is also
 written to .build/effective_rules_<ABBR>.csv in the delivery-CSV schema
@@ -267,8 +274,9 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
     """The workbook's rule list: transformed core + promoted buffer, sorted by
     error dollars caught on the state frame. See the module docstring."""
     rows = _parse_rows(csv_path, char_keys)
+    pinned = [r for r in rows if r['role'] == 'pinned']
     core   = [r for r in rows if r['role'] == 'core']
-    buffer = [r for r in rows if r['role'] != 'core']
+    buffer = [r for r in rows if r['role'] not in ('core', 'pinned')]
 
     # capacity target: what the delivered core list flags on this frame
     orig_union = np.zeros(len(df), bool)
@@ -291,6 +299,14 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
         f'(< {WIDTH_FLOOR:.0%} rel width), {n_rat_c} thin benefit-ratio intervals '
         f'(span < {RATIO_SPAN_FLOOR} off 1.0), {n_lowd_c} low-dollar bands '
         f'(<= ${LOW_DOLLAR_CAP:.0f}); stripped {STRIP_VAR} from {n_strip_c})')
+
+    if pinned:
+        kept_p = _transform(pinned, df, log, med_zone)[0]
+        if len(kept_p) != len(pinned):
+            raise SystemExit('a pinned rule fails the delivery gates; fix it in the CSV')
+        kept = [dict(r, pinned=True) for r in kept_p] + kept
+        log(f'pinned: {len(kept_p)} rule(s) placed first (ids '
+            f'{", ".join(str(r["num"]) for r in kept_p)})')
 
     union = np.zeros(len(df), bool)
     for r in kept:
@@ -339,8 +355,11 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
                   .fillna(0).abs().values, 0.0)
     for r in kept:
         r['dollars_frame'] = float(ed[rule_mask(df, r)].sum())
-    # deployed rules (Include? = TRUE) first, then measurement-only rules, each block by dollars caught (2026-09-17)
-    kept.sort(key=lambda r: (not bool(r.get('ship', True)), -r['dollars_frame']))
+    # pinned rules first in their CSV order (2026-10-07); then deployed rules
+    # (Include? = TRUE), then measurement-only rules, each block by dollars
+    # caught (2026-09-17)
+    kept.sort(key=lambda r: (0, r['num'], 0.0) if r.get('pinned') else
+              (1, int(not bool(r.get('ship', True))), -r['dollars_frame']))
 
     for r in kept:
         assert not any(c['var'] in DROP_VARS for c in r['conds'])
