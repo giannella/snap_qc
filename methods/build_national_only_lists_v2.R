@@ -23,6 +23,12 @@
 # The runner then characterizes the lists (section 29 adapter) and joins
 # the curated columns before they are copied into state_delivery_lists/.
 #
+# PILE GATE (2026-10-07, issue #29): rules with >= 0.25 of their training
+# flags or errors on reconstruction income-pile rows (income_pile_rows())
+# are dropped before the fill, as in the blended builder; the audit columns
+# pile_share_flags / pile_share_errors ride on every list. V250_PILE_GATE=0
+# tags but does not drop.
+#
 # Evaluation-only: never mines; stops if the production cache is absent.
 # Expects `reg_model_data`. Run via runners/run_national_only_build.R.
 
@@ -110,7 +116,24 @@ stamp("national pool: %d rules | tagged %d (flag-share %.2f%%) | head: top40 %d,
       nrow(natl), sum(natl$artifact_i), 100 * share_flag, top40, top10)
 if (share_flag > 0.02 || top40 > MM_TOP40_MAX || top10 > MM_TOP10_MAX)
   stop("DISPLACEMENT HALT [national]: pool-share or head gate breached (statistician's gate)")
-pool <- natl[!natl$artifact_i, , drop = FALSE]
+# income-pile tags, scored on the pool's own training rows (all FY2022-24
+# rows of the rule's stratum); the recomputed n must equal the pool's n
+PILE_TAG_SHARE <- 0.25
+PILE_GATE <- !identical(Sys.getenv("V250_PILE_GATE"), "0")
+pile_all <- income_pile_rows(adf0)
+stopifnot(sum(pile_all) == 1394L)   # the v2.7 frame (diagnostic count, 2026-10-07)
+strata_nat <- lapply(setNames(nm = HH_LEVELS), function(h) which(hh_all %in% h))
+sc <- reduce_flags_for_rules(natl, adf, strata_nat, function(ix)
+  c(length(ix), sum(pile_all[ix]), sum(pile_all[ix] & ie_all[ix])))
+stopifnot(all(sc[, 1] == natl$n))
+natl$pile_share_flags  <- round(sc[, 2] / natl$n, 4)
+natl$pile_share_errors <- round(ifelse(natl$k > 0, sc[, 3] / natl$k, 0), 4)
+pile_tag <- natl$pile_share_flags >= PILE_TAG_SHARE | natl$pile_share_errors >= PILE_TAG_SHARE
+natl$pile_i <- PILE_GATE & pile_tag
+stamp("national pool: pile-tagged %d of %d (%.1f%%) | best tagged rank %s | gate %s",
+      sum(pile_tag), nrow(natl), 100 * mean(pile_tag), if (any(pile_tag)) min(which(pile_tag)) else "-",
+      if (PILE_GATE) "ON (dropped before the fill)" else "OFF")
+pool <- natl[!natl$artifact_i & !natl$pile_i, , drop = FALSE]
 pool$pool <- "national"
 
 # the section-29 adapter needs the frame export beside the lists
@@ -181,6 +204,8 @@ for (state in unique(sel_cells$state)) {
       mm_share_flags = pool$mm_share_flags[sel],
       mm_share_errors = pool$mm_share_errors[sel],
       mm_inflation = pool$mm_inflation[sel],
+      pile_share_flags = pool$pile_share_flags[sel],
+      pile_share_errors = pool$pile_share_errors[sel],
       n_flagged_state = nfl[sel])
     un2 <- rep(FALSE, nrow(trs)); nn <- integer(length(sel))
     for (j in seq_along(sel)) {

@@ -46,6 +46,18 @@
 # drift on 26% of clean cases). HOLD_STATE_POOLS is empty; Illinois
 # blends like every other state.
 #
+# PILE GATE (2026-10-07, issue #29): the munging reconstruction puts many
+# downward income corrections on one identical amount per fiscal year and
+# household size (income_pile_rows() in rule_mining_helpers.R; 1,394 of the
+# 115,559 FY2022-24 rows). A state's own case file has no such piles, so a
+# rule with >= 0.25 of its training flags OR errors on pile rows is tagged
+# (pile_i) and dropped from each pool BEFORE the fill, like the artifact
+# tag; pile_share_flags / pile_share_errors ride on every list as audit
+# columns. No halt: piles are a defect in the frame's measurements, not
+# displacement, and the national pool carries many such rules (diagnostic:
+# methods/reconstruction_income_piles/). V250_PILE_GATE=0 tags but does not
+# drop (the pre-gate lists, for comparison).
+#
 # SMOKE=1: 3 states + national, tiny ensembles, own output dir.
 # Expects `reg_model_data`. Outputs -> methods/v250_candidate_lists/.
 
@@ -134,6 +146,14 @@ MM_POOL_MAX   <- 0.02   # displacement: max tagged share of any admitted pool
 MM_TOP40_MAX  <- 1L     # displacement: max tagged in national top 40 by LCB
 MM_TOP10_MAX  <- 0L     # displacement: none in the national top 10
 HOLD_STATE_POOLS <- character(0)  # Illinois hold LIFTED 2026-08-13 (the IL standard-deduction offset fix landed and is verified by the recon diagnostics)
+# reconstruction income piles (see header, PILE GATE)
+PILE_TAG_SHARE <- 0.25
+PILE_GATE <- !identical(Sys.getenv("V250_PILE_GATE"), "0")
+pile_all <- income_pile_rows(adf0)
+stamp("income-pile rows on this frame: %d (%.2f%% of rows, %.2f%% of errors) | gate %s",
+      sum(pile_all), 100 * mean(pile_all), 100 * sum(pile_all & ie_all) / sum(ie_all),
+      if (PILE_GATE) "ON (tagged rules dropped before the fill)" else "OFF (tagged, kept)")
+stopifnot(sum(pile_all) == 1394L)   # the v2.7 frame (diagnostic count, 2026-10-07)
 
 STATES <- sort(unique(st))
 if (SMOKE) STATES <- c("Washington", "Maine", "Mississippi", "Illinois")
@@ -199,6 +219,27 @@ tag_and_gate <- function(adm, unit, head_gate = FALSE) {
   adm
 }
 
+# income-pile tagging (PILE GATE): flags and errors of each rule on pile rows,
+# scored on the rule's own training rows through the chunked reducer; the
+# recomputed flag count must equal the pool's n (the pool reproduces here)
+pile_tag <- function(adm, data, strata, pile, ie, unit) {
+  if (!nrow(adm)) { adm$pile_share_flags <- numeric(0); adm$pile_share_errors <- numeric(0)
+                    adm$pile_i <- logical(0); return(adm) }
+  sc <- reduce_flags_for_rules(adm, data, strata, function(ix)
+    c(length(ix), sum(pile[ix]), sum(pile[ix] & ie[ix])))
+  stopifnot(all(sc[, 1] == adm$n))
+  adm$pile_share_flags  <- round(sc[, 2] / adm$n, 4)
+  adm$pile_share_errors <- round(ifelse(adm$k > 0, sc[, 3] / adm$k, 0), 4)
+  adm$pile_i <- PILE_GATE & (adm$pile_share_flags >= PILE_TAG_SHARE |
+                             adm$pile_share_errors >= PILE_TAG_SHARE)
+  tag <- adm$pile_share_flags >= PILE_TAG_SHARE | adm$pile_share_errors >= PILE_TAG_SHARE
+  stamp("  [%s] pile check: tagged %d of %d (%.1f%%; flag-share %d, error-share only %d) | best tagged rank %s%s",
+        unit, sum(tag), nrow(adm), 100 * mean(tag), sum(adm$pile_share_flags >= PILE_TAG_SHARE),
+        sum(tag & adm$pile_share_flags < PILE_TAG_SHARE),
+        if (any(tag)) min(which(tag)) else "-", if (PILE_GATE) " [dropped before the fill]" else " [gate off]")
+  adm
+}
+
 blend_head_gate <- function(pool_shadow, unit) {
   # the deployment-faithful head check: tagged rules in the top of the
   # BLENDED ordering (computed on the shadow, pre-drop blend)
@@ -219,6 +260,7 @@ blend_head_gate <- function(pool_shadow, unit) {
 }
 
 ## ---- national pool (19-var, any-error x strata, FY2022-24) ------------------
+strata_nat <- lapply(setNames(nm = HH_LEVELS), function(h) which(hh_all %in% h))
 nat_fn <- file.path(CACHE_DIR, sprintf("national_pool_%d.rds", SEED))
 if (RESUME_FROM_CHECKPOINT && file.exists(nat_fn)) {
   natl <- readRDS(nat_fn)
@@ -227,7 +269,6 @@ if (RESUME_FROM_CHECKPOINT && file.exists(nat_fn)) {
   stamp("national pool resumed: %d rules", nrow(natl))
 } else {
   stamp("mining the national pool (19 features, %d rows) ...", nrow(adf))
-  strata_nat <- lapply(setNames(nm = HH_LEVELS), function(h) which(hh_all %in% h))
   for (h in HH_LEVELS)
     stamp("  [national | stratum %s] %d rows, %d events",
           h, length(strata_nat[[h]]), sum(ie_all[strata_nat[[h]]]))
@@ -250,6 +291,7 @@ if (RESUME_FROM_CHECKPOINT && file.exists(nat_fn)) {
   stamp("national pool admitted: %d rules", nrow(natl))
 }
 natl <- tag_and_gate(natl, "national", head_gate = TRUE)
+natl <- pile_tag(natl, adf, strata_nat, pile_all, ie_all, "national")
 natl$pool <- "national"
 
 ## ---- per-state pools + blended staged lists ---------------------------------
@@ -296,6 +338,7 @@ for (state in STATES) {
     saveRDS(own, own_fn)
   }
   own <- tag_and_gate(own, state)
+  own <- pile_tag(own, trs, strata_s, pile_all[s_rows], ie_s, state)
   il_hold <- state %in% HOLD_STATE_POOLS
   if (il_hold && nrow(own))
     stamp("  [%s] STATE POOL HELD (decided 2026-08-12): %d rules mined+cached but not blended; lists are national-only",
@@ -309,7 +352,7 @@ for (state in STATES) {
   # the count recorded per state in build_summary.
   cols <- c("hh", "rule", "engines", "mined_frames", "n", "k", "doll", "lcb",
             "mm_share_flags", "mm_share_errors", "mm_inflation", "artifact_i",
-            "pool")
+            "pile_share_flags", "pile_share_errors", "pile_i", "pool")
   blend_of <- function(a, b) bind_rows(a, b) %>%
     arrange(desc(lcb), desc(n), hh, rule) %>%
     distinct(hh, rule, .keep_all = TRUE)
@@ -318,11 +361,12 @@ for (state in STATES) {
   pool_shadow <- blend_of(natl[, cols], own_in)
   blend_head_gate(pool_shadow, state)
   n_art_blend <- sum(pool_shadow$artifact_i)
-  # visible blend: tagged rules dropped from EACH pool BEFORE dedup, so a
-  # tagged higher-LCB copy cannot dedup away an untagged twin (review
-  # advisory, 2026-08-12)
-  pool <- blend_of(natl[!natl$artifact_i, cols],
-                   if (!is.null(own_in)) own_in[!own_in$artifact_i, , drop = FALSE] else NULL)
+  n_pile_blend <- sum(pool_shadow$pile_i & !pool_shadow$artifact_i)
+  # visible blend: tagged rules (artifact or pile) dropped from EACH pool
+  # BEFORE dedup, so a tagged higher-LCB copy cannot dedup away an untagged
+  # twin (review advisory, 2026-08-12)
+  pool <- blend_of(natl[!natl$artifact_i & !natl$pile_i, cols],
+                   if (!is.null(own_in)) own_in[!own_in$artifact_i & !own_in$pile_i, , drop = FALSE] else NULL)
 
   idx_tr <- flags_for_rules(pool, trs, strata_s, label = "")
   nfl <- lengths(idx_tr)
@@ -381,6 +425,8 @@ for (state in STATES) {
       mm_share_flags = pool$mm_share_flags[sel],
       mm_share_errors = pool$mm_share_errors[sel],
       mm_inflation = pool$mm_inflation[sel],
+      pile_share_flags = pool$pile_share_flags[sel],
+      pile_share_errors = pool$pile_share_errors[sel],
       n_flagged_state = nfl[sel])
     un2 <- rep(FALSE, nrow(trs)); nn <- integer(length(sel))
     for (j in seq_along(sel)) {
@@ -398,7 +444,9 @@ for (state in STATES) {
       n_state_rules_core = sum(pool$pool[frozen] == "state"),
       n_state_rules_buffer = sum(pool$pool[buffer] == "state"),
       n_artifact_dropped_blend = n_art_blend,
+      n_pile_dropped_blend = n_pile_blend,
       n_state_pool_tagged = sum(own$artifact_i),
+      n_state_pool_pile_tagged = sum(own$pile_i),
       state_pool_held = il_hold,
       fill_cases = n_in, fill_gap_core = gap_core,
       fill_gap_total = gap_total, cap_buf = cap_buf)
@@ -416,6 +464,10 @@ stamp("ARTIFACT SUMMARY: national tagged %d of %d | state pools with any tagged 
       sum(natl$artifact_i), nrow(natl),
       sum(tapply(bs$n_state_pool_tagged, bs$state, max) > 0), length(STATES),
       sum(bs$n_artifact_dropped_blend[bs$budget == 0.05]))
+stamp("PILE SUMMARY: national pile-tagged %d of %d | state pools with any pile-tagged rule: %d of %d | gate %s",
+      sum(natl$pile_share_flags >= PILE_TAG_SHARE | natl$pile_share_errors >= PILE_TAG_SHARE),
+      nrow(natl), sum(tapply(bs$n_state_pool_pile_tagged, bs$state, max) > 0), length(STATES),
+      if (PILE_GATE) "ON" else "OFF")
 
 ## ---- frame export for the characterization step (full precision) ------------
 suppressMessages(library(readr))

@@ -115,10 +115,13 @@ cat(sprintf("your pool: %d candidate rules mined, %d admitted\n", nrow(rdf), nro
 natl <- readRDS(NATIONAL_POOL)
 tagged <- natl$mm_n / natl$n >= 0.25 |
           ifelse(natl$k > 0, natl$mm_k / natl$k, 0) >= 0.25
-natl <- natl[!tagged, , drop = FALSE]
+# rules resting on the public frame's reconstruction income piles (issue #29;
+# pile_i is published on the pool artifact since v2.7.0) are dropped too
+pile_tagged <- if ("pile_i" %in% names(natl)) natl$pile_i & !tagged else rep(FALSE, nrow(natl))
+natl <- natl[!tagged & !pile_tagged, , drop = FALSE]
 natl$pool <- "national"
-cat(sprintf("national pool: %d rules (%d artifact-tagged dropped)\n",
-            nrow(natl), sum(tagged)))
+cat(sprintf("national pool: %d rules (%d artifact-tagged and %d pile-tagged dropped)\n",
+            nrow(natl), sum(tagged), sum(pile_tagged)))
 
 ## ---- blend on the one LCB scale, then score everything on YOUR data --------
 cols  <- c("hh", "rule", "n", "k", "doll", "lcb", "pool")
