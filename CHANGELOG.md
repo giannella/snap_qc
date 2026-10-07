@@ -31,8 +31,13 @@ workbooks are on the v2.7.0 release page.
   rules on the same variable.
 - **The SUA tier counts utility costs within $10 of the state standard as
   at the standard.**
-- **All delivery lists re-mined** on the updated data: 98 blended lists, 83
+- **All delivery lists re-mined** on the updated data: 98 blended lists, 98
   national-only lists, and the rule sheet.
+- **Every state gets a national-only list at both budgets**, beside its
+  blended list (v2.6.0 shipped national-only lists only where a
+  one-year-ahead test favored them). The blended list stays the default and
+  the workbooks use it; check both against your own newer cases (see
+  `state_delivery_lists/README.md`).
 
 ### Added
 - Workbooks for every state except DC and Georgia, as `.xlsb` files, with
