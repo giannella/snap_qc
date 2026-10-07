@@ -1031,10 +1031,18 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                               [h for _, h, _, _ in CHAR_COLS] + ['Exact expression'], 1):
         set_cell(ws,3,col,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
 
-    merge(ws,4,1,4,LASTC,
+    # section headers merge A:C only, inside the frozen columns, with D onward
+    # filled blue so the band still reads across: a merge spanning the whole
+    # sheet made the down arrow from A1 jump the view sideways (feedback
+    # 2026-10-07)
+    merge(ws,4,1,4,3,
           value='All rules combined (a case is flagged if ANY rule with Include? = TRUE flags it, '
                 'at the original thresholds)',
-          fill=BLUE_LIGHT, font=bold_font(10), align=left)
+          fill=BLUE_LIGHT, font=bold_font(10),
+          align=Alignment(horizontal='left', vertical='center', wrap_text=True))
+    ws.row_dimensions[4].height = 28
+    for c in range(4, LASTC + 1):
+        set_cell(ws,4,c,None, fill=BLUE_LIGHT)
     # the overall-results rows: orange (accent 6, lighter 60%), matching the
     # orange step tabs
     ORANGE60 = PatternFill('solid', fgColor='F8CBAD')
@@ -1067,8 +1075,10 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
                      number_format=fmt, fill=ORANGE60)
         set_cell(ws,r,12,None, align=center, border=thin(), fill=ORANGE60)
 
-    merge(ws,9,1,9,LASTC, value='Individual rules — original thresholds, no tuning',
+    merge(ws,9,1,9,3, value='Individual rules — original thresholds, no tuning',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
+    for c in range(4, LASTC + 1):
+        set_cell(ws,9,c,None, fill=BLUE_LIGHT)
     plain_align = Alignment(horizontal='left', vertical='top', wrap_text=True)
     for j, rule in enumerate(rules_list):   # already sorted by error $ caught
         r = NAT_ROW0 + j

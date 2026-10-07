@@ -145,7 +145,10 @@ def main():
         # error dollars (grand totals; must match build_workbook_v2.score_list)
         put('rec',  f'IFERROR(${E}{row}/{denom("all","errors")},0)')
         put('drec', f'IFERROR(${D}{row}/{denom("all","dollars")},0)')
-        put('work', f'IFERROR(${F}{row}/{denom(hh,"cases")},0)')
+        # the denominator reads the row's own household-size cell (column B)
+        # rather than a typed label, so the column's formulas are consistent
+        # and Excel stops flagging them (feedback 2026-10-07)
+        put('work', f'IFERROR(${F}{row}/COUNTIF({TABLE}[hh_group],B{row}),0)')
         put('exp',  f'IFERROR(IF(${F}{row}=0,"",${D}{row}/${F}{row}),"")')
 
     for i, (conds, hh) in enumerate(nt_rules):
