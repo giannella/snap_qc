@@ -160,6 +160,7 @@ validated against, and is also not an input.
 | `max_allotments.csv` | maximum monthly allotment by year and household size 1-20 |
 | `standard_deductions.csv` | standard deduction by year and household size 1-20 |
 | `standard_medical_deductions.csv` | standard medical deduction by state, 2017-2024 |
+| `state_sua.csv` | heating/cooling standard utility allowance by state and year; the lowest value where it varies by size, region or month |
 | `year_data.csv` | per-year parameters: error threshold, minimum allotment, maximum shelter deduction, Medicare Part B premium |
 | `state_data.csv` | state name to FIPS code |
 | `qc_elements.csv` | QC element code to description |
