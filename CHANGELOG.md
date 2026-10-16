@@ -10,6 +10,11 @@ moved or behaves differently.
 
 ## [Unreleased]
 
+### Added
+- `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
+  asset limits by state and fiscal year, FY1996-FY2027 (ERS SNAP Policy
+  Database, QC Technical Documentation, SNAP Screener).
+
 ### Fixed
 - **Lookup tables corrected against the FY2016-FY2024 QC Technical
   Documentation** (frame and delivery lists not yet rebuilt):
