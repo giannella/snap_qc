@@ -208,6 +208,7 @@ mydata$fssltded_recalculated <- ifelse(
   pmax(mydata$fssltded_uncapped, 0),
   pmin(pmax(mydata$fssltded_uncapped, 0), mydata$max_shelter_deduction)
 )
+mydata$fssltded_recalculated <- ifelse(mydata$HOMELESS_DED > 0, 0, mydata$fssltded_recalculated)
 mydata$fsnet_allow_negative = mydata$fsnet_before_shelter - (
   mydata$fssltded_recalculated +
     mydata$HOMELESS_DED
@@ -219,7 +220,7 @@ mydata$fsben_recreated <- pmax(mydata$fsben_uncapped, mydata$fsminimum_ben)
 mydata$fsben_recreated <- pmin(mydata$fsben_recreated, mydata$BENMAX)
 mydata$unc_fsben_rel_max <- mydata$fsben_uncapped / mydata$BENMAX
 
-# CHECK - should be >99.9%
+# CHECK - should be 100%
 mean(mydata$fsben_recreated == mydata$FSBEN) * 100 
 
 # Step 5. Create uncorrected aka "raw" variables for all helpful variables
@@ -270,6 +271,7 @@ calculate_raw_benefits <- function(mydata, skip_benefits = FALSE) {
     pmax(mydata$rawsltded_uncapped, 0),
     pmin(pmax(mydata$rawsltded_uncapped, 0), mydata$max_shelter_deduction)
   )
+  mydata$rawsltded <- ifelse(mydata$rawhomeless_ded > 0, 0, mydata$rawsltded)
   
   if (skip_benefits == FALSE){
     mydata$rawnet_allow_negative = mydata$rawnet_before_shelter - (

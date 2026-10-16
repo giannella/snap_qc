@@ -10,6 +10,13 @@ moved or behaves differently.
 
 ## [Unreleased]
 
+### Fixed
+- **Benefit reconstruction:** a unit with the homeless shelter deduction
+  gets no excess shelter deduction (FS and raw side, and the workbook);
+  reported child support counts only where the file allowed it as a
+  deduction or exclusion. These were the 44 rows where the recreated
+  benefit missed `FSBEN`.
+
 ### Added
 - `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
   asset limits by state and fiscal year, FY1996-FY2027 (ERS SNAP Policy
