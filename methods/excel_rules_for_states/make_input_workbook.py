@@ -673,14 +673,16 @@ FEAT_DESC = {
                                     'HOUSEHOLD_SIZE, with every amount in FY2026 dollars and '
                                     'the FY2026 standard deduction, shelter cap and homeless '
                                     'standard (see FederalTables K4)'),
-    'utilities':   ('UTILITY_COSTS inflated to FY2026 dollars; an amount at or above '
-                    'the review year\'s heating/cooling standard is set to the FY2026 '
-                    'standard (see FederalTables K4)'),
+    'utilities':   ('UTILITY_COSTS inflated to FY2026 dollars; an amount at SUA tier 2 '
+                    '(within $10 of the review year\'s heating/cooling standard, or '
+                    'above it) is set to the FY2026 standard (see FederalTables K4)'),
     'utilities_sua': 'standard utility allowance tier: UTILITY_COSTS compared to the '
                      'state\'s heating/cooling standard utility allowance for the '
                      'review year (the hidden FederalTables sheet carries the '
-                     'per-year standard): 0 = no utility amount; 1 = positive but '
-                     'below the standard; 2 = at or above the standard. Rules use '
+                     'per-year standard): 0 = no utility amount; 1 = positive and '
+                     'more than $10 below the standard; 2 = within $10 of the '
+                     'standard or above it (the $10 covers standards that change '
+                     'during a fiscal year). Rules use '
                      'this tier instead of utility dollars so they keep meaning the '
                      'same thing when SUA levels reset each October. A year with no '
                      'published standard leaves the tier blank (rules that use it '
@@ -1324,6 +1326,9 @@ def share_tab(wb, state_name):
 # The validation gate compares every feature with the frame's canonical
 # column, so a drift from the munging script fails the build.
 MODELING_YEAR = 2026
+# SUA tier 2 = utility costs within this many dollars of the review year's
+# heating/cooling standard, or above it (features.R add_sua_tier tolerance)
+SUA_TOLERANCE = 10
 BEN_INPUTS = ['REVIEW_FISCAL_YEAR', 'HOUSEHOLD_SIZE', 'EARNED_INCOME',
               'UNEARNED_INCOME', 'MEDICAL_DEDUCTION', 'DEPENDENT_CARE_DEDUCTION',
               'CHILD_SUPPORT_EXPENSES', 'HOMELESS_DEDUCTION', 'RENT',
@@ -1405,11 +1410,12 @@ def feature_formulas(R, table=TABLE):
                        f'INDEX({R["MINAL"]},MATCH({T("_c_fy")},{R["YEARS"]},1)),0)),'
                        f'{T("_c_benmax")})'),
         # SUA tier on the pasted amount against the review year's standard
-        # (add_sua_tier runs before the CPI step); blank when the year has no
-        # published standard, mirroring the NA tier in features.R
+        # (add_sua_tier runs before the CPI step): 2 within SUA_TOLERANCE of
+        # the standard or above it; blank when the year has no published
+        # standard, mirroring the NA tier in features.R
         ('_c_tier',    f'=IF({T("UTILITY_COSTS")}<=0,0,IF('
                        f'INDEX({R["SUAMAX"]},MATCH({T("_c_fy")},{R["SUAYRS"]},0))'
-                       f'<=0,"",IF({T("UTILITY_COSTS")}'
+                       f'<=0,"",IF({T("UTILITY_COSTS")}+{SUA_TOLERANCE}'
                        f'<INDEX({R["SUAMAX"]},MATCH({T("_c_fy")},{R["SUAYRS"]},0)),1,2)))'),
         # -- CPI step (munging cpi_inflate block): amounts inflated to the
         # modeling year by fiscal year, then deductions with that year's
@@ -1484,8 +1490,9 @@ def feature_formulas(R, table=TABLE):
         'unc_rawben_rel_max': f'={T("_c_benunc")}/{T("_c_benmax")}',
         'utilities':   f'={T("_c_util_i")}',
         # SUA tier (features.R add_sua_tier; helper _c_tier above): 0 = no
-        # utility amount, 1 = positive but below the state's heating/cooling
-        # standard for the REVIEW year, 2 = at or above it. The anchor is the
+        # utility amount, 1 = more than SUA_TOLERANCE below the state's
+        # heating/cooling standard for the REVIEW year, 2 = within it or
+        # above. The anchor is the
         # static per-year max_sua block on FederalTables (state_sua.csv).
         'utilities_sua': f'={T("_c_tier")}',
         # the QC outcome, recomputed from the benefit pair exactly as the
@@ -1568,7 +1575,7 @@ def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None,
     anchor = np.array([sua_by_year.get(int(y), 0.0) for y in fy], dtype=float)
     tier = np.where(util <= 0, 0.0,
                     np.where(anchor <= 0, np.nan,
-                             np.where(util < anchor, 1.0, 2.0)))
+                             np.where(util + SUA_TOLERANCE < anchor, 1.0, 2.0)))
     # CPI step (munging cpi_inflate block), by fiscal year; a year past the
     # last cpi row uses the last row, like MATCH(..,1)
     cpif = lkm(yd, 'cpi') / lk(yd, 'cpi')

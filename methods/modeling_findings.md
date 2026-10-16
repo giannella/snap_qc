@@ -1784,3 +1784,40 @@ workbook delivery hygiene (rule_selection.py; a median 634 narrow rules
 drop from each blend and the buffer refill replaces them at unchanged
 capacity). Positive means are one-era observations, not improvement
 claims.
+
+## 41. The v2.7 CPI step helps three years ahead, the gap that matches deployment, and is neutral one year ahead; the three frame refinements are kept for realism and are not separable from seed noise
+
+> **Takeaway (about our pipeline).** Expressing every dollar amount in 2026
+> prices (the CPI step shipped in v2.7) improves the state lists when the
+> rules are applied three years after the data they were mined on, which is
+> the gap that matches how the lists are used: the newest public data are
+> FY2024, and states apply the rules to FY2027 cases. Against the same
+> munging code with the CPI step switched off, three years ahead, list
+> precision rises 7.0% (10% budget) and 7.3% (5% budget) and error dollars
+> caught rise 13.8% and 16.2%, at all three seeds; one year ahead the step
+> makes no difference (-0.1% and +1.1%). The three refinements made between
+> the 09-25 and final frames (fiscal-year keying with an SUA-tier fix,
+> October CPI values, the $10 SUA tolerance) are kept because they make the
+> frame's dollar values more realistic; measured, each moved errors caught
+> by less than a change of random seed moves them, in both windows. The
+> final frame's small one-year-ahead shortfall against the 09-25 frame (21
+> of 3,930 errors, at all three seeds) is not attributable to any one
+> refinement and reverses three years ahead (+26 of 3,660).
+
+How it was tested: each frame was mined at three random seeds with the
+shipped recipe, and the national rules were walked into 49 state lists at
+the 5% and 10% budgets. Two windows, both true future years: rules mined on
+FY2022-23 and scored on FY2024 (one year ahead), and rules mined on
+FY2017-19 and scored on FY2022 (three years ahead). The no-CPI comparison
+frame is the final frame's own code with its CPI switch off, so the two
+differ only in the CPI step.
+
+Three years ahead, the 10% lists catch 903-946 errors of 3,660 flagged with
+the CPI step against 864-870 without it, and $157,727-$168,419 of the
+sample's $639,790 in error dollars against $141,702-$147,235. Precision
+rises in 23-34 states with the step and falls in 13-17. Re-running
+one frame with a different seed moves errors caught at 10% by 5 to 57
+depending on the frame and window; each refinement's effect falls inside
+that range.
+
+-> detailed record: modeling_findings_detailed.md section 41.

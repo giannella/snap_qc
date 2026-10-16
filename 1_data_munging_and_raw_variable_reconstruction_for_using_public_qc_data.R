@@ -1,4 +1,27 @@
 # Constraints: see methods/known_constraints.md#munging
+#
+# Key variables generated or derived in this script:
+#
+# correctednotes: Audit label describing the correction applied to a case, such as: "earn_down", "unearn_up", "rent_error", or "no_change".
+# correctedamount: Signed dollar change made to the variable being corrected. Positive values mean the variable was increased; negative values mean it was decreased.
+# fsben_recreated: Benefit recreated from the original QC inputs before correction adjustments (Compared with FSBEN).
+# fsben_uncapped: Benefit calculated from the original QC inputs before minimum and maximum benefit limits are applied.
+# rawben_recreated: Benefit recalculated after missing values are filled and correction adjustments are applied. 
+# rawben_uncapped: Reconstructed benefit after correction adjustments but before minimum and maximum benefit limits are applied.
+# rawbenmax: Maximum benefit amount looked up for the working household size and fiscal year.
+# rawstdded: Standard deduction looked up for the working household size and fiscal year, with the applicable state adjustment.
+# rawusize: Working household size used during benefit reconstruction. It starts from FSUSIZE and may be adjusted for unit-composition errors.
+#
+# Key variables from the public QC data:
+#
+# AMTERR: QC-reported dollar amount of the identified benefit error.
+# FSBEN: Corrected benefit amount determined by the QC review/calculation: the amount the household should have received.
+# RAWBEN: Original benefit amount issued by the agency.
+# absbendiff: Public QC field representing the absolute difference between the original issued benefit and the corrected/reviewed benefit.
+# FSGRINC: Final gross countable household income reported in the QC data.
+# FSUSIZE: Reported household size in the QC data.
+# FSERNDED, FSDEPDED, FSMEDDED, FSCSDED, FSSTDDED: Reported earned-income, dependent-care, medical, child-support, and standard deductions.
+
 # 0. Libraries
 library(ranger)
 library(yardstick)

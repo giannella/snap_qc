@@ -115,6 +115,8 @@ the pooled-years design, so it tested the wrong thing.
 | Nature codes 56, 57, 33, 58 exist only from FY2024; cross-year nature comparisons must account for the recode | settled | FY2022-24 | §29 |
 | AGENCY 26 is not a fault code ("change not required to be reported or acted on"); 1.4% of error-case variances | settled | FY2024 tech doc + data | §29 |
 | Rule characterization: group shares are reliable (0.72-0.94) and state-stable for WHAT fields; the modal element is uninformative and fragile and is not reported; profile distinctiveness falls with rule support | settled | 543 rules, FY2022-24, split-half | §29, §6 |
+| The v2.7 CPI step (dollar amounts in 2026 prices, keyed on fiscal year, October CPI; benefit ratios and SUA tier in review-year terms) helps three years ahead, the gap that matches deployment (lists mined on FY2022-24, applied to FY2027 cases), and costs nothing one year ahead. Against the same code with the step switched off: one year ahead, list precision -0.1% at the 10% budget and +1.1% at 5%; three years ahead, +7.0% and +7.3%, error dollars caught +13.8% and +16.2%, all three seeds | settled (shipped in v2.7) | two windows (FY2022-23 to FY2024; FY2017-19 to FY2022), 3 seeds each, 49 states, national-pool lists; not pre-registered | §41 |
+| The three refinements between the 2026-09-25 and final v2.7 frames (fiscal-year CPI keying with an SUA-tier fix; October CPI values; the $10 SUA tolerance) each move errors caught at the 10% budget by less than a seed change does (means -2 / -7 / -12 one year ahead, +10 / -6 / +9 three years ahead, against within-frame seed ranges of 5-57), with no consistent sign across windows. The final frame's one-year-ahead shortfall against the 09-25 frame (-21 of 3,930 errors, all three seeds) is not attributable to any one of them and reverses three years ahead (+26 of 3,660) | settled, no measurable effect; kept as data-realism choices (decision 2026-10-06) | same two windows; steps 1-2 at two seeds three years ahead; step 1 bundles two changes | §41 |
 
 ## Exclusion pipeline
 
@@ -176,3 +178,12 @@ the pooled-years design, so it tested the wrong thing.
   findings docs marked EXPLORATORY and get no ledger row and no GUIDANCE
   point. If an exploratory result matters to a pending decision, it is
   referenced from an Open-work row, not promoted to a claim.
+- The deployment gap sets the primary evaluation window (2026-10-06, from
+  §41). The lists are mined on the newest public data (FY2022-24) and applied
+  to FY2027 cases, three or more years later. For changes to the frame,
+  feature construction, or anything that affects how rule cutoffs carry
+  across years, the three-years-ahead window (mine FY2017-19, score FY2022)
+  is the primary reading and the one-year-ahead window (mine FY2022-23,
+  score FY2024) is secondary. Changes that make the data more realistic are
+  judged on correctness; a measurement only needs to show they cost nothing,
+  and a one-year-ahead dip alone does not re-open them.

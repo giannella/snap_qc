@@ -178,6 +178,19 @@ below all mean this statistic.
   and timing vary more by state, so read those as national tendencies
   (§29). *(settled, 543-rule reliability study)*
 
+- **Rules work in 2026 dollars, and that matters most when you use them
+  years after the data they came from.** Since v2.7 every dollar amount in
+  the modelling frame is converted to 2026 prices by the case's fiscal year,
+  and the state workbooks repeat that step on the amounts you paste. The
+  lists are mined on FY2022-24, the newest public data, and will be applied
+  to FY2027 cases, three or more years later. Applied three years after
+  their training data, lists built with the conversion flagged with 7%
+  higher precision and caught 14-16% more error dollars than lists built
+  without it, at all three random seeds tested; one year after, the two
+  performed the same (precision -0.1% at the 10% budget) (§41). Paste each case's amounts in its own review year's dollars and let
+  the workbook convert them. *(settled, two windows, three seeds each,
+  national-pool lists)*
+
 ## Know your data
 
 - **Check your state's visibility before relying on public-data rules.** The

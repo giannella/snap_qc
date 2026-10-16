@@ -1,0 +1,99 @@
+state,budget,ge_w1719,ge_w2224
+Alabama,0.05,True,True
+Alabama,0.1,True,True
+Arizona,0.05,True,False
+Arizona,0.1,True,True
+Arkansas,0.05,False,True
+Arkansas,0.1,False,True
+California,0.05,True,False
+California,0.1,True,False
+Colorado,0.05,True,True
+Colorado,0.1,True,True
+Connecticut,0.05,True,True
+Connecticut,0.1,True,False
+Delaware,0.05,True,True
+Delaware,0.1,True,True
+District of Columbia,0.05,True,False
+District of Columbia,0.1,False,False
+Florida,0.05,True,True
+Florida,0.1,True,False
+Georgia,0.05,True,True
+Georgia,0.1,True,True
+Idaho,0.05,True,True
+Idaho,0.1,True,True
+Illinois,0.05,False,True
+Illinois,0.1,True,True
+Indiana,0.05,False,True
+Indiana,0.1,True,False
+Iowa,0.05,True,True
+Iowa,0.1,True,True
+Kansas,0.05,True,True
+Kansas,0.1,True,True
+Kentucky,0.05,False,True
+Kentucky,0.1,False,True
+Louisiana,0.05,True,True
+Louisiana,0.1,True,True
+Maine,0.05,False,True
+Maine,0.1,False,False
+Maryland,0.05,True,False
+Maryland,0.1,False,False
+Massachusetts,0.05,True,True
+Massachusetts,0.1,False,True
+Michigan,0.05,True,False
+Michigan,0.1,True,False
+Minnesota,0.05,False,True
+Minnesota,0.1,True,True
+Mississippi,0.05,True,False
+Mississippi,0.1,True,False
+Missouri,0.05,True,True
+Missouri,0.1,True,True
+Montana,0.05,True,True
+Montana,0.1,False,True
+Nebraska,0.05,True,True
+Nebraska,0.1,True,True
+Nevada,0.05,True,True
+Nevada,0.1,True,True
+New Hampshire,0.05,True,True
+New Hampshire,0.1,True,True
+New Jersey,0.05,False,True
+New Jersey,0.1,False,True
+New Mexico,0.05,True,False
+New Mexico,0.1,True,True
+New York,0.05,True,True
+New York,0.1,True,True
+North Carolina,0.05,True,True
+North Carolina,0.1,True,True
+North Dakota,0.05,True,True
+North Dakota,0.1,True,True
+Ohio,0.05,True,True
+Ohio,0.1,True,True
+Oklahoma,0.05,True,True
+Oklahoma,0.1,False,False
+Oregon,0.05,True,True
+Oregon,0.1,True,True
+Pennsylvania,0.05,True,True
+Pennsylvania,0.1,True,True
+Rhode Island,0.05,True,True
+Rhode Island,0.1,True,True
+South Carolina,0.05,True,True
+South Carolina,0.1,True,False
+South Dakota,0.05,True,True
+South Dakota,0.1,True,True
+Tennessee,0.05,True,True
+Tennessee,0.1,False,True
+Texas,0.05,True,True
+Texas,0.1,True,False
+Utah,0.05,False,True
+Utah,0.1,True,True
+Vermont,0.05,True,True
+Vermont,0.1,True,True
+Virginia,0.05,True,True
+Virginia,0.1,True,True
+Washington,0.05,True,True
+Washington,0.1,True,True
+West Virginia,0.05,True,True
+West Virginia,0.1,True,True
+Wisconsin,0.05,True,True
+Wisconsin,0.1,False,True
+Wyoming,0.05,True,True
+Wyoming,0.1,True,True
