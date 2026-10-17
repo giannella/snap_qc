@@ -18,7 +18,8 @@ refinements perform one and three years ahead is section 41 of
 
 The national pool artifact in this folder,
 `national_rule_pool_2022_2024_v270.rds`, is the admitted candidate pool
-behind these lists (rules test `utilities_sua`), and is what
+behind these lists (rules test `utilities_sua`; it carries the artifact
+and income-pile tags, `artifact_i` and `pile_i`), and is what
 `INCL_mine_internal_and_blend_with_national_v2.R` blends against. The
 v2.5.0 pool (raw `utilities` dollars) is kept at
 `archive/national_rule_pool_2022_2024_v250.rds`.
@@ -45,6 +46,16 @@ v2.5.0 pool (raw `utilities` dollars) is kept at
   `mm_share_errors`, `mm_inflation`) so the residue is visible. Re-walking
   every list with the remaining tagged rules also removed changes the
   median state's benchmark precision by 0.000 (findings section 38).
+- Rules that rest on income amounts the public-data reconstruction
+  assigns to many cases at once are dropped before the fill (added
+  2026-10-07, issue #29). The reconstruction places every downward
+  earned or unearned income correction on a case issued the maximum
+  benefit at one shared amount within a fiscal year and household size,
+  so these "income piles" exist in the public frame but not in a state's
+  own case file. A rule with at least 25% of its training flags or caught
+  errors on pile cases is removed, and every remaining rule carries the
+  audit columns `pile_share_flags` and `pile_share_errors`. The
+  diagnostic is in `methods/reconstruction_income_piles/`.
 - The ranked pool is filled against the state's own 2022-24 caseload until
   the review budget (5% or 10% of caseload) is reached (those rules are
   `role = "core"`) and then to 3x that depth as substitutes
@@ -151,6 +162,8 @@ full 49-state frame. Each column below names its scope.
 | `share_overissuance` | national | of the rule's directional error cases, the share overissued |
 | `timing_at_certification` | national | share of variances that arose at the agency's action |
 | `cause_agency` | national | share coded agency-caused (client-caused is roughly the complement, less ~3pp of third-party / no-fault / other) |
+| `pile_share_flags` | pool's own training rows | share of the rule's flags on reconstruction income-pile cases (downward income corrections that the reconstruction placed on one shared amount per fiscal year and household size; issue #29). Audit column; rules at or above 0.25 on either pile share were dropped before the fill |
+| `pile_share_errors` | pool's own training rows | share of the rule's caught errors on pile cases |
 
 The characterization scopes are deliberate (findings section 29):
 descriptive shares need support to be readable, and state-level counts

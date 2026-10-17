@@ -53,6 +53,12 @@ workbooks are on the v2.7.0 release page.
   at the standard.**
 - **All delivery lists re-mined** on the updated data: 98 blended lists, 98
   national-only lists, and the rule sheet.
+- **Rules that rest on a reconstruction artifact are excluded** (issue
+  #29). In the public files, many downward income corrections on cases
+  issued the maximum benefit end up at one shared amount; rules with 25%
+  or more of their training flags or errors on those cases are dropped
+  before the lists are filled. Every list carries two new columns at the
+  end, `pile_share_flags` and `pile_share_errors`.
 - **Every state gets a national-only list at both budgets**, beside its
   blended list (v2.6.0 shipped national-only lists only where a
   one-year-ahead test favored them). The blended list stays the default and
