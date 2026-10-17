@@ -1401,8 +1401,9 @@ def feature_formulas(R, table=TABLE):
                        f'INDEX({R["MAXSH"]},MATCH({T("_c_fy")},{R["YEARS"]},1)))'),
         # NB: the munging script does NOT floor the shelter deduction; only the
         # net incomes and the benefit are floored (calculate_raw_benefits)
-        ('_c_sltded',  f'=MIN(MAX({T("RENT")}+{T("UTILITY_COSTS")}'
-                       f'-MAX({T("_c_netbs")}*0.5,0),0),{T("_c_maxsh")})'),
+        # no excess shelter deduction with the homeless shelter deduction
+        ('_c_sltded',  f'=IF({T("HOMELESS_DEDUCTION")}>0,0,MIN(MAX({T("RENT")}+{T("UTILITY_COSTS")}'
+                       f'-MAX({T("_c_netbs")}*0.5,0),0),{T("_c_maxsh")}))'),
         ('_c_netan',   f'=_xlfn.FLOOR.MATH({T("_c_netbs")}-({T("_c_sltded")}'
                        f'+{T("HOMELESS_DEDUCTION")}))'),
         ('_c_benunc',  f'=_xlfn.FLOOR.MATH({T("_c_benmax")}-0.3*{T("_c_netan")})'),
@@ -1450,8 +1451,8 @@ def feature_formulas(R, table=TABLE):
                        f'+{T("_c_med_i")}+{T("_c_cs_i")}+{T("_c_stdded_i")})'),
         ('_c_maxsh_i', f'=IF({T("_c_eld")}=1,1000000000,'
                        f'INDEX({R["MAXSH"]},MATCH({R["MODYR"]},{R["YEARS"]},1)))'),
-        ('_c_sltded_i', f'=MIN(MAX({T("_c_rent_i")}+{T("_c_util_i")}'
-                        f'-MAX({T("_c_netbs_i")}*0.5,0),0),{T("_c_maxsh_i")})'),
+        ('_c_sltded_i', f'=IF({T("HOMELESS_DEDUCTION")}>0,0,MIN(MAX({T("_c_rent_i")}+{T("_c_util_i")}'
+                        f'-MAX({T("_c_netbs_i")}*0.5,0),0),{T("_c_maxsh_i")}))'),
     ]
     # a row with blank inputs must never surface an ERROR cell: the year
     # lookups return #N/A on a blank fiscal year and cascade down the chain
@@ -1564,6 +1565,7 @@ def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None,
     maxsh = np.where(eld == 1, 1e9, lk(yd, 'max_shelter_deduction'))
     sltded = np.minimum(np.maximum(g('RENT') + g('UTILITY_COSTS')
                                    - np.maximum(netbs * 0.5, 0), 0), maxsh)
+    sltded = np.where(g('HOMELESS_DEDUCTION') > 0, 0, sltded)
     netan = _excel_floor(netbs - (sltded + g('HOMELESS_DEDUCTION')))
     benunc = _excel_floor(benmax - 0.3 * netan)
     minal = lk(yd, 'min_allotment')
@@ -1600,6 +1602,7 @@ def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None,
     maxsh_i = np.where(eld == 1, 1e9, lkm(yd, 'max_shelter_deduction'))
     sltded_i = np.minimum(np.maximum(rent_i + util_i
                                      - np.maximum(netbs_i * 0.5, 0), 0), maxsh_i)
+    sltded_i = np.where(g('HOMELESS_DEDUCTION') > 0, 0, sltded_i)
     fyshare = pd.Series(g('CATEGORICALLY_ELIGIBLE')).groupby(fy).transform('mean')
     out = {
         'fiscal_year': fy, 'hh_size_raw': g('HOUSEHOLD_SIZE'),

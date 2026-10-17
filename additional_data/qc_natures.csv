@@ -12,6 +12,7 @@
 29,exceeds prescribed limit
 30,resource should have been included
 32,failed to consider or incorrectly considered income of ineligible member
+33,failed to consider the income of an eligible member
 35,unreported source of income
 36,rounding used/not used or incorrectly applied
 37,all income from source known but not included
@@ -27,6 +28,9 @@
 52,deduction that should have been included was not
 53,deduction included that should not have been
 54,incorrect standard used (not as a result of change in unit size or move)
+56,incorrect deduction amount included-budgeted too much
+57,incorrect deduction amount included-budgeted too little
+58,income should have been excluded (no other coding option applies)
 64,incorrect amount used resulting from change in residence
 65,incorrect standard used resulting from change in unit size
 75,benefit/allotment/eligibility incorrectly computed
@@ -53,3 +57,8 @@
 307,unit improperly participating under status reporting
 308,unit improperly participating under 5 hour reporting
 309,unit improperly participating in transitional benefits
+310,unit did not return report
+311,unit was never provided mandatory report form (no other nature code applies)
+312,unit returned incomplete report
+313,"unit returned report, report is missing"
+314,unit receiving benefits without proper recertification

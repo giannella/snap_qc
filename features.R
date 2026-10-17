@@ -172,7 +172,7 @@ standardize_data <- function(data, using_qc_data = TRUE) {
   if (using_qc_data) {
     data |>
       dplyr::mutate(
-        FSCSDED = FSCSEXP,
+        FSCSDED = ifelse(FSCSDED + dplyr::coalesce(EXCL_FSCSDED, 0) > 0, FSCSEXP, 0),
         FSGRINC = FSEARN + FSUNEARN
       )
   }

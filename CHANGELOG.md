@@ -10,6 +10,26 @@ moved or behaves differently.
 
 ## [Unreleased]
 
+### Fixed
+- **Benefit reconstruction:** a unit with the homeless shelter deduction
+  gets no excess shelter deduction (FS and raw side, and the workbook);
+  reported child support counts only where the file allowed it as a
+  deduction or exclusion. These were the 44 rows where the recreated
+  benefit missed `FSBEN`.
+
+### Added
+- `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
+  asset limits by state and fiscal year, FY1996-FY2027 (ERS SNAP Policy
+  Database, QC Technical Documentation, SNAP Screener).
+
+### Fixed
+- **Lookup tables corrected against the FY2016-FY2024 QC Technical
+  Documentation** (frame and delivery lists not yet rebuilt):
+  error thresholds for FY2016 and FY2020; standard medical deductions for
+  Iowa, New Hampshire and Georgia; FY2024 element and nature codes added.
+  `state_sua.csv` now holds the lower value where a standard changed
+  mid-year (17 state-years).
+
 ## [2.7.0] - 2026-10-06
 
 If you use the delivery lists or the state workbooks, re-download them:
