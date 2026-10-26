@@ -1821,3 +1821,34 @@ depending on the frame and window; each refinement's effect falls inside
 that range.
 
 -> detailed record: modeling_findings_detailed.md section 41.
+
+## 42. BBCE-limit features on the national lists, three years ahead: no gain found in a ranger-only screen; deprioritized, not retired
+
+> **Takeaway (about our pipeline).** Adding the state's BBCE gross income
+> limit, a household's distance to it, or income as a percent of poverty to
+> the 19 shipped features did not improve the national state lists three
+> years ahead, in a screen run with ranger alone. The best arm (income as a
+> percent of poverty plus the limit, with ranger trying 3 features per split
+> instead of 2) caught 499 errors at the 5% budget and 941 at 10%, averaged
+> over three seeds, against 495 and 915 for the shipped features at the same
+> setting and 501 and 907 for the shipped setting. Those gains are inside
+> seed noise, and at 5% the gain turns negative on the two seeds that did
+> not select the arm. The question is deprioritized, not retired: the
+> xgboost + ranger engines that ship and the one-year-ahead window were not
+> run.
+
+How it was tested: rules mined on FY2017-19 with ranger alone and walked
+into the 49 national-only state lists, scored on FY2022 (36,851 cases,
+3,985 errors, a 0.108 base rate) at the 5% and 10% budgets, on all cases
+and on cases outside the reconstruction income piles. Fourteen single-draw
+arms over two nights screened four limit-feature combinations, mtry 2 to 4,
+and six light state options; none beat the shipped features by more than
+the screen (25 errors at 5%, 57 at 10%). The lead (+10 / +70 on one draw)
+then got three seeds. Against the shipped features at the same mtry it
+gained 3.7 errors at 5% (standard error 8.4) and 25.7 at 10% (standard
+error 19.8); its 10% seeds ranged from 909 to 972. Rules using the added
+features were slightly less precise on FY2022 than the other top rules
+(0.275 vs 0.281). The six light state options lowered the lists (-21 / -14
+errors).
+
+-> detailed record: modeling_findings_detailed.md section 42.

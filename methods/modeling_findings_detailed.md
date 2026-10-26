@@ -292,6 +292,12 @@ we learned is recoverable. Each points to its numbered section.
   three frame refinements, at three seeds, one year and three years ahead.
   No change one year ahead; +7% precision and +14-16% error dollars three
   years ahead; the refinements are not separable from seed noise.
+- **10-22 to 10-25**: BBCE-limit features screened three years ahead with
+  ranger alone (#42): four limit-feature combinations, mtry 2-4, and six
+  light state options over two nights, then three seeds of the lead. No
+  gain found (lead +3.7 / +25.7 errors at 5% / 10%, inside seed noise);
+  deprioritized, not retired; xgboost + ranger and the one-year-ahead
+  window untested.
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -4057,3 +4063,190 @@ year ahead.
 `states_*.csv`, `rules_*.rds`, `readout.md`, `fy2022/readout.md`,
 `cpi_summary_by_seed.csv`, `cpi_summary_contrasts.csv`). Frames in
 `archive_data/` (gitignored; hashes above).
+
+## 42. BBCE-limit features on the national lists, three years ahead: no gain found in a ranger-only screen; deprioritized, not retired (2026-10-25)
+
+> **Takeaway (about our pipeline).** Adding the state's BBCE gross income
+> limit, a household's distance to it, or income as a percent of poverty to
+> the 19 shipped features did not improve the national state lists three
+> years ahead, in a screen run with ranger alone. The best arm (income as a
+> percent of poverty plus the limit, with ranger trying 3 features per split
+> instead of 2) caught 499 errors at the 5% budget and 941 at 10%, averaged
+> over three seeds, against 495 and 915 for the shipped features at the same
+> setting and 501 and 907 for the shipped setting. Those gains are inside
+> seed noise, and at 5% the gain turns negative on the two seeds that did
+> not select the arm. The question is deprioritized, not retired: the
+> xgboost + ranger engines that ship and the one-year-ahead window were not
+> run.
+
+**Question.** Mined on FY2017-19 and scored on FY2022, do the national-only
+state lists catch more FY2022 errors when the forest can also split on the
+state's BBCE gross income limit, on a household's distance to that limit, or
+on income as a percent of poverty together with the limit, than with the
+shipped 19 features alone? Follow-ups asked whether a larger ranger mtry
+(the number of features tried at each split; the pipeline ships with 2)
+lets the forest pair the limit with the income measure, and whether six
+"light" state options help.
+
+**Arms.** A = the shipped 19 features (they already include the BBCE yes/no
+flag `bbce_state_i`). B = A + `dist_to_limit_pts`. C = A +
+`bbce_limit_pct`. D = A + both. E = A + `gross_pov_pct` + `bbce_limit_pct`,
+so the forest can form the distance itself. T1 = A + six light state
+options as eight columns (`smd_gap_dollars`, `smd_i`, `esap_i`,
+`cap_standard_i`, `cap_modified_i`, `county_admin_i`, `se_other_method_i`,
+`tba_i`). Definitions: `gross_pov_pct` is reconstructed review-year gross
+income (`rawearn_nominal + rawunearn_nominal`, not CPI-adjusted) as a
+percent of the HHS poverty guideline for the unit size, fiscal year t paired
+with guideline year t-1 (that pairing reproduces the QC file's TPOV within
+1 point on 99.96% or more of cases each year); `bbce_limit_pct` is the
+state's general BBCE gross limit that fiscal year (130 where the state has
+no BBCE); `dist_to_limit_pts` is their difference. The general limit is
+used for every household (5-8 BBCE states a year give elderly/disabled
+households 200%).
+
+**Design.** Ranger alone (1,000 trees, depth 4, min node 20), so no arm is
+compared with the xgboost + ranger pools on record; strata 1 / 2-3 / 4+;
+admission one BH pass at FDR 10% against the stratum base rate with
+n >= 30, ordered on the 99% Wilson lower bound; the shipped national-only
+builder's two gates (mismatch-share tag and income-pile tag, each at 0.25;
+tagged rules dropped before the fill); national pool only, the shipped fill
+walk, 49 states, budgets of 5% and 10% of each state's FY2022 caseload.
+Frame f1016 (staging-v2.7, hash ba1f9626). Training FY2017-19: 116,060
+rows, 10,920 errors (size 1: 63,064 / 4,069; 2-3: 34,376 / 3,888; 4+:
+18,620 / 2,963). Test FY2022, a true future year three years ahead (the
+deployment gap, §41): 36,851 rows, 3,985 errors, base rate 0.108. Every
+list is also scored on the cases outside the reconstruction income piles
+(427 FY2022 pile rows with 135 errors removed), which stands in for a
+state's own file. A shared seed does not pair two arms: a different
+feature list or mtry changes all of ranger's draws.
+
+Three nights. Night 1 (2026-10-22): A-E at mtry 2, seed 117, plus A at
+seed 118. Night 2 (2026-10-23): A, D, E at mtry 3 and 4, A at mtry 4 seed
+118, T1 at mtry 2. The screen for spending more seeds on an arm: beat A at
+mtry 2 by more than 25 errors at 5% and 57 at 10% (the largest three-seed
+range on xgboost + ranger pools in this window), non-pile change of the
+same sign, median and mean state change positive, harmed <= helped. Night 3
+(2026-10-24): A and E at mtry 2 and 3, seeds 117-119, in two windows.
+Pre-set reading rule: a contrast holds in a window when, at both budgets,
+the seed-mean gain in errors caught is positive and more than twice its
+standard error (the larger of the cells' own and the within-mtry pooled
+one), the non-pile gain is positive, the median and mean state precision
+changes are positive, and no more states lose by more than 0.05 than gain
+by that much. E at mtry 3 goes on to an xgboost + ranger test only if it
+holds in both windows AND its FY2022 gain on seeds 118-119 alone is
+positive at both budgets (seed 117 is the draw that selected it on night 2).
+
+**Results, nights 1-2** (one draw each; errors caught summed over the 49
+lists, about 1,822 flags at 5% and 3,660 at 10%):
+
+| Arm | mtry | Seed | 5% errors | 10% errors | 5% precision | 10% precision |
+|---|---|---|---|---|---|---|
+| A (shipped) | 2 | 117 | 504 | 902 | 0.2766 | 0.2464 |
+| A (shipped) | 2 | 118 | 498 | 911 | 0.2735 | 0.2489 |
+| B | 2 | 117 | 480 | 923 | 0.2636 | 0.2522 |
+| C | 2 | 117 | 475 | 917 | 0.2607 | 0.2505 |
+| D | 2 | 117 | 491 | 881 | 0.2696 | 0.2407 |
+| E | 2 | 117 | 502 | 897 | 0.2757 | 0.2451 |
+| T1 | 2 | 117 | 483 | 888 | 0.2651 | 0.2426 |
+| A | 3 | 117 | 497 | 930 | 0.2728 | 0.2541 |
+| D | 3 | 117 | 502 | 954 | 0.2755 | 0.2607 |
+| E | 3 | 117 | 514 | 972 | 0.2821 | 0.2656 |
+| A | 4 | 117 | 492 | 903 | 0.2700 | 0.2467 |
+| A | 4 | 118 | 512 | 947 | 0.2810 | 0.2587 |
+| D | 4 | 117 | 508 | 908 | 0.2788 | 0.2481 |
+| E | 4 | 117 | 520 | 913 | 0.2854 | 0.2495 |
+
+No arm cleared the screen. The closest, E at mtry 3, was +10 / +70 over A
+at mtry 2 seed 117 (non-pile +8 / +54; 31 states up, 13 down at 10%): it
+passed at 10% only. Seed noise is larger at higher mtry: A moved 6 / 9
+between seeds at mtry 2 and 20 / 44 at mtry 4, and A at mtry 4 seed 117
+drew low, which accounts for most of D's and E's apparent gains over A at
+mtry 4.
+
+**Results, night 3** (FY2022 window; errors caught by seed, and seed means):
+
+| Cell | Seeds | 5% errors | 5% mean | 10% errors | 10% mean | Precision, 5% / 10% (mean) | Dollar recall, 5% / 10% (mean) |
+|---|---|---|---|---|---|---|---|
+| A, mtry 2 (ships) | 117, 118 | 504, 498 | 501.0 | 902, 911 | 906.5 | 0.2751 / 0.2477 | 0.1246 / 0.2380 |
+| A, mtry 3 | 117-119 | 497, 494, 495 | 495.3 | 930, 911, 904 | 915.0 | 0.2719 / 0.2500 | 0.1241 / 0.2378 |
+| E, mtry 3 | 117-119 | 514, 485, 498 | 499.0 | 972, 909, 941 | 940.7 | 0.2739 / 0.2570 | 0.1250 / 0.2427 |
+| E, mtry 2 | 117 | 502 | 502.0 | 897 | 897.0 | 0.2757 / 0.2451 | 0.1227 / 0.2314 |
+
+At 5%, the shipped setting's 501 errors are 12.6% of FY2022's 3,985 errors,
+at a precision of 0.275, 2.5 times the 0.108 base rate. E minus A, both at
+mtry 3:
+
+| Reading | Budget | Gain | SE | Non-pile gain | Median / mean state precision change | States up / down | Worse / better by > 0.05 | Holds |
+|---|---|---|---|---|---|---|---|---|
+| Seeds 117-119 | 5% | +3.7 | 8.4 | +6.7 | 0.000 / -0.0030 | 21 / 22 | 5 / 5 | no |
+| Seeds 117-119 | 10% | +25.7 | 19.8 | +24.7 | +0.006 / +0.0066 | 27 / 20 | 0 / 3 | no |
+| Seeds 118-119 | 5% | -3.0 | 6.5 | -4 | 0.000 / -0.0029 | 21 / 21 | 8 / 4 | no |
+| Seeds 118-119 | 10% | +17.5 | 16.4 | +19 | 0.000 / +0.0052 | 24 / 22 | 1 / 3 | no |
+
+Neither reading holds, and the go-on condition fails at 5% on seeds 118-119.
+Against the shipped setting (A at mtry 2, two seeds), E at mtry 3 is -2.0 /
++34.2 and A at mtry 3 alone is -5.7 / +8.5, both inside the night-1 screen.
+The A-at-mtry-2 and E-at-mtry-2 cells have two seeds and one (seed 119 of
+each, and seed 118 of E, were never run), so the readout computes no formal
+contrast against them.
+
+Subgroups (E at mtry 3 minus A at mtry 2, seed means, 5% / 10%): the 15
+states in a minority regime in FY2022 (no BBCE, or BBCE at 130%) +4.0 /
++15.7; the 10 states whose limit or BBCE status in FY2022 differs from a
+training year -5.8 / +4.5.
+
+**The rules.** Among each arm's 1,000 best-ranked visible rules, FY2022
+precision (errors among the cases the rules flag, flag-weighted) was 0.2709
+for A at mtry 2 (two seeds), 0.2855 for A at mtry 3 and 0.2788 for E at
+mtry 3 (three seeds each). In E at mtry 3, the 323 top rules using an added
+feature ran at 0.2749 against 0.2806 for the rest; the same ordering held
+on nights 1-2 (E at mtry 2: 0.2616 vs 0.2695; E at mtry 4: 0.286 vs 0.287).
+Higher mtry raises top-rule precision (A: 0.271 at mtry 2, 0.286 at 3,
+0.292 at 4) without raising the lists, and roughly doubles the rules the
+pile gate removes (822, 1,304, 1,637 at seed 117).
+
+**Light state options (T1, one draw).** -21 / -14 against A at mtry 2
+(non-pile -28 / -16; 15 states up and 25 down at 5%). In the 20 states
+whose light options in FY2022 differ from some training year: -10 / -3. In
+the 8 states whose standard medical deduction is below the Medicare Part B
+premium minus $35: -7 / -3. The forests used the options often (the SMD gap
+appears in 3,541 visible rules), and 22 of T1's top 1,000 rules are limited
+to a group of states without beating that group's own training error rate
+in their household-size stratum; no other arm had any.
+
+**What did not move.** Every limit-feature arm at mtry 2 (B -24 / +21, C
+-29 / +15, D -13 / -21, E -2 / -5 against A, one draw each); mtry alone on
+the shipped features (mtry 3 three-seed mean -5.7 / +8.5; mtry 4 one draw
+-12 / +1); dollar recall (E minus A at mtry 3, +0.001 / +0.005).
+
+**Status and decision (2026-10-25).** We closed the study with mtry at 2
+and the limit features out of the vocabulary. The record does not refute
+the features: at 10%, E at mtry 3 led A at mtry 3 on the three-seed mean
+and on the non-pile reading, though inside a seed spread (909-972) wider
+than the gain. Not tested: the xgboost + ranger pair that ships; the
+one-year-ahead window (mine FY2022-23, score FY2024), whose twelve runs
+were lost to a Windows Update restart at 23:29 on 2026-10-24 and were not
+re-run because, under the pre-set rule, they could not have sent E forward;
+a state's own case file; household-specific limits (the elderly/disabled
+200% limit).
+
+**Caveats.** Ranger alone, so the arms' absolute numbers are not comparable
+with the shipped xgboost + ranger lists; one test year; one to three seeds
+per cell, so each standard error rests on one or two degrees of freedom and
+the rule is a yardstick for the next run, not a significance test; E at
+mtry 3 was selected as the best of eleven night-1-2 arms, and its seed-117
+draw is in the three-seed reading. Not pre-registered as a confirmatory
+test; each night's design note was reviewed (senior-statistician skill)
+before launch. E at mtry 3 seeds 118-119 were scored from their saved pools
+on 2026-10-25 after the restart (`logs_night3/*_resume.log`).
+
+**Artifacts.** `methods/bbce_limit_features/` on staging-v2.7 (worktree
+`snap_qc_v27`, uncommitted as of 2026-10-25): `design_note.md` (all three
+nights and the close), `common.R`, `run_arm.R`, `light_support.R`,
+`light_subgroups.csv`, chains `run_chain.sh`, `run_chain_night2.sh`,
+`run_chain_night3.sh`; readouts `readout.R` -> `readout.md`,
+`readout_night2.R` -> `readout_night2.md`, `readout_night3.R` ->
+`readout_night3.md`; outputs `states_*.csv`, `rules_*.rds`, `pools/`;
+logs `logs/`, `logs_night2/`, `logs_night3/`. Lookups:
+`additional_data/poverty_guidelines.csv` (new), `bbce_income.csv`,
+`snap_state_options_all_years.csv`, `standard_medical_deductions.csv`.
