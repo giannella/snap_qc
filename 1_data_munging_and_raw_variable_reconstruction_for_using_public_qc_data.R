@@ -831,7 +831,7 @@ if (apply_correction_smoothing) {
   mydata <- calculate_raw_benefits(mydata)
   mydata <- scale_by_ratio(mydata, "cs_up", "rawcsded")
   mydata <- calculate_raw_benefits(mydata)
-  mydata <- scale_by_ratio(mydata, "rent_up", "rawsltded")
+  mydata <- scale_by_ratio(mydata, "rent_up", "rawrent")
   mydata <- calculate_raw_benefits(mydata)
   mydata <- scale_by_ratio(mydata, "earn_down", "rawearn")
   mydata <- calculate_raw_benefits(mydata)
