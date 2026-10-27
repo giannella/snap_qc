@@ -594,6 +594,16 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
   mydata
 }
 
+# Run an adjust_* function on its eligible rows only
+on_eligible_rows <- function(adjust_fn, mydata, col, elements, prefix) {
+  rows <- which(mydata$ELEMENT1 %in% elements)
+  sub <- adjust_fn(mydata[rows, ], col, elements, prefix)
+  mydata[[col]][rows] <- sub[[col]]
+  mydata$correctednotes[rows] <- sub$correctednotes
+  mydata$correctedamount[rows] <- sub$correctedamount
+  mydata
+}
+
 fix_smd_adjustments <- function(mydata) {
   mydata <- mydata |>
     mutate(
@@ -618,32 +628,32 @@ fix_smd_adjustments <- function(mydata) {
 
 if (correct_variables){
   
-  mydata <- adjust_income(mydata, 
+  mydata <- on_eligible_rows(adjust_income, mydata, 
                           col = "rawunearn", 
                           elements = c(331, 332, 333, 334, 335, 336, 342, 343, 344, 345, 346, 350), 
                           prefix = "unearn")
-  mydata <- adjust_income(mydata, 
+  mydata <- on_eligible_rows(adjust_income, mydata, 
                           col = "rawearn", 
                           elements = c(311, 312, 314, 321), 
                           prefix = "earn")
-  mydata <- adjust_shelter(mydata, 
+  mydata <- on_eligible_rows(adjust_shelter, mydata, 
                            col = "rawrent", 
                            elements = c(363), 
                            prefix = "rent")
-  mydata <- adjust_shelter(mydata, 
+  mydata <- on_eligible_rows(adjust_shelter, mydata, 
                            col = "rawutil", 
                            elements = c(364), 
                            prefix = "util")
-  mydata <- adjust_other(mydata, 
+  mydata <- on_eligible_rows(adjust_other, mydata, 
                          col = "rawmedded", 
                          elements = c(365), 
                          prefix = "med")
   mydata <- fix_smd_adjustments(mydata)
-  mydata <- adjust_other(mydata, 
+  mydata <- on_eligible_rows(adjust_other, mydata, 
                          col = "rawdepded", 
                          elements = c(323), 
                          prefix = "dep")
-  mydata <- adjust_other(mydata, 
+  mydata <- on_eligible_rows(adjust_other, mydata, 
                          col = "rawcsded", 
                          elements = c(366), 
                          prefix = "cs")
