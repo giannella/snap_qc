@@ -637,7 +637,7 @@ if (correct_variables){
                           prefix = "unearn")
   mydata <- on_eligible_rows(adjust_income, mydata, 
                           col = "rawearn", 
-                          elements = c(311, 312, 314, 321), 
+                          elements = c(311, 312, 314), 
                           prefix = "earn")
   mydata <- on_eligible_rows(adjust_shelter, mydata, 
                            col = "rawrent", 
