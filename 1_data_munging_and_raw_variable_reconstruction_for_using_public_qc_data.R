@@ -418,7 +418,7 @@ income_shift <- 1
 max_iterations <- 3000
 matching_tolerance <- 0
 
-adjust_income <- function(mydata, col, elements, prefix, max_iter = max_iterations) {
+adjust_income <- function(mydata, col, elements, prefix, max_iter = 11000) {
   
   eligible <- mydata$ELEMENT1 %in% elements
   original <- mydata[[col]]  # save before any changes
