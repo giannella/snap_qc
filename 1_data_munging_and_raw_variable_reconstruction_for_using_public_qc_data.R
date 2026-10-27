@@ -165,11 +165,9 @@ if (exclude_SSI_CAP) mydata <- mydata[mydata$SSI_CAP %in% 0, ]
 # to the difference between fsben and rawben
 mydata <- mydata[abs(mydata$absbendiff - mydata$AMTERR) <= 5, ]
 
-# Deduction-field NAs come in state-level blocks (e.g., WA, MS, MN leave the
-# optional deduction fields unrecorded for a subset of cases) and almost
-# certainly mean "not claimed / not recorded", not unusable data. Dropping
-# them cost some states ~16% of their cases. Zero-fill instead, with a flag
-# (2026-07-07; previously these rows were dropped).
+# Deduction-field NAs only occur on MFIP and SSI-CAP cases, which are dropped
+# above, so this zero-fill currently changes nothing (ded_fields_imputed is
+# all FALSE). Revisit if those exclusions are turned off.
 ded_na_fields <- c("FSDEPDED", "FSMEDDED", "FSCSDED", "FSSTDDED", "HOMELESS_DED")
 mydata$ded_fields_imputed <- rowSums(is.na(mydata[ded_na_fields])) > 0
 for (v in ded_na_fields) mydata[[v]][is.na(mydata[[v]])] <- 0
