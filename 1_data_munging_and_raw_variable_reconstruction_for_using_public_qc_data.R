@@ -35,6 +35,7 @@ options(max.print = 10000)
 
 correct_variables <- TRUE
 apply_correction_smoothing <- TRUE
+if (!correct_variables) apply_correction_smoothing <- FALSE
 exclude_2020_2021 <- TRUE
 exclude_MFIP <- TRUE
 exclude_SSI_CAP <- TRUE
@@ -365,30 +366,30 @@ nrow(mydata) # 109800
 # Subtract 1 to rawusize for element 150, excluded eligible person
 # Only natures that don't affect expenses
 mydata$rawusize <- ifelse(
-  mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16),
+  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16),
   mydata$rawusize - 1,
   mydata$rawusize
 )
 mydata$correctednotes <- ifelse(
-  mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16),
+  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16),
   "hhsize_up",
   mydata$correctednotes
 )
 
 # Add 1 from rawusize for element 150, ineligible person included
 mydata$rawusize <- ifelse(
-  mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7),
+  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7),
   mydata$rawusize + 1,
   mydata$rawusize
 )
 mydata$correctednotes <- ifelse(
-  mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7),
+  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7),
   "hhsize_down",
   mydata$correctednotes
 )
 
 # Paid more than the max for the corrected size (and not last year's max): add a person
-over_max <- which(mydata$RAWBEN > mydata$BENMAX & mydata$rawusize == mydata$FSUSIZE)
+over_max <- which(correct_variables & mydata$RAWBEN > mydata$BENMAX & mydata$rawusize == mydata$FSUSIZE)
 prev_max <- mapply(get_max_allotment, mydata$FSUSIZE[over_max], mydata$fiscal_year[over_max] - 1)
 over_max <- over_max[is.na(prev_max) | mydata$RAWBEN[over_max] != prev_max]
 mydata$rawusize[over_max] <- mydata$rawusize[over_max] + 1
