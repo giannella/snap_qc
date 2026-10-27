@@ -662,17 +662,17 @@ if (correct_variables){
   # This isn't possible, as there are fixed utility allowances.
   # Find the nearest allowance for the given state/year combo and set to that
   valid_util <- mydata %>%
-    group_by(state_name, year) %>%
+    group_by(state_name, fiscal_year) %>%
     count(UTIL) %>%
     filter(n > 5) %>%
-    select(state_name, year, UTIL)
+    select(state_name, fiscal_year, UTIL)
   mydata <- mydata %>%
     rowwise() %>%
     mutate(
       rawutil = {
         if (!grepl("util", correctednotes)) rawutil
         else {
-          valid <- valid_util$UTIL[valid_util$state_name == state_name & valid_util$year == year]
+          valid <- valid_util$UTIL[valid_util$state_name == state_name & valid_util$fiscal_year == fiscal_year]
           if (correctednotes == "util_up") {
             valid <- valid[valid > UTIL]
             if (length(valid) == 0 || is.na(rawutil)) rawutil
