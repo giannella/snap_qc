@@ -87,7 +87,7 @@ rm(  data_2017,
 # Add state names to dataset
 state_data <- read.csv(paste0(folder, "additional_data/state_data.csv"))
 fips_to_state <- setNames(state_data$state, as.character(state_data$fips))
-mydata$state_name <- fips_to_state[as.character(mydata$STATE)]
+mydata$state_name <- unname(fips_to_state[as.character(mydata$STATE)])
 
 # Add year and month separately to dataset
 mydata$year <- as.integer(substr(mydata$YRMONTH, 1, 4))
@@ -410,7 +410,8 @@ if (correct_variables) {
     get_standard_deduction,
     state_name = mydata$state_name,
     hh_size = mydata$rawusize,
-    fiscal_year = mydata$fiscal_year
+    fiscal_year = mydata$fiscal_year,
+    USE.NAMES = FALSE
   )
 }
 if (correct_variables) {
