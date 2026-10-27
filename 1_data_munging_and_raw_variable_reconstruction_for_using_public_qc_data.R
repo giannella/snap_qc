@@ -626,6 +626,10 @@ fix_smd_adjustments <- function(mydata) {
 
 if (correct_variables){
   
+  # Homeless cases with a rent/utility error: assume no homeless deduction
+  hl <- mydata$rawhomeless_ded > 0 & mydata$ELEMENT1 %in% c(363, 364)
+  mydata$rawhomeless_ded[hl] <- 0
+  
   mydata <- on_eligible_rows(adjust_income, mydata, 
                           col = "rawunearn", 
                           elements = c(331, 332, 333, 334, 335, 336, 342, 343, 344, 345, 346, 350), 
