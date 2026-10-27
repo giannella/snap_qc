@@ -496,6 +496,7 @@ adjust_shelter <- function(mydata, col, elements, prefix, max_iter = max_iterati
     
     done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | mydata$rawben_recreated <= 0 |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
+               (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax) |
                (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
                (direction > 0 & mydata$rawsltded_uncapped >= mydata$max_shelter_deduction) |
                (direction < 0 & mydata$rawsltded <= 0) | !eligible)
@@ -556,6 +557,7 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
     
     done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | mydata$rawben_recreated <= 0 |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
+               (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax) |
                (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
                (direction < 0 & mydata[[col]] <= 0) | !eligible)
     
