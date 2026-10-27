@@ -121,7 +121,7 @@ if (share_flag > 0.02 || top40 > MM_TOP40_MAX || top10 > MM_TOP10_MAX)
 PILE_TAG_SHARE <- 0.25
 PILE_GATE <- !identical(Sys.getenv("V250_PILE_GATE"), "0")
 pile_all <- income_pile_rows(adf0)
-stopifnot(sum(pile_all) == 1394L)   # the v2.7 frame (diagnostic count, 2026-10-07)
+stopifnot(sum(pile_all) == 1399L)   # frame eb989fda (2026-10-27, Ben's reconstruction fixes); was 1394 on the v2.7 frame
 strata_nat <- lapply(setNames(nm = HH_LEVELS), function(h) which(hh_all %in% h))
 sc <- reduce_flags_for_rules(natl, adf, strata_nat, function(ix)
   c(length(ix), sum(pile_all[ix]), sum(pile_all[ix] & ie_all[ix])))

@@ -153,7 +153,7 @@ pile_all <- income_pile_rows(adf0)
 stamp("income-pile rows on this frame: %d (%.2f%% of rows, %.2f%% of errors) | gate %s",
       sum(pile_all), 100 * mean(pile_all), 100 * sum(pile_all & ie_all) / sum(ie_all),
       if (PILE_GATE) "ON (tagged rules dropped before the fill)" else "OFF (tagged, kept)")
-stopifnot(sum(pile_all) == 1394L)   # the v2.7 frame (diagnostic count, 2026-10-07)
+stopifnot(sum(pile_all) == 1399L)   # frame eb989fda (2026-10-27, Ben's reconstruction fixes); was 1394 on the v2.7 frame
 
 STATES <- sort(unique(st))
 if (SMOKE) STATES <- c("Washington", "Maine", "Mississippi", "Illinois")

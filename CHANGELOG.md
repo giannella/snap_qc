@@ -10,7 +10,32 @@ moved or behaves differently.
 
 ## [Unreleased]
 
+### Changed
+- **The modelling frame is rebuilt on the reconstruction fixes below**
+  (sha256 `eb989fda`, 2026-10-27). The cases, error labels and error
+  amounts are unchanged. Each rebuilt household-size, income, deduction
+  or benefit-ratio feature changes on at most about 2,000 of the 115,559
+  FY2022-24 cases. The delivery lists are not yet re-mined on it; the
+  v2.7.0 lists were mined on the earlier frame (`1dbe8733`).
+- **Household size rises by one person** where the issued benefit exceeds
+  the maximum allotment for the corrected size (and does not equal the
+  prior year's maximum): 337 cases, 299 of them errors. 163 move from the
+  one-person stratum to 2-3, and 40 from 2-3 to 4+.
+
 ### Fixed
+- **Benefit reconstruction now reaches the issued benefit more often.**
+  Rebuilds that miss it by more than $1 fall from 9,348 to 8,853 cases
+  (from 21.8% to 18.1% of error dollars), and cases issued the maximum
+  benefit whose rebuilt benefit falls below it drop from 579 to 359 in
+  FY2022-24. The changes: the earned-income rebuild no longer adjusts the
+  earned-income deduction element (321) and runs up to 11,000 steps;
+  shelter and other deduction rebuilds stop at the maximum benefit; the
+  homeless deduction is set to zero on cases with a rent or utility error;
+  utility allowances are matched by fiscal year, not calendar year; the
+  rent smoothing step scales rent, not the shelter deduction; and rebuilds
+  that changed nothing are labelled `*_no_change` instead of up or down.
+  The list builders' income-pile count check is updated for this frame
+  (1,399 FY2022-24 pile rows, was 1,394).
 - **Benefit reconstruction:** a unit with the homeless shelter deduction
   gets no excess shelter deduction (FS and raw side, and the workbook);
   reported child support counts only where the file allowed it as a
@@ -24,7 +49,7 @@ moved or behaves differently.
 
 ### Fixed
 - **Lookup tables corrected against the FY2016-FY2024 QC Technical
-  Documentation** (frame and delivery lists not yet rebuilt):
+  Documentation** (delivery lists not yet rebuilt):
   error thresholds for FY2016 and FY2020; standard medical deductions for
   Iowa, New Hampshire and Georgia; FY2024 element and nature codes added.
   `state_sua.csv` now holds the lower value where a standard changed
