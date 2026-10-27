@@ -35,6 +35,7 @@ options(max.print = 10000)
 
 correct_variables <- TRUE
 apply_correction_smoothing <- TRUE
+if (!correct_variables) apply_correction_smoothing <- FALSE
 exclude_2020_2021 <- TRUE
 exclude_MFIP <- TRUE
 exclude_SSI_CAP <- TRUE
@@ -87,7 +88,7 @@ rm(  data_2017,
 # Add state names to dataset
 state_data <- read.csv(paste0(folder, "additional_data/state_data.csv"))
 fips_to_state <- setNames(state_data$state, as.character(state_data$fips))
-mydata$state_name <- fips_to_state[as.character(mydata$STATE)]
+mydata$state_name <- unname(fips_to_state[as.character(mydata$STATE)])
 
 # Add year and month separately to dataset
 mydata$year <- as.integer(substr(mydata$YRMONTH, 1, 4))
@@ -165,11 +166,9 @@ if (exclude_SSI_CAP) mydata <- mydata[mydata$SSI_CAP %in% 0, ]
 # to the difference between fsben and rawben
 mydata <- mydata[abs(mydata$absbendiff - mydata$AMTERR) <= 5, ]
 
-# Deduction-field NAs come in state-level blocks (e.g., WA, MS, MN leave the
-# optional deduction fields unrecorded for a subset of cases) and almost
-# certainly mean "not claimed / not recorded", not unusable data. Dropping
-# them cost some states ~16% of their cases. Zero-fill instead, with a flag
-# (2026-07-07; previously these rows were dropped).
+# Deduction-field NAs only occur on MFIP and SSI-CAP cases, which are dropped
+# above, so this zero-fill currently changes nothing (ded_fields_imputed is
+# all FALSE). Revisit if those exclusions are turned off.
 ded_na_fields <- c("FSDEPDED", "FSMEDDED", "FSCSDED", "FSSTDDED", "HOMELESS_DED")
 mydata$ded_fields_imputed <- rowSums(is.na(mydata[ded_na_fields])) > 0
 for (v in ded_na_fields) mydata[[v]][is.na(mydata[[v]])] <- 0
@@ -367,27 +366,34 @@ nrow(mydata) # 109800
 # Subtract 1 to rawusize for element 150, excluded eligible person
 # Only natures that don't affect expenses
 mydata$rawusize <- ifelse(
-  mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16),
+  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16),
   mydata$rawusize - 1,
   mydata$rawusize
 )
 mydata$correctednotes <- ifelse(
-  mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16),
+  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16),
   "hhsize_up",
   mydata$correctednotes
 )
 
 # Add 1 from rawusize for element 150, ineligible person included
 mydata$rawusize <- ifelse(
-  mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7),
+  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7),
   mydata$rawusize + 1,
   mydata$rawusize
 )
 mydata$correctednotes <- ifelse(
-  mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7),
+  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7),
   "hhsize_down",
   mydata$correctednotes
 )
+
+# Paid more than the max for the corrected size (and not last year's max): add a person
+over_max <- which(correct_variables & mydata$RAWBEN > mydata$BENMAX & mydata$rawusize == mydata$FSUSIZE)
+prev_max <- mapply(get_max_allotment, mydata$FSUSIZE[over_max], mydata$fiscal_year[over_max] - 1)
+over_max <- over_max[is.na(prev_max) | mydata$RAWBEN[over_max] != prev_max]
+mydata$rawusize[over_max] <- mydata$rawusize[over_max] + 1
+mydata$correctednotes[over_max] <- "hhsize_down"
 
 # Drop cases where the rawusize becomes 0
 mydata <- mydata[mydata$rawusize != 0, ]
@@ -405,7 +411,8 @@ if (correct_variables) {
     get_standard_deduction,
     state_name = mydata$state_name,
     hh_size = mydata$rawusize,
-    fiscal_year = mydata$fiscal_year
+    fiscal_year = mydata$fiscal_year,
+    USE.NAMES = FALSE
   )
 }
 if (correct_variables) {
@@ -420,7 +427,7 @@ income_shift <- 1
 max_iterations <- 3000
 matching_tolerance <- 0
 
-adjust_income <- function(mydata, col, elements, prefix, max_iter = max_iterations) {
+adjust_income <- function(mydata, col, elements, prefix, max_iter = 11000) {
   
   eligible <- mydata$ELEMENT1 %in% elements
   original <- mydata[[col]]  # save before any changes
@@ -491,6 +498,7 @@ adjust_shelter <- function(mydata, col, elements, prefix, max_iter = max_iterati
     
     done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | mydata$rawben_recreated <= 0 |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
+               (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax) |
                (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
                (direction > 0 & mydata$rawsltded_uncapped >= mydata$max_shelter_deduction) |
                (direction < 0 & mydata$rawsltded <= 0) | !eligible)
@@ -512,13 +520,14 @@ adjust_shelter <- function(mydata, col, elements, prefix, max_iter = max_iterati
   # Set correctednotes after loop completes
   hit_zero <- (mydata[[col]] <= 0) & !diff_matches & direction < 0
   hit_cap <- !diff_matches & direction > 0 & mydata$rawsltded >= mydata$max_shelter_deduction
+  changed <- mydata[[col]] != original
   
   mydata$correctednotes <- ifelse(
     eligible & (hit_zero | hit_cap) & prefix != "util", paste0(prefix, "_error"),
     ifelse(
-      eligible & direction > 0, paste0(prefix, "_up"),
+      eligible & changed & direction > 0, paste0(prefix, "_up"),
       ifelse(
-        eligible & direction < 0, paste0(prefix, "_down"),
+        eligible & changed & direction < 0, paste0(prefix, "_down"),
         ifelse(
           eligible, paste0(prefix, "_no_change"),
           mydata$correctednotes
@@ -550,6 +559,7 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
     
     done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | mydata$rawben_recreated <= 0 |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
+               (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax) |
                (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
                (direction < 0 & mydata[[col]] <= 0) | !eligible)
     
@@ -594,6 +604,16 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
   mydata
 }
 
+# Run an adjust_* function on its eligible rows only
+on_eligible_rows <- function(adjust_fn, mydata, col, elements, prefix) {
+  rows <- which(mydata$ELEMENT1 %in% elements)
+  sub <- adjust_fn(mydata[rows, ], col, elements, prefix)
+  mydata[[col]][rows] <- sub[[col]]
+  mydata$correctednotes[rows] <- sub$correctednotes
+  mydata$correctedamount[rows] <- sub$correctedamount
+  mydata
+}
+
 fix_smd_adjustments <- function(mydata) {
   mydata <- mydata |>
     mutate(
@@ -618,32 +638,36 @@ fix_smd_adjustments <- function(mydata) {
 
 if (correct_variables){
   
-  mydata <- adjust_income(mydata, 
+  # Homeless cases with a rent/utility error: assume no homeless deduction
+  hl <- mydata$rawhomeless_ded > 0 & mydata$ELEMENT1 %in% c(363, 364)
+  mydata$rawhomeless_ded[hl] <- 0
+  
+  mydata <- on_eligible_rows(adjust_income, mydata, 
                           col = "rawunearn", 
                           elements = c(331, 332, 333, 334, 335, 336, 342, 343, 344, 345, 346, 350), 
                           prefix = "unearn")
-  mydata <- adjust_income(mydata, 
+  mydata <- on_eligible_rows(adjust_income, mydata, 
                           col = "rawearn", 
-                          elements = c(311, 312, 314, 321), 
+                          elements = c(311, 312, 314), 
                           prefix = "earn")
-  mydata <- adjust_shelter(mydata, 
+  mydata <- on_eligible_rows(adjust_shelter, mydata, 
                            col = "rawrent", 
                            elements = c(363), 
                            prefix = "rent")
-  mydata <- adjust_shelter(mydata, 
+  mydata <- on_eligible_rows(adjust_shelter, mydata, 
                            col = "rawutil", 
                            elements = c(364), 
                            prefix = "util")
-  mydata <- adjust_other(mydata, 
+  mydata <- on_eligible_rows(adjust_other, mydata, 
                          col = "rawmedded", 
                          elements = c(365), 
                          prefix = "med")
   mydata <- fix_smd_adjustments(mydata)
-  mydata <- adjust_other(mydata, 
+  mydata <- on_eligible_rows(adjust_other, mydata, 
                          col = "rawdepded", 
                          elements = c(323), 
                          prefix = "dep")
-  mydata <- adjust_other(mydata, 
+  mydata <- on_eligible_rows(adjust_other, mydata, 
                          col = "rawcsded", 
                          elements = c(366), 
                          prefix = "cs")
@@ -652,17 +676,17 @@ if (correct_variables){
   # This isn't possible, as there are fixed utility allowances.
   # Find the nearest allowance for the given state/year combo and set to that
   valid_util <- mydata %>%
-    group_by(state_name, year) %>%
+    group_by(state_name, fiscal_year) %>%
     count(UTIL) %>%
     filter(n > 5) %>%
-    select(state_name, year, UTIL)
+    select(state_name, fiscal_year, UTIL)
   mydata <- mydata %>%
     rowwise() %>%
     mutate(
       rawutil = {
         if (!grepl("util", correctednotes)) rawutil
         else {
-          valid <- valid_util$UTIL[valid_util$state_name == state_name & valid_util$year == year]
+          valid <- valid_util$UTIL[valid_util$state_name == state_name & valid_util$fiscal_year == fiscal_year]
           if (correctednotes == "util_up") {
             valid <- valid[valid > UTIL]
             if (length(valid) == 0 || is.na(rawutil)) rawutil
@@ -821,7 +845,7 @@ if (apply_correction_smoothing) {
   mydata <- calculate_raw_benefits(mydata)
   mydata <- scale_by_ratio(mydata, "cs_up", "rawcsded")
   mydata <- calculate_raw_benefits(mydata)
-  mydata <- scale_by_ratio(mydata, "rent_up", "rawsltded")
+  mydata <- scale_by_ratio(mydata, "rent_up", "rawrent")
   mydata <- calculate_raw_benefits(mydata)
   mydata <- scale_by_ratio(mydata, "earn_down", "rawearn")
   mydata <- calculate_raw_benefits(mydata)
