@@ -387,6 +387,13 @@ mydata$correctednotes <- ifelse(
   mydata$correctednotes
 )
 
+# Paid more than the max for the corrected size (and not last year's max): add a person
+over_max <- which(mydata$RAWBEN > mydata$BENMAX & mydata$rawusize == mydata$FSUSIZE)
+prev_max <- mapply(get_max_allotment, mydata$FSUSIZE[over_max], mydata$fiscal_year[over_max] - 1)
+over_max <- over_max[is.na(prev_max) | mydata$RAWBEN[over_max] != prev_max]
+mydata$rawusize[over_max] <- mydata$rawusize[over_max] + 1
+mydata$correctednotes[over_max] <- "hhsize_down"
+
 # Drop cases where the rawusize becomes 0
 mydata <- mydata[mydata$rawusize != 0, ]
 
