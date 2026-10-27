@@ -510,13 +510,14 @@ adjust_shelter <- function(mydata, col, elements, prefix, max_iter = max_iterati
   # Set correctednotes after loop completes
   hit_zero <- (mydata[[col]] <= 0) & !diff_matches & direction < 0
   hit_cap <- !diff_matches & direction > 0 & mydata$rawsltded >= mydata$max_shelter_deduction
+  changed <- mydata[[col]] != original
   
   mydata$correctednotes <- ifelse(
     eligible & (hit_zero | hit_cap) & prefix != "util", paste0(prefix, "_error"),
     ifelse(
-      eligible & direction > 0, paste0(prefix, "_up"),
+      eligible & changed & direction > 0, paste0(prefix, "_up"),
       ifelse(
-        eligible & direction < 0, paste0(prefix, "_down"),
+        eligible & changed & direction < 0, paste0(prefix, "_down"),
         ifelse(
           eligible, paste0(prefix, "_no_change"),
           mydata$correctednotes
