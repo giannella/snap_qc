@@ -388,15 +388,31 @@ mydata$correctednotes <- ifelse(
   mydata$correctednotes
 )
 
+# Unit composition shift for ELEMENT2+, applied before the ELEMENT1 adjustment in Step 7
+mydata$hhsize_secondary_shift <- 0
+secondary_hh_element <- rep(FALSE, nrow(mydata))
+if (correct_variables) {
+  for (k in 2:9) {
+    el_col <- paste0("ELEMENT", k)
+    na_col <- paste0("NATURE", k)
+    if (!all(c(el_col, na_col) %in% names(mydata))) next
+    excluded_eligible   <- mydata[[el_col]] %in% 150 & mydata[[na_col]] %in% c(12, 14, 16)
+    included_ineligible <- mydata[[el_col]] %in% 150 & mydata[[na_col]] %in% c(7)
+    mydata$hhsize_secondary_shift <- mydata$hhsize_secondary_shift - excluded_eligible + included_ineligible
+    secondary_hh_element <- secondary_hh_element | excluded_eligible | included_ineligible
+  }
+  mydata$rawusize <- mydata$rawusize + mydata$hhsize_secondary_shift
+}
+
 # Paid more than the max for the corrected size (and not last year's max): add a person
-over_max <- which(correct_variables & mydata$RAWBEN > mydata$BENMAX & mydata$rawusize == mydata$FSUSIZE)
+over_max <- which(correct_variables & mydata$RAWBEN > mydata$BENMAX & mydata$rawusize == mydata$FSUSIZE & !secondary_hh_element)
 prev_max <- mapply(get_max_allotment, mydata$FSUSIZE[over_max], mydata$fiscal_year[over_max] - 1)
 over_max <- over_max[is.na(prev_max) | mydata$RAWBEN[over_max] != prev_max]
 mydata$rawusize[over_max] <- mydata$rawusize[over_max] + 1
 mydata$correctednotes[over_max] <- "hhsize_down"
 
 # Drop cases where the rawusize becomes 0
-mydata <- mydata[mydata$rawusize != 0, ]
+mydata <- mydata[mydata$rawusize > 0, ]
 
 # Update maxben and standard deduction with new household sizes
 if (correct_variables) {
@@ -877,6 +893,16 @@ add_total_deductions <- function(data) {
   data
 }
 mydata <- add_total_deductions(mydata)
+
+# Fold secondary household size shifts into correctednotes, e.g. "hhsize_up+earn_down"
+sec_note <- ifelse(mydata$hhsize_secondary_shift < 0, "hhsize_up",
+                   ifelse(mydata$hhsize_secondary_shift > 0, "hhsize_down", NA))
+has_sec <- !is.na(sec_note)
+mydata$correctednotes[has_sec] <- ifelse(
+  mydata$correctednotes[has_sec] == "no_change",
+  sec_note[has_sec],
+  paste0(sec_note[has_sec], "+", mydata$correctednotes[has_sec])
+)
 
 # Nature 97 / agency 26 (change not required to be reported or acted upon): the budgeted benefit was correct, so the FS side is set to the reconstructed raw side and the variance fields are cleared (flagged in no_action_required_i)
 no_action_required <- mydata$NATURE1 %in% 97 | mydata$AGENCY1 %in% 26
