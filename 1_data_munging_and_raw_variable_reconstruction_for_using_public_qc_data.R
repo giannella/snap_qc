@@ -435,7 +435,7 @@ start_direction <- function(mydata) {
 
 # Which way NATURE1 says the budgeted value was off (-1 = lower than QC, +1 = higher, 0 = not stated)
 nature_direction <- function(nature, income) {
-  if (income) ifelse(nature %in% c(35, 37, 38, 39), -1, ifelse(nature %in% c(40, 44), 1, 0))
+  if (income) ifelse(nature %in% c(33, 35, 37, 38, 39, 46), -1, ifelse(nature %in% c(40, 44, 58), 1, 0))
   else ifelse(nature %in% c(52, 57), -1, ifelse(nature %in% c(53, 56), 1, 0))
 }
 
