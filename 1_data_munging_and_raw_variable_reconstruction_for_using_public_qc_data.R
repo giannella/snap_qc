@@ -860,6 +860,18 @@ add_total_deductions <- function(data) {
 }
 mydata <- add_total_deductions(mydata)
 
+# Nature 97 / agency 26 (change not required to be reported or acted upon): the budgeted benefit was correct, so the FS side is set to the reconstructed raw side and the variance fields are cleared (flagged in no_action_required_i)
+no_action_required <- mydata$NATURE1 %in% 97 | mydata$AGENCY1 %in% 26
+fs_map <- c(FSUSIZE = "rawusize", FSGRINC = "rawgrinc", FSEARN = "rawearn", FSUNEARN = "rawunearn", FSERNDED = "rawernded", FSMEDDED = "rawmedded", FSDEPDED = "rawdepded", FSCSDED = "rawcsded", FSSLTDED = "rawsltded", FSSLTEXP = "rawsltexp", RENT = "rawrent", UTIL = "rawutil", FSSTDDED = "rawstdded", HOMELESS_DED = "rawhomeless_ded", BENMAX = "rawbenmax",
+            fsminimum_ben = "rawminimum_ben", fsnet_before_shelter = "rawnet_before_shelter", fsnet_adjusted_half = "rawnet_adjusted_half", fssltded_uncapped = "rawsltded_uncapped", fssltded_recalculated = "rawsltded", fsnet_allow_negative = "rawnet_allow_negative", FSNETINC = "rawnet_capped", fsben_uncapped = "rawben_uncapped", fsben_recreated = "rawben_recreated", unc_fsben_rel_max = "unc_rawben_rel_max", FSBEN = "rawben_recreated")
+for (v in names(fs_map)) mydata[[v]][no_action_required] <- as.numeric(mydata[[fs_map[[v]]]][no_action_required])
+for (v in c("AMTERR", "bendiff", "absbendiff", "over_threshold")) mydata[[v]][no_action_required] <- 0
+mydata$STATUS[no_action_required] <- 1
+mydata$no_action_required_i <- no_action_required
+for (v in grep("^(ELEMENT|NATURE|AGENCY|AMOUNT|DISCOV|E_FINDG|OCCDATE|TIMEPER|VERIF)[1-9]$", names(mydata), value = TRUE)) mydata[[v]][no_action_required] <- NA
+mydata[no_action_required, c("element", "nature")] <- NA
+mydata$second_element_i[no_action_required] <- FALSE
+
 # Save data
 saveRDS(mydata, paste0(folder, "final.rds"))
 mydata <- readRDS(paste0(folder, "final.rds"))
