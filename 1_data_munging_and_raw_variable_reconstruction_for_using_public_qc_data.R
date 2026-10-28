@@ -435,6 +435,34 @@ if (correct_variables) {
   mydata$rawminimum_ben <- ifelse(mydata$rawusize < 3, mydata$MINIMUM_BEN, 0)
 }
 
+# Utility allowance tiers in each state/year (values seen in more than 5 cases)
+valid_util <- mydata %>%
+  group_by(state_name, fiscal_year) %>%
+  count(UTIL) %>%
+  filter(n > 5) %>%
+  select(state_name, fiscal_year, UTIL)
+
+# Utility element in ELEMENT2+, applied before the ELEMENT1 adjustment in Step 7
+# Nature 52 (agency left it out): one tier down. Nature 53 (agency included it): top tier
+mydata$util_secondary_shift <- 0
+if (correct_variables) {
+  util_nature <- rep(NA_real_, nrow(mydata))
+  for (k in 2:9) {
+    el_col <- paste0("ELEMENT", k)
+    na_col <- paste0("NATURE", k)
+    if (!all(c(el_col, na_col) %in% names(mydata))) next
+    hit <- is.na(util_nature) & mydata[[el_col]] %in% 364 & mydata[[na_col]] %in% c(52, 53)
+    util_nature[hit] <- mydata[[na_col]][hit]
+  }
+  for (i in which(!is.na(util_nature) & !(mydata$ELEMENT1 %in% 364))) {
+    tiers <- as.numeric(valid_util$UTIL[valid_util$state_name == mydata$state_name[i] & valid_util$fiscal_year == mydata$fiscal_year[i]])
+    u <- as.numeric(mydata$UTIL[i])
+    new_util <- if (util_nature[i] == 52) max(c(0, tiers[tiers < u])) else max(c(u, tiers))
+    mydata$util_secondary_shift[i] <- new_util - u
+    mydata$rawutil[i] <- new_util
+  }
+}
+
 # Step 7. Adjust other variables
 # This method shifts variables up or down by $1 until the equation
 # balances or hit another limiting parameter (going below $0)
@@ -709,11 +737,6 @@ if (correct_variables){
   # For util, we have first set it to what we want it to be
   # This isn't possible, as there are fixed utility allowances.
   # Find the nearest allowance for the given state/year combo and set to that
-  valid_util <- mydata %>%
-    group_by(state_name, fiscal_year) %>%
-    count(UTIL) %>%
-    filter(n > 5) %>%
-    select(state_name, fiscal_year, UTIL)
   mydata <- mydata %>%
     rowwise() %>%
     mutate(
@@ -897,6 +920,9 @@ mydata <- add_total_deductions(mydata)
 # Fold secondary household size shifts into correctednotes, e.g. "hhsize_up+earn_down"
 sec_note <- ifelse(mydata$hhsize_secondary_shift < 0, "hhsize_up",
                    ifelse(mydata$hhsize_secondary_shift > 0, "hhsize_down", NA))
+util_note <- ifelse(mydata$util_secondary_shift < 0, "util_down",
+                    ifelse(mydata$util_secondary_shift > 0, "util_up", NA))
+sec_note <- ifelse(is.na(sec_note), util_note, ifelse(is.na(util_note), sec_note, paste0(sec_note, "+", util_note)))
 has_sec <- !is.na(sec_note)
 mydata$correctednotes[has_sec] <- ifelse(
   mydata$correctednotes[has_sec] == "no_change",
