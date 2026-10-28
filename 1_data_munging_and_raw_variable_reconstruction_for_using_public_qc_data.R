@@ -427,19 +427,33 @@ income_shift <- 1
 max_iterations <- 3000
 matching_tolerance <- 0
 
+# Direction for the adjust_* loops (> 0 = raise the benefit), from the reconstructed benefit before any adjustment
+start_direction <- function(mydata) {
+  mydata <- calculate_raw_benefits(mydata)
+  mydata$RAWBEN - mydata$rawben_recreated
+}
+
+# Which way NATURE1 says the budgeted value was off (-1 = lower than QC, +1 = higher, 0 = not stated)
+nature_direction <- function(nature, income) {
+  if (income) ifelse(nature %in% c(35, 37, 38, 39), -1, ifelse(nature %in% c(40, 44), 1, 0))
+  else ifelse(nature %in% c(52, 57), -1, ifelse(nature %in% c(53, 56), 1, 0))
+}
+
 adjust_income <- function(mydata, col, elements, prefix, max_iter = 11000) {
   
   eligible <- mydata$ELEMENT1 %in% elements
   original <- mydata[[col]]  # save before any changes
+  direction <- start_direction(mydata)
+  # Don't move the variable against NATURE1
+  conflict <- (nature_direction(mydata$NATURE1, income = TRUE) * sign(direction)) %in% 1
   
   for (i in seq_len(max_iter)) {
     mydata <- calculate_raw_benefits(mydata)
     
-    direction <- mydata$RAWBEN - mydata$fsben_uncapped
     diff <- mydata$RAWBEN - mydata$rawben_recreated
     diff_matches <- abs(diff) <= matching_tolerance
     
-    done <- ((diff_matches | direction > 0 & mydata[[col]] <= 0) | mydata$rawben_recreated <= 0 | 
+    done <- ((diff_matches | direction > 0 & mydata[[col]] <= 0) | conflict | 
                (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) | 
                (direction < 0 & mydata$rawben_uncapped < 0) | !eligible)
@@ -462,11 +476,11 @@ adjust_income <- function(mydata, col, elements, prefix, max_iter = 11000) {
   hit_zero <- (direction > 0) & (mydata[[col]] <= 0 | mydata$rawben_recreated <= 0)
   
   mydata$correctednotes <- ifelse(
-    eligible & hit_zero & !diff_matches, paste0(prefix, "_error"),
+    eligible & (conflict | hit_zero & !diff_matches), paste0(prefix, "_error"),
     ifelse(
-      eligible & changed & mydata$RAWBEN > mydata$fsben_uncapped, paste0(prefix, "_down"),
+      eligible & changed & direction > 0, paste0(prefix, "_down"),
       ifelse(
-        eligible & changed & mydata$RAWBEN < mydata$fsben_uncapped, paste0(prefix, "_up"),
+        eligible & changed & direction < 0, paste0(prefix, "_up"),
         ifelse(
           eligible, paste0(prefix, "_no_change"),
           mydata$correctednotes
@@ -488,15 +502,17 @@ adjust_shelter <- function(mydata, col, elements, prefix, max_iter = max_iterati
   
   eligible <- mydata$ELEMENT1 %in% elements
   original <- mydata[[col]]  # save before any changes
+  direction <- start_direction(mydata)
+  # Don't move the variable against NATURE1
+  conflict <- (nature_direction(mydata$NATURE1, income = FALSE) * sign(direction)) %in% -1
   
   for (i in seq_len(max_iter)) {
     mydata <- calculate_raw_benefits(mydata)
     
-    direction <- mydata$RAWBEN - mydata$FSBEN
     diff <- mydata$RAWBEN - mydata$rawben_recreated
     diff_matches <- abs(diff) <= matching_tolerance
     
-    done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | mydata$rawben_recreated <= 0 |
+    done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | conflict |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
                (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax) |
                (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
@@ -523,7 +539,7 @@ adjust_shelter <- function(mydata, col, elements, prefix, max_iter = max_iterati
   changed <- mydata[[col]] != original
   
   mydata$correctednotes <- ifelse(
-    eligible & (hit_zero | hit_cap) & prefix != "util", paste0(prefix, "_error"),
+    eligible & (conflict | (hit_zero | hit_cap) & prefix != "util"), paste0(prefix, "_error"),
     ifelse(
       eligible & changed & direction > 0, paste0(prefix, "_up"),
       ifelse(
@@ -549,15 +565,17 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
   
   eligible <- mydata$ELEMENT1 %in% elements
   original <- mydata[[col]]  # save before any changes
+  direction <- start_direction(mydata)
+  # Don't move the variable against NATURE1
+  conflict <- (nature_direction(mydata$NATURE1, income = FALSE) * sign(direction)) %in% -1
   
   for (i in seq_len(max_iter)) {
     mydata <- calculate_raw_benefits(mydata)
     
-    direction <- mydata$RAWBEN - mydata$FSBEN
     diff <- mydata$RAWBEN - mydata$rawben_recreated
     diff_matches <- abs(diff) <= matching_tolerance
     
-    done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | mydata$rawben_recreated <= 0 |
+    done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | conflict |
                (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
                (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax) |
                (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
@@ -582,7 +600,7 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
   hit_cap <- !diff_matches & direction > 0 
   
   mydata$correctednotes <- ifelse(
-    eligible & (hit_zero | hit_cap), paste0(prefix, "_error"),
+    eligible & (conflict | hit_zero | hit_cap), paste0(prefix, "_error"),
     ifelse(
       eligible & direction > 0, paste0(prefix, "_up"),
       ifelse(
