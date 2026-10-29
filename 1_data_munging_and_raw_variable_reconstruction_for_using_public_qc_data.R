@@ -330,13 +330,14 @@ nrow(mydata) # 109800
 # Household size elements in any element slot: 150 (unit composition) and the
 # person-eligibility elements 111 student, 130 citizenship, 151 disqualification,
 # 160-166 work rules, 170 SSN. The nature gives the direction:
-#   eligible person excluded (150: natures 12, 14, 16; others: nature 6) -> subtract 1
+#   eligible person excluded (150: natures 12, 13, 14, 15, 16; others: nature 6) -> subtract 1
+#   (150 nature 13 also had income the agency left out; that is removed at the end of Step 6)
 #   ineligible person included (nature 7)                               -> add 1
 # One person per case however many slots carry one (the same person is often coded
 # under 150 and a person element); cases whose slots disagree on direction are left alone
 hh_elements <- c(111, 130, 150, 151, 160:166, 170)
 hh_direction <- function(element, nature) {
-  ifelse(element %in% 150 & nature %in% c(12, 14, 16), -1,
+  ifelse(element %in% 150 & nature %in% c(12, 13, 14, 15, 16), -1,
          ifelse(element %in% setdiff(hh_elements, 150) & nature %in% 6, -1,
                 ifelse(element %in% hh_elements & nature %in% 7, 1, 0)))
 }
@@ -357,6 +358,8 @@ hh_first <- hh_shift != 0 & hh_direction(mydata$ELEMENT1, mydata$NATURE1) == hh_
 mydata$correctednotes[hh_first & hh_shift < 0] <- "hhsize_up"
 mydata$correctednotes[hh_first & hh_shift > 0] <- "hhsize_down"
 mydata$hhsize_secondary_shift <- ifelse(hh_first, 0, hh_shift)
+# Marked as a column (not a vector) so it stays aligned when size-0 rows are dropped below
+mydata$el150_income_check <- correct_variables & mydata$ELEMENT1 %in% 150 & mydata$NATURE1 %in% 13 & hh_shift == -1
 # Any household size element with a direction keeps the over-max rule below from adding a person
 hh_element_any <- correct_variables & (hh_up | hh_down)
 
@@ -420,6 +423,55 @@ if (correct_variables) {
     mydata$util_secondary_shift[i] <- new_util - u
     mydata$rawutil[i] <- new_util
   }
+}
+
+# Element 150 nature 13 in ELEMENT1 (eligible person WITH income excluded): the size shift
+# above removed the person; the agency also left out that person's income. The person-level
+# income fields add up to FSEARN (earned) and FSUNEARN (unearned), so try each eligible member
+# (FSAFIL = 1) with income: raw income = FSEARN / FSUNEARN minus that member's income, kept
+# only if the benefit then matches RAWBEN exactly. If no member matches, or members with
+# different incomes both match, income is left as is (the person is still removed)
+earned_types   <- c("WAGES", "SLFEMP", "OTHERN", "RENTMINC")
+unearned_types <- c("ALIMNY", "ANNUITY", "CONT", "CSUPRT", "DEEM", "DIVER", "EDLOAN", "ENERGY",
+                    "FOSTER", "GA", "GOVDIV", "GOVINTER", "GOVROY", "INTER", "OLDAGE", "OTHGOV",
+                    "OTHUN", "PENSION", "RENTINC", "SOCSEC", "SSI", "STRIKE", "SURV", "TANF",
+                    "TRUST", "UNEMP", "VET", "WCOMP", "UNK", "WGESUP")
+person_income <- function(data, types, k) {
+  cols <- intersect(paste0(types, k), names(data))
+  Reduce(`+`, lapply(cols, function(v) { x <- as.numeric(data[[v]]); x[is.na(x)] <- 0; x }), rep(0, nrow(data)))
+}
+el150_income <- which(mydata$el150_income_check)
+mydata$el150_income_check <- NULL
+if (length(el150_income) > 0) {
+  sub <- mydata[el150_income, ]
+  fs_earn   <- ifelse(is.na(sub$FSEARN), 0, as.numeric(sub$FSEARN))
+  fs_unearn <- ifelse(is.na(sub$FSUNEARN), 0, as.numeric(sub$FSUNEARN))
+  match_earn <- match_unearn <- rep(NA_real_, nrow(sub))
+  ambiguous <- rep(FALSE, nrow(sub))
+  for (k in 1:18) {
+    afil <- paste0("FSAFIL", k)
+    if (!afil %in% names(sub)) next
+    e <- person_income(sub, earned_types, k)
+    u <- person_income(sub, unearned_types, k)
+    cand <- as.numeric(sub[[afil]]) %in% 1 & (e + u) > 0
+    if (!any(cand)) next
+    trial <- sub
+    trial$rawearn   <- fs_earn - e
+    trial$rawunearn <- fs_unearn - u
+    hit <- cand & (calculate_raw_benefits(trial)$rawben_recreated == sub$RAWBEN) %in% TRUE
+    ambiguous <- ambiguous | (hit & !is.na(match_earn) & (match_earn != e | match_unearn != u))
+    first <- hit & is.na(match_earn)
+    match_earn[first]   <- e[first]
+    match_unearn[first] <- u[first]
+  }
+  use  <- !is.na(match_earn) & !ambiguous
+  rows <- el150_income[use]
+  mydata$rawearn[rows]   <- fs_earn[use] - match_earn[use]
+  mydata$rawunearn[rows] <- fs_unearn[use] - match_unearn[use]
+  mydata$correctednotes[rows]  <- paste0(mydata$correctednotes[rows], "+income_down")
+  mydata$correctedamount[rows] <- -(match_earn[use] + match_unearn[use])
+  cat("element 150 nature 13: income removed on", length(rows), "of", length(el150_income),
+      "cases (", sum(ambiguous), "ambiguous )\n")
 }
 
 # Step 7. Adjust other variables

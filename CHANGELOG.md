@@ -26,6 +26,10 @@ moved or behaves differently.
   ineligible person included: one more). A case shifts by at most one
   person, and cases whose elements disagree are left alone. Cases paid
   above the maximum allotment for their size get one more person.
+- **Element 150 natures 13 and 15** (eligible member with income or
+  expenses excluded): one fewer person. For nature 13 in ELEMENT1, that
+  member's income is also taken out of FSEARN/FSUNEARN when the benefit then
+  matches RAWBEN exactly (`hhsize_up+income_down`).
 - **Nature 97 / agency 26 cases** (change not required to be acted on) are
   treated as correctly paid: the QC side is set to the reconstructed values
   and the error fields are cleared (`no_action_required_i`).
