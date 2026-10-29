@@ -448,7 +448,7 @@ adjust_by_steps <- function(mydata, col, elements, prefix, kind,
   # Don't move the variable against NATURE1
   conflict <- (nature_direction(mydata$NATURE1, income = income) * sign(direction)) %in% (if (income) 1 else -1)
   
-  for (i in seq_len(max_iter)) {
+  for (i in seq_len(max_iter + 1)) {
     mydata <- calculate_raw_benefits(mydata)
     
     diff_matches <- abs(mydata$RAWBEN - mydata$rawben_recreated) <= matching_tolerance
@@ -464,7 +464,7 @@ adjust_by_steps <- function(mydata, col, elements, prefix, kind,
                        (direction < 0 & mydata$rawsltded <= 0),
              other   = (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax))
     
-    if (all(done, na.rm = TRUE)) break
+    if (all(done, na.rm = TRUE) || i > max_iter) break
     
     mydata[[col]] <- ifelse(
       !done & down,
@@ -479,9 +479,11 @@ adjust_by_steps <- function(mydata, col, elements, prefix, kind,
     income  = down & (mydata[[col]] <= 0 | mydata$rawben_recreated <= 0),
     shelter = (down & mydata[[col]] <= 0) | (up & mydata$rawsltded >= mydata$max_shelter_deduction),
     other   = (down & mydata[[col]] <= 0) | up)
+  # Still moving when the pass limit ran out, so it never matched
+  unfinished <- done %in% FALSE
   
   mydata$correctednotes <- ifelse(
-    eligible & (conflict | stuck), paste0(prefix, "_error"),
+    eligible & (conflict | stuck | unfinished), paste0(prefix, "_error"),
     ifelse(
       eligible & changed & down, paste0(prefix, "_down"),
       ifelse(
