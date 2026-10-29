@@ -15,6 +15,17 @@ moved or behaves differently.
   between published allowances by state, month and household size (new
   `additional_data/utilities/`). Utility errors in ELEMENT2-9 shift one step
   (at least $50) before the ELEMENT1 correction.
+- **Nature codes in benefit reconstruction:** a correction never moves a
+  variable against the direction its nature code states. Those cases keep
+  the QC value and are marked `_error`.
+- **Household size in benefit reconstruction:** household size errors in
+  ELEMENT2-9 shift household size before the ELEMENT1 correction. Cases paid
+  above the maximum allotment for their size get one more person.
+- **Nature 97 / agency 26 cases** (change not required to be acted on) are
+  treated as correctly paid: the QC side is set to the reconstructed values
+  and the error fields are cleared (`no_action_required_i`).
+- **Homeless cases with a rent or utility error** no longer keep the
+  homeless shelter deduction.
 
 ### Fixed
 - **Benefit reconstruction:** a unit with the homeless shelter deduction
