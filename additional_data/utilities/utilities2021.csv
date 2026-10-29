@@ -1,7 +1,7 @@
 state_name,state_fips,region,hh_size_min,hh_size_max,yrmonth_start,yrmonth_end,hcsua,bua,phone,electricity,water,sewer,trash,gas
 Alabama,1,,1,99,202010,202109,393,381,41,,,,,
 Alaska,2,Central,1,99,202010,202109,397,,34,100,51,53,39,120
-Alaska,2,Northern,1,99,202010,202109,324,,24,149,33,39,84,295
+Alaska,2,Northern,1,99,202010,202109,624,,24,149,33,39,84,295
 Alaska,2,Northwest,1,99,202010,202109,850,,31,158,68,58,23,512
 Alaska,2,Southcentral,1,99,202010,202109,511,,23,145,55,71,47,170
 Alaska,2,Southeast,1,99,202010,202109,407,,21,88,46,74,27,151
