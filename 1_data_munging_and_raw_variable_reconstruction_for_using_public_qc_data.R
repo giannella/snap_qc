@@ -99,19 +99,10 @@ mydata$fiscal_year <- ifelse(mydata$month >= 10, mydata$year + 1, mydata$year)
 qc_elements <- read.csv(paste0(folder, "additional_data/qc_elements.csv"))
 qc_natures <- read.csv(paste0(folder, "additional_data/qc_natures.csv"))
 
-# Join element descriptions
+# Join element and nature descriptions
 mydata <- mydata %>%
-  left_join(
-    qc_elements %>% rename(element = description),
-    by = c("ELEMENT1" = "code")
-  )
-
-# Join nature descriptions
-mydata <- mydata %>%
-  left_join(
-    qc_natures %>% rename(nature = description),
-    by = c("NATURE1" = "code")
-  )
+  left_join(qc_elements %>% rename(element = description), by = c("ELEMENT1" = "code")) %>%
+  left_join(qc_natures %>% rename(nature = description), by = c("NATURE1" = "code"))
 
 # Add in external SNAP data
 source("features.R")
@@ -202,21 +193,11 @@ mydata$fsnet_before_shelter <- mydata$FSGRINC - (
 )
 mydata$fsnet_adjusted_half <- pmax(mydata$fsnet_before_shelter * 0.5, 0)
 mydata$fssltded_uncapped <- mydata$RENT + mydata$UTIL- mydata$fsnet_adjusted_half
-mydata$fssltded_recalculated <- ifelse(
-  is.infinite(mydata$max_shelter_deduction),
-  pmax(mydata$fssltded_uncapped, 0),
-  pmin(pmax(mydata$fssltded_uncapped, 0), mydata$max_shelter_deduction)
-)
+mydata$fssltded_recalculated <- pmin(pmax(mydata$fssltded_uncapped, 0), mydata$max_shelter_deduction)
 mydata$fssltded_recalculated <- ifelse(mydata$HOMELESS_DED > 0, 0, mydata$fssltded_recalculated)
-mydata$fsnet_allow_negative = mydata$fsnet_before_shelter - (
-  mydata$fssltded_recalculated +
-    mydata$HOMELESS_DED
-)
-mydata$fsnet_allow_negative <- floor(mydata$fsnet_allow_negative)
-mydata$fsben_uncapped <- mydata$BENMAX - (0.3 * mydata$fsnet_allow_negative)
-mydata$fsben_uncapped <- floor(mydata$fsben_uncapped)
-mydata$fsben_recreated <- pmax(mydata$fsben_uncapped, mydata$fsminimum_ben)
-mydata$fsben_recreated <- pmin(mydata$fsben_recreated, mydata$BENMAX)
+mydata$fsnet_allow_negative <- floor(mydata$fsnet_before_shelter - (mydata$fssltded_recalculated + mydata$HOMELESS_DED))
+mydata$fsben_uncapped <- floor(mydata$BENMAX - (0.3 * mydata$fsnet_allow_negative))
+mydata$fsben_recreated <- pmin(pmax(mydata$fsben_uncapped, mydata$fsminimum_ben), mydata$BENMAX)
 mydata$unc_fsben_rel_max <- mydata$fsben_uncapped / mydata$BENMAX
 
 # CHECK - should be 100%
@@ -265,23 +246,13 @@ calculate_raw_benefits <- function(mydata, skip_benefits = FALSE) {
   mydata$rawnet_adjusted_half <- pmax(mydata$rawnet_before_shelter * 0.5, 0)
   mydata$rawsltexp <- mydata$rawrent + mydata$rawutil
   mydata$rawsltded_uncapped <- mydata$rawsltexp - mydata$rawnet_adjusted_half
-  mydata$rawsltded <- ifelse(
-    is.infinite(mydata$max_shelter_deduction),
-    pmax(mydata$rawsltded_uncapped, 0),
-    pmin(pmax(mydata$rawsltded_uncapped, 0), mydata$max_shelter_deduction)
-  )
+  mydata$rawsltded <- pmin(pmax(mydata$rawsltded_uncapped, 0), mydata$max_shelter_deduction)
   mydata$rawsltded <- ifelse(mydata$rawhomeless_ded > 0, 0, mydata$rawsltded)
   
   if (skip_benefits == FALSE){
-    mydata$rawnet_allow_negative = mydata$rawnet_before_shelter - (
-      mydata$rawsltded +
-        mydata$rawhomeless_ded
-    )
-    mydata$rawnet_allow_negative <- floor(mydata$rawnet_allow_negative)
-    mydata$rawben_uncapped <- mydata$rawbenmax - (0.3 * mydata$rawnet_allow_negative)
-    mydata$rawben_uncapped <- floor(mydata$rawben_uncapped)
-    mydata$rawben_recreated <- pmax(mydata$rawben_uncapped, mydata$rawminimum_ben)
-    mydata$rawben_recreated <- pmin(mydata$rawben_recreated, mydata$rawbenmax)
+    mydata$rawnet_allow_negative <- floor(mydata$rawnet_before_shelter - (mydata$rawsltded + mydata$rawhomeless_ded))
+    mydata$rawben_uncapped <- floor(mydata$rawbenmax - (0.3 * mydata$rawnet_allow_negative))
+    mydata$rawben_recreated <- pmin(pmax(mydata$rawben_uncapped, mydata$rawminimum_ben), mydata$rawbenmax)
     mydata$rawnet_capped = pmax(mydata$rawnet_allow_negative, 0) 
     mydata$unc_rawben_rel_max <- mydata$rawben_uncapped / mydata$rawbenmax
     mydata$at_max_ben <- as.integer(mydata$rawben_uncapped >= mydata$rawbenmax)
@@ -363,30 +334,14 @@ nrow(mydata) # 109800
 # For unit comp errors we find what the rawbenmax should be as it'll change if household size changes
 # And same thing with the shelter allowance
 
-# Subtract 1 to rawusize for element 150, excluded eligible person
-# Only natures that don't affect expenses
-mydata$rawusize <- ifelse(
-  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16),
-  mydata$rawusize - 1,
-  mydata$rawusize
-)
-mydata$correctednotes <- ifelse(
-  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16),
-  "hhsize_up",
-  mydata$correctednotes
-)
-
-# Add 1 from rawusize for element 150, ineligible person included
-mydata$rawusize <- ifelse(
-  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7),
-  mydata$rawusize + 1,
-  mydata$rawusize
-)
-mydata$correctednotes <- ifelse(
-  correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7),
-  "hhsize_down",
-  mydata$correctednotes
-)
+# Element 150: excluded eligible person (natures that don't affect expenses) -> subtract 1;
+# ineligible person included -> add 1
+el150_excluded <- correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16)
+el150_included <- correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7)
+mydata$rawusize       <- ifelse(el150_excluded, mydata$rawusize - 1, mydata$rawusize)
+mydata$correctednotes <- ifelse(el150_excluded, "hhsize_up", mydata$correctednotes)
+mydata$rawusize       <- ifelse(el150_included, mydata$rawusize + 1, mydata$rawusize)
+mydata$correctednotes <- ifelse(el150_included, "hhsize_down", mydata$correctednotes)
 
 # Unit composition shift for ELEMENT2+, applied before the ELEMENT1 adjustment in Step 7
 mydata$hhsize_secondary_shift <- 0
@@ -421,8 +376,6 @@ if (correct_variables) {
     hh_size = mydata$rawusize,
     fiscal_year = mydata$fiscal_year
   )
-}
-if (correct_variables) {
   mydata$rawstdded <- mapply(
     get_standard_deduction,
     state_name = mydata$state_name,
@@ -430,8 +383,6 @@ if (correct_variables) {
     fiscal_year = mydata$fiscal_year,
     USE.NAMES = FALSE
   )
-}
-if (correct_variables) {
   mydata$rawminimum_ben <- ifelse(mydata$rawusize < 3, mydata$MINIMUM_BEN, 0)
 }
 
