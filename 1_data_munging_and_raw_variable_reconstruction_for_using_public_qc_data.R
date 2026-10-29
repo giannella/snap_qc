@@ -278,14 +278,10 @@ max_allotments_long <- reshape(
   direction = "long"
 )
 max_allotments_long <- max_allotments_long[, c("year", "hh_size", "rawbenmax")]
+max_allotment_key <- paste(max_allotments_long$year, max_allotments_long$hh_size)
+stopifnot(!anyDuplicated(max_allotment_key))
 get_max_allotment <- function(hh_size, fiscal_year) {
-  result <- max_allotments_long[
-    max_allotments_long$hh_size == hh_size & 
-      max_allotments_long$year == fiscal_year, 
-    "rawbenmax"
-  ]
-  if(length(result) == 0) return(NA)
-  return(result)
+  max_allotments_long$rawbenmax[match(paste(fiscal_year, hh_size), max_allotment_key)]
 }
 
 # Read in the standard deductions based on unit size
@@ -301,22 +297,19 @@ standard_deductions_long <- reshape(
 )
 standard_deductions_long <- standard_deductions_long[, c("year", "hh_size", "rawstdded")]
 
+std_ded_key <- paste(standard_deductions_long$year, standard_deductions_long$hh_size)
+stopifnot(!anyDuplicated(std_ded_key))
+
 il_stdded_offsets <- standard_deductions[, c("year", "IL_OFFSET")]
+stopifnot(!anyDuplicated(il_stdded_offsets$year))
 get_standard_deduction <- function(state_name, hh_size, fiscal_year) {
-  result <- standard_deductions_long[
-    standard_deductions_long$hh_size == hh_size &
-      standard_deductions_long$year == fiscal_year,
-    "rawstdded"
-  ]
-  if(length(result) == 0) return(NA)
-
-  if (!is.na(state_name) && state_name == "Illinois") {
-    off <- il_stdded_offsets$IL_OFFSET[il_stdded_offsets$year == fiscal_year]
-    stopifnot(length(off) == 1, !is.na(off))
-    result <- result - off
-  }
-
-  return(result)
+  result <- standard_deductions_long$rawstdded[match(paste(fiscal_year, hh_size), std_ded_key)]
+  fiscal_year <- rep_len(fiscal_year, length(result))
+  il <- !is.na(result) & rep_len(state_name, length(result)) %in% "Illinois"
+  off <- il_stdded_offsets$IL_OFFSET[match(fiscal_year[il], il_stdded_offsets$year)]
+  stopifnot(!anyNA(off))
+  result[il] <- result[il] - off
+  result
 }
 
 # Confirm rawbenmax matches the MAXBEN in data
@@ -361,7 +354,7 @@ if (correct_variables) {
 
 # Paid more than the max for the corrected size (and not last year's max): add a person
 over_max <- which(correct_variables & mydata$RAWBEN > mydata$BENMAX & mydata$rawusize == mydata$FSUSIZE & !secondary_hh_element)
-prev_max <- mapply(get_max_allotment, mydata$FSUSIZE[over_max], mydata$fiscal_year[over_max] - 1)
+prev_max <- get_max_allotment(mydata$FSUSIZE[over_max], mydata$fiscal_year[over_max] - 1)
 over_max <- over_max[is.na(prev_max) | mydata$RAWBEN[over_max] != prev_max]
 mydata$rawusize[over_max] <- mydata$rawusize[over_max] + 1
 mydata$correctednotes[over_max] <- "hhsize_down"
@@ -371,18 +364,8 @@ mydata <- mydata[mydata$rawusize > 0, ]
 
 # Update maxben and standard deduction with new household sizes
 if (correct_variables) {
-  mydata$rawbenmax <- mapply(
-    get_max_allotment,
-    hh_size = mydata$rawusize,
-    fiscal_year = mydata$fiscal_year
-  )
-  mydata$rawstdded <- mapply(
-    get_standard_deduction,
-    state_name = mydata$state_name,
-    hh_size = mydata$rawusize,
-    fiscal_year = mydata$fiscal_year,
-    USE.NAMES = FALSE
-  )
+  mydata$rawbenmax <- get_max_allotment(mydata$rawusize, mydata$fiscal_year)
+  mydata$rawstdded <- get_standard_deduction(mydata$state_name, mydata$rawusize, mydata$fiscal_year)
   mydata$rawminimum_ben <- ifelse(mydata$rawusize < 3, mydata$MINIMUM_BEN, 0)
 }
 
@@ -945,7 +928,7 @@ if (cpi_inflate_vars) {
   df <- cpi_inflate(df, cpi_vars, modeling_target_year, year_col = "fiscal_year",
                     overwrite = TRUE)
   df$rawhomeless_ded[!is.na(df$rawhomeless_ded) & df$rawhomeless_ded > 0] <- year_data$homeless_standard[year_data$year == modeling_target_year]
-  df$rawstdded <- Vectorize(get_standard_deduction)(df$state_name, df$rawusize, modeling_target_year)
+  df$rawstdded <- get_standard_deduction(df$state_name, df$rawusize, modeling_target_year)
   
   # Additional calculations needed post-inflation
   df$max_shelter_deduction <- year_data$max_shelter_deduction[year_data$year == modeling_target_year]
@@ -957,7 +940,7 @@ if (cpi_inflate_vars) {
   # allotments are not
   skip_benefits <- TRUE
   if (skip_benefits == FALSE){
-    df$rawbenmax <- Vectorize(get_max_allotment)(df$rawusize, modeling_target_year)
+    df$rawbenmax <- get_max_allotment(df$rawusize, modeling_target_year)
     df$rawminimum_ben <- year_data$min_allotment[year_data$year == modeling_target_year]
     df$rawminimum_ben <- ifelse(df$rawusize < 3, df$rawminimum_ben, 0)
   }
