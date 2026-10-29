@@ -420,6 +420,7 @@ if (correct_variables) {
 
 income_shift <- 1
 max_iterations <- 3000
+max_iterations_income <- 11000
 matching_tolerance <- 0
 
 # Direction for the adjust_* loops (> 0 = raise the benefit), from the reconstructed benefit before any adjustment
@@ -434,185 +435,63 @@ nature_direction <- function(nature, income) {
   else ifelse(nature %in% c(52, 57), -1, ifelse(nature %in% c(53, 56), 1, 0))
 }
 
-adjust_income <- function(mydata, col, elements, prefix, max_iter = 11000) {
+adjust_by_steps <- function(mydata, col, elements, prefix, kind,
+                            max_iter = if (kind == "income") max_iterations_income else max_iterations) {
   
+  stopifnot(kind %in% c("income", "shelter", "other"))
+  income <- kind == "income"
   eligible <- mydata$ELEMENT1 %in% elements
   original <- mydata[[col]]  # save before any changes
   direction <- start_direction(mydata)
+  down <- if (income) direction > 0 else direction < 0  # the value moves down
+  up   <- if (income) direction < 0 else direction > 0
   # Don't move the variable against NATURE1
-  conflict <- (nature_direction(mydata$NATURE1, income = TRUE) * sign(direction)) %in% 1
+  conflict <- (nature_direction(mydata$NATURE1, income = income) * sign(direction)) %in% (if (income) 1 else -1)
   
   for (i in seq_len(max_iter)) {
     mydata <- calculate_raw_benefits(mydata)
     
-    diff <- mydata$RAWBEN - mydata$rawben_recreated
-    diff_matches <- abs(diff) <= matching_tolerance
+    diff_matches <- abs(mydata$RAWBEN - mydata$rawben_recreated) <= matching_tolerance
     
-    done <- ((diff_matches | direction > 0 & mydata[[col]] <= 0) | conflict | 
-               (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
-               (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) | 
-               (direction < 0 & mydata$rawben_uncapped < 0) | !eligible)
+    done <- diff_matches | conflict | !eligible |
+      (down & mydata[[col]] <= 0) |
+      (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
+      (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
+      switch(kind,
+             income  = (direction < 0 & mydata$rawben_uncapped < 0),
+             shelter = (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax) |
+                       (direction > 0 & mydata$rawsltded_uncapped >= mydata$max_shelter_deduction) |
+                       (direction < 0 & mydata$rawsltded <= 0),
+             other   = (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax))
+    
     if (all(done, na.rm = TRUE)) break
     
     mydata[[col]] <- ifelse(
-      !done & direction > 0,
+      !done & down,
       pmax(mydata[[col]] - income_shift, 0),
-      ifelse(
-        !done & direction < 0,
-        mydata[[col]] + income_shift,
-        mydata[[col]]
-      )
+      ifelse(!done & up, mydata[[col]] + income_shift, mydata[[col]])
     )
-    
   }
   
   # Set correctednotes after loop completes
   changed <- mydata[[col]] != original
-  hit_zero <- (direction > 0) & (mydata[[col]] <= 0 | mydata$rawben_recreated <= 0)
+  stuck <- !diff_matches & switch(kind,
+    income  = down & (mydata[[col]] <= 0 | mydata$rawben_recreated <= 0),
+    shelter = (down & mydata[[col]] <= 0) | (up & mydata$rawsltded >= mydata$max_shelter_deduction),
+    other   = (down & mydata[[col]] <= 0) | up)
   
   mydata$correctednotes <- ifelse(
-    eligible & (conflict | hit_zero & !diff_matches), paste0(prefix, "_error"),
+    eligible & (conflict | stuck), paste0(prefix, "_error"),
     ifelse(
-      eligible & changed & direction > 0, paste0(prefix, "_down"),
+      eligible & changed & down, paste0(prefix, "_down"),
       ifelse(
-        eligible & changed & direction < 0, paste0(prefix, "_up"),
-        ifelse(
-          eligible, paste0(prefix, "_no_change"),
-          mydata$correctednotes
-        )
+        eligible & changed & up, paste0(prefix, "_up"),
+        ifelse(eligible, paste0(prefix, "_no_change"), mydata$correctednotes)
       )
     )
   )
   
-  mydata$correctedamount <- ifelse(
-    eligible,
-    mydata[[col]] - original,
-    mydata$correctedamount
-  )
-  
-  mydata
-}
-
-adjust_shelter <- function(mydata, col, elements, prefix, max_iter = max_iterations) {
-  
-  eligible <- mydata$ELEMENT1 %in% elements
-  original <- mydata[[col]]  # save before any changes
-  direction <- start_direction(mydata)
-  # Don't move the variable against NATURE1
-  conflict <- (nature_direction(mydata$NATURE1, income = FALSE) * sign(direction)) %in% -1
-  
-  for (i in seq_len(max_iter)) {
-    mydata <- calculate_raw_benefits(mydata)
-    
-    diff <- mydata$RAWBEN - mydata$rawben_recreated
-    diff_matches <- abs(diff) <= matching_tolerance
-    
-    done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | conflict |
-               (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
-               (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax) |
-               (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
-               (direction > 0 & mydata$rawsltded_uncapped >= mydata$max_shelter_deduction) |
-               (direction < 0 & mydata$rawsltded <= 0) | !eligible)
-    
-    if (all(done, na.rm = TRUE)) break
-    
-    mydata[[col]] <- ifelse(
-      !done & direction < 0,
-      pmax(mydata[[col]] - income_shift, 0),
-      ifelse(
-        !done & direction > 0,
-        mydata[[col]] + income_shift,
-        mydata[[col]]
-      )
-    )
-    
-  }
-  
-  # Set correctednotes after loop completes
-  hit_zero <- (mydata[[col]] <= 0) & !diff_matches & direction < 0
-  hit_cap <- !diff_matches & direction > 0 & mydata$rawsltded >= mydata$max_shelter_deduction
-  changed <- mydata[[col]] != original
-  
-  mydata$correctednotes <- ifelse(
-    eligible & (conflict | (hit_zero | hit_cap) & prefix != "util"), paste0(prefix, "_error"),
-    ifelse(
-      eligible & changed & direction > 0, paste0(prefix, "_up"),
-      ifelse(
-        eligible & changed & direction < 0, paste0(prefix, "_down"),
-        ifelse(
-          eligible, paste0(prefix, "_no_change"),
-          mydata$correctednotes
-        )
-      )
-    )
-  )
-  
-  mydata$correctedamount <- ifelse(
-    eligible,
-    mydata[[col]] - original,
-    mydata$correctedamount
-  )
-  
-  mydata
-}
-
-adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iterations) {
-  
-  eligible <- mydata$ELEMENT1 %in% elements
-  original <- mydata[[col]]  # save before any changes
-  direction <- start_direction(mydata)
-  # Don't move the variable against NATURE1
-  conflict <- (nature_direction(mydata$NATURE1, income = FALSE) * sign(direction)) %in% -1
-  
-  for (i in seq_len(max_iter)) {
-    mydata <- calculate_raw_benefits(mydata)
-    
-    diff <- mydata$RAWBEN - mydata$rawben_recreated
-    diff_matches <- abs(diff) <= matching_tolerance
-    
-    done <- (diff_matches | (mydata[[col]] <= 0 & direction < 0) | conflict |
-               (direction > 0 & mydata$rawben_recreated > mydata$RAWBEN) |
-               (direction > 0 & mydata$rawben_recreated >= mydata$rawbenmax) |
-               (direction < 0 & mydata$rawben_recreated < mydata$RAWBEN) |
-               (direction < 0 & mydata[[col]] <= 0) | !eligible)
-    
-    if (all(done, na.rm = TRUE)) break
-    
-    mydata[[col]] <- ifelse(
-      !done & direction < 0,
-      pmax(mydata[[col]] - income_shift, 0),
-      ifelse(
-        !done & direction > 0,
-        mydata[[col]] + income_shift,
-        mydata[[col]]
-      )
-    )
-    
-  }
-  
-  # Set correctednotes after loop completes
-  hit_zero <- (mydata[[col]] <= 0) & !diff_matches & direction < 0
-  hit_cap <- !diff_matches & direction > 0 
-  
-  mydata$correctednotes <- ifelse(
-    eligible & (conflict | hit_zero | hit_cap), paste0(prefix, "_error"),
-    ifelse(
-      eligible & direction > 0, paste0(prefix, "_up"),
-      ifelse(
-        eligible & direction < 0, paste0(prefix, "_down"),
-        ifelse(
-          eligible, paste0(prefix, "_no_change"),
-          mydata$correctednotes
-        )
-      )
-    )
-  )
-  
-  mydata$correctedamount <- ifelse(
-    eligible,
-    mydata[[col]] - original,
-    mydata$correctedamount
-  )
+  mydata$correctedamount <- ifelse(eligible, mydata[[col]] - original, mydata$correctedamount)
   
   mydata
 }
@@ -650,9 +529,9 @@ adjust_util_steps <- function(mydata, col, elements, prefix) {
 }
 
 # Run an adjust_* function on its eligible rows only
-on_eligible_rows <- function(adjust_fn, mydata, col, elements, prefix) {
+on_eligible_rows <- function(adjust_fn, mydata, col, elements, prefix, ...) {
   rows <- which(mydata$ELEMENT1 %in% elements)
-  sub <- adjust_fn(mydata[rows, ], col, elements, prefix)
+  sub <- adjust_fn(mydata[rows, ], col, elements, prefix, ...)
   mydata[[col]][rows] <- sub[[col]]
   mydata$correctednotes[rows] <- sub$correctednotes
   mydata$correctedamount[rows] <- sub$correctedamount
@@ -687,35 +566,25 @@ if (correct_variables){
   hl <- mydata$rawhomeless_ded > 0 & mydata$ELEMENT1 %in% c(363, 364)
   mydata$rawhomeless_ded[hl] <- 0
   
-  mydata <- on_eligible_rows(adjust_income, mydata, 
-                          col = "rawunearn", 
-                          elements = c(331, 332, 333, 334, 335, 336, 342, 343, 344, 345, 346, 350), 
-                          prefix = "unearn")
-  mydata <- on_eligible_rows(adjust_income, mydata, 
-                          col = "rawearn", 
-                          elements = c(311, 312, 314), 
-                          prefix = "earn")
-  mydata <- on_eligible_rows(adjust_shelter, mydata, 
-                           col = "rawrent", 
-                           elements = c(363), 
-                           prefix = "rent")
+  mydata <- on_eligible_rows(adjust_by_steps, mydata, kind = "income",
+                             col = "rawunearn",
+                             elements = c(331, 332, 333, 334, 335, 336, 342, 343, 344, 345, 346, 350),
+                             prefix = "unearn")
+  mydata <- on_eligible_rows(adjust_by_steps, mydata, kind = "income",
+                             col = "rawearn", elements = c(311, 312, 314), prefix = "earn")
+  mydata <- on_eligible_rows(adjust_by_steps, mydata, kind = "shelter",
+                             col = "rawrent", elements = c(363), prefix = "rent")
   mydata <- on_eligible_rows(adjust_util_steps, mydata, 
                            col = "rawutil", 
                            elements = c(364), 
                            prefix = "util")
-  mydata <- on_eligible_rows(adjust_other, mydata, 
-                         col = "rawmedded", 
-                         elements = c(365), 
-                         prefix = "med")
+  mydata <- on_eligible_rows(adjust_by_steps, mydata, kind = "other",
+                             col = "rawmedded", elements = c(365), prefix = "med")
   mydata <- fix_smd_adjustments(mydata)
-  mydata <- on_eligible_rows(adjust_other, mydata, 
-                         col = "rawdepded", 
-                         elements = c(323), 
-                         prefix = "dep")
-  mydata <- on_eligible_rows(adjust_other, mydata, 
-                         col = "rawcsded", 
-                         elements = c(366), 
-                         prefix = "cs")
+  mydata <- on_eligible_rows(adjust_by_steps, mydata, kind = "other",
+                             col = "rawdepded", elements = c(323), prefix = "dep")
+  mydata <- on_eligible_rows(adjust_by_steps, mydata, kind = "other",
+                             col = "rawcsded", elements = c(366), prefix = "cs")
 }
 
 
