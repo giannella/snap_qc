@@ -26,6 +26,10 @@ moved or behaves differently.
   and the error fields are cleared (`no_action_required_i`).
 - **Homeless cases with a rent or utility error** no longer keep the
   homeless shelter deduction.
+- **Homeless shelter deduction errors (element 362)** are now corrected:
+  nature 53 gives the agency side the homeless standard for the review's
+  fiscal year, nature 52 gives it $0 (notes `homeless_up` /
+  `homeless_down`).
 
 ### Fixed
 - **Benefit reconstruction:** a unit with the homeless shelter deduction

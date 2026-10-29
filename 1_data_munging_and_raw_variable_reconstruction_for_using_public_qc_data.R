@@ -567,6 +567,21 @@ if (correct_variables){
   # Homeless cases with a rent/utility error: assume no homeless deduction
   hl <- mydata$rawhomeless_ded > 0 & mydata$ELEMENT1 %in% c(363, 364)
   mydata$rawhomeless_ded[hl] <- 0
+
+  # Element 362 (homeless shelter deduction), set from NATURE1
+  # Nature 53 (agency included it): the homeless standard for the review's fiscal year
+  # Nature 52 (agency left it out): $0
+  el362 <- mydata$ELEMENT1 %in% 362 & mydata$NATURE1 %in% c(52, 53)
+  hl_before <- mydata$rawhomeless_ded
+  mydata$rawhomeless_ded[el362] <- ifelse(
+    mydata$NATURE1[el362] == 53,
+    year_data$homeless_standard[match(mydata$fiscal_year[el362], year_data$year)],
+    0
+  )
+  hl_shift <- mydata$rawhomeless_ded - hl_before
+  mydata$correctednotes[el362] <- ifelse(hl_shift[el362] > 0, "homeless_up",
+                                         ifelse(hl_shift[el362] < 0, "homeless_down", "homeless_no_change"))
+  mydata$correctedamount[el362] <- hl_shift[el362]
   
   mydata <- on_eligible_rows(adjust_by_steps, mydata, kind = "income",
                              col = "rawunearn",
