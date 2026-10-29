@@ -19,7 +19,12 @@ moved or behaves differently.
   variable against the direction its nature code states. Those cases keep
   the QC value and are marked `_error`.
 - **Household size in benefit reconstruction:** household size errors in
-  ELEMENT2-9 shift household size before the ELEMENT1 correction. Cases paid
+  any element slot shift household size before the ELEMENT1 correction:
+  unit composition (150) and the person-eligibility elements (111 student,
+  130 citizenship, 151 disqualification, 160-166 work rules, 170 SSN), in
+  the direction of the nature (eligible person excluded: one fewer;
+  ineligible person included: one more). A case shifts by at most one
+  person, and cases whose elements disagree are left alone. Cases paid
   above the maximum allotment for their size get one more person.
 - **Nature 97 / agency 26 cases** (change not required to be acted on) are
   treated as correctly paid: the QC side is set to the reconstructed values

@@ -327,33 +327,41 @@ nrow(mydata) # 109800
 # For unit comp errors we find what the rawbenmax should be as it'll change if household size changes
 # And same thing with the shelter allowance
 
-# Element 150: excluded eligible person (natures that don't affect expenses) -> subtract 1;
-# ineligible person included -> add 1
-el150_excluded <- correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(12, 14, 16)
-el150_included <- correct_variables & mydata$ELEMENT1 == 150 & mydata$NATURE1 %in% c(7)
-mydata$rawusize       <- ifelse(el150_excluded, mydata$rawusize - 1, mydata$rawusize)
-mydata$correctednotes <- ifelse(el150_excluded, "hhsize_up", mydata$correctednotes)
-mydata$rawusize       <- ifelse(el150_included, mydata$rawusize + 1, mydata$rawusize)
-mydata$correctednotes <- ifelse(el150_included, "hhsize_down", mydata$correctednotes)
-
-# Unit composition shift for ELEMENT2+, applied before the ELEMENT1 adjustment in Step 7
-mydata$hhsize_secondary_shift <- 0
-secondary_hh_element <- rep(FALSE, nrow(mydata))
-if (correct_variables) {
-  for (k in 2:9) {
-    el_col <- paste0("ELEMENT", k)
-    na_col <- paste0("NATURE", k)
-    if (!all(c(el_col, na_col) %in% names(mydata))) next
-    excluded_eligible   <- mydata[[el_col]] %in% 150 & mydata[[na_col]] %in% c(12, 14, 16)
-    included_ineligible <- mydata[[el_col]] %in% 150 & mydata[[na_col]] %in% c(7)
-    mydata$hhsize_secondary_shift <- mydata$hhsize_secondary_shift - excluded_eligible + included_ineligible
-    secondary_hh_element <- secondary_hh_element | excluded_eligible | included_ineligible
-  }
-  mydata$rawusize <- mydata$rawusize + mydata$hhsize_secondary_shift
+# Household size elements in any element slot: 150 (unit composition) and the
+# person-eligibility elements 111 student, 130 citizenship, 151 disqualification,
+# 160-166 work rules, 170 SSN. The nature gives the direction:
+#   eligible person excluded (150: natures 12, 14, 16; others: nature 6) -> subtract 1
+#   ineligible person included (nature 7)                               -> add 1
+# One person per case however many slots carry one (the same person is often coded
+# under 150 and a person element); cases whose slots disagree on direction are left alone
+hh_elements <- c(111, 130, 150, 151, 160:166, 170)
+hh_direction <- function(element, nature) {
+  ifelse(element %in% 150 & nature %in% c(12, 14, 16), -1,
+         ifelse(element %in% setdiff(hh_elements, 150) & nature %in% 6, -1,
+                ifelse(element %in% hh_elements & nature %in% 7, 1, 0)))
 }
+hh_down <- hh_up <- rep(FALSE, nrow(mydata))
+for (k in 1:9) {
+  el_col <- paste0("ELEMENT", k)
+  na_col <- paste0("NATURE", k)
+  if (!all(c(el_col, na_col) %in% names(mydata))) next
+  dir_k <- hh_direction(mydata[[el_col]], mydata[[na_col]])
+  hh_down <- hh_down | dir_k < 0
+  hh_up   <- hh_up | dir_k > 0
+}
+hh_shift <- if (correct_variables) (hh_up & !hh_down) - (hh_down & !hh_up) else rep(0, nrow(mydata))
+mydata$rawusize <- mydata$rawusize + hh_shift
+
+# ELEMENT1 hits are noted here; ELEMENT2+ hits are folded into correctednotes after Step 7
+hh_first <- hh_shift != 0 & hh_direction(mydata$ELEMENT1, mydata$NATURE1) == hh_shift
+mydata$correctednotes[hh_first & hh_shift < 0] <- "hhsize_up"
+mydata$correctednotes[hh_first & hh_shift > 0] <- "hhsize_down"
+mydata$hhsize_secondary_shift <- ifelse(hh_first, 0, hh_shift)
+# Any household size element with a direction keeps the over-max rule below from adding a person
+hh_element_any <- correct_variables & (hh_up | hh_down)
 
 # Paid more than the max for the corrected size (and not last year's max): add a person
-over_max <- which(correct_variables & mydata$RAWBEN > mydata$BENMAX & mydata$rawusize == mydata$FSUSIZE & !secondary_hh_element)
+over_max <- which(correct_variables & mydata$RAWBEN > mydata$BENMAX & mydata$rawusize == mydata$FSUSIZE & !hh_element_any)
 prev_max <- get_max_allotment(mydata$FSUSIZE[over_max], mydata$fiscal_year[over_max] - 1)
 over_max <- over_max[is.na(prev_max) | mydata$RAWBEN[over_max] != prev_max]
 mydata$rawusize[over_max] <- mydata$rawusize[over_max] + 1
