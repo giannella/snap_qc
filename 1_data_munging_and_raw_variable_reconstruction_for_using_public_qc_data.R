@@ -435,15 +435,27 @@ if (correct_variables) {
   mydata$rawminimum_ben <- ifelse(mydata$rawusize < 3, mydata$MINIMUM_BEN, 0)
 }
 
-# Utility allowance tiers in each state/year (values seen in more than 5 cases)
-valid_util <- mydata %>%
-  group_by(state_name, fiscal_year) %>%
-  count(UTIL) %>%
-  filter(n > 5) %>%
-  select(state_name, fiscal_year, UTIL)
+# Utility allowances by state, month and household size (one file per fiscal year)
+util_allowances <- list.files(paste0(folder, "additional_data/utilities"), pattern = "\\.csv$", full.names = TRUE) %>%
+  lapply(read.csv) %>%
+  bind_rows()
+util_cols <- c("hcsua", "bua", "phone", "electricity", "water", "sewer", "trash", "gas")
+
+# Utility tiers for a case: $0 plus every allowance in effect for its state, review month and household size
+util_tiers <- function(state, year, month, hh_size) {
+  ym <- year * 100 + month
+  a <- util_allowances[util_allowances$state_name == state &
+                         util_allowances$yrmonth_start <= ym & util_allowances$yrmonth_end >= ym &
+                         util_allowances$hh_size_min <= hh_size & util_allowances$hh_size_max >= hh_size, util_cols]
+  if (nrow(a) == 0) stop("No utility allowances for ", state, " ", ym, " household size ", hh_size)
+  a <- unlist(a, use.names = FALSE)
+  sort(unique(c(0, a[!is.na(a)])))
+}
 
 # Utility element in ELEMENT2+, applied before the ELEMENT1 adjustment in Step 7
-# Nature 52 (agency left it out): one tier down. Nature 53 (agency included it): top tier
+# Nature 52 (agency left it out): next step down. Nature 53 (agency included it): top step
+# A step must be at least util_min_step away, so near-identical allowances count as the same step
+util_min_step <- 50
 mydata$util_secondary_shift <- 0
 if (correct_variables) {
   util_nature <- rep(NA_real_, nrow(mydata))
@@ -455,9 +467,14 @@ if (correct_variables) {
     util_nature[hit] <- mydata[[na_col]][hit]
   }
   for (i in which(!is.na(util_nature) & !(mydata$ELEMENT1 %in% 364))) {
-    tiers <- as.numeric(valid_util$UTIL[valid_util$state_name == mydata$state_name[i] & valid_util$fiscal_year == mydata$fiscal_year[i]])
+    tiers <- util_tiers(mydata$state_name[i], mydata$year[i], mydata$month[i], as.numeric(mydata$rawusize[i]))
     u <- as.numeric(mydata$UTIL[i])
-    new_util <- if (util_nature[i] == 52) max(c(0, tiers[tiers < u])) else max(c(u, tiers))
+    lower <- tiers[tiers <= u - util_min_step]
+    new_util <- if (util_nature[i] == 52) {
+      if (length(lower) > 0) max(lower) else u
+    } else {
+      if (max(tiers) - u >= util_min_step) max(tiers) else u
+    }
     mydata$util_secondary_shift[i] <- new_util - u
     mydata$rawutil[i] <- new_util
   }
@@ -666,6 +683,38 @@ adjust_other <- function(mydata, col, elements, prefix, max_iter = max_iteration
   mydata
 }
 
+# Utilities only take allowance steps: try each step in the needed direction and
+# keep the one whose recreated benefit is closest to RAWBEN (ties: smallest move)
+adjust_util_steps <- function(mydata, col, elements, prefix) {
+  
+  eligible <- mydata$ELEMENT1 %in% elements
+  original <- mydata[[col]]
+  mydata <- calculate_raw_benefits(mydata)
+  start_gap <- abs(mydata$RAWBEN - mydata$rawben_recreated)
+  direction <- mydata$RAWBEN - mydata$rawben_recreated
+  # Don't move the variable against NATURE1
+  conflict <- (nature_direction(mydata$NATURE1, income = FALSE) * sign(direction)) %in% -1
+  notes <- ifelse(direction == 0, paste0(prefix, "_no_change"), paste0(prefix, "_error"))
+  
+  for (i in which(eligible & !conflict & direction != 0)) {
+    tiers <- util_tiers(mydata$state_name[i], mydata$year[i], mydata$month[i], as.numeric(mydata$rawusize[i]))
+    cand <- if (direction[i] > 0) tiers[tiers > original[i]] else tiers[tiers < original[i]]
+    if (length(cand) == 0) next
+    trial <- mydata[rep(i, length(cand)), ]
+    trial[[col]] <- cand
+    gap <- abs(calculate_raw_benefits(trial)$rawben_recreated - mydata$RAWBEN[i])
+    best <- order(gap, abs(cand - original[i]))[1]
+    if (gap[best] >= start_gap[i]) next
+    mydata[[col]][i] <- cand[best]
+    notes[i] <- paste0(prefix, ifelse(cand[best] > original[i], "_up", "_down"))
+  }
+  
+  mydata <- calculate_raw_benefits(mydata)
+  mydata$correctednotes <- ifelse(eligible, notes, mydata$correctednotes)
+  mydata$correctedamount <- ifelse(eligible, mydata[[col]] - original, mydata$correctedamount)
+  mydata
+}
+
 # Run an adjust_* function on its eligible rows only
 on_eligible_rows <- function(adjust_fn, mydata, col, elements, prefix) {
   rows <- which(mydata$ELEMENT1 %in% elements)
@@ -716,7 +765,7 @@ if (correct_variables){
                            col = "rawrent", 
                            elements = c(363), 
                            prefix = "rent")
-  mydata <- on_eligible_rows(adjust_shelter, mydata, 
+  mydata <- on_eligible_rows(adjust_util_steps, mydata, 
                            col = "rawutil", 
                            elements = c(364), 
                            prefix = "util")
@@ -733,30 +782,6 @@ if (correct_variables){
                          col = "rawcsded", 
                          elements = c(366), 
                          prefix = "cs")
-  
-  # For util, we have first set it to what we want it to be
-  # This isn't possible, as there are fixed utility allowances.
-  # Find the nearest allowance for the given state/year combo and set to that
-  mydata <- mydata %>%
-    rowwise() %>%
-    mutate(
-      rawutil = {
-        if (!grepl("util", correctednotes)) rawutil
-        else {
-          valid <- valid_util$UTIL[valid_util$state_name == state_name & valid_util$fiscal_year == fiscal_year]
-          if (correctednotes == "util_up") {
-            valid <- valid[valid > UTIL]
-            if (length(valid) == 0 || is.na(rawutil)) rawutil
-            else valid[which.min(abs(valid - rawutil))]
-          } else if (correctednotes == "util_down") {
-            valid <- valid[valid < UTIL]
-            if (length(valid) == 0 || is.na(rawutil)) 0
-            else valid[which.min(abs(valid - rawutil))]
-          } else rawutil
-        }
-      }
-    ) %>%
-    ungroup()
 }
 
 

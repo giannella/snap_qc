@@ -10,6 +10,12 @@ moved or behaves differently.
 
 ## [Unreleased]
 
+### Changed
+- **Utility allowances in benefit reconstruction:** utilities now move only
+  between published allowances by state, month and household size (new
+  `additional_data/utilities/`). Utility errors in ELEMENT2-9 shift one step
+  (at least $50) before the ELEMENT1 correction.
+
 ### Fixed
 - **Benefit reconstruction:** a unit with the homeless shelter deduction
   gets no excess shelter deduction (FS and raw side, and the workbook);
