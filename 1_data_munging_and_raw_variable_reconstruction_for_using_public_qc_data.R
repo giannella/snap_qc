@@ -562,26 +562,38 @@ fix_smd_adjustments <- function(mydata) {
   mydata
 }
 
+mydata$homeless_secondary_shift <- 0
 if (correct_variables){
   
   # Homeless cases with a rent/utility error: assume no homeless deduction
   hl <- mydata$rawhomeless_ded > 0 & mydata$ELEMENT1 %in% c(363, 364)
   mydata$rawhomeless_ded[hl] <- 0
 
-  # Element 362 (homeless shelter deduction), set from NATURE1
+  # Element 362 (homeless shelter deduction) in any element slot, set from its nature
   # Nature 53 (agency included it): the homeless standard for the review's fiscal year
   # Nature 52 (agency left it out): $0
-  el362 <- mydata$ELEMENT1 %in% 362 & mydata$NATURE1 %in% c(52, 53)
+  # Applied before the ELEMENT1 adjustment; ELEMENT2+ hits are folded into correctednotes after Step 7
+  hl_nature <- rep(NA_real_, nrow(mydata))
+  for (k in 1:9) {
+    el_col <- paste0("ELEMENT", k)
+    na_col <- paste0("NATURE", k)
+    if (!all(c(el_col, na_col) %in% names(mydata))) next
+    hit <- is.na(hl_nature) & mydata[[el_col]] %in% 362 & mydata[[na_col]] %in% c(52, 53)
+    hl_nature[hit] <- mydata[[na_col]][hit]
+  }
+  el362 <- !is.na(hl_nature)
   hl_before <- mydata$rawhomeless_ded
   mydata$rawhomeless_ded[el362] <- ifelse(
-    mydata$NATURE1[el362] == 53,
+    hl_nature[el362] == 53,
     year_data$homeless_standard[match(mydata$fiscal_year[el362], year_data$year)],
     0
   )
   hl_shift <- mydata$rawhomeless_ded - hl_before
-  mydata$correctednotes[el362] <- ifelse(hl_shift[el362] > 0, "homeless_up",
-                                         ifelse(hl_shift[el362] < 0, "homeless_down", "homeless_no_change"))
-  mydata$correctedamount[el362] <- hl_shift[el362]
+  el362_first <- el362 & mydata$ELEMENT1 %in% 362 & mydata$NATURE1 %in% c(52, 53)
+  mydata$correctednotes[el362_first] <- ifelse(hl_shift[el362_first] > 0, "homeless_up",
+                                               ifelse(hl_shift[el362_first] < 0, "homeless_down", "homeless_no_change"))
+  mydata$correctedamount[el362_first] <- hl_shift[el362_first]
+  mydata$homeless_secondary_shift <- ifelse(el362 & !el362_first, hl_shift, 0)
   
   mydata <- on_eligible_rows(adjust_by_steps, mydata, kind = "income",
                              col = "rawunearn",
@@ -762,12 +774,15 @@ add_total_deductions <- function(data) {
 }
 mydata <- add_total_deductions(mydata)
 
-# Fold secondary household size shifts into correctednotes, e.g. "hhsize_up+earn_down"
+# Fold secondary household size, utility and homeless shifts into correctednotes, e.g. "hhsize_up+earn_down"
 sec_note <- ifelse(mydata$hhsize_secondary_shift < 0, "hhsize_up",
                    ifelse(mydata$hhsize_secondary_shift > 0, "hhsize_down", NA))
 util_note <- ifelse(mydata$util_secondary_shift < 0, "util_down",
                     ifelse(mydata$util_secondary_shift > 0, "util_up", NA))
-sec_note <- ifelse(is.na(sec_note), util_note, ifelse(is.na(util_note), sec_note, paste0(sec_note, "+", util_note)))
+homeless_note <- ifelse(mydata$homeless_secondary_shift < 0, "homeless_down",
+                        ifelse(mydata$homeless_secondary_shift > 0, "homeless_up", NA))
+join_notes <- function(a, b) ifelse(is.na(a), b, ifelse(is.na(b), a, paste0(a, "+", b)))
+sec_note <- join_notes(join_notes(sec_note, util_note), homeless_note)
 has_sec <- !is.na(sec_note)
 mydata$correctednotes[has_sec] <- ifelse(
   mydata$correctednotes[has_sec] == "no_change",
