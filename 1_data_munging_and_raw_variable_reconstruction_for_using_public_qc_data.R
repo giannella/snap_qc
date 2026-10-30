@@ -498,6 +498,7 @@ if (length(el150_income) > 0) {
 # Step 7. Adjust the cited variables (recreate_elements, below)
 # Discrete variables first (household size and the homeless deduction above, then utilities), then the
 # continuous ones (income, rent, medical, dependent care, child support) close the rest of the gap to RAWBEN.
+# Medical in standard medical deduction (SMD) states only takes $0, the SMD or more.
 
 # Which way NATURE says the budgeted value was off (-1 = lower than QC, +1 = higher, 0 = not stated)
 nature_direction <- function(nature, income) {
@@ -522,28 +523,6 @@ element_direction <- function(efindg, nature, income, nature_first = FALSE) {
   if (nature_first) ifelse(nat != 0, nat, ef) else ifelse(ef != 0, ef, nat)
 }
 
-fix_smd_adjustments <- function(mydata) {
-  mydata <- mydata |>
-    mutate(
-      rawmedded = case_when(
-        rawmedded == FSMEDDED          ~ rawmedded,
-        is.na(smd_amt) | smd_amt <= 0  ~ rawmedded,
-        abs(smd_amt - rawmedded) <= 5  ~ smd_amt,
-        smd_amt <= rawmedded           ~ rawmedded,
-        correctednotes == "med_up"     ~ smd_amt,
-        correctednotes == "med_down"   ~ case_when(
-          smd_amt < FSMEDDED & abs(smd_amt - rawmedded) <= 30 ~ smd_amt, 
-          .default = 0
-        ),
-        .default = rawmedded
-      )
-    )
-  
-  mydata <- calculate_raw_benefits(mydata)
-  
-  mydata
-}
-
 # Step 7 elements: every slot whose element Step 7 adjusts. Nature 97 / agency 26 elements are recreated exactly
 # like any other; the no-action step after Step 8 then takes their effect out of the error.
 # Continuous variables are adjusted only when ELEMENT1 is a Step 7 element or a household size / homeless error
@@ -556,7 +535,7 @@ fix_smd_adjustments <- function(mydata) {
 #   otherwise: utilities first (alone: the allowance closest to RAWBEN; with other elements: the closest one at
 #     least util_min_step away that does not pass RAWBEN; ELEMENT1 not recreated: util_nature_step), then the
 #     continuous variables, largest AMOUNT first (ties in slot order), each moving toward RAWBEN as far as it
-#     can before the next takes the rest.
+#     can before the next takes the rest (medical in SMD states: $0, the SMD or more).
 #   An element whose own direction (see element_direction) points the other way is not moved.
 amount_tolerance <- 2
 step7_vars <- c(setNames(rep("rawearn", 3), c(311, 312, 314)),
@@ -611,8 +590,9 @@ benefit_at <- function(bi, i, col, values) {
   calculate_raw_benefits(trial)$rawben_recreated
 }
 
-# Values to try: the current value, $0 and the case's allowances for utilities; otherwise the current value
-# and $1 steps from $0 to $11,000 (income) or $3,000 (other) above it
+# Values to try: the current value, $0 and the case's allowances for utilities; medical in SMD states: the
+# current value, $0, the SMD and $1 steps above it; otherwise the current value and $1 steps from $0 to $11,000
+# (income) or $3,000 (other) above it
 candidate_values <- function(mydata, bi, i, col) {
   cur <- bi[[col]][i]
   if (col == "rawutil") {
@@ -620,6 +600,9 @@ candidate_values <- function(mydata, bi, i, col) {
                       error = function(e) numeric(0))
     return(sort(unique(c(cur, tiers))))
   }
+  # Standard medical deduction (SMD) states: $0, the SMD, or an actual deduction above it
+  smd <- if (col == "rawmedded") as.numeric(mydata$smd_amt[i]) else NA
+  if (!is.na(smd) && smd > 0) return(sort(unique(c(cur, 0, seq(smd, max(cur, smd) + 3000)))))
   sort(unique(c(cur, seq(0, max(cur, 0) + if (col %in% c("rawearn", "rawunearn")) 11000 else 3000))))
 }
 
@@ -649,6 +632,10 @@ util_nature_step <- function(mydata, bi, i, nature) {
   cur
 }
 
+# Louisiana's SMD demonstration began April 2023 (FY 2023 QC Technical Documentation, Table F.4), but the
+# state-year lookup gives it the SMD for all of FY 2023
+mydata$smd_amt[mydata$state_name %in% "Louisiana" & mydata$fiscal_year == 2023 & as.numeric(mydata$YRMONTH) < 202304] <- 0
+
 recreate_elements <- function(mydata) {
   bi  <- lapply(mydata[benefit_inputs], as.numeric)
   el  <- slot_matrix(mydata, "ELEMENT")
@@ -665,6 +652,7 @@ recreate_elements <- function(mydata) {
   capped <- (mydata$amount_pattern %in% "clean_split" & rowSums(usable) == rowSums(present) &
                mydata$rawusize == as.numeric(mydata$FSUSIZE) & mydata$homeless_secondary_shift == 0) %in% TRUE
   nature_first <- !(mydata$amount_pattern %in% "clean_split")
+  smd_state <- !is.na(as.numeric(mydata$smd_amt)) & as.numeric(mydata$smd_amt) > 0
   notes  <- mydata$correctednotes
   amount <- mydata$correctedamount
   util_shift <- mydata$util_secondary_shift
@@ -722,10 +710,12 @@ recreate_elements <- function(mydata) {
           conflict <- TRUE
           next
         }
+        # Medical in an SMD state is discrete below the SMD ($0 or the SMD), so it can stop short of RAWBEN
+        smd_med <- cols[j] == "rawmedded" && smd_state[i]
         res <- move_toward(mydata, bi, i, cols[j], rawben)
         bi[[cols[j]]][i] <- res$value
         now <- res$benefit
-        if (now != rawben && j < length(slots)) hit_limit <- TRUE
+        if (now != rawben && j < length(slots) && !smd_med) hit_limit <- TRUE
       }
     }
     
@@ -804,7 +794,6 @@ if (correct_variables){
   mydata$homeless_secondary_shift <- ifelse(el362 & !el362_first, hl_shift, 0)
   
   mydata <- recreate_elements(mydata)
-  mydata <- fix_smd_adjustments(mydata)
 }
 
 

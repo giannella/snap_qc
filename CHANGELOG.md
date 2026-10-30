@@ -30,6 +30,10 @@ moved or behaves differently.
   (standard deduction, arithmetic computation, ...), a utility in a later
   slot follows its nature code alone (52: one step down; 53: the top
   allowance).
+- **Medical in standard medical deduction (SMD) states** only takes $0,
+  the state's SMD, or an actual deduction above it, chosen in the
+  reconstruction with the other variables. It was previously snapped to the
+  SMD after the fact, which could undo a match.
 - **Direction codes in benefit reconstruction:** a correction never moves a
   variable against the direction its error finding states (E_FINDG:
   overissuance or underissuance; the nature code when E_FINDG is blank).
