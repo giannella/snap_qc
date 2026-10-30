@@ -87,6 +87,16 @@ moved or behaves differently.
   97 / 26 elements' variables take the reconstructed value on the QC side,
   and FSBEN, the error amount, finding and over-threshold flag are
   recomputed from what is left (`no_action_partial_i`).
+- **Smoothing of reconstructed values at the maximum and minimum benefit:**
+  cases whose RAWBEN is the maximum allotment, or the minimum benefit for
+  1-2 person units, only give a bound and were left exactly on the limit.
+  The last continuous variable moved is now redrawn from cases with the same
+  correction between the limits, far enough to leave the limit (fixed seed;
+  flagged in `imputed_at_bound`). The benefit cannot change. Utilities,
+  household size, the homeless deduction and medical at the SMD are left as
+  reconstructed. Replaces the earlier rules ($5 amounts to $0, large income
+  cuts at the max to $0, deductions scaled to `no_change` means), which left
+  about a fifth of these cases on the max and did nothing at the minimum.
 
 ### Added
 - `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and

@@ -13,6 +13,7 @@
 # rawusize: Working household size used during benefit reconstruction. It starts from FSUSIZE and may be adjusted for unit-composition errors.
 # amount_pattern: How a multi-element case's AMOUNT1-9 relate to its error: all_zero, amount1_only, copied, even_split, clean_split, or other.
 # cascade_type, cascade_hit_limit: Cases with several Step 7 variables; "capped" when each element moved by its own AMOUNT, otherwise "uncapped"; hit_limit when a continuous variable was maxed out before the next took over.
+# imputed_at_bound: "max" / "min" when impute_at_bound redrew a value for a case stuck on that benefit limit (QA flag, not a modeling feature).
 #
 # Key variables from the public QC data:
 #
@@ -999,113 +1000,122 @@ saveRDS(mydata, paste0(folder, "corrected.rds"))
 mydata <- readRDS(paste0(folder, "corrected.rds"))
 
 ### Variable smoothing
-mydata <- calculate_raw_benefits(mydata)
+# A case whose RAWBEN sits on a benefit limit only gives a bound: Step 7 stops at the first value that reaches it,
+# and any value further in the same direction gives the same benefit, so these cases pile up on the limit.
+#   "max": RAWBEN = maximum allotment; lower income or higher deductions keep it.
+#   "min": RAWBEN = minimum benefit (1-2 person units); higher income or lower deductions keep it.
+# The last continuous variable moved ("rent_down+earn_up" -> earn) is redrawn from cases with the same correction
+# between the two limits (value identified), far enough past the stop point to leave the limit. Moves toward $0
+# use the donors' raw/QC ratio, moves up their raw - QC dollar difference; with no donor that far, moves up add a
+# donor's difference and moves toward $0 draw uniformly down to $0. Draws toward $0 follow Step 7's zero rule.
+# The benefit cannot change (checked at the end). Left alone: utilities, household size, the homeless deduction,
+# and medical at a state's SMD amount or moved down in an SMD state.
+impute_seed     <- 20261029
+impute_vars <- c(earn = "rawearn", unearn = "rawunearn", rent = "rawrent",
+                 med = "rawmedded", dep = "rawdepded", cs = "rawcsded")
+impute_qc   <- c(rawearn = "FSEARN", rawunearn = "FSUNEARN", rawrent = "RENT",
+                 rawmedded = "FSMEDDED", rawdepded = "FSDEPDED", rawcsded = "FSCSDED")
 
-# If a value was cut by >80% and is now <=$5, set it to $0
-if (apply_correction_smoothing) {
-  raw_map <- c(
-    rawunearn = "FSUNEARN",
-    rawearn   = "FSEARN",
-    rawrent   = "RENT",
-    rawmedded = "FSMEDDED",
-    rawdepded = "FSDEPDED",
-    rawcsded  = "FSCSDED"
-  )
-  
-  for (raw in names(raw_map)) {
-    orig <- mydata[[raw_map[[raw]]]]
-    cur  <- mydata[[raw]]
-    mydata[[raw]] <- ifelse(
-      !is.na(orig) & !is.na(cur) & orig > 0 & cur > 0 &
-        cur <= 5 & cur < 0.2 * orig,
-      0,
-      cur
-    )
+# Last continuous variable moved in a note: "hhsize_up+rent_down+earn_up" -> "earn_up"
+closing_move <- function(notes) {
+  notes[is.na(notes)] <- ""
+  m <- regmatches(notes, gregexpr("(^|\\+)(earn|unearn|rent|med|dep|cs)_(up|down)(?=\\+|$)", notes, perl = TRUE))
+  vapply(m, function(x) if (length(x)) sub("^\\+", "", x[length(x)]) else NA_character_, character(1))
+}
+
+impute_at_bound <- function(mydata, side = c("max", "min"), seed = impute_seed) {
+  side <- match.arg(side)
+  set.seed(seed)
+  mydata  <- calculate_raw_benefits(mydata)
+  if (!"imputed_at_bound" %in% names(mydata)) mydata$imputed_at_bound <- NA_character_
+  notes   <- ifelse(is.na(mydata$correctednotes), "", mydata$correctednotes)
+  closing <- closing_move(notes)
+  rb      <- as.numeric(mydata$RAWBEN)
+  maxb    <- as.numeric(mydata$rawbenmax)
+  minb    <- as.numeric(mydata$rawminimum_ben)
+  # Reached RAWBEN: exactly, or within zero_margin when Step 7 took a cut to $0 (its notes decide _error)
+  matched <- !grepl("_error", notes) & (abs(mydata$rawben_recreated - rb) <= zero_margin) %in% TRUE
+  at_max  <- (rb == maxb) %in% TRUE
+  at_min  <- (minb > 0 & rb == minb) %in% TRUE
+  at_lim  <- if (side == "max") at_max else at_min
+  limit   <- if (side == "max") maxb else minb
+  between <- !at_max & !at_min
+  smd     <- (as.numeric(mydata$smd_amt) > 0) %in% TRUE
+  ben_before <- mydata$rawben_recreated
+  bi <- lapply(mydata[benefit_inputs], as.numeric)
+
+  # First value past the stop point b that takes the uncapped benefit off the limit: the benefit only changes
+  # every few dollars, so a value just past b can still sit exactly on the limit
+  edge_past <- function(i, col, b, up, lim) {
+    trial <- if (up) b + 1:60 else b - 1:60
+    trial <- trial[trial >= 0]
+    if (length(trial) == 0) return(b)
+    t <- lapply(bi, function(x) rep(x[i], length(trial)))
+    t[[col]] <- trial
+    off <- trial[calculate_raw_benefits(t)$rawben_uncapped != lim]
+    if (length(off) > 0) off[1] else if (up) b + 60 else 0
   }
+
+  for (move in sort(unique(closing[matched & at_lim & !is.na(closing)]))) {
+    col    <- impute_vars[[sub("_.*$", "", move)]]
+    qc     <- impute_qc[[col]]
+    up     <- grepl("_up$", move)
+    income <- col %in% c("rawearn", "rawunearn")
+    # Only moves that keep the benefit on this limit when taken further
+    if (side == "max" && income == up) next   # max: income down, deductions up
+    if (side == "min" && income != up) next   # min: income up, deductions down
+    # Stuck: on the limit with this variable closing the gap, exactly where Step 7 stopped
+    cen <- which(matched & at_lim & closing %in% move & (mydata$rawben_uncapped == limit) %in% TRUE)
+    if (col == "rawmedded") {
+      at_smd <- (mydata$rawmedded == mydata$smd_amt) %in% TRUE
+      cen <- cen[!(smd[cen] & (at_smd[cen] | !up))]
+    }
+    if (length(cen) == 0) next
+
+    # Donors: same closing correction, strictly between the limits, reached RAWBEN (value identified)
+    don   <- which(matched & between & closing %in% move)
+    q_d   <- as.numeric(mydata[[qc]][don])
+    v_d   <- as.numeric(mydata[[col]][don])
+    ratio <- (v_d / q_d)[!is.na(q_d) & q_d > 0]
+    diff  <- (v_d - q_d)[!is.na(q_d)]
+    n_fb  <- 0
+
+    for (i in cen) {
+      b  <- as.numeric(mydata[[col]][i])
+      q  <- as.numeric(mydata[[qc]][i])
+      q0 <- if (is.na(q)) 0 else q
+      edge <- edge_past(i, col, b, up, limit[i])
+      pool <- if (up) q0 + diff[diff >= edge - q0] else
+        if (q0 > 0) floor(ratio[ratio <= edge / q0] * q0) else numeric(0)
+      pool <- pool[if (up) pool >= edge else pool <= edge]
+      new <- if (length(pool) > 0) pool[sample.int(length(pool), 1)] else {
+        # no donor past the edge: up adds a donor's dollar difference beyond the edge; toward $0 draws
+        # uniformly from $0 to the edge
+        n_fb <- n_fb + 1
+        if (up) {
+          pos <- diff[diff > 0]
+          edge + if (length(pos) > 0) pos[sample.int(length(pos), 1)] else 0
+        } else floor(runif(1, 0, edge + 1))
+      }
+      if (!up && new > 0 && (new <= zero_floor || new <= (1 - zero_cut) * q0)) new <- 0
+      mydata[[col]][i] <- new
+    }
+    mydata$imputed_at_bound[cen] <- side
+    cat(sprintf("impute_at_bound %-3s %-12s stuck %5d  donors %6d  fallback %3d\n",
+                side, move, length(cen), length(don), n_fb))
+  }
+
   mydata <- calculate_raw_benefits(mydata)
+  stopifnot("impute_at_bound changed a recreated benefit" =
+              isTRUE(all.equal(mydata$rawben_recreated, ben_before)))
+  mydata
 }
 
-# If we reduced earned income down by over 75%, and at max, set it to $0
+mydata <- calculate_raw_benefits(mydata)
+mydata$imputed_at_bound <- NA_character_
 if (apply_correction_smoothing) {
-  mydata$rawearn <- ifelse(
-    mydata$correctednotes == "earn_down" &
-      mydata$at_max_ben &
-      abs(mydata$correctedamount) > 0.75 * mydata$FSEARN,
-    0,
-    mydata$rawearn
-  )
-  mydata <- calculate_raw_benefits(mydata)
-}
-
-# If we reduced unearned income down by over 75%, and at max, set it to $0
-if (apply_correction_smoothing) {
-  mydata$rawunearn <- ifelse(
-    mydata$correctednotes == "unearn_down" &
-      mydata$at_max_ben &
-      abs(mydata$correctedamount) > 0.75 * mydata$FSUNEARN,
-    0,
-    mydata$rawunearn
-  )
-  mydata <- calculate_raw_benefits(mydata)
-}
-
-# Scale deduction variables to match mean values for other households
-# that are at max or above (e.g. make the data equally represent)
-scale_by_ratio <- function(data, notes_value, col_name) {
-  
-  # Direction the adjust_* loop already moved this variable
-  suffix <- sub("^.*_", "", notes_value)
-  
-  data$at_max_ben <- as.integer(data$rawben_uncapped >= data$rawbenmax)
-  
-  # Calculate comparison and ratios
-  comparison <- data %>%
-    filter(correctednotes %in% c(notes_value, "no_change"),
-           at_max_ben == 1,
-           .data[[col_name]] != 0) %>%
-    group_by(rawusize, correctednotes) %>%
-    summarise(mean_val = mean(.data[[col_name]], na.rm = TRUE),
-              n = n(),
-              .groups = "drop") %>%
-    arrange(rawusize, correctednotes)
-  
-  ratios <- comparison %>%
-    select(rawusize, correctednotes, mean_val) %>%
-    tidyr::pivot_wider(names_from = correctednotes, values_from = mean_val) %>%
-    # so smoothing can only move in the direction already applied
-    mutate(ratio = no_change / .data[[notes_value]],
-           ratio = if (suffix == "up") pmax(ratio, 1) else pmin(ratio, 1))
-  
-  print(ratios)
-  
-  # Apply scaling
-  target_rows <- !is.na(data$correctednotes) & 
-    data$correctednotes == notes_value & 
-    !is.na(data$at_max_ben) &
-    data$at_max_ben == 1
-  
-  data[[col_name]][target_rows] <- sapply(which(target_rows), function(i) {
-    size <- data$rawusize[i]
-    ratio <- ratios$ratio[ratios$rawusize == size]
-    if (length(ratio) == 0 || is.na(ratio)) ratio <- 1
-    round(data[[col_name]][i] * ratio)
-  })
-  
-  data
-}
-
-# Scale variables
-if (apply_correction_smoothing) {
-  mydata <- scale_by_ratio(mydata, "dep_up", "rawdepded")
-  mydata <- calculate_raw_benefits(mydata)
-  mydata <- scale_by_ratio(mydata, "cs_up", "rawcsded")
-  mydata <- calculate_raw_benefits(mydata)
-  mydata <- scale_by_ratio(mydata, "rent_up", "rawrent")
-  mydata <- calculate_raw_benefits(mydata)
-  mydata <- scale_by_ratio(mydata, "earn_down", "rawearn")
-  mydata <- calculate_raw_benefits(mydata)
-  mydata <- scale_by_ratio(mydata, "unearn_down", "rawunearn")
-  mydata <- calculate_raw_benefits(mydata)
+  mydata <- impute_at_bound(mydata, "max")
+  mydata <- impute_at_bound(mydata, "min")
 }
 
 add_total_deductions <- function(data) {
