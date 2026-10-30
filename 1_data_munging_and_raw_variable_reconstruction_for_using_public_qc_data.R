@@ -333,7 +333,8 @@ nrow(mydata) # 109800
 # person-eligibility elements 111 student, 130 citizenship, 151 disqualification,
 # 160-166 work rules, 170 SSN. The nature gives the direction:
 #   eligible person excluded (150: natures 12, 13, 14, 15, 16; others: nature 6) -> subtract 1
-#   (150 nature 13 also had income the agency left out; that is removed at the end of Step 6)
+#   (150 nature 13 and person-element nature 6 in ELEMENT1: the excluded member's income is also looked for at
+#   the end of Step 6)
 #   ineligible person included (nature 7)                               -> add 1
 # One person per case however many slots carry one (the same person is often coded
 # under 150 and a person element); cases whose slots disagree on direction are left alone
@@ -361,7 +362,8 @@ mydata$correctednotes[hh_first & hh_shift < 0] <- "hhsize_up"
 mydata$correctednotes[hh_first & hh_shift > 0] <- "hhsize_down"
 mydata$hhsize_secondary_shift <- ifelse(hh_first, 0, hh_shift)
 # Marked as a column (not a vector) so it stays aligned when size-0 rows are dropped below
-mydata$el150_income_check <- correct_variables & mydata$ELEMENT1 %in% 150 & mydata$NATURE1 %in% 13 & hh_shift == -1
+mydata$excluded_member_check <- correct_variables & hh_first & hh_shift == -1 &
+  ((mydata$ELEMENT1 %in% 150 & mydata$NATURE1 %in% 13) | (mydata$ELEMENT1 %in% setdiff(hh_elements, 150) & mydata$NATURE1 %in% 6))
 # Any household size element with a direction keeps the over-max rule below from adding a person
 hh_element_any <- correct_variables & (hh_up | hh_down)
 
@@ -404,8 +406,10 @@ util_tiers <- function(state, year, month, hh_size) {
 util_min_step <- 50
 mydata$util_secondary_shift <- 0
 
-# Element 150 nature 13 in ELEMENT1 (eligible person WITH income excluded): the size shift
-# above removed the person; the agency also left out that person's income. The person-level
+# ELEMENT1 an eligible person excluded who may have had income (150 nature 13 "with income"; person elements
+# nature 6, which does not say): the size shift above removed the person; the agency would also have left out
+# that person's income. 150 natures 12, 14, 15 and 16 (no income, resources, expenses, newborn) are not
+# searched. The person-level
 # income fields add up to FSEARN (earned) and FSUNEARN (unearned), so try each eligible member
 # (FSAFIL = 1) with income: raw income = FSEARN / FSUNEARN minus that member's income, kept
 # only if the benefit then matches RAWBEN exactly. If no member matches, or members with
@@ -446,8 +450,14 @@ find_member <- function(sub, fs_earn, fs_unearn, util) {
   list(earn = match_earn, unearn = match_unearn, ambiguous = ambiguous,
        use = !is.na(match_earn) & !ambiguous)
 }
-el150_income <- which(mydata$el150_income_check)
-mydata$el150_income_check <- NULL
+el150_income <- which(mydata$excluded_member_check)
+mydata$excluded_member_check <- NULL
+# Person elements (nature 6) do not say the person had income: search only when the size change alone misses RAWBEN
+# (otherwise, at the maximum benefit, removing any income still "matches")
+if (length(el150_income) > 0) {
+  size_only <- calculate_raw_benefits(mydata[el150_income, ])$rawben_recreated == mydata$RAWBEN[el150_income]
+  el150_income <- el150_income[!(size_only %in% TRUE & !(mydata$ELEMENT1[el150_income] %in% 150))]
+}
 if (length(el150_income) > 0) {
   sub <- mydata[el150_income, ]
   fs_earn   <- ifelse(is.na(sub$FSEARN), 0, as.numeric(sub$FSEARN))
@@ -491,7 +501,7 @@ if (length(el150_income) > 0) {
   util_rows <- el150_income[util_match]
   mydata$util_secondary_shift[util_rows] <- util_alt[util_match] - as.numeric(mydata$rawutil[util_rows])
   mydata$rawutil[util_rows] <- util_alt[util_match]
-  cat("element 150 nature 13: income removed on", length(rows), "of", length(el150_income),
+  cat("excluded member: income removed on", length(rows), "of", length(el150_income),
       "cases (", sum(util_match), "after the utility retry,", sum(m$ambiguous), "ambiguous )\n")
 }
 
