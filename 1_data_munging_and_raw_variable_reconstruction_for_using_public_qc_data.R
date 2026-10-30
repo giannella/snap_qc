@@ -2,7 +2,7 @@
 #
 # Key variables generated or derived in this script:
 #
-# correctednotes: Audit label describing the correction applied to a case, such as: "earn_down", "unearn_up", "rent_error", or "no_change". Cases with several Step 7 variables list each one moved (e.g. "util_down+med_up"), with "+cascade_error" when RAWBEN is not reached; an ELEMENT1 household size or homeless note stays in front (e.g. "hhsize_up+earn_down").
+# correctednotes: Audit label describing the correction applied to a case, such as: "earn_down", "unearn_up", "rent_error", or "no_change". Cases with several Step 7 variables list each one moved (e.g. "util_down+med_up"), with "+cascade_error" when RAWBEN is not reached; an ELEMENT1 household size or homeless note stays in front (e.g. "hhsize_up+earn_down"). "prior_year_tables": ELEMENT1 520 / 361 matched with last year's maximum allotment, standard deduction or shelter cap.
 # correctedamount: Signed dollar change made to the variable being corrected. Positive values mean the variable was increased; negative values mean it was decreased.
 # fsben_recreated: Benefit recreated from the original QC inputs before correction adjustments (Compared with FSBEN).
 # fsben_uncapped: Benefit calculated from the original QC inputs before minimum and maximum benefit limits are applied.
@@ -881,6 +881,42 @@ if (correct_variables){
     cat("two people excluded:", sum(hit0), "on size alone and", sum(hit_inc), "with income removed, of",
         sum(try2), "still off after Step 7 (", sum(ambiguous), "ambiguous )\n")
   }
+  
+  # Last year's tables: ELEMENT1 520 (arithmetic computation) and 361 (standard deduction) cases often match
+  # RAWBEN when the agency budgeted with the previous fiscal year's tables, mostly in October-December reviews
+  # just after the annual update (520 nature 79 is "incorrect use of allotment tables"). For these cases still
+  # off after Step 7, last year's maximum allotment, standard deduction and shelter cap are tried alone, in pairs,
+  # then all three; the first exact match is kept. Note "prior_year_tables"
+  py_idx <- which(mydata$ELEMENT1 %in% c(361, 520))
+  py_sub <- calculate_raw_benefits(mydata[py_idx, ])
+  off    <- (py_sub$rawben_recreated != py_sub$RAWBEN) %in% TRUE
+  py_idx <- py_idx[off]
+  py_sub <- py_sub[off, ]
+  prev <- list(
+    rawbenmax = get_max_allotment(py_sub$rawusize, py_sub$fiscal_year - 1),
+    rawstdded = get_standard_deduction(py_sub$state_name, py_sub$rawusize, py_sub$fiscal_year - 1),
+    max_shelter_deduction = ifelse(is.infinite(py_sub$max_shelter_deduction), Inf,
+                                   year_data$max_shelter_deduction[match(py_sub$fiscal_year - 1, year_data$year)])
+  )
+  py_sets <- list("rawbenmax", "rawstdded", "max_shelter_deduction",
+                  c("rawbenmax", "rawstdded"), c("rawbenmax", "max_shelter_deduction"),
+                  c("rawstdded", "max_shelter_deduction"), c("rawbenmax", "rawstdded", "max_shelter_deduction"))
+  py_set <- rep(0L, length(py_idx))
+  for (ps in seq_along(py_sets)) {
+    trial <- py_sub
+    for (v in py_sets[[ps]]) trial[[v]] <- prev[[v]]
+    hit <- py_set == 0 & (calculate_raw_benefits(trial)$rawben_recreated == py_sub$RAWBEN) %in% TRUE
+    py_set[hit] <- ps
+  }
+  for (ps in seq_along(py_sets)) {
+    hit <- py_set == ps
+    for (v in py_sets[[ps]]) mydata[[v]][py_idx[hit]] <- prev[[v]][hit]
+  }
+  py_rows <- py_idx[py_set > 0]
+  old <- sub("\\+?cascade_error$", "", mydata$correctednotes[py_rows])
+  mydata$correctednotes[py_rows] <- ifelse(old %in% c("", "no_change"), "prior_year_tables", paste0(old, "+prior_year_tables"))
+  cat("last year's tables:", length(py_rows), "of", length(py_idx), "ELEMENT1 361 / 520 cases still off after Step 7\n")
+  print(table(set = sapply(py_sets, paste, collapse = "+")[py_set[py_set > 0]], ELEMENT1 = mydata$ELEMENT1[py_rows]))
 }
 mydata$two_person_check <- NULL
 

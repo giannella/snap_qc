@@ -63,6 +63,12 @@ moved or behaves differently.
   natures 12 / 16, with one or two members' income for nature 13 and person
   elements with nature 6, kept only if exactly one income amount matches
   (`hhsize_up_2`).
+- **Arithmetic computation (520) and standard deduction (361) errors in
+  ELEMENT1** that still miss RAWBEN are tried with the previous fiscal
+  year's maximum allotment, standard deduction and shelter cap (alone, in
+  pairs, then all three), kept only on an exact match
+  (`prior_year_tables`). Most matches are October-December reviews, just
+  after the annual update.
 - **Homeless shelter deduction errors (element 362)** are corrected in any
   element slot: nature 53 gives the agency side the homeless standard for
   the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /
