@@ -526,12 +526,16 @@ efindg_direction <- function(efindg, income) {
   else ifelse(over, 1, ifelse(under, -1, 0))
 }
 
-# Direction check: E_FINDG first, NATURE when E_FINDG is blank. nature_first: NATURE first, for ELEMENT2-9 of
-# multi-element cases whose AMOUNTs do not add up, where states usually copy the case's E_FINDG into every slot
-element_direction <- function(efindg, nature, income, nature_first = FALSE) {
-  ef  <- efindg_direction(efindg, income)
-  nat <- nature_direction(nature, income)
-  if (nature_first) ifelse(nat != 0, nat, ef) else ifelse(ef != 0, ef, nat)
+# Direction check: a move (need: -1 down, +1 up) is blocked only when no recorded code supports it. If E_FINDG and
+# NATURE disagree, the one that points the needed way (the way QC's own benefit result points) lets it through.
+# nature_first (ELEMENT2-9 of multi-element cases whose AMOUNTs do not add up, where states usually copy the case's
+# E_FINDG into every slot): NATURE alone decides, E_FINDG only when NATURE is blank
+direction_blocked <- function(efindg, nature, income, need, nature_first = FALSE) {
+  ef    <- efindg_direction(efindg, income)
+  nat   <- nature_direction(nature, income)
+  codes <- if (nature_first) (if (nat != 0) nat else ef) else c(ef, nat)
+  codes <- codes[codes != 0]
+  length(codes) > 0 && all(codes != need)
 }
 
 # Step 7 elements: every slot whose element Step 7 adjusts. Nature 97 / agency 26 elements are recreated exactly
@@ -547,7 +551,7 @@ element_direction <- function(efindg, nature, income, nature_first = FALSE) {
 #     least util_min_step away that does not pass RAWBEN; ELEMENT1 not recreated: util_nature_step), then the
 #     continuous variables, largest AMOUNT first (ties in slot order), each moving toward RAWBEN as far as it
 #     can before the next takes the rest (medical in SMD states: $0, the SMD or more).
-#   An element whose own direction (see element_direction) points the other way is not moved.
+#   An element whose recorded codes all point the other way is not moved (see direction_blocked).
 amount_tolerance <- 2
 step7_vars <- c(setNames(rep("rawearn", 3), c(311, 312, 314)),
                 setNames(rep("rawunearn", 12), c(331:336, 342:346, 350)),
@@ -701,8 +705,7 @@ recreate_elements <- function(mydata) {
       }
       if (!is.na(u) && now != rawben) {
         need  <- sign(rawben - now)
-        dir_u <- element_direction(fnd[i, slots[u]], na[i, slots[u]], FALSE, nature_first[i] && slots[u] > 1)
-        if (dir_u != 0 && dir_u != need) {
+        if (direction_blocked(fnd[i, slots[u]], na[i, slots[u]], FALSE, need, nature_first[i] && slots[u] > 1)) {
           conflict <- TRUE
         } else {
           res <- if (single) move_toward(mydata, bi, i, "rawutil", rawben) else
@@ -716,8 +719,7 @@ recreate_elements <- function(mydata) {
         if (now == rawben) break
         income <- cols[j] %in% c("rawearn", "rawunearn")
         need   <- sign(rawben - now) * (if (income) -1 else 1)
-        dir_k  <- element_direction(fnd[i, slots[j]], na[i, slots[j]], income, nature_first[i] && slots[j] > 1)
-        if (dir_k != 0 && dir_k != need) {
+        if (direction_blocked(fnd[i, slots[j]], na[i, slots[j]], income, need, nature_first[i] && slots[j] > 1)) {
           conflict <- TRUE
           next
         }

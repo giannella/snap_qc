@@ -35,11 +35,12 @@ moved or behaves differently.
   reconstruction with the other variables. It was previously snapped to the
   SMD after the fact, which could undo a match.
 - **Direction codes in benefit reconstruction:** a correction never moves a
-  variable against the direction its error finding states (E_FINDG:
-  overissuance or underissuance; the nature code when E_FINDG is blank).
-  For ELEMENT2-9 of multi-element cases whose AMOUNTs do not add up, the
-  nature code comes first: states usually copy the case's E_FINDG into
-  every slot. That variable keeps the QC value (`_error` when it is the
+  variable in a direction that none of its recorded codes support (E_FINDG:
+  overissuance or underissuance; the nature code). When the two disagree,
+  the one that points the way QC's own benefit result does lets the move
+  through. For ELEMENT2-9 of multi-element cases whose AMOUNTs do not add
+  up, the nature code decides: states usually copy the case's E_FINDG into
+  every slot. A blocked variable keeps the QC value (`_error` when it is the
   only one).
 - **Household size in benefit reconstruction:** household size errors in
   any element slot shift household size before the other corrections:

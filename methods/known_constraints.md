@@ -105,6 +105,10 @@ or changes a constraint.
   additive-only on the six kept years (§24).
 - AMOUNT1-9 are not always reported: about half of element slots are $0
   (varying by state), and many multi-element cases repeat AMTERR in every slot.
+- E_FINDG and NATURE sometimes disagree on direction (~7% of cases). Step 7
+  blocks a move only when neither supports it, so QC's benefit result breaks
+  the tie (+130 recreated cases). For ELEMENT2-9 of multi-element cases whose
+  AMOUNTs do not add up, NATURE decides: E_FINDG there is usually copied.
 - Multi-element error cases are KEPT; deduction-field NAs are zero-filled
   (`ded_fields_imputed`), not dropped (§10).
 - Paths resolve through `here()`; no hardcoded machine paths
