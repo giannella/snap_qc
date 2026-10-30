@@ -48,7 +48,8 @@ moved or behaves differently.
 - **Element 150 natures 13 and 15** (eligible member with income or
   expenses excluded): one fewer person. For nature 13 in ELEMENT1, that
   member's income is also taken out of FSEARN/FSUNEARN when the benefit then
-  matches RAWBEN exactly (`hhsize_up+income_down`).
+  matches RAWBEN exactly (`hhsize_up+income_down`), retrying with a utility
+  error in a later slot set by its nature code.
 - **Homeless shelter deduction errors (element 362)** are corrected in any
   element slot: nature 53 gives the agency side the homeless standard for
   the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /

@@ -409,7 +409,10 @@ mydata$util_secondary_shift <- 0
 # income fields add up to FSEARN (earned) and FSUNEARN (unearned), so try each eligible member
 # (FSAFIL = 1) with income: raw income = FSEARN / FSUNEARN minus that member's income, kept
 # only if the benefit then matches RAWBEN exactly. If no member matches, or members with
-# different incomes both match, income is left as is (the person is still removed)
+# different incomes both match, income is left as is (the person is still removed).
+# Utilities are corrected later (Step 7), so when no member matches and ELEMENT2-9 holds a utility
+# error with nature 52 or 53, the search is retried with the utility set by its nature (52: the next
+# allowance at least util_min_step down; 53: the top allowance); a match keeps that utility too
 earned_types   <- c("WAGES", "SLFEMP", "OTHERN", "RENTMINC")
 unearned_types <- c("ALIMNY", "ANNUITY", "CONT", "CSUPRT", "DEEM", "DIVER", "EDLOAN", "ENERGY",
                     "FOSTER", "GA", "GOVDIV", "GOVINTER", "GOVROY", "INTER", "OLDAGE", "OTHGOV",
@@ -419,12 +422,8 @@ person_income <- function(data, types, k) {
   cols <- intersect(paste0(types, k), names(data))
   Reduce(`+`, lapply(cols, function(v) { x <- as.numeric(data[[v]]); x[is.na(x)] <- 0; x }), rep(0, nrow(data)))
 }
-el150_income <- which(mydata$el150_income_check)
-mydata$el150_income_check <- NULL
-if (length(el150_income) > 0) {
-  sub <- mydata[el150_income, ]
-  fs_earn   <- ifelse(is.na(sub$FSEARN), 0, as.numeric(sub$FSEARN))
-  fs_unearn <- ifelse(is.na(sub$FSUNEARN), 0, as.numeric(sub$FSUNEARN))
+# Member whose income, taken out of FSEARN / FSUNEARN, makes the benefit match RAWBEN exactly (utilities at `util`)
+find_member <- function(sub, fs_earn, fs_unearn, util) {
   match_earn <- match_unearn <- rep(NA_real_, nrow(sub))
   ambiguous <- rep(FALSE, nrow(sub))
   for (k in 1:18) {
@@ -437,20 +436,63 @@ if (length(el150_income) > 0) {
     trial <- sub
     trial$rawearn   <- fs_earn - e
     trial$rawunearn <- fs_unearn - u
+    trial$rawutil   <- util
     hit <- cand & (calculate_raw_benefits(trial)$rawben_recreated == sub$RAWBEN) %in% TRUE
     ambiguous <- ambiguous | (hit & !is.na(match_earn) & (match_earn != e | match_unearn != u))
     first <- hit & is.na(match_earn)
     match_earn[first]   <- e[first]
     match_unearn[first] <- u[first]
   }
-  use  <- !is.na(match_earn) & !ambiguous
+  list(earn = match_earn, unearn = match_unearn, ambiguous = ambiguous,
+       use = !is.na(match_earn) & !ambiguous)
+}
+el150_income <- which(mydata$el150_income_check)
+mydata$el150_income_check <- NULL
+if (length(el150_income) > 0) {
+  sub <- mydata[el150_income, ]
+  fs_earn   <- ifelse(is.na(sub$FSEARN), 0, as.numeric(sub$FSEARN))
+  fs_unearn <- ifelse(is.na(sub$FSUNEARN), 0, as.numeric(sub$FSUNEARN))
+  m <- find_member(sub, fs_earn, fs_unearn, as.numeric(sub$rawutil))
+  
+  # Retry with a utility error in ELEMENT2-9 (nature 52 / 53) set by its nature
+  util_nature <- rep(NA_real_, nrow(sub))
+  for (k in 2:9) {
+    el_col <- paste0("ELEMENT", k)
+    na_col <- paste0("NATURE", k)
+    if (!all(c(el_col, na_col) %in% names(sub))) next
+    hit <- is.na(util_nature) & sub[[el_col]] %in% 364 & sub[[na_col]] %in% c(52, 53)
+    util_nature[hit] <- as.numeric(sub[[na_col]][hit])
+  }
+  util_alt <- as.numeric(sub$rawutil)
+  for (r in which(!m$use & !is.na(util_nature))) {
+    tiers <- tryCatch(util_tiers(sub$state_name[r], sub$year[r], sub$month[r], as.numeric(sub$rawusize[r])),
+                      error = function(e) numeric(0))
+    lower <- tiers[tiers <= util_alt[r] - util_min_step]
+    if (util_nature[r] == 52 && length(lower) > 0) util_alt[r] <- max(lower)
+    if (util_nature[r] == 53 && length(tiers) > 0 && max(tiers) - util_alt[r] >= util_min_step) util_alt[r] <- max(tiers)
+  }
+  retry <- !m$use & util_alt != as.numeric(sub$rawutil)
+  util_match <- rep(FALSE, nrow(sub))
+  if (any(retry)) {
+    m2 <- find_member(sub, fs_earn, fs_unearn, util_alt)
+    util_match <- retry & m2$use
+    m$earn[util_match]   <- m2$earn[util_match]
+    m$unearn[util_match] <- m2$unearn[util_match]
+    m$use[util_match]    <- TRUE
+  }
+  
+  use  <- m$use
   rows <- el150_income[use]
-  mydata$rawearn[rows]   <- fs_earn[use] - match_earn[use]
-  mydata$rawunearn[rows] <- fs_unearn[use] - match_unearn[use]
+  mydata$rawearn[rows]   <- fs_earn[use] - m$earn[use]
+  mydata$rawunearn[rows] <- fs_unearn[use] - m$unearn[use]
   mydata$correctednotes[rows]  <- paste0(mydata$correctednotes[rows], "+income_down")
-  mydata$correctedamount[rows] <- -(match_earn[use] + match_unearn[use])
+  mydata$correctedamount[rows] <- -(m$earn[use] + m$unearn[use])
+  # The utility that made the retry match is kept (folded into the note after Step 8, e.g. "util_up+hhsize_up+income_down")
+  util_rows <- el150_income[util_match]
+  mydata$util_secondary_shift[util_rows] <- util_alt[util_match] - as.numeric(mydata$rawutil[util_rows])
+  mydata$rawutil[util_rows] <- util_alt[util_match]
   cat("element 150 nature 13: income removed on", length(rows), "of", length(el150_income),
-      "cases (", sum(ambiguous), "ambiguous )\n")
+      "cases (", sum(util_match), "after the utility retry,", sum(m$ambiguous), "ambiguous )\n")
 }
 
 # Step 7. Adjust the cited variables (recreate_elements, below)
