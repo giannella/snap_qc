@@ -551,8 +551,15 @@ direction_blocked <- function(efindg, nature, income, need, nature_first = FALSE
 #     least util_min_step away that does not pass RAWBEN; ELEMENT1 not recreated: util_nature_step), then the
 #     continuous variables, largest AMOUNT first (ties in slot order), each moving toward RAWBEN as far as it
 #     can before the next takes the rest (medical in SMD states: $0, the SMD or more).
+#   Leftovers: a cut that leaves zero_floor or less, or cuts zero_cut or more, goes to $0 instead when $0 lands
+#     within zero_margin of RAWBEN (later variables then stay put), or when a later variable takes the rest
+#     and the case then lands within zero_margin. A $5 benefit change is about $17-21 of a variable, so a leftover that small only absorbs
+#     rounding. Not medical in SMD states (the SMD is a real amount).
 #   An element whose recorded codes all point the other way is not moved (see direction_blocked).
 amount_tolerance <- 2
+zero_cut    <- 0.9
+zero_floor  <- 25
+zero_margin <- 5
 step7_vars <- c(setNames(rep("rawearn", 3), c(311, 312, 314)),
                 setNames(rep("rawunearn", 12), c(331:336, 342:346, 350)),
                 c("363" = "rawrent", "364" = "rawutil", "365" = "rawmedded", "323" = "rawdepded", "366" = "rawcsded"))
@@ -685,6 +692,7 @@ recreate_elements <- function(mydata) {
     single <- length(orig) == 1
     conflict  <- FALSE
     hit_limit <- FALSE
+    zeroed    <- FALSE
     
     if (capped[i]) {
       target <- now
@@ -714,23 +722,52 @@ recreate_elements <- function(mydata) {
           now <- res$benefit
         }
       }
-      # Continuous variables close the rest
-      for (j in which(cols != "rawutil")) {
-        if (now == rawben) break
-        income <- cols[j] %in% c("rawearn", "rawunearn")
-        need   <- sign(rawben - now) * (if (income) -1 else 1)
-        if (direction_blocked(fnd[i, slots[j]], na[i, slots[j]], income, need, nature_first[i] && slots[j] > 1)) {
-          conflict <- TRUE
-          next
+      # Continuous variables close the rest. A $0 that leans on a later variable is only kept if the case then
+      # lands within zero_margin; otherwise the pass is rerun without it
+      cont  <- which(cols != "rawutil")
+      pass_start <- list(vals = lapply(bi[unique(cols[cont])], `[`, i), now = now, conflict = conflict,
+                         hit_limit = hit_limit)
+      lean_ok <- TRUE
+      repeat {
+        leaned <- FALSE
+        settled <- FALSE
+        for (j in cont) {
+          if (now == rawben || settled) break
+          income <- cols[j] %in% c("rawearn", "rawunearn")
+          need   <- sign(rawben - now) * (if (income) -1 else 1)
+          if (direction_blocked(fnd[i, slots[j]], na[i, slots[j]], income, need, nature_first[i] && slots[j] > 1)) {
+            conflict <- TRUE
+            next
+          }
+          # Medical in an SMD state is discrete below the SMD ($0 or the SMD), so it can stop short of RAWBEN
+          smd_med <- cols[j] == "rawmedded" && smd_state[i]
+          res <- move_toward(mydata, bi, i, cols[j], rawben)
+          was <- bi[[cols[j]]][i]
+          # Leftover to $0 (see the Step 7 notes above)
+          if (!smd_med && res$value > 0 && res$value < was &&
+              (res$value <= (1 - zero_cut) * was || res$value <= zero_floor)) {
+            zero_ben <- benefit_at(bi, i, cols[j], 0)
+            later <- setdiff(cols[seq_along(cols) > j], c("rawutil", cols[j]))
+            zero_close <- abs(zero_ben - rawben) <= zero_margin
+            if (zero_close || (lean_ok && length(later) > 0)) {
+              res <- list(value = 0, benefit = zero_ben)
+              zeroed <- TRUE
+              leaned <- leaned || !zero_close
+              settled <- zero_close   # within zero_margin: later variables do not chase the last few dollars
+            }
+          }
+          bi[[cols[j]]][i] <- res$value
+          now <- res$benefit
+          if (now != rawben && j < length(slots) && !smd_med && !settled) hit_limit <- TRUE
         }
-        # Medical in an SMD state is discrete below the SMD ($0 or the SMD), so it can stop short of RAWBEN
-        smd_med <- cols[j] == "rawmedded" && smd_state[i]
-        res <- move_toward(mydata, bi, i, cols[j], rawben)
-        bi[[cols[j]]][i] <- res$value
-        now <- res$benefit
-        if (now != rawben && j < length(slots) && !smd_med) hit_limit <- TRUE
+        if (!leaned || abs(now - rawben) <= zero_margin) break
+        for (v in names(pass_start$vals)) bi[[v]][i] <- pass_start$vals[[v]]
+        now <- pass_start$now; conflict <- pass_start$conflict; hit_limit <- pass_start$hit_limit; zeroed <- FALSE
+        lean_ok <- FALSE
       }
     }
+    # A cut taken to $0 counts as reaching RAWBEN when within zero_margin
+    reached <- now == rawben || (zeroed && abs(now - rawben) <= zero_margin)
     
     # Notes: one variable keeps the single-variable labels (earn_down, rent_error, util_no_change, ...);
     # several list each variable moved, utilities first (so smoothing and the SMD step leave them alone)
@@ -738,14 +775,14 @@ recreate_elements <- function(mydata) {
     if (single) {
       p <- step7_prefix[[names(orig)]]
       note <- if (names(orig) == "rawutil" && moved != 0) paste0(p, if (moved > 0) "_up" else "_down") else
-        if (conflict || now != rawben) paste0(p, "_error") else
+        if (conflict || !reached) paste0(p, "_error") else
         if (moved != 0) paste0(p, if (moved > 0) "_up" else "_down") else paste0(p, "_no_change")
       amt_i <- moved[[1]]
     } else {
       cm   <- moved[moved != 0]
       note <- if (length(cm) == 0) "no_change" else
         paste0(step7_prefix[names(cm)], ifelse(cm > 0, "_up", "_down"), collapse = "+")
-      if (now != rawben) note <- if (length(cm) == 0) "cascade_error" else paste0(note, "+cascade_error")
+      if (!reached) note <- if (length(cm) == 0) "cascade_error" else paste0(note, "+cascade_error")
       amt_i <- if (length(cm) > 0) cm[[1]] else 0
       ctype[i]  <- if (capped[i]) "capped" else "uncapped"
       climit[i] <- hit_limit
