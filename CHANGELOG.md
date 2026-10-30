@@ -46,8 +46,9 @@ moved or behaves differently.
   unit composition (150) and the person-eligibility elements (111 student,
   130 citizenship, 151 disqualification, 160-166 work rules, 170 SSN), in
   the direction of the nature (eligible person excluded: one fewer;
-  ineligible person included: one more). A case shifts by at most one
-  person, and cases whose elements disagree are left alone. Cases paid
+  ineligible person included: one more). A case shifts by one person (two
+  only on an exact match; see element 150 below), and cases whose elements
+  disagree are left alone. Cases paid
   above the maximum allotment for their size get one more person.
 - **Element 150 natures 13 and 15** (eligible member with income or
   expenses excluded): one fewer person. When ELEMENT1 is an eligible person
@@ -55,7 +56,12 @@ moved or behaves differently.
   nature 6), one member's income is also taken out of FSEARN/FSUNEARN when the
   benefit then matches RAWBEN exactly and no other member's does
   (`hhsize_up+income_down`), retrying with a utility error in a later slot
-  set by its nature code.
+  set by its nature code. When one fewer person still misses RAWBEN after
+  the rest of the reconstruction (so QC's other cited elements go first), a
+  second person comes off instead if that matches RAWBEN exactly: on its own for
+  natures 12 / 16, with one or two members' income for nature 13 and person
+  elements with nature 6, kept only if exactly one income amount matches
+  (`hhsize_up_2`).
 - **Homeless shelter deduction errors (element 362)** are corrected in any
   element slot: nature 53 gives the agency side the homeless standard for
   the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /

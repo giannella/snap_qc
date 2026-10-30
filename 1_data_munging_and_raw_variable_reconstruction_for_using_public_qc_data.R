@@ -362,6 +362,7 @@ mydata$correctednotes[hh_first & hh_shift < 0] <- "hhsize_up"
 mydata$correctednotes[hh_first & hh_shift > 0] <- "hhsize_down"
 mydata$hhsize_secondary_shift <- ifelse(hh_first, 0, hh_shift)
 # Marked as a column (not a vector) so it stays aligned when size-0 rows are dropped below
+mydata$two_person_check <- correct_variables & hh_first & hh_shift == -1
 mydata$excluded_member_check <- correct_variables & hh_first & hh_shift == -1 &
   ((mydata$ELEMENT1 %in% 150 & mydata$NATURE1 %in% 13) | (mydata$ELEMENT1 %in% setdiff(hh_elements, 150) & mydata$NATURE1 %in% 6))
 # Any household size element with a direction keeps the over-max rule below from adding a person
@@ -803,8 +804,83 @@ if (correct_variables){
   mydata$correctedamount[el362_first] <- hl_shift[el362_first]
   mydata$homeless_secondary_shift <- ifelse(el362 & !el362_first, hl_shift, 0)
   
+  # Two people excluded, as a fallback after Step 7: the natures say "person(s)", but Step 6 takes off one
+  # person. For eligible-person-excluded cases that still miss RAWBEN after Step 7 (so QC's cited elements had
+  # their chance first), the case's Step 7 changes are set aside and one more person comes off, kept only on an
+  # exact match (size stays at least 1); otherwise the Step 7 result stands:
+  #   150 natures 12 / 16 (no income / newborn): the size alone
+  #   150 nature 13 and person elements nature 6 (may have income): the size plus one or two members' income
+  #     (FSAFIL = 1) taken out of FSEARN / FSUNEARN, kept only if exactly one income amount matches
+  # Notes "hhsize_up_2" / "hhsize_up_2+income_down"
+  two_idx  <- which(mydata$two_person_check)
+  pre_vars <- c("rawearn", "rawunearn", "rawrent", "rawutil", "rawmedded", "rawdepded", "rawcsded", "correctednotes",
+                "correctedamount", "util_secondary_shift", "cascade_type", "cascade_hit_limit")
+  pre7 <- as.data.frame(mydata[two_idx, pre_vars])
+  
   mydata <- recreate_elements(mydata)
+  
+  two_rows <- two_idx[(mydata$rawben_recreated[two_idx] != mydata$RAWBEN[two_idx]) %in% TRUE]
+  if (length(two_rows) > 0) {
+    p   <- match(two_rows, two_idx)
+    sub <- mydata[two_rows, ]
+    for (v in pre_vars) sub[[v]] <- pre7[[v]][p]
+    no_income   <- sub$ELEMENT1 %in% 150 & sub$NATURE1 %in% c(12, 16)
+    with_income <- (sub$ELEMENT1 %in% 150 & sub$NATURE1 %in% 13) |
+      (sub$ELEMENT1 %in% setdiff(hh_elements, 150) & sub$NATURE1 %in% 6)
+    size2 <- as.numeric(sub$rawusize) - 1
+    try2  <- (no_income | with_income) & size2 >= 1
+    inputs <- c("rawearn", "rawunearn", "rawdepded", "rawmedded", "rawcsded", "rawstdded", "rawrent", "rawutil",
+                "max_shelter_deduction", "rawhomeless_ded", "rawbenmax", "rawminimum_ben")
+    base <- lapply(sub[inputs], as.numeric)
+    base$rawbenmax      <- get_max_allotment(pmax(size2, 1), sub$fiscal_year)
+    base$rawstdded      <- get_standard_deduction(sub$state_name, pmax(size2, 1), sub$fiscal_year)
+    base$rawminimum_ben <- ifelse(size2 < 3, ifelse(is.na(sub$MINIMUM_BEN), 0, as.numeric(sub$MINIMUM_BEN)), 0)
+    
+    # Size alone
+    hit0 <- try2 & no_income & (calculate_raw_benefits(base)$rawben_recreated == sub$RAWBEN) %in% TRUE
+    
+    # Size plus one or two members' income
+    by_member <- function(f) matrix(unlist(lapply(1:18, f)), ncol = 18)
+    E <- by_member(function(k) person_income(sub, earned_types, k))
+    U <- by_member(function(k) person_income(sub, unearned_types, k))
+    has_income <- by_member(function(k) {
+      afil <- paste0("FSAFIL", k)
+      if (afil %in% names(sub)) as.numeric(sub[[afil]]) %in% 1 else rep(FALSE, nrow(sub))
+    }) & (E + U) > 0
+    amt <- e_take <- u_take <- rep(NA_real_, nrow(sub))
+    ambiguous <- rep(FALSE, nrow(sub))
+    for (ks in c(as.list(1:18), combn(18, 2, simplify = FALSE))) {
+      valid <- try2 & with_income & rowSums(has_income[, ks, drop = FALSE]) == length(ks)
+      if (!any(valid)) next
+      e <- rowSums(E[, ks, drop = FALSE])
+      u <- rowSums(U[, ks, drop = FALSE])
+      b <- base
+      b$rawearn   <- pmax(b$rawearn - e, 0)
+      b$rawunearn <- pmax(b$rawunearn - u, 0)
+      hit <- valid & (calculate_raw_benefits(b)$rawben_recreated == sub$RAWBEN) %in% TRUE
+      ambiguous <- ambiguous | (hit & !is.na(amt) & amt != e + u)
+      first <- hit & is.na(amt)
+      amt[first] <- (e + u)[first]; e_take[first] <- e[first]; u_take[first] <- u[first]
+    }
+    hit_inc <- !is.na(amt) & !ambiguous
+    
+    use  <- hit0 | hit_inc
+    rows <- two_rows[use]
+    for (v in pre_vars) mydata[[v]][rows] <- pre7[[v]][p[use]]   # set the case's Step 7 changes aside
+    mydata$rawusize[rows]       <- size2[use]
+    mydata$rawbenmax[rows]      <- base$rawbenmax[use]
+    mydata$rawstdded[rows]      <- base$rawstdded[use]
+    mydata$rawminimum_ben[rows] <- base$rawminimum_ben[use]
+    inc_rows <- two_rows[hit_inc]
+    mydata$rawearn[inc_rows]   <- pmax(as.numeric(sub$rawearn[hit_inc]) - e_take[hit_inc], 0)
+    mydata$rawunearn[inc_rows] <- pmax(as.numeric(sub$rawunearn[hit_inc]) - u_take[hit_inc], 0)
+    mydata$correctednotes[rows] <- ifelse(hit_inc[use], "hhsize_up_2+income_down", "hhsize_up_2")
+    mydata$correctedamount[inc_rows] <- -amt[hit_inc]
+    cat("two people excluded:", sum(hit0), "on size alone and", sum(hit_inc), "with income removed, of",
+        sum(try2), "still off after Step 7 (", sum(ambiguous), "ambiguous )\n")
+  }
 }
+mydata$two_person_check <- NULL
 
 
 # Step 8. Evaluate corrections
