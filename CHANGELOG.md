@@ -25,7 +25,8 @@ moved or behaves differently.
 - **No leftover amounts in benefit reconstruction:** a variable cut to $25
   or less, or by 90% or more, goes to $0 instead (rather than keeping, say,
   $4 of $500 in earnings) when that lands within $5 of RAWBEN or a later
-  variable can take up the rest.
+  variable can take up the rest. Likewise a variable at $0 is not raised to
+  $25 or less.
 - **Utilities in benefit reconstruction** move only between published
   allowances by state, month and household size (new
   `additional_data/utilities/`). Cited alone, a utility moves to the

@@ -554,7 +554,8 @@ direction_blocked <- function(efindg, nature, income, need, nature_first = FALSE
 #     can before the next takes the rest (medical in SMD states: $0, the SMD or more).
 #   Leftovers: a cut that leaves zero_floor or less, or cuts zero_cut or more, goes to $0 instead when $0 lands
 #     within zero_margin of RAWBEN (later variables then stay put), or when a later variable takes the rest
-#     and the case then lands within zero_margin. A $5 benefit change is about $17-21 of a variable, so a leftover that small only absorbs
+#     and the case then lands within zero_margin. Likewise a variable at $0 that would be raised to zero_floor
+#     or less stays at $0. A $5 benefit change is about $17-21 of a variable, so amounts that small only absorb
 #     rounding. Not medical in SMD states (the SMD is a real amount).
 #   An element whose recorded codes all point the other way is not moved (see direction_blocked).
 amount_tolerance <- 2
@@ -744,9 +745,11 @@ recreate_elements <- function(mydata) {
           smd_med <- cols[j] == "rawmedded" && smd_state[i]
           res <- move_toward(mydata, bi, i, cols[j], rawben)
           was <- bi[[cols[j]]][i]
-          # Leftover to $0 (see the Step 7 notes above)
-          if (!smd_med && res$value > 0 && res$value < was &&
-              (res$value <= (1 - zero_cut) * was || res$value <= zero_floor)) {
+          # Leftover to $0, or a small raise from $0 kept at $0 (see the Step 7 notes above)
+          leftover  <- res$value > 0 && res$value < was &&
+            (res$value <= (1 - zero_cut) * was || res$value <= zero_floor)
+          from_zero <- was == 0 && res$value > 0 && res$value <= zero_floor
+          if (!smd_med && (leftover || from_zero)) {
             zero_ben <- benefit_at(bi, i, cols[j], 0)
             later <- setdiff(cols[seq_along(cols) > j], c("rawutil", cols[j]))
             zero_close <- abs(zero_ben - rawben) <= zero_margin
