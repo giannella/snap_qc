@@ -11,15 +11,34 @@ moved or behaves differently.
 ## [Unreleased]
 
 ### Changed
-- **Utility allowances in benefit reconstruction:** utilities now move only
-  between published allowances by state, month and household size (new
-  `additional_data/utilities/`). Utility errors in ELEMENT2-9 shift one step
-  (at least $50) before the ELEMENT1 correction.
-- **Nature codes in benefit reconstruction:** a correction never moves a
-  variable against the direction its nature code states. Those cases keep
-  the QC value and are marked `_error`.
+- **Benefit reconstruction follows one path for every case:** discrete
+  variables are set first (household size, the homeless deduction, then
+  utilities, from any element slot), then the continuous ones (earned and
+  unearned income, rent, medical, dependent care, child support) close the
+  rest of the gap to RAWBEN, largest AMOUNT first; a single-element case is
+  the one-variable version. Previously only ELEMENT1 was corrected. Where a
+  multi-element case's AMOUNTs add up to its error, each element moves the
+  benefit by its own AMOUNT (`cascade_type`, `amount_pattern`). Later
+  elements are also corrected after an ELEMENT1 household size or homeless
+  correction. Notes list every variable moved (`util_down+med_up`,
+  `hhsize_up+earn_down`), with `+cascade_error` when RAWBEN is not reached.
+- **Utilities in benefit reconstruction** move only between published
+  allowances by state, month and household size (new
+  `additional_data/utilities/`). Cited alone, a utility moves to the
+  allowance closest to RAWBEN; with other elements, to the closest one at
+  least $50 away that does not pass RAWBEN. When ELEMENT1 is not recreated
+  (standard deduction, arithmetic computation, ...) or is nature 97, a
+  utility in a later slot follows its nature code alone (52: one step down;
+  53: the top allowance).
+- **Direction codes in benefit reconstruction:** a correction never moves a
+  variable against the direction its error finding states (E_FINDG:
+  overissuance or underissuance; the nature code when E_FINDG is blank).
+  For ELEMENT2-9 of multi-element cases whose AMOUNTs do not add up, the
+  nature code comes first: states usually copy the case's E_FINDG into
+  every slot. That variable keeps the QC value (`_error` when it is the
+  only one).
 - **Household size in benefit reconstruction:** household size errors in
-  any element slot shift household size before the ELEMENT1 correction:
+  any element slot shift household size before the other corrections:
   unit composition (150) and the person-eligibility elements (111 student,
   130 citizenship, 151 disqualification, 160-166 work rules, 170 SSN), in
   the direction of the nature (eligible person excluded: one fewer;
@@ -30,31 +49,14 @@ moved or behaves differently.
   expenses excluded): one fewer person. For nature 13 in ELEMENT1, that
   member's income is also taken out of FSEARN/FSUNEARN when the benefit then
   matches RAWBEN exactly (`hhsize_up+income_down`).
+- **Homeless shelter deduction errors (element 362)** are corrected in any
+  element slot: nature 53 gives the agency side the homeless standard for
+  the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /
+  `homeless_down`). Homeless cases with a rent or utility error no longer
+  keep the homeless shelter deduction.
 - **Nature 97 / agency 26 cases** (change not required to be acted on) are
   treated as correctly paid: the QC side is set to the reconstructed values
   and the error fields are cleared (`no_action_required_i`).
-- **Homeless cases with a rent or utility error** no longer keep the
-  homeless shelter deduction.
-- **Homeless shelter deduction errors (element 362)** are now corrected
-  in any element slot: nature 53 gives the agency side the homeless
-  standard for the review's fiscal year, nature 52 gives it $0 (notes
-  `homeless_up` / `homeless_down`). ELEMENT2-9 hits shift before the
-  ELEMENT1 correction.
-- **Direction checks in benefit reconstruction:** each element's error
-  finding (E_FINDG) now sets the direction a correction may move a
-  variable; the nature code is used when E_FINDG is blank.
-- **Multi-element cases in benefit reconstruction:** errors are corrected
-  across all elements instead of only ELEMENT1: utilities first, then
-  largest AMOUNT first, each moving toward RAWBEN until it matches. Where
-  the AMOUNTs add up to the error, each element moves by its own AMOUNT
-  (`cascade_type`, notes such as `util_down+med_up`).
-
-### Fixed
-- **Benefit reconstruction:** a unit with the homeless shelter deduction
-  gets no excess shelter deduction (FS and raw side, and the workbook);
-  reported child support counts only where the file allowed it as a
-  deduction or exclusion. These were the 44 rows where the recreated
-  benefit missed `FSBEN`.
 
 ### Added
 - `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
@@ -62,6 +64,11 @@ moved or behaves differently.
   Database, QC Technical Documentation, SNAP Screener).
 
 ### Fixed
+- **Benefit reconstruction:** a unit with the homeless shelter deduction
+  gets no excess shelter deduction (FS and raw side, and the workbook);
+  reported child support counts only where the file allowed it as a
+  deduction or exclusion. These were the 44 rows where the recreated
+  benefit missed `FSBEN`.
 - **Lookup tables corrected against the FY2016-FY2024 QC Technical
   Documentation** (frame and delivery lists not yet rebuilt):
   error thresholds for FY2016 and FY2020; standard medical deductions for
