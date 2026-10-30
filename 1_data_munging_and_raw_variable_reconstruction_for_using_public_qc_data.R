@@ -2,7 +2,7 @@
 #
 # Key variables generated or derived in this script:
 #
-# correctednotes: Audit label describing the correction applied to a case, such as: "earn_down", "unearn_up", "rent_error", or "no_change".
+# correctednotes: Audit label describing the correction applied to a case, such as: "earn_down", "unearn_up", "rent_error", or "no_change". Element-cascade cases list every variable moved, in cascade order (e.g. "util_down+med_up"), with "+cascade_error" when RAWBEN is not reached.
 # correctedamount: Signed dollar change made to the variable being corrected. Positive values mean the variable was increased; negative values mean it was decreased.
 # fsben_recreated: Benefit recreated from the original QC inputs before correction adjustments (Compared with FSBEN).
 # fsben_uncapped: Benefit calculated from the original QC inputs before minimum and maximum benefit limits are applied.
@@ -11,6 +11,8 @@
 # rawbenmax: Maximum benefit amount looked up for the working household size and fiscal year.
 # rawstdded: Standard deduction looked up for the working household size and fiscal year, with the applicable state adjustment.
 # rawusize: Working household size used during benefit reconstruction. It starts from FSUSIZE and may be adjusted for unit-composition errors.
+# amount_pattern: How a multi-element case's AMOUNT1-9 relate to its error: all_zero, amount1_only, copied, even_split, clean_split, or other.
+# cascade_i, cascade_type, cascade_hit_limit: Multi-element cases corrected by the Step 7 element cascade; type "capped" when each element moved by its own AMOUNT; hit_limit when a non-utility element was maxed out before the next took over.
 #
 # Key variables from the public QC data:
 #
@@ -495,6 +497,22 @@ nature_direction <- function(nature, income) {
   else ifelse(nature %in% c(52, 57), -1, ifelse(nature %in% c(53, 56), 1, 0))
 }
 
+# Which way E_FINDG (2 = overissuance, 3 = underissuance) says the budgeted value was off, on the
+# nature_direction scale: overissuance means income was budgeted too low or a deduction too high
+efindg_direction <- function(efindg, income) {
+  over  <- efindg %in% 2
+  under <- efindg %in% 3
+  if (income) ifelse(over, -1, ifelse(under, 1, 0))
+  else ifelse(over, 1, ifelse(under, -1, 0))
+}
+
+# Direction check for the adjust_* loops: E_FINDG first, NATURE when E_FINDG is blank
+element_direction <- function(efindg, nature, income) {
+  ef <- efindg_direction(efindg, income)
+  ifelse(ef != 0, ef, nature_direction(nature, income))
+}
+if (!"E_FINDG1" %in% names(mydata)) mydata$E_FINDG1 <- NA_real_
+
 adjust_by_steps <- function(mydata, col, elements, prefix, kind,
                             max_iter = if (kind == "income") max_iterations_income else max_iterations) {
   
@@ -505,8 +523,8 @@ adjust_by_steps <- function(mydata, col, elements, prefix, kind,
   direction <- start_direction(mydata)
   down <- if (income) direction > 0 else direction < 0  # the value moves down
   up   <- if (income) direction < 0 else direction > 0
-  # Don't move the variable against NATURE1
-  conflict <- (nature_direction(mydata$NATURE1, income = income) * sign(direction)) %in% (if (income) 1 else -1)
+  # Don't move the variable against E_FINDG1 (NATURE1 when E_FINDG1 is blank)
+  conflict <- (element_direction(mydata$E_FINDG1, mydata$NATURE1, income = income) * sign(direction)) %in% (if (income) 1 else -1)
   
   for (i in seq_len(max_iter + 1)) {
     mydata <- calculate_raw_benefits(mydata)
@@ -567,8 +585,8 @@ adjust_util_steps <- function(mydata, col, elements, prefix) {
   mydata <- calculate_raw_benefits(mydata)
   start_gap <- abs(mydata$RAWBEN - mydata$rawben_recreated)
   direction <- mydata$RAWBEN - mydata$rawben_recreated
-  # Don't move the variable against NATURE1
-  conflict <- (nature_direction(mydata$NATURE1, income = FALSE) * sign(direction)) %in% -1
+  # Don't move the variable against E_FINDG1 (NATURE1 when E_FINDG1 is blank)
+  conflict <- (element_direction(mydata$E_FINDG1, mydata$NATURE1, income = FALSE) * sign(direction)) %in% -1
   notes <- ifelse(direction == 0, paste0(prefix, "_no_change"), paste0(prefix, "_error"))
   
   for (i in which(eligible & !conflict & direction != 0)) {
@@ -592,7 +610,7 @@ adjust_util_steps <- function(mydata, col, elements, prefix) {
 
 # Run an adjust_* function on its eligible rows only
 on_eligible_rows <- function(adjust_fn, mydata, col, elements, prefix, ...) {
-  rows <- which(mydata$ELEMENT1 %in% elements)
+  rows <- which(mydata$ELEMENT1 %in% elements & !mydata$cascade_i)
   sub <- adjust_fn(mydata[rows, ], col, elements, prefix, ...)
   mydata[[col]][rows] <- sub[[col]]
   mydata$correctednotes[rows] <- sub$correctednotes
@@ -621,6 +639,155 @@ fix_smd_adjustments <- function(mydata) {
   
   mydata
 }
+
+# Element cascade for multi-element cases whose ELEMENT1 is one Step 7 adjusts (in place of the ELEMENT1
+# adjustment). AMOUNTi is the benefit change QC attributes to element i and E_FINDGi its direction; many
+# states leave AMOUNTi at $0 or repeat AMTERR in every slot. Elements go utilities first (allowance steps
+# of at least util_min_step, never past the target), then largest AMOUNT (ties in slot order); nature 97 /
+# agency 26 slots are skipped.
+#   capped (clean_split AMOUNTs, no household size or homeless shift): each element moves by its own
+#     AMOUNT; the last one targets RAWBEN.
+#   uncapped (all others): each element moves toward RAWBEN as far as it can, then the next takes the
+#     rest; an element whose own direction points the other way is skipped.
+amount_tolerance <- 2
+step7_vars <- c(setNames(rep("rawearn", 3), c(311, 312, 314)),
+                setNames(rep("rawunearn", 12), c(331:336, 342:346, 350)),
+                c("363" = "rawrent", "364" = "rawutil", "365" = "rawmedded", "323" = "rawdepded", "366" = "rawcsded"))
+step7_prefix <- c(rawearn = "earn", rawunearn = "unearn", rawrent = "rent", rawutil = "util",
+                  rawmedded = "med", rawdepded = "dep", rawcsded = "cs")
+step7_elements <- as.numeric(names(step7_vars))
+
+# One column per element slot (1-9) as a numeric matrix
+slot_matrix <- function(mydata, prefix) {
+  matrix(unlist(lapply(1:9, function(k) {
+    v <- paste0(prefix, k)
+    if (v %in% names(mydata)) as.numeric(mydata[[v]]) else rep(NA_real_, nrow(mydata))
+  })), ncol = 9)
+}
+
+# How a case's AMOUNTs relate to its error (NA for cases with fewer than two elements):
+# all_zero, amount1_only, copied (AMTERR in every slot), even_split, clean_split, other
+amount_pattern <- function(mydata) {
+  el  <- slot_matrix(mydata, "ELEMENT")
+  amt <- slot_matrix(mydata, "AMOUNT")
+  fnd <- slot_matrix(mydata, "E_FINDG")
+  present <- !is.na(el)
+  amt[!present | is.na(amt)] <- 0
+  sgn <- (present & fnd %in% 2) - (present & fnd %in% 3)
+  nel   <- rowSums(present)
+  n_pos <- rowSums(amt > 0)
+  amax  <- apply(ifelse(present, amt, -Inf), 1, max)
+  amin  <- apply(ifelse(present, amt, Inf), 1, min)
+  err   <- as.numeric(mydata$AMTERR)
+  net   <- as.numeric(mydata$RAWBEN) - as.numeric(mydata$FSBEN)
+  known  <- n_pos == nel & rowSums(sgn != 0) == nel
+  copied <- n_pos == nel & amax == amin & abs(amax - err) <= 1
+  even   <- n_pos == nel & !copied & amax - amin <= 1 & abs(rowSums(amt) - err) <= nel
+  clean  <- known & !copied & !even & abs(rowSums(amt * sgn) - net) <= amount_tolerance
+  ifelse(nel < 2, NA_character_,
+  ifelse(n_pos == 0, "all_zero",
+  ifelse(n_pos == 1 & amt[, 1] > 0, "amount1_only",
+  ifelse(copied, "copied",
+  ifelse(even, "even_split",
+  ifelse(clean, "clean_split", "other"))))))
+}
+
+benefit_inputs <- c("rawearn", "rawunearn", "rawdepded", "rawmedded", "rawcsded", "rawstdded", "rawrent",
+                    "rawutil", "max_shelter_deduction", "rawhomeless_ded", "rawbenmax", "rawminimum_ben")
+
+# Recreated benefit for row i of `data` with `col` set to each of `values`, everything else as is
+benefit_at <- function(data, i, col, values) {
+  trial <- as.data.frame(data[rep(i, length(values)), benefit_inputs])
+  trial[[col]] <- values
+  calculate_raw_benefits(trial)$rawben_recreated
+}
+
+# Values to try for a variable: the current value, $0 and the case's allowances for utilities;
+# the current value and $1 steps from $0 to $6,000 above it otherwise
+candidate_values <- function(mydata, i, col) {
+  cur <- as.numeric(mydata[[col]][i])
+  if (col == "rawutil") {
+    tiers <- tryCatch(util_tiers(mydata$state_name[i], mydata$year[i], mydata$month[i], as.numeric(mydata$rawusize[i])),
+                      error = function(e) numeric(0))
+    return(sort(unique(c(cur, tiers))))
+  }
+  sort(unique(c(cur, seq(0, max(cur, 0) + 6000))))
+}
+
+# Value of `col` that brings the benefit closest to `target` (ties: smallest move); stays put unless it gets closer.
+# min_step: ignore values closer than this to the current one. no_overshoot: ignore values that carry the
+# benefit past `target`
+move_toward <- function(mydata, i, col, target, min_step = 0, no_overshoot = FALSE) {
+  cur  <- as.numeric(mydata[[col]][i])
+  cand <- candidate_values(mydata, i, col)
+  cand <- cand[cand == cur | abs(cand - cur) >= min_step]
+  ben  <- benefit_at(mydata, i, col, cand)
+  keep <- which(cand == cur)[1]
+  gap  <- abs(ben - target)
+  if (no_overshoot) gap[(target - ben) * (target - ben[keep]) < 0] <- Inf
+  best <- order(gap, abs(cand - cur))[1]
+  if (gap[best] < gap[keep]) list(value = cand[best], benefit = ben[best]) else list(value = cur, benefit = ben[keep])
+}
+
+element_cascade <- function(mydata, rows, capped) {
+  el  <- slot_matrix(mydata, "ELEMENT")
+  na  <- slot_matrix(mydata, "NATURE")
+  ag  <- slot_matrix(mydata, "AGENCY")
+  amt <- slot_matrix(mydata, "AMOUNT")
+  fnd <- slot_matrix(mydata, "E_FINDG")
+  amt[is.na(amt)] <- 0
+  for (r in seq_along(rows)) {
+    i <- rows[r]
+    slots <- which(el[i, ] %in% step7_elements & !(na[i, ] %in% 97) & !(ag[i, ] %in% 26))
+    if (length(slots) == 0) next
+    slots <- slots[order(!(el[i, slots] %in% 364), -amt[i, slots], slots)]
+    cols  <- unname(step7_vars[as.character(el[i, slots])])
+    # The cascade sets utilities itself, so undo the ELEMENT2+ utility step for this case
+    mydata$rawutil[i] <- mydata$rawutil[i] - mydata$util_secondary_shift[i]
+    mydata$util_secondary_shift[i] <- 0
+    orig   <- sapply(unique(cols), function(v) as.numeric(mydata[[v]][i]))
+    rawben <- as.numeric(mydata$RAWBEN[i])
+    now    <- benefit_at(mydata, i, "rawutil", mydata$rawutil[i])
+    target <- now
+    hit_limit <- FALSE
+    for (j in seq_along(slots)) {
+      k <- slots[j]
+      col <- cols[j]
+      income <- col %in% c("rawearn", "rawunearn")
+      if (capped[r]) {
+        target <- if (j == length(slots)) rawben else target + ifelse(fnd[i, k] == 2, 1, -1) * amt[i, k]
+      } else {
+        if (now == rawben) break
+        target <- rawben
+        need  <- sign(rawben - now) * (if (income) -1 else 1)
+        dir_k <- element_direction(fnd[i, k], na[i, k], income)
+        if (dir_k != 0 && dir_k != need) next
+      }
+      # Utilities step between allowances (at least util_min_step) without passing the target
+      res <- if (col == "rawutil") move_toward(mydata, i, col, target, min_step = util_min_step, no_overshoot = TRUE) else
+        move_toward(mydata, i, col, target)
+      mydata[[col]][i] <- res$value
+      now <- res$benefit
+      if (!capped[r] && col != "rawutil" && now != rawben && j < length(slots)) hit_limit <- TRUE
+    }
+    moved <- sapply(unique(cols), function(v) as.numeric(mydata[[v]][i]) - orig[[v]])
+    moved <- moved[moved != 0]
+    note  <- if (length(moved) == 0) "no_change" else
+      paste0(step7_prefix[names(moved)], ifelse(moved > 0, "_up", "_down"), collapse = "+")
+    if (now != rawben) note <- if (length(moved) == 0) "cascade_error" else paste0(note, "+cascade_error")
+    mydata$correctednotes[i]    <- note
+    mydata$correctedamount[i]   <- if (length(moved) > 0) moved[[1]] else 0
+    mydata$cascade_i[i]         <- TRUE
+    mydata$cascade_type[i]      <- if (capped[r]) "capped" else "uncapped"
+    mydata$cascade_hit_limit[i] <- hit_limit
+  }
+  mydata
+}
+
+mydata$cascade_i <- FALSE
+mydata$cascade_type <- NA_character_
+mydata$cascade_hit_limit <- NA
+mydata$amount_pattern <- amount_pattern(mydata)
 
 mydata$homeless_secondary_shift <- 0
 if (correct_variables){
@@ -654,6 +821,20 @@ if (correct_variables){
                                                ifelse(hl_shift[el362_first] < 0, "homeless_down", "homeless_no_change"))
   mydata$correctedamount[el362_first] <- hl_shift[el362_first]
   mydata$homeless_secondary_shift <- ifelse(el362 & !el362_first, hl_shift, 0)
+  
+  # Element cascade for multi-element cases (see element_cascade above); they skip the ELEMENT1 adjustment.
+  # Cases with ELEMENT1 nature 97 / agency 26 are left to the no-action step after Step 7
+  el_m <- slot_matrix(mydata, "ELEMENT")
+  na_m <- slot_matrix(mydata, "NATURE")
+  ag_m <- slot_matrix(mydata, "AGENCY")
+  present <- !is.na(el_m)
+  all_adjustable <- rowSums(present & el_m %in% step7_elements) == rowSums(present)
+  no_action_slot <- rowSums(present & (na_m %in% 97 | ag_m %in% 26)) > 0
+  cascade_rows <- which(rowSums(present) >= 2 & mydata$ELEMENT1 %in% step7_elements &
+                          !(mydata$NATURE1 %in% 97) & !(mydata$AGENCY1 %in% 26))
+  capped <- (mydata$amount_pattern %in% "clean_split" & all_adjustable & !no_action_slot &
+               mydata$rawusize == as.numeric(mydata$FSUSIZE) & mydata$homeless_secondary_shift == 0)[cascade_rows] %in% TRUE
+  mydata <- element_cascade(mydata, cascade_rows, capped)
   
   mydata <- on_eligible_rows(adjust_by_steps, mydata, kind = "income",
                              col = "rawunearn",

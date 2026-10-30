@@ -40,6 +40,14 @@ moved or behaves differently.
   standard for the review's fiscal year, nature 52 gives it $0 (notes
   `homeless_up` / `homeless_down`). ELEMENT2-9 hits shift before the
   ELEMENT1 correction.
+- **Direction checks in benefit reconstruction:** each element's error
+  finding (E_FINDG) now sets the direction a correction may move a
+  variable; the nature code is used when E_FINDG is blank.
+- **Multi-element cases in benefit reconstruction:** errors are corrected
+  across all elements instead of only ELEMENT1: utilities first, then
+  largest AMOUNT first, each moving toward RAWBEN until it matches. Where
+  the AMOUNTs add up to the error, each element moves by its own AMOUNT
+  (`cascade_type`, notes such as `util_down+med_up`).
 
 ### Fixed
 - **Benefit reconstruction:** a unit with the homeless shelter deduction

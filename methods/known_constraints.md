@@ -103,6 +103,8 @@ or changes a constraint.
 - FY2020 and FY2021 stay excluded (decision, not measurement), and the
   benefit-reconciliation filter stays on; the exclusions are validity guards,
   additive-only on the six kept years (§24).
+- AMOUNT1-9 are not always reported: about half of element slots are $0
+  (varying by state), and many multi-element cases repeat AMTERR in every slot.
 - Multi-element error cases are KEPT; deduction-field NAs are zero-filled
   (`ded_fields_imputed`), not dropped (§10).
 - Paths resolve through `here()`; no hardcoded machine paths
