@@ -13,7 +13,7 @@
 # rawusize: Working household size used during benefit reconstruction. It starts from FSUSIZE and may be adjusted for unit-composition errors.
 # amount_pattern: How a multi-element case's AMOUNT1-9 relate to its error: all_zero, amount1_only, copied, even_split, clean_split, or other.
 # cascade_type, cascade_hit_limit: Cases with several Step 7 variables; "capped" when each element moved by its own AMOUNT, otherwise "uncapped"; hit_limit when a continuous variable was maxed out before the next took over.
-# imputed_at_bound: "max" / "min" when impute_at_bound redrew a value for a case stuck on that benefit limit (QA flag, not a modeling feature).
+# imputed_at_bound: "max" / "min" / "shelter_cap" when the smoothing redrew a value for a case stuck on that limit (QA flag, not a modeling feature).
 #
 # Key variables from the public QC data:
 #
@@ -1114,11 +1114,57 @@ impute_at_bound <- function(mydata, side = c("max", "min"), seed = impute_seed) 
   mydata
 }
 
+# Rent moved up that stops at the shelter cap is a bound in the same way: above the cap more rent changes nothing,
+# and with rounding the last few dollars below it already give the capped benefit, so Step 7 stops up to ~$3 short
+# of the cap. A case is stuck when the benefit is unchanged with rent pushed past the cap; its rent is redrawn
+# past the cap from identified rent_up cases.
+impute_past_shelter_cap <- function(mydata, seed = impute_seed) {
+  set.seed(seed)
+  mydata  <- calculate_raw_benefits(mydata)
+  notes   <- ifelse(is.na(mydata$correctednotes), "", mydata$correctednotes)
+  closing <- closing_move(notes)
+  rb      <- as.numeric(mydata$RAWBEN)
+  minb    <- as.numeric(mydata$rawminimum_ben)
+  matched <- !grepl("_error", notes) & (abs(mydata$rawben_recreated - rb) <= zero_margin) %in% TRUE
+  between <- !((rb == as.numeric(mydata$rawbenmax)) %in% TRUE | (minb > 0 & rb == minb) %in% TRUE)
+  cap     <- as.numeric(mydata$max_shelter_deduction)
+  slt_unc <- as.numeric(mydata$rawsltded_uncapped)
+  applies <- is.finite(cap) & (as.numeric(mydata$rawhomeless_ded) == 0) %in% TRUE
+  rent_up <- matched & closing %in% "rent_up"
+  near    <- applies & (slt_unc - cap > -10 & slt_unc - cap < 1) %in% TRUE
+  cand    <- which(rent_up & near & between & is.na(mydata$imputed_at_bound))
+  # Stuck: same benefit with rent pushed $25 past the cap
+  t <- lapply(mydata[benefit_inputs], function(x) as.numeric(x)[cand])
+  t$rawrent <- t$rawrent + ceiling(cap[cand] - slt_unc[cand]) + 25
+  cen  <- cand[(calculate_raw_benefits(t)$rawben_recreated == mydata$rawben_recreated[cand]) %in% TRUE]
+  # Donors: identified rent_up cases (between the benefit limits, shelter deduction not near the cap)
+  don  <- which(rent_up & between & !(applies & (slt_unc - cap > -10) %in% TRUE))
+  q    <- as.numeric(mydata$RENT)
+  diff <- (as.numeric(mydata$rawrent) - q)[don]
+  diff <- diff[!is.na(diff)]
+  pos  <- diff[diff > 0]
+  ben_before <- mydata$rawben_recreated
+  for (i in cen) {
+    edge <- as.numeric(mydata$rawrent[i]) + ceiling(cap[i] - slt_unc[i]) + 1
+    q0   <- if (is.na(q[i])) 0 else q[i]
+    pool <- q0 + diff[diff >= edge - q0]
+    mydata$rawrent[i] <- if (length(pool) > 0) pool[sample.int(length(pool), 1)] else
+      edge + if (length(pos) > 0) pos[sample.int(length(pos), 1)] else 0
+  }
+  mydata$imputed_at_bound[cen] <- "shelter_cap"
+  cat(sprintf("impute_past_shelter_cap rent_up stuck %5d  donors %6d\n", length(cen), length(don)))
+  mydata <- calculate_raw_benefits(mydata)
+  stopifnot("impute_past_shelter_cap changed a recreated benefit" =
+              isTRUE(all.equal(mydata$rawben_recreated, ben_before)))
+  mydata
+}
+
 mydata <- calculate_raw_benefits(mydata)
 mydata$imputed_at_bound <- NA_character_
 if (apply_correction_smoothing) {
   mydata <- impute_at_bound(mydata, "max")
   mydata <- impute_at_bound(mydata, "min")
+  mydata <- impute_past_shelter_cap(mydata)
 }
 
 add_total_deductions <- function(data) {
