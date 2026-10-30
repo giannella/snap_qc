@@ -544,11 +544,11 @@ fix_smd_adjustments <- function(mydata) {
   mydata
 }
 
-# Step 7 elements: the slots whose element Step 7 adjusts, skipping nature 97 / agency 26 slots (a case whose
-# ELEMENT1 is nature 97 / agency 26 uses ELEMENT1 only; the no-action step after Step 8 then takes the
-# recreated values as correct; a utility in its later slots follows util_nature_step). Continuous variables
-# are adjusted only when ELEMENT1 is a Step 7 element or a household size / homeless error corrected above;
-# other ELEMENT1s (standard deduction, arithmetic computation, ...) may account for the gap themselves.
+# Step 7 elements: every slot whose element Step 7 adjusts. Nature 97 / agency 26 elements are recreated exactly
+# like any other; the no-action step after Step 8 then takes their effect out of the error.
+# Continuous variables are adjusted only when ELEMENT1 is a Step 7 element or a household size / homeless error
+# corrected above; other ELEMENT1s (standard deduction, arithmetic computation, ...) may account for the gap
+# themselves.
 # AMOUNTi is the benefit change QC attributes to element i and E_FINDGi its direction; many states leave
 # AMOUNTi at $0 or repeat AMTERR in every slot.
 #   capped (clean_split AMOUNTs, every element a Step 7 one, no household size or homeless shift): utilities,
@@ -658,14 +658,11 @@ recreate_elements <- function(mydata) {
   fnd <- slot_matrix(mydata, "E_FINDG")
   amt[is.na(amt)] <- 0
   present <- !is.na(el)
-  usable  <- present & el %in% step7_elements & !(na %in% 97 | ag %in% 26)
-  no_action <- mydata$NATURE1 %in% 97 | mydata$AGENCY1 %in% 26
-  usable[no_action, ] <- FALSE
-  usable[no_action, 1] <- el[no_action, 1] %in% step7_elements
+  usable  <- present & el %in% step7_elements
   recreatable <- mydata$ELEMENT1 %in% step7_elements |
     (mydata$ELEMENT1 %in% hh_elements & mydata$rawusize != as.numeric(mydata$FSUSIZE)) %in% TRUE |
     (mydata$ELEMENT1 %in% 362 & grepl("^homeless_", mydata$correctednotes))
-  capped <- (mydata$amount_pattern %in% "clean_split" & rowSums(usable) == rowSums(present) & !no_action &
+  capped <- (mydata$amount_pattern %in% "clean_split" & rowSums(usable) == rowSums(present) &
                mydata$rawusize == as.numeric(mydata$FSUSIZE) & mydata$homeless_secondary_shift == 0) %in% TRUE
   nature_first <- !(mydata$amount_pattern %in% "clean_split")
   notes  <- mydata$correctednotes
@@ -673,15 +670,6 @@ recreate_elements <- function(mydata) {
   util_shift <- mydata$util_secondary_shift
   ctype  <- mydata$cascade_type
   climit <- mydata$cascade_hit_limit
-  
-  # No-action cases: a utility in ELEMENT2-9 follows its nature (as before Step 7), ELEMENT1 is recreated below
-  for (i in which(no_action & !(el[, 1] %in% 364))) {
-    k <- which(el[i, -1] %in% 364 & na[i, -1] %in% c(52, 53))[1] + 1
-    if (is.na(k)) next
-    new_u <- util_nature_step(mydata, bi, i, na[i, k])
-    util_shift[i] <- new_u - bi$rawutil[i]
-    bi$rawutil[i] <- new_u
-  }
   
   for (i in which(rowSums(usable) > 0)) {
     slots <- which(usable[i, ])
@@ -993,8 +981,59 @@ mydata$correctednotes[has_sec] <- ifelse(
   paste0(sec_note[has_sec], "+", mydata$correctednotes[has_sec])
 )
 
-# Nature 97 / agency 26 (change not required to be reported or acted upon): the budgeted benefit was correct, so the FS side is set to the reconstructed raw side and the variance fields are cleared (flagged in no_action_required_i)
-no_action_required <- mydata$NATURE1 %in% 97 | mydata$AGENCY1 %in% 26
+# Nature 97 / agency 26 (change not required to be reported or acted upon): that variance is not an error.
+# Every variance 97 / 26: the budgeted benefit was correct, so the FS side is set to the reconstructed raw side and
+# the variance fields are cleared (no_action_required_i).
+# Some variances 97 / 26 and some not (no_action_partial_i): the 97 / 26 elements' variables take the reconstructed
+# (agency) value on the FS side too, FSBEN moves by the benefit change that makes, and the error amount, finding and
+# over-threshold flag are recomputed from what is left. A variable that a real element also uses cannot be
+# separated and stays in the error. The element / nature labels move to the first real element.
+el_m <- slot_matrix(mydata, "ELEMENT")
+na_m <- slot_matrix(mydata, "NATURE")
+ag_m <- slot_matrix(mydata, "AGENCY")
+present <- !is.na(el_m)
+na_slot <- present & (na_m %in% 97 | ag_m %in% 26)
+real_slot <- present & !na_slot
+no_action_required <- rowSums(na_slot) > 0 & rowSums(real_slot) == 0
+no_action_partial  <- rowSums(na_slot) > 0 & rowSums(real_slot) > 0
+
+p <- which(no_action_partial)
+if (length(p) > 0) {
+  num <- function(x) { x <- as.numeric(x); x[is.na(x)] <- 0; x }
+  fs_cols <- c(rawearn = "FSEARN", rawunearn = "FSUNEARN", rawrent = "RENT", rawutil = "UTIL",
+               rawmedded = "FSMEDDED", rawdepded = "FSDEPDED", rawcsded = "FSCSDED")
+  d <- mydata[p, ]
+  fs_side <- list(rawearn = num(d$FSEARN), rawunearn = num(d$FSUNEARN), rawdepded = num(d$FSDEPDED),
+                  rawmedded = num(d$FSMEDDED), rawcsded = num(d$FSCSDED), rawstdded = num(d$FSSTDDED),
+                  rawrent = num(d$RENT), rawutil = num(d$UTIL), max_shelter_deduction = d$max_shelter_deduction,
+                  rawhomeless_ded = num(d$HOMELESS_DED), rawbenmax = num(d$BENMAX), rawminimum_ben = num(d$fsminimum_ben))
+  swapped <- fs_side
+  for (v in unique(step7_vars)) {
+    els <- as.numeric(names(step7_vars)[step7_vars == v])
+    has_v <- matrix(el_m[p, , drop = FALSE] %in% els, ncol = 9)
+    sw <- rowSums(na_slot[p, , drop = FALSE] & has_v) > 0 & rowSums(real_slot[p, , drop = FALSE] & has_v) == 0
+    swapped[[v]][sw] <- as.numeric(d[[v]][sw])
+    mydata[[fs_cols[[v]]]][p[sw]] <- as.numeric(d[[v]][sw])
+  }
+  # Benefit change from the swap, on the FS-side formula (so its rounding cancels out)
+  shift <- calculate_raw_benefits(swapped)$rawben_recreated - calculate_raw_benefits(fs_side)$rawben_recreated
+  old_diff <- as.numeric(mydata$bendiff[p])
+  mydata$FSBEN[p] <- as.numeric(mydata$FSBEN[p]) + shift
+  new_diff <- as.numeric(mydata$RAWBEN[p]) - as.numeric(mydata$FSBEN[p])
+  mydata$bendiff[p] <- new_diff
+  mydata$absbendiff[p] <- abs(new_diff)
+  mydata$AMTERR[p] <- pmax(as.numeric(mydata$AMTERR[p]) + abs(new_diff) - abs(old_diff), 0)
+  mydata$over_threshold[p] <- as.integer(abs(new_diff) > mydata$threshold[p])
+  mydata$STATUS[p] <- ifelse(new_diff > 0, 2, ifelse(new_diff < 0, 3, 1))
+  first_real <- apply(real_slot[p, , drop = FALSE], 1, function(x) which(x)[1])
+  mydata$element[p] <- qc_elements$description[match(el_m[cbind(p, first_real)], qc_elements$code)]
+  mydata$nature[p]  <- qc_natures$description[match(na_m[cbind(p, first_real)], qc_natures$code)]
+  cat("nature 97 / agency 26 next to a real error:", length(p), "cases;", sum(shift != 0),
+      "had the 97 / 26 part taken out of the error,", sum(abs(old_diff) > mydata$threshold[p] & !(abs(new_diff) > mydata$threshold[p])),
+      "fell under the threshold\n")
+}
+mydata$no_action_partial_i <- no_action_partial
+
 fs_map <- c(FSUSIZE = "rawusize", FSGRINC = "rawgrinc", FSEARN = "rawearn", FSUNEARN = "rawunearn", FSERNDED = "rawernded", FSMEDDED = "rawmedded", FSDEPDED = "rawdepded", FSCSDED = "rawcsded", FSSLTDED = "rawsltded", FSSLTEXP = "rawsltexp", RENT = "rawrent", UTIL = "rawutil", FSSTDDED = "rawstdded", HOMELESS_DED = "rawhomeless_ded", BENMAX = "rawbenmax",
             fsminimum_ben = "rawminimum_ben", fsnet_before_shelter = "rawnet_before_shelter", fsnet_adjusted_half = "rawnet_adjusted_half", fssltded_uncapped = "rawsltded_uncapped", fssltded_recalculated = "rawsltded", fsnet_allow_negative = "rawnet_allow_negative", FSNETINC = "rawnet_capped", fsben_uncapped = "rawben_uncapped", fsben_recreated = "rawben_recreated", unc_fsben_rel_max = "unc_rawben_rel_max", FSBEN = "rawben_recreated")
 for (v in names(fs_map)) mydata[[v]][no_action_required] <- as.numeric(mydata[[fs_map[[v]]]][no_action_required])

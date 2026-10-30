@@ -27,9 +27,9 @@ moved or behaves differently.
   `additional_data/utilities/`). Cited alone, a utility moves to the
   allowance closest to RAWBEN; with other elements, to the closest one at
   least $50 away that does not pass RAWBEN. When ELEMENT1 is not recreated
-  (standard deduction, arithmetic computation, ...) or is nature 97, a
-  utility in a later slot follows its nature code alone (52: one step down;
-  53: the top allowance).
+  (standard deduction, arithmetic computation, ...), a utility in a later
+  slot follows its nature code alone (52: one step down; 53: the top
+  allowance).
 - **Direction codes in benefit reconstruction:** a correction never moves a
   variable against the direction its error finding states (E_FINDG:
   overissuance or underissuance; the nature code when E_FINDG is blank).
@@ -55,9 +55,15 @@ moved or behaves differently.
   the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /
   `homeless_down`). Homeless cases with a rent or utility error no longer
   keep the homeless shelter deduction.
-- **Nature 97 / agency 26 cases** (change not required to be acted on) are
-  treated as correctly paid: the QC side is set to the reconstructed values
-  and the error fields are cleared (`no_action_required_i`).
+- **Nature 97 / agency 26 variances** (change not required to be acted on)
+  are not errors. Their elements are recreated exactly like any other, and
+  only then taken out of the error. When every variance is 97 / 26, the
+  case is treated as correctly paid: the QC side is set to the
+  reconstructed values and the error fields are cleared
+  (`no_action_required_i`). When a case also has a real error, only the
+  97 / 26 elements' variables take the reconstructed value on the QC side,
+  and FSBEN, the error amount, finding and over-threshold flag are
+  recomputed from what is left (`no_action_partial_i`).
 
 ### Added
 - `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
