@@ -22,6 +22,101 @@ moved or behaves differently.
   prior year's maximum): 337 cases, 299 of them errors. 163 move from the
   one-person stratum to 2-3, and 40 from 2-3 to 4+.
 
+- **Benefit reconstruction follows one path for every case:** discrete
+  variables are set first (household size, the homeless deduction, then
+  utilities, from any element slot), then the continuous ones (earned and
+  unearned income, rent, medical, dependent care, child support) close the
+  rest of the gap to RAWBEN, largest AMOUNT first; a single-element case is
+  the one-variable version. Previously only ELEMENT1 was corrected. Where a
+  multi-element case's AMOUNTs add up to its error, each element moves the
+  benefit by its own AMOUNT (`cascade_type`, `amount_pattern`). Later
+  elements are also corrected after an ELEMENT1 household size or homeless
+  correction. Notes list every variable moved (`util_down+med_up`,
+  `hhsize_up+earn_down`), with `+cascade_error` when RAWBEN is not reached.
+- **No leftover amounts in benefit reconstruction:** a variable cut to $25
+  or less, or by 90% or more, goes to $0 instead (rather than keeping, say,
+  $4 of $500 in earnings) when that lands within $5 of RAWBEN or a later
+  variable can take up the rest. Likewise a variable at $0 is not raised to
+  $25 or less.
+- **Utilities in benefit reconstruction** move only between published
+  allowances by state, month and household size (new
+  `additional_data/utilities/`). Cited alone, a utility moves to the
+  allowance closest to RAWBEN; with other elements, to the closest one at
+  least $50 away that does not pass RAWBEN. When ELEMENT1 is not recreated
+  (standard deduction, arithmetic computation, ...), a utility in a later
+  slot follows its nature code alone (52: one step down; 53: the top
+  allowance).
+- **Medical in standard medical deduction (SMD) states** only takes $0,
+  the state's SMD, or an actual deduction above it, chosen in the
+  reconstruction with the other variables. It was previously snapped to the
+  SMD after the fact, which could undo a match.
+- **Direction codes in benefit reconstruction:** a correction never moves a
+  variable in a direction that none of its recorded codes support (E_FINDG:
+  overissuance or underissuance; the nature code). When the two disagree,
+  the one that points the way QC's own benefit result does lets the move
+  through. For ELEMENT2-9 of multi-element cases whose AMOUNTs do not add
+  up, the nature code decides: states usually copy the case's E_FINDG into
+  every slot. A blocked variable keeps the QC value (`_error` when it is the
+  only one).
+- **Household size in benefit reconstruction:** household size errors in
+  any element slot shift household size before the other corrections:
+  unit composition (150) and the person-eligibility elements (111 student,
+  130 citizenship, 151 disqualification, 160-166 work rules, 170 SSN), in
+  the direction of the nature (eligible person excluded: one fewer;
+  ineligible person included: one more). A case shifts by one person (two
+  only on an exact match; see element 150 below), and cases whose elements
+  disagree are left alone. Cases paid
+  above the maximum allotment for their size get one more person.
+- **Element 150 natures 13 and 15** (eligible member with income or
+  expenses excluded): one fewer person. When ELEMENT1 is an eligible person
+  excluded who may have had income (150 nature 13, or a person element with
+  nature 6), one member's income is also taken out of FSEARN/FSUNEARN when the
+  benefit then matches RAWBEN exactly and no other member's does
+  (`hhsize_up+income_down`), retrying with a utility error in a later slot
+  set by its nature code. When one fewer person still misses RAWBEN after
+  the rest of the reconstruction (so QC's other cited elements go first), a
+  second person comes off instead if that matches RAWBEN exactly: on its own for
+  natures 12 / 16, with one or two members' income for nature 13 and person
+  elements with nature 6, kept only if exactly one income amount matches
+  (`hhsize_up_2`).
+- **Arithmetic computation (520) and standard deduction (361) errors in
+  ELEMENT1** that still miss RAWBEN are tried with the previous fiscal
+  year's maximum allotment, standard deduction and shelter cap (alone, in
+  pairs, then all three), kept only on an exact match
+  (`prior_year_tables`). Most matches are October-December reviews, just
+  after the annual update.
+- **Homeless shelter deduction errors (element 362)** are corrected in any
+  element slot: nature 53 gives the agency side the homeless standard for
+  the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /
+  `homeless_down`). Homeless cases with a rent or utility error no longer
+  keep the homeless shelter deduction.
+- **Nature 97 / agency 26 variances** (change not required to be acted on)
+  are not errors. Their elements are recreated exactly like any other, and
+  only then taken out of the error. When every variance is 97 / 26, the
+  case is treated as correctly paid: the QC side is set to the
+  reconstructed values and the error fields are cleared
+  (`no_action_required_i`). When a case also has a real error, only the
+  97 / 26 elements' variables take the reconstructed value on the QC side,
+  and FSBEN, the error amount, finding and over-threshold flag are
+  recomputed from what is left (`no_action_partial_i`).
+- **Smoothing of reconstructed values at the maximum and minimum benefit:**
+  cases whose RAWBEN is the maximum allotment, or the minimum benefit for
+  1-2 person units, only give a bound and were left exactly on the limit.
+  The last continuous variable moved is now redrawn from cases with the same
+  correction between the limits, far enough to leave the limit (fixed seed;
+  flagged in `imputed_at_bound`); rent moved up to the shelter cap (or the
+  last few dollars below it) is redrawn above it the same way. The benefit
+  cannot change. Utilities, household size, the homeless deduction and
+  medical at the SMD are left as reconstructed. Replaces the earlier rules
+  ($5 amounts to $0, large income cuts at the max to $0, deductions scaled
+  to `no_change` means), which left about a fifth of these cases on the max
+  and did nothing at the minimum.
+
+### Added
+- `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
+  asset limits by state and fiscal year, FY1996-FY2027 (ERS SNAP Policy
+  Database, QC Technical Documentation, SNAP Screener).
+
 ### Fixed
 - **Benefit reconstruction now reaches the issued benefit more often.**
   Rebuilds that miss it by more than $1 fall from 9,348 to 8,853 cases
@@ -41,13 +136,6 @@ moved or behaves differently.
   reported child support counts only where the file allowed it as a
   deduction or exclusion. These were the 44 rows where the recreated
   benefit missed `FSBEN`.
-
-### Added
-- `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
-  asset limits by state and fiscal year, FY1996-FY2027 (ERS SNAP Policy
-  Database, QC Technical Documentation, SNAP Screener).
-
-### Fixed
 - **Lookup tables corrected against the FY2016-FY2024 QC Technical
   Documentation** (delivery lists not yet rebuilt):
   error thresholds for FY2016 and FY2020; standard medical deductions for
