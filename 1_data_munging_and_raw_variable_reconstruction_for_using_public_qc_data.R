@@ -923,6 +923,22 @@ if (correct_variables){
         sum(try2), "still off after Step 7 (", sum(ambiguous), "ambiguous )\n")
   }
   
+  # Unit composition "other" (ELEMENT1 150 nature 99) has no direction in its nature code, so E_FINDG1 sets it for
+  # cases still off after Step 7: overissuance one more person, underissuance one fewer, kept within zero_margin
+  u99 <- which(mydata$ELEMENT1 %in% 150 & mydata$NATURE1 %in% 99 & mydata$E_FINDG1 %in% c(2, 3) &
+                 mydata$rawusize == as.numeric(mydata$FSUSIZE) & (mydata$FSUSIZE > 1 | mydata$E_FINDG1 %in% 2))
+  b99 <- mydata[u99, ]
+  b99$rawusize       <- as.numeric(b99$rawusize) + ifelse(b99$E_FINDG1 %in% 2, 1, -1)
+  b99$rawbenmax      <- get_max_allotment(b99$rawusize, b99$fiscal_year)
+  b99$rawstdded      <- get_standard_deduction(b99$state_name, b99$rawusize, b99$fiscal_year)
+  b99$rawminimum_ben <- ifelse(b99$rawusize < 3, b99$MINIMUM_BEN, 0)
+  hit <- (abs(calculate_raw_benefits(mydata[u99, ])$rawben_recreated - b99$RAWBEN) > zero_margin) %in% TRUE &
+    (abs(calculate_raw_benefits(b99)$rawben_recreated - b99$RAWBEN) <= zero_margin) %in% TRUE
+  size_cols <- c("rawusize", "rawbenmax", "rawstdded", "rawminimum_ben")
+  mydata[u99[hit], size_cols] <- b99[hit, size_cols]
+  mydata$correctednotes[u99[hit]] <- ifelse(b99$E_FINDG1[hit] %in% 2, "hhsize_down", "hhsize_up")
+  cat("unit composition other (150/99): household size set by E_FINDG1 on", sum(hit), "of", length(u99), "cases\n")
+  
   # Last year's tables: ELEMENT1 520 (arithmetic computation) and 361 (standard deduction) cases often match
   # RAWBEN when the agency budgeted with the previous fiscal year's tables, mostly in October-December reviews
   # just after the annual update (520 nature 79 is "incorrect use of allotment tables"). For these cases still

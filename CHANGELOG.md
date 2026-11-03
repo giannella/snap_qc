@@ -74,6 +74,10 @@ moved or behaves differently.
   pairs, then all three), kept only on an exact match
   (`prior_year_tables`). Most matches are October-December reviews, just
   after the annual update.
+- **Unit composition "other" (element 150 nature 99)** in ELEMENT1 takes
+  its direction from E_FINDG1 when the case still misses RAWBEN (one more
+  person on an overissuance, one fewer on an underissuance), kept when the
+  benefit then lands within $5 of RAWBEN.
 - **Homeless shelter deduction errors (element 362)** are corrected in any
   element slot: nature 53 gives the agency side the homeless standard for
   the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /
