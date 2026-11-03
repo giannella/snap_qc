@@ -407,6 +407,8 @@ util_tiers <- function(state, year, month, hh_size) {
 # at least util_min_step, so near-identical allowances count as the same step
 util_min_step <- 50
 mydata$util_secondary_shift <- 0
+# How close to RAWBEN counts as a match in the household-size searches below and in Step 7's $0 rule
+zero_margin <- 5
 
 # ELEMENT1 an eligible person excluded who may have had income (150 nature 13 "with income"; person elements
 # nature 6, which does not say): the size shift above removed the person; the agency would also have left out
@@ -414,8 +416,8 @@ mydata$util_secondary_shift <- 0
 # searched. The person-level
 # income fields add up to FSEARN (earned) and FSUNEARN (unearned), so try each eligible member
 # (FSAFIL = 1) with income: raw income = FSEARN / FSUNEARN minus that member's income, kept
-# only if the benefit then matches RAWBEN exactly. If no member matches, or members with
-# different incomes both match, income is left as is (the person is still removed).
+# if the benefit then lands within zero_margin of RAWBEN (the closest member). If no member does, or members
+# with different incomes are equally close, income is left as is (the person is still removed).
 # Utilities are corrected later (Step 7), so when no member matches and ELEMENT2-9 holds a utility
 # error with nature 52 or 53, the search is retried with the utility set by its nature (52: the next
 # allowance at least util_min_step down; 53: the top allowance); a match keeps that utility too
@@ -428,9 +430,11 @@ person_income <- function(data, types, k) {
   cols <- intersect(paste0(types, k), names(data))
   Reduce(`+`, lapply(cols, function(v) { x <- as.numeric(data[[v]]); x[is.na(x)] <- 0; x }), rep(0, nrow(data)))
 }
-# Member whose income, taken out of FSEARN / FSUNEARN, makes the benefit match RAWBEN exactly (utilities at `util`)
+# Member whose income, taken out of FSEARN / FSUNEARN, brings the benefit closest to RAWBEN, within zero_margin
+# (utilities at `util`)
 find_member <- function(sub, fs_earn, fs_unearn, util) {
   match_earn <- match_unearn <- rep(NA_real_, nrow(sub))
+  best <- rep(Inf, nrow(sub))
   ambiguous <- rep(FALSE, nrow(sub))
   for (k in 1:18) {
     afil <- paste0("FSAFIL", k)
@@ -443,21 +447,25 @@ find_member <- function(sub, fs_earn, fs_unearn, util) {
     trial$rawearn   <- fs_earn - e
     trial$rawunearn <- fs_unearn - u
     trial$rawutil   <- util
-    hit <- cand & (calculate_raw_benefits(trial)$rawben_recreated == sub$RAWBEN) %in% TRUE
-    ambiguous <- ambiguous | (hit & !is.na(match_earn) & (match_earn != e | match_unearn != u))
-    first <- hit & is.na(match_earn)
-    match_earn[first]   <- e[first]
-    match_unearn[first] <- u[first]
+    gap <- abs(calculate_raw_benefits(trial)$rawben_recreated - sub$RAWBEN)
+    hit <- cand & (gap <= zero_margin) %in% TRUE
+    better <- hit & gap < best
+    ambiguous <- (ambiguous & !better) | (hit & gap == best & (match_earn != e | match_unearn != u)) %in% TRUE
+    best[better] <- gap[better]
+    match_earn[better]   <- e[better]
+    match_unearn[better] <- u[better]
   }
   list(earn = match_earn, unearn = match_unearn, ambiguous = ambiguous,
        use = !is.na(match_earn) & !ambiguous)
 }
 el150_income <- which(mydata$excluded_member_check)
 mydata$excluded_member_check <- NULL
-# Person elements (nature 6) do not say the person had income: search only when the size change alone misses RAWBEN
+# Person elements (nature 6) do not say the person had income: search only when the size change alone is more than
+# zero_margin from RAWBEN
 # (otherwise, at the maximum benefit, removing any income still "matches")
 if (length(el150_income) > 0) {
-  size_only <- calculate_raw_benefits(mydata[el150_income, ])$rawben_recreated == mydata$RAWBEN[el150_income]
+  size_only <- abs(calculate_raw_benefits(mydata[el150_income, ])$rawben_recreated - mydata$RAWBEN[el150_income]) <=
+    zero_margin
   el150_income <- el150_income[!(size_only %in% TRUE & !(mydata$ELEMENT1[el150_income] %in% 150))]
 }
 if (length(el150_income) > 0) {
@@ -561,7 +569,6 @@ direction_blocked <- function(efindg, nature, income, need, nature_first = FALSE
 amount_tolerance <- 2
 zero_cut    <- 0.9
 zero_floor  <- 25
-zero_margin <- 5
 step7_vars <- c(setNames(rep("rawearn", 3), c(311, 312, 314)),
                 setNames(rep("rawunearn", 12), c(331:336, 342:346, 350)),
                 c("363" = "rawrent", "364" = "rawutil", "365" = "rawmedded", "323" = "rawdepded", "366" = "rawcsded"))
@@ -849,11 +856,11 @@ if (correct_variables){
   
   # Two people excluded, as a fallback after Step 7: the natures say "person(s)", but Step 6 takes off one
   # person. For eligible-person-excluded cases that still miss RAWBEN after Step 7 (so QC's cited elements had
-  # their chance first), the case's Step 7 changes are set aside and one more person comes off, kept only on an
-  # exact match (size stays at least 1); otherwise the Step 7 result stands:
+  # their chance first), the case's Step 7 changes are set aside and one more person comes off, kept when the
+  # benefit lands within zero_margin of RAWBEN (size stays at least 1); otherwise the Step 7 result stands:
   #   150 natures 12 / 16 (no income / newborn): the size alone
   #   150 nature 13 and person elements nature 6 (may have income): the size plus one or two members' income
-  #     (FSAFIL = 1) taken out of FSEARN / FSUNEARN, kept only if exactly one income amount matches
+  #     (FSAFIL = 1) taken out of FSEARN / FSUNEARN, the closest; left alone if different amounts tie
   # Notes "hhsize_up_2" / "hhsize_up_2+income_down"
   two_idx  <- which(mydata$two_person_check)
   pre_vars <- c("rawearn", "rawunearn", "rawrent", "rawutil", "rawmedded", "rawdepded", "rawcsded", "correctednotes",
@@ -862,7 +869,7 @@ if (correct_variables){
   
   mydata <- recreate_elements(mydata)
   
-  two_rows <- two_idx[(mydata$rawben_recreated[two_idx] != mydata$RAWBEN[two_idx]) %in% TRUE]
+  two_rows <- two_idx[(abs(mydata$rawben_recreated[two_idx] - mydata$RAWBEN[two_idx]) > zero_margin) %in% TRUE]
   if (length(two_rows) > 0) {
     p   <- match(two_rows, two_idx)
     sub <- mydata[two_rows, ]
@@ -880,7 +887,8 @@ if (correct_variables){
     base$rawminimum_ben <- ifelse(size2 < 3, ifelse(is.na(sub$MINIMUM_BEN), 0, as.numeric(sub$MINIMUM_BEN)), 0)
     
     # Size alone
-    hit0 <- try2 & no_income & (calculate_raw_benefits(base)$rawben_recreated == sub$RAWBEN) %in% TRUE
+    hit0 <- try2 & no_income &
+      (abs(calculate_raw_benefits(base)$rawben_recreated - sub$RAWBEN) <= zero_margin) %in% TRUE
     
     # Size plus one or two members' income
     by_member <- function(f) matrix(unlist(lapply(1:18, f)), ncol = 18)
@@ -891,6 +899,7 @@ if (correct_variables){
       if (afil %in% names(sub)) as.numeric(sub[[afil]]) %in% 1 else rep(FALSE, nrow(sub))
     }) & (E + U) > 0
     amt <- e_take <- u_take <- rep(NA_real_, nrow(sub))
+    best <- rep(Inf, nrow(sub))
     ambiguous <- rep(FALSE, nrow(sub))
     for (ks in c(as.list(1:18), combn(18, 2, simplify = FALSE))) {
       valid <- try2 & with_income & rowSums(has_income[, ks, drop = FALSE]) == length(ks)
@@ -900,10 +909,12 @@ if (correct_variables){
       b <- base
       b$rawearn   <- pmax(b$rawearn - e, 0)
       b$rawunearn <- pmax(b$rawunearn - u, 0)
-      hit <- valid & (calculate_raw_benefits(b)$rawben_recreated == sub$RAWBEN) %in% TRUE
-      ambiguous <- ambiguous | (hit & !is.na(amt) & amt != e + u)
-      first <- hit & is.na(amt)
-      amt[first] <- (e + u)[first]; e_take[first] <- e[first]; u_take[first] <- u[first]
+      gap <- abs(calculate_raw_benefits(b)$rawben_recreated - sub$RAWBEN)
+      hit <- valid & (gap <= zero_margin) %in% TRUE
+      better <- hit & gap < best
+      ambiguous <- (ambiguous & !better) | (hit & gap == best & amt != e + u) %in% TRUE
+      best[better] <- gap[better]
+      amt[better] <- (e + u)[better]; e_take[better] <- e[better]; u_take[better] <- u[better]
     }
     hit_inc <- !is.na(amt) & !ambiguous
     
