@@ -107,14 +107,19 @@ moved or behaves differently.
   cases whose RAWBEN is the maximum allotment, or the minimum benefit for
   1-2 person units, only give a bound and were left exactly on the limit.
   The last continuous variable moved is now redrawn from cases with the same
-  correction between the limits, far enough to leave the limit (fixed seed;
-  flagged in `imputed_at_bound`); rent moved up to the shelter cap (or the
-  last few dollars below it) is redrawn above it the same way. The benefit
-  cannot change. Utilities, household size, the homeless deduction and
-  medical at the SMD are left as reconstructed. Replaces the earlier rules
-  ($5 amounts to $0, large income cuts at the max to $0, deductions scaled
-  to `no_change` means), which left about a fifth of these cases on the max
-  and did nothing at the minimum.
+  correction between the limits, far enough to leave the limit, matched
+  across states on the kind of mistake QC recorded (for example, a missed
+  income source rather than a wrong amount), household size, 3-year group
+  (FY2017-19, FY2022-24), elderly or disabled members and children, then on
+  mistake, size and years, then years alone; the few cases with fewer than
+  10 such donors are dropped from the data (fixed seed; flagged in
+  `imputed_at_bound`); rent moved up to the shelter cap (or the last few
+  dollars below it) is redrawn above it the same way. The benefit cannot
+  change. Utilities, household size, the homeless deduction and medical at
+  the SMD are left as reconstructed. Replaces the earlier rules ($5 amounts
+  to $0, large income cuts at the max to $0, deductions scaled to
+  `no_change` means), which left about a fifth of these cases on the max and
+  did nothing at the minimum.
 
 ### Added
 - `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
