@@ -70,21 +70,25 @@ moved or behaves differently.
 - **Element 150 natures 13 and 15** (eligible member with income or
   expenses excluded): one fewer person. When ELEMENT1 is an eligible person
   excluded who may have had income (150 nature 13, or a person element with
-  nature 6), one member's income is also taken out of FSEARN/FSUNEARN when the
-  benefit then matches RAWBEN exactly and no other member's does
+  nature 6), the income of the member whose removal brings the benefit
+  closest to RAWBEN, within $5, is also taken out of FSEARN/FSUNEARN
   (`hhsize_up+income_down`), retrying with a utility error in a later slot
-  set by its nature code. When one fewer person still misses RAWBEN after
-  the rest of the reconstruction (so QC's other cited elements go first), a
-  second person comes off instead if that matches RAWBEN exactly: on its own for
-  natures 12 / 16, with one or two members' income for nature 13 and person
-  elements with nature 6, kept only if exactly one income amount matches
-  (`hhsize_up_2`).
+  set by its nature code. When one fewer person is still more than $5 off
+  after the rest of the reconstruction (so QC's other cited elements go
+  first), a second person comes off instead if that lands within $5: on its
+  own for natures 12 / 16, with one or two members' income for nature 13 and
+  person elements with nature 6 (the closest; left alone if different
+  amounts tie) (`hhsize_up_2`).
 - **Arithmetic computation (520) and standard deduction (361) errors in
   ELEMENT1** that still miss RAWBEN are tried with the previous fiscal
   year's maximum allotment, standard deduction and shelter cap (alone, in
   pairs, then all three), kept only on an exact match
   (`prior_year_tables`). Most matches are October-December reviews, just
   after the annual update.
+- **Unit composition "other" (element 150 nature 99)** in ELEMENT1 takes
+  its direction from E_FINDG1 when the case still misses RAWBEN (one more
+  person on an overissuance, one fewer on an underissuance), kept when the
+  benefit then lands within $5 of RAWBEN.
 - **Homeless shelter deduction errors (element 362)** are corrected in any
   element slot: nature 53 gives the agency side the homeless standard for
   the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /
