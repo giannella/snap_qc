@@ -1035,9 +1035,10 @@ mydata <- readRDS(paste0(folder, "corrected.rds"))
 #   "max": RAWBEN = maximum allotment; lower income or higher deductions keep it.
 #   "min": RAWBEN = minimum benefit (1-2 person units); higher income or lower deductions keep it.
 # The last continuous variable moved ("rent_down+earn_up" -> earn) is redrawn from cases with the same correction
-# between the two limits (value identified), far enough past the stop point to leave the limit. Moves toward $0
-# use the donors' raw/QC ratio, moves up their raw - QC dollar difference; with no donor that far, moves up add a
-# donor's difference and moves toward $0 draw uniformly down to $0. Draws toward $0 follow Step 7's zero rule.
+# between the two limits (value identified), far enough past the stop point to leave the limit, matched on
+# household type and years (see donor_keys); cases without enough donors are dropped from the data. Moves toward
+# $0 use the donors' raw/QC ratio, moves up their raw - QC dollar difference. Draws toward $0 follow Step 7's
+# zero rule.
 # The benefit cannot change (checked at the end). Left alone: utilities, household size, the homeless deduction,
 # and medical at a state's SMD amount or moved down in an SMD state.
 impute_seed     <- 20261029
@@ -1051,6 +1052,21 @@ closing_move <- function(notes) {
   notes[is.na(notes)] <- ""
   m <- regmatches(notes, gregexpr("(^|\\+)(earn|unearn|rent|med|dep|cs)_(up|down)(?=\\+|$)", notes, perl = TRUE))
   vapply(m, function(x) if (length(x)) sub("^\\+", "", x[length(x)]) else NA_character_, character(1))
+}
+
+# Donor matching (across states): a case draws from the first group with at least donor_min valid donors (past the
+# edge) and is dropped from the data when none has enough:
+#   1. household size (1-5+) + 3-year group (FY2017-19, FY2022-24) + elderly/disabled member + children
+#   2. household size + 3-year group
+#   3. 3-year group
+donor_min <- 10
+donor_keys <- function(mydata) {
+  n0   <- function(x) { x <- as.numeric(x); x[is.na(x)] <- 0; x }
+  size <- pmin(as.numeric(mydata$rawusize), 5)
+  era  <- ifelse(as.numeric(mydata$fiscal_year) >= 2020, "FY22-24", "FY17-19")
+  eld  <- n0(mydata$FSNELDER) + n0(mydata$FSNDIS) > 0
+  kid  <- n0(mydata$FSNKID) > 0
+  list(paste(size, era, eld, kid), paste(size, era), era)
 }
 
 impute_at_bound <- function(mydata, side = c("max", "min"), seed = impute_seed) {
@@ -1072,7 +1088,9 @@ impute_at_bound <- function(mydata, side = c("max", "min"), seed = impute_seed) 
   between <- !at_max & !at_min
   smd     <- (as.numeric(mydata$smd_amt) > 0) %in% TRUE
   ben_before <- mydata$rawben_recreated
-  bi <- lapply(mydata[benefit_inputs], as.numeric)
+  bi  <- lapply(mydata[benefit_inputs], as.numeric)
+  grp <- donor_keys(mydata)
+  drop_rows <- integer(0)
 
   # First value past the stop point b that takes the uncapped benefit off the limit: the benefit only changes
   # every few dollars, so a value just past b can still sit exactly on the limit
@@ -1106,45 +1124,53 @@ impute_at_bound <- function(mydata, side = c("max", "min"), seed = impute_seed) 
     don   <- which(matched & between & closing %in% move)
     q_d   <- as.numeric(mydata[[qc]][don])
     v_d   <- as.numeric(mydata[[col]][don])
-    ratio <- (v_d / q_d)[!is.na(q_d) & q_d > 0]
-    diff  <- (v_d - q_d)[!is.na(q_d)]
-    n_fb  <- 0
+    g_d   <- lapply(grp, function(g) g[don])
+    ok_d  <- !is.na(q_d)
+    ok_r  <- ok_d & q_d > 0
+    n_lvl <- c(0, 0, 0)
+    drop_mv <- integer(0)
 
     for (i in cen) {
       b  <- as.numeric(mydata[[col]][i])
       q  <- as.numeric(mydata[[qc]][i])
       q0 <- if (is.na(q)) 0 else q
       edge <- edge_past(i, col, b, up, limit[i])
-      pool <- if (up) q0 + diff[diff >= edge - q0] else
-        if (q0 > 0) floor(ratio[ratio <= edge / q0] * q0) else numeric(0)
-      pool <- pool[if (up) pool >= edge else pool <= edge]
-      new <- if (length(pool) > 0) pool[sample.int(length(pool), 1)] else {
-        # no donor past the edge: up adds a donor's dollar difference beyond the edge; toward $0 draws
-        # uniformly from $0 to the edge
-        n_fb <- n_fb + 1
-        if (up) {
-          pos <- diff[diff > 0]
-          edge + if (length(pos) > 0) pos[sample.int(length(pos), 1)] else 0
-        } else floor(runif(1, 0, edge + 1))
+      # Values past the edge from the donors in `keep`
+      pool_from <- function(keep) {
+        pool <- if (up) q0 + (v_d - q_d)[keep & ok_d] else
+          if (q0 > 0) floor((v_d / q_d)[keep & ok_r] * q0) else numeric(0)
+        pool <- pool[!is.na(pool)]
+        pool[if (up) pool >= edge else pool <= edge]
       }
+      lvl <- 0
+      for (k in seq_along(grp)) {
+        pool <- pool_from(g_d[[k]] == grp[[k]][i])
+        if (length(pool) >= donor_min) { lvl <- k; break }
+      }
+      if (lvl == 0) { drop_mv <- c(drop_mv, i); next }
+      n_lvl[lvl] <- n_lvl[lvl] + 1
+      new <- pool[sample.int(length(pool), 1)]
       if (!up && new > 0 && (new <= zero_floor || new <= (1 - zero_cut) * q0)) new <- 0
       mydata[[col]][i] <- new
     }
-    mydata$imputed_at_bound[cen] <- side
-    cat(sprintf("impute_at_bound %-3s %-12s stuck %5d  donors %6d  fallback %3d\n",
-                side, move, length(cen), length(don), n_fb))
+    mydata$imputed_at_bound[setdiff(cen, drop_mv)] <- side
+    drop_rows <- c(drop_rows, drop_mv)
+    cat(sprintf("impute_at_bound %-3s %-12s stuck %5d  donors %6d  matched on household %5d / size+years %4d / years %3d  dropped %3d\n",
+                side, move, length(cen), length(don), n_lvl[1], n_lvl[2], n_lvl[3], length(drop_mv)))
   }
 
   mydata <- calculate_raw_benefits(mydata)
   stopifnot("impute_at_bound changed a recreated benefit" =
               isTRUE(all.equal(mydata$rawben_recreated, ben_before)))
+  if (length(drop_rows) > 0) mydata <- mydata[-drop_rows, ]
+  cat(sprintf("impute_at_bound %s: dropped %d cases with fewer than %d valid donors\n", side, length(drop_rows), donor_min))
   mydata
 }
 
 # Rent moved up that stops at the shelter cap is a bound in the same way: above the cap more rent changes nothing,
 # and with rounding the last few dollars below it already give the capped benefit, so Step 7 stops up to ~$3 short
 # of the cap. A case is stuck when the benefit is unchanged with rent pushed past the cap; its rent is redrawn
-# past the cap from identified rent_up cases.
+# past the cap from identified rent_up cases, matched the same way (dropped when no group has enough).
 impute_past_shelter_cap <- function(mydata, seed = impute_seed) {
   set.seed(seed)
   mydata  <- calculate_raw_benefits(mydata)
@@ -1168,21 +1194,32 @@ impute_past_shelter_cap <- function(mydata, seed = impute_seed) {
   don  <- which(rent_up & between & !(applies & (slt_unc - cap > -10) %in% TRUE))
   q    <- as.numeric(mydata$RENT)
   diff <- (as.numeric(mydata$rawrent) - q)[don]
-  diff <- diff[!is.na(diff)]
-  pos  <- diff[diff > 0]
+  grp  <- donor_keys(mydata)
+  keep <- !is.na(diff)
+  g_d  <- lapply(grp, function(g) g[don][keep])
+  diff <- diff[keep]
+  n_lvl <- c(0, 0, 0)
+  drop_rows <- integer(0)
   ben_before <- mydata$rawben_recreated
   for (i in cen) {
     edge <- as.numeric(mydata$rawrent[i]) + ceiling(cap[i] - slt_unc[i]) + 1
     q0   <- if (is.na(q[i])) 0 else q[i]
-    pool <- q0 + diff[diff >= edge - q0]
-    mydata$rawrent[i] <- if (length(pool) > 0) pool[sample.int(length(pool), 1)] else
-      edge + if (length(pos) > 0) pos[sample.int(length(pos), 1)] else 0
+    lvl  <- 0
+    for (k in seq_along(grp)) {
+      pool <- q0 + diff[g_d[[k]] == grp[[k]][i] & diff >= edge - q0]
+      if (length(pool) >= donor_min) { lvl <- k; break }
+    }
+    if (lvl == 0) { drop_rows <- c(drop_rows, i); next }
+    n_lvl[lvl] <- n_lvl[lvl] + 1
+    mydata$rawrent[i] <- pool[sample.int(length(pool), 1)]
   }
-  mydata$imputed_at_bound[cen] <- "shelter_cap"
-  cat(sprintf("impute_past_shelter_cap rent_up stuck %5d  donors %6d\n", length(cen), length(don)))
+  mydata$imputed_at_bound[setdiff(cen, drop_rows)] <- "shelter_cap"
+  cat(sprintf("impute_past_shelter_cap rent_up stuck %5d  donors %6d  matched on household %5d / size+years %4d / years %3d  dropped %3d\n",
+              length(cen), length(don), n_lvl[1], n_lvl[2], n_lvl[3], length(drop_rows)))
   mydata <- calculate_raw_benefits(mydata)
   stopifnot("impute_past_shelter_cap changed a recreated benefit" =
               isTRUE(all.equal(mydata$rawben_recreated, ben_before)))
+  if (length(drop_rows) > 0) mydata <- mydata[-drop_rows, ]
   mydata
 }
 
