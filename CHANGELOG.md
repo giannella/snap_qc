@@ -11,6 +11,13 @@ moved or behaves differently.
 ## [Unreleased]
 
 ### Changed
+- **Initial-month proration is backed out before the AMTERR check:**
+  prorated cases (`ALLADJ = 2`) get RAWBEN + AMTADJ when that reconciles
+  with AMTERR. QC records AMTERR two ways: as the full-month error (used
+  as is) or the prorated one (scaled to the full month by the share of the
+  month paid). Prorated errors that only go over the threshold once scaled
+  are dropped, since QC never ran Comparison II on them. Prorated cases
+  reaching Step 8 go from 964 to 6,826.
 - **Benefit reconstruction follows one path for every case:** discrete
   variables are set first (household size, the homeless deduction, then
   utilities, from any element slot), then the continuous ones (earned and
@@ -111,6 +118,7 @@ moved or behaves differently.
   did nothing at the minimum.
 
 ### Added
+- Proration columns, including `initial_month_i`.
 - `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
   asset limits by state and fiscal year, FY1996-FY2027 (ERS SNAP Policy
   Database, QC Technical Documentation, SNAP Screener).

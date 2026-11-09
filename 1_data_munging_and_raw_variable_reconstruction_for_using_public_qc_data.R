@@ -19,7 +19,8 @@
 #
 # AMTERR: QC-reported dollar amount of the identified benefit error.
 # FSBEN: Corrected benefit amount determined by the QC review/calculation: the amount the household should have received.
-# RAWBEN: Original benefit amount issued by the agency.
+# RAWBEN: Original benefit amount issued by the agency (restored to the full month for prorated cases; see below).
+# ALLADJ / AMTADJ: Allotment adjustment (2 = prorated benefit) and its dollar amount.
 # absbendiff: Public QC field representing the absolute difference between the original issued benefit and the corrected/reviewed benefit.
 # FSGRINC: Final gross countable household income reported in the QC data.
 # FSUSIZE: Reported household size in the QC data.
@@ -114,6 +115,60 @@ mydata <- add_external_data(mydata)
 # Save data as a checkpoint
 saveRDS(mydata, paste0(folder, "all_years.rds"))
 mydata <- readRDS(paste0(folder, "all_years.rds"))
+
+# Back out initial-month proration (ALLADJ == 2)
+# RAWBEN is a partial-month benefit here, while FSBEN is always a full month. Restore RAWBEN + AMTADJ when it
+# reconciles with AMTERR within $5, on the basis QC recorded the error:
+#   1. Full-month error: |full month - FSBEN| matches AMTERR.
+#   2. Prorated error: it matches AMTERR / share of month paid. AMTERR and AMOUNT1-9 are scaled to the full
+#      month; labels keep QC's recorded AMTERR. Left out if only the full-month error is over the threshold
+# Cases where the amount paid reconciles keep RAWBEN; the rest are dropped by the filter below, as before.
+num <- function(x) as.numeric(x)
+mydata$prorated_flag_i <- mydata$ALLADJ %in% 2
+mydata$rawben_prorated <- num(mydata$RAWBEN)
+mydata$amterr_qc       <- num(mydata$AMTERR)
+mydata$RAWBEN <- num(mydata$RAWBEN)
+mydata$AMTERR <- num(mydata$AMTERR)
+full_month <- mydata$RAWBEN + num(mydata$AMTADJ)
+paid_share <- mydata$RAWBEN / full_month
+gap_full   <- abs(full_month - num(mydata$FSBEN))
+gap_paid   <- abs(mydata$RAWBEN - num(mydata$FSBEN))
+candidate  <- mydata$prorated_flag_i & (num(mydata$AMTADJ) > 0) %in% TRUE
+rule1 <- candidate & (abs(gap_full - mydata$AMTERR) <= 5) %in% TRUE
+kept  <- mydata$prorated_flag_i & !rule1 & (abs(gap_paid - mydata$AMTERR) <= 5) %in% TRUE
+rule2 <- candidate & !rule1 & !kept & (paid_share > 0) %in% TRUE &
+  (abs(gap_full - mydata$AMTERR / paid_share) <= 5) %in% TRUE
+# Rule 2 cases over the threshold only once un-prorated (no Comparison II)
+comp1_only <- rule2 & (mydata$AMTERR <= mydata$threshold) %in% TRUE &
+  (mydata$AMTERR / paid_share > mydata$threshold) %in% TRUE
+rule2 <- rule2 & !comp1_only
+restored <- rule1 | rule2
+mydata$RAWBEN[restored] <- full_month[restored]
+# Rule 2: scale AMTERR and AMOUNT1-9 to the full month
+mydata$AMTERR[rule2] <- round(mydata$AMTERR[rule2] / paid_share[rule2])
+for (v in grep("^AMOUNT[1-9]$", names(mydata), value = TRUE)) {
+  mydata[[v]] <- num(mydata[[v]])
+  mydata[[v]][rule2] <- round(mydata[[v]][rule2] / paid_share[rule2])
+}
+# $1-$5 over BENMAX is proration rounding: cap it so Step 6 does not add a person
+small_over <- restored & (mydata$RAWBEN - num(mydata$BENMAX)) %in% 1:5
+mydata$RAWBEN[small_over] <- num(mydata$BENMAX[small_over])
+mydata$proration_backed_out_i  <- restored
+mydata$proration_error_scaled_i <- rule2
+# Initial month (for the model): prorated and either certified in the sample month or restored
+mydata$initial_month_i <- mydata$prorated_flag_i & ((num(mydata$LASTCERT) == 0) %in% TRUE | restored)
+# Recompute from the restored RAWBEN
+mydata$bendiff        <- mydata$RAWBEN - num(mydata$FSBEN)
+mydata$absbendiff     <- abs(mydata$bendiff)
+mydata$over_threshold <- factor(as.integer(mydata$absbendiff > mydata$threshold), levels = c(0, 1))
+mydata$over_threshold[rule2] <- as.character(as.integer(mydata$amterr_qc[rule2] > mydata$threshold[rule2]))
+cat("prorated (ALLADJ == 2):", sum(mydata$prorated_flag_i), "cases;", sum(rule1), "restored (full-month error);",
+    sum(rule2), "restored (prorated error, scaled);", sum(comp1_only),
+    "left out (prorated error under the threshold, full-month error over it);", sum(kept), "kept as paid;",
+    sum(mydata$prorated_flag_i & !restored & !kept & !comp1_only), "unreconciled (dropped below);",
+    sum(mydata$initial_month_i), "flagged initial month;", sum(small_over), "capped at BENMAX; still above BENMAX:",
+    sum(mydata$RAWBEN[restored] > mydata$BENMAX[restored], na.rm = TRUE), "\n")
+rm(num, full_month, paid_share, gap_full, gap_paid, candidate, rule1, rule2, comp1_only, kept, restored, small_over)
 
 # 2. Filter dataset 
 
@@ -1472,6 +1527,25 @@ reg_model_data <- df %>%
          percent_abawd = pct_abawd,
          rawgross = rawgrinc,
          utilities = rawutil) 
+
+# Rule 2: put error dollars back on QC's recorded (prorated) basis. Cases changed by the nature 97 / agency 26
+# step are scaled back by the share of the month paid instead.
+r2 <- reg_model_data$proration_error_scaled_i %in% TRUE
+touched <- (reg_model_data$no_action_required_i %in% TRUE) | (reg_model_data$no_action_partial_i %in% TRUE)
+share <- reg_model_data$rawben_prorated / (reg_model_data$rawben_prorated + as.numeric(reg_model_data$amtadj))
+reg_model_data$total_error_amount[r2 & !touched] <- reg_model_data$amterr_qc[r2 & !touched]
+reg_model_data$total_error_amount[r2 & touched]  <- round(reg_model_data$total_error_amount[r2 & touched] * share[r2 & touched])
+# Re-label those from the prorated error
+idx <- r2 & touched
+over <- as.integer(reg_model_data$total_error_amount[idx] > reg_model_data$threshold[idx])
+if (is.factor(reg_model_data$over_threshold)) {
+  reg_model_data$over_threshold[idx] <- as.character(over)
+} else {
+  reg_model_data$over_threshold[idx] <- over
+}
+cat("rule 2 error dollars set to QC's recorded (prorated) amount:", sum(r2), "cases;", sum(r2 & touched),
+    "also changed by the nature 97 / agency 26 step\n")
+rm(r2, touched, share, idx, over)
 
 reg_model_data <- reg_model_data %>% 
   mutate(state = as.factor(state_name),
