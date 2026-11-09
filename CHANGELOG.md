@@ -15,9 +15,19 @@ moved or behaves differently.
   prorated cases (`ALLADJ = 2`) get RAWBEN + AMTADJ when that reconciles
   with AMTERR. QC records AMTERR two ways: as the full-month error (used
   as is) or the prorated one (scaled to the full month by the share of the
-  month paid). Prorated errors that only go over the threshold once scaled
-  are dropped, since QC never ran Comparison II on them. Prorated cases
-  reaching Step 8 go from 964 to 6,826.
+  month paid). Prorated errors at or under the threshold as recorded stay
+  in as under-threshold errors, even when the scaled full-month error is
+  over it.
+  Prorated cases reaching Step 8 go
+  from 964 to 6,972.
+- **`over_threshold` and `total_error_amount` come only from QC's AMTERR:**
+  `over_threshold` is AMTERR over the review year's threshold, and
+  `total_error_amount` is AMTERR, for every case. Previously both came from
+  |RAWBEN - FSBEN|, which differs from AMTERR by up to $5 and could put a
+  case on the other side of the threshold. AMTERR is never changed: the
+  full-month amount used to reconstruct restored prorated cases is the new
+  working column `amterr_full_month`; `amterr_qc` is gone (it equals
+  AMTERR). The frame now also keeps `absbendiff`.
 - **The modelling frame is rebuilt on the reconstruction fixes below**
   (sha256 `eb989fda`, 2026-10-27). The cases, error labels and error
   amounts are unchanged. Each rebuilt household-size, income, deduction
@@ -28,7 +38,6 @@ moved or behaves differently.
   the maximum allotment for the corrected size (and does not equal the
   prior year's maximum): 337 cases, 299 of them errors. 163 move from the
   one-person stratum to 2-3, and 40 from 2-3 to 4+.
-
 - **Benefit reconstruction follows one path for every case:** discrete
   variables are set first (household size, the homeless deduction, then
   utilities, from any element slot), then the continuous ones (earned and
@@ -101,15 +110,12 @@ moved or behaves differently.
   the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /
   `homeless_down`). Homeless cases with a rent or utility error no longer
   keep the homeless shelter deduction.
-- **Nature 97 / agency 26 variances** (change not required to be acted on)
-  are not errors. Their elements are recreated exactly like any other, and
-  only then taken out of the error. When every variance is 97 / 26, the
-  case is treated as correctly paid: the QC side is set to the
-  reconstructed values and the error fields are cleared
-  (`no_action_required_i`). When a case also has a real error, only the
-  97 / 26 elements' variables take the reconstructed value on the QC side,
-  and FSBEN, the error amount, finding and over-threshold flag are
-  recomputed from what is left (`no_action_partial_i`).
+- **Nature 97 / agency 26 variances** (change not required to be reported or
+  acted on) are flagged, not removed: `no_action_required_i` when every
+  variance is 97 / 26, `no_action_partial_i` when some are and some are not.
+  Their elements are recreated like any other, and the QC record (QC side,
+  error amount, finding, variance fields) is left as published. Filter on the
+  flags for analyses of errors.
 - **Smoothing of reconstructed values at the maximum and minimum benefit:**
   cases whose RAWBEN is the maximum allotment, or the minimum benefit for
   1-2 person units, only give a bound and were left exactly on the limit.
@@ -129,7 +135,9 @@ moved or behaves differently.
   did nothing at the minimum.
 
 ### Added
-- Proration columns, including `initial_month_i`.
+- Proration columns, including `initial_month_i`: a prorated benefit
+  (`ALLADJ = 2`) certified in the sample month (`LASTCERT = 0`), both from
+  the case record.
 - `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
   asset limits by state and fiscal year, FY1996-FY2027 (ERS SNAP Policy
   Database, QC Technical Documentation, SNAP Screener).

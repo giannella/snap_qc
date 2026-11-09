@@ -135,7 +135,7 @@ add_external_data <- function(data) {
     dplyr::mutate(
       bendiff        = RAWBEN - FSBEN,
       absbendiff     = abs(bendiff),
-      over_threshold = factor(as.integer(absbendiff > threshold),
+      over_threshold = factor(as.integer(as.numeric(AMTERR) > threshold),
                               levels = c(0, 1)),
       max_shelter_deduction = ifelse(FSNELDER + FSNDIS > 0,
                                      Inf,

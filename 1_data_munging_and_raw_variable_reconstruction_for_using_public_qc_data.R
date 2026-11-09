@@ -14,6 +14,14 @@
 # amount_pattern: How a multi-element case's AMOUNT1-9 relate to its error: all_zero, amount1_only, copied, even_split, clean_split, or other.
 # cascade_type, cascade_hit_limit: Cases with several Step 7 variables; "capped" when each element moved by its own AMOUNT, otherwise "uncapped"; hit_limit when a continuous variable was maxed out before the next took over.
 # imputed_at_bound: "max" / "min" / "shelter_cap" when the smoothing redrew a value for a case stuck on that limit (QA flag, not a modeling feature).
+# prorated_flag_i: ALLADJ = 2 (QC flagged the benefit as prorated).
+# rawben_prorated: RAWBEN as published, before any prorated case is restored to the full month.
+# amterr_full_month: Working error amount for the reconstruction: AMTERR, scaled to the full month for rule 2 cases.
+# proration_backed_out_i: Prorated case whose RAWBEN was restored to the full month (rule 1 or rule 2).
+# proration_error_scaled_i: Rule 2 case: QC recorded AMTERR on the prorated basis.
+# initial_month_i: Prorated benefit (ALLADJ = 2) certified in the sample month (LASTCERT = 0).
+# no_action_required_i: Every variance is nature 97 / agency 26 (change not required to be reported or acted on).
+# no_action_partial_i: Some variances are nature 97 / agency 26 and some are not.
 #
 # Key variables from the public QC data:
 #
@@ -21,7 +29,7 @@
 # FSBEN: Corrected benefit amount determined by the QC review/calculation: the amount the household should have received.
 # RAWBEN: Original benefit amount issued by the agency (restored to the full month for prorated cases; see below).
 # ALLADJ / AMTADJ: Allotment adjustment (2 = prorated benefit) and its dollar amount.
-# absbendiff: Public QC field representing the absolute difference between the original issued benefit and the corrected/reviewed benefit.
+# absbendiff: |RAWBEN - FSBEN|, computed in features.R. For restored prorated cases it is the full-month gap, so it can differ from AMTERR.
 # FSGRINC: Final gross countable household income reported in the QC data.
 # FSUSIZE: Reported household size in the QC data.
 # FSERNDED, FSDEPDED, FSMEDDED, FSCSDED, FSSTDDED: Reported earned-income, dependent-care, medical, child-support, and standard deductions.
@@ -115,15 +123,15 @@ mydata <- readRDS(paste0(folder, "all_years.rds"))
 # RAWBEN is a partial-month benefit here, while FSBEN is always a full month. Restore RAWBEN + AMTADJ when it
 # reconciles with AMTERR within $5, on the basis QC recorded the error:
 #   1. Full-month error: |full month - FSBEN| matches AMTERR.
-#   2. Prorated error: it matches AMTERR / share of month paid. AMTERR and AMOUNT1-9 are scaled to the full
-#      month; labels keep QC's recorded AMTERR. Left out if only the full-month error is over the threshold
+#   2. Prorated error: it matches AMTERR / share of month paid. amterr_full_month and AMOUNT1-9 are scaled to
+#      the full month for the reconstruction; AMTERR itself is never changed.
 # Cases where the amount paid reconciles keep RAWBEN; the rest are dropped by the filter below, as before.
 num <- function(x) as.numeric(x)
 mydata$prorated_flag_i <- mydata$ALLADJ %in% 2
 mydata$rawben_prorated <- num(mydata$RAWBEN)
-mydata$amterr_qc       <- num(mydata$AMTERR)
 mydata$RAWBEN <- num(mydata$RAWBEN)
 mydata$AMTERR <- num(mydata$AMTERR)
+mydata$amterr_full_month <- mydata$AMTERR
 full_month <- mydata$RAWBEN + num(mydata$AMTADJ)
 paid_share <- mydata$RAWBEN / full_month
 gap_full   <- abs(full_month - num(mydata$FSBEN))
@@ -133,14 +141,14 @@ rule1 <- candidate & (abs(gap_full - mydata$AMTERR) <= 5) %in% TRUE
 kept  <- mydata$prorated_flag_i & !rule1 & (abs(gap_paid - mydata$AMTERR) <= 5) %in% TRUE
 rule2 <- candidate & !rule1 & !kept & (paid_share > 0) %in% TRUE &
   (abs(gap_full - mydata$AMTERR / paid_share) <= 5) %in% TRUE
-# Rule 2 cases over the threshold only once un-prorated (no Comparison II)
-comp1_only <- rule2 & (mydata$AMTERR <= mydata$threshold) %in% TRUE &
+# Rule 2 cases at or under the threshold as recorded but over it once scaled to the full month: restored and kept,
+# labelled from AMTERR (under the threshold).
+under_as_recorded <- rule2 & (mydata$AMTERR <= mydata$threshold) %in% TRUE &
   (mydata$AMTERR / paid_share > mydata$threshold) %in% TRUE
-rule2 <- rule2 & !comp1_only
 restored <- rule1 | rule2
 mydata$RAWBEN[restored] <- full_month[restored]
-# Rule 2: scale AMTERR and AMOUNT1-9 to the full month
-mydata$AMTERR[rule2] <- round(mydata$AMTERR[rule2] / paid_share[rule2])
+# Rule 2: scale the working error amount and AMOUNT1-9 to the full month (AMTERR stays as recorded)
+mydata$amterr_full_month[rule2] <- round(mydata$AMTERR[rule2] / paid_share[rule2])
 for (v in grep("^AMOUNT[1-9]$", names(mydata), value = TRUE)) {
   mydata[[v]] <- num(mydata[[v]])
   mydata[[v]][rule2] <- round(mydata[[v]][rule2] / paid_share[rule2])
@@ -150,20 +158,20 @@ small_over <- restored & (mydata$RAWBEN - num(mydata$BENMAX)) %in% 1:5
 mydata$RAWBEN[small_over] <- num(mydata$BENMAX[small_over])
 mydata$proration_backed_out_i  <- restored
 mydata$proration_error_scaled_i <- rule2
-# Initial month (for the model): prorated and either certified in the sample month or restored
-mydata$initial_month_i <- mydata$prorated_flag_i & ((num(mydata$LASTCERT) == 0) %in% TRUE | restored)
+# Initial month: prorated benefit (ALLADJ 2) and certified in the sample month (LASTCERT 0)
+mydata$initial_month_i <- mydata$ALLADJ %in% 2 & (num(mydata$LASTCERT) == 0) %in% TRUE
 # Recompute from the restored RAWBEN
 mydata$bendiff        <- mydata$RAWBEN - num(mydata$FSBEN)
 mydata$absbendiff     <- abs(mydata$bendiff)
-mydata$over_threshold <- factor(as.integer(mydata$absbendiff > mydata$threshold), levels = c(0, 1))
-mydata$over_threshold[rule2] <- as.character(as.integer(mydata$amterr_qc[rule2] > mydata$threshold[rule2]))
+# QC's finding: AMTERR over the review year's threshold (same as add_external_data)
+mydata$over_threshold <- factor(as.integer(mydata$AMTERR > mydata$threshold), levels = c(0, 1))
 cat("prorated (ALLADJ == 2):", sum(mydata$prorated_flag_i), "cases;", sum(rule1), "restored (full-month error);",
-    sum(rule2), "restored (prorated error, scaled);", sum(comp1_only),
-    "left out (prorated error under the threshold, full-month error over it);", sum(kept), "kept as paid;",
-    sum(mydata$prorated_flag_i & !restored & !kept & !comp1_only), "unreconciled (dropped below);",
+    sum(rule2), "restored (prorated error, scaled), of which", sum(under_as_recorded),
+    "under the threshold as recorded but over it once scaled (no error);", sum(kept), "kept as paid;",
+    sum(mydata$prorated_flag_i & !restored & !kept), "unreconciled (dropped below);",
     sum(mydata$initial_month_i), "flagged initial month;", sum(small_over), "capped at BENMAX; still above BENMAX:",
     sum(mydata$RAWBEN[restored] > mydata$BENMAX[restored], na.rm = TRUE), "\n")
-rm(num, full_month, paid_share, gap_full, gap_paid, candidate, rule1, rule2, comp1_only, kept, restored, small_over)
+rm(num, full_month, paid_share, gap_full, gap_paid, candidate, rule1, rule2, under_as_recorded, kept, restored, small_over)
 
 # 2. Filter dataset 
 
@@ -207,8 +215,9 @@ if (exclude_SSI_CAP) mydata <- mydata[mydata$SSI_CAP %in% 0, ]
 #mydata <- mydata[is.na(mydata$ELEMENT2), ]
 
 # Drop all rows if we can't get the amterr to be close 
-# to the difference between fsben and rawben
-mydata <- mydata[abs(mydata$absbendiff - mydata$AMTERR) <= 5, ]
+# to the difference between fsben and rawben (full-month basis for restored prorated cases). A consistency check
+# for the reconstruction; it does not set the label.
+mydata <- mydata[(abs(mydata$absbendiff - mydata$amterr_full_month) <= 5) %in% TRUE, ]
 
 # Deduction-field NAs only occur on MFIP and SSI-CAP cases, which are dropped
 # above, so this zero-fill currently changes nothing (ded_fields_imputed is
@@ -598,7 +607,7 @@ direction_blocked <- function(efindg, nature, income, need, nature_first = FALSE
 }
 
 # Step 7 elements: every slot whose element Step 7 adjusts. Nature 97 / agency 26 elements are recreated exactly
-# like any other; the no-action step after Step 8 then takes their effect out of the error.
+# like any other (they are flagged after Step 8, not taken out of the error).
 # Continuous variables are adjusted only when ELEMENT1 is a Step 7 element or a household size / homeless error
 # corrected above; other ELEMENT1s (standard deduction, arithmetic computation, ...) may account for the gap
 # themselves.
@@ -647,7 +656,7 @@ amount_pattern <- function(mydata) {
   n_pos <- rowSums(amt > 0)
   amax  <- apply(ifelse(present, amt, -Inf), 1, max)
   amin  <- apply(ifelse(present, amt, Inf), 1, min)
-  err   <- as.numeric(mydata$AMTERR)
+  err   <- as.numeric(mydata$amterr_full_month)  # AMOUNT1-9 are on the full-month basis too
   net   <- as.numeric(mydata$RAWBEN) - as.numeric(mydata$FSBEN)
   known  <- n_pos == nel & rowSums(sgn != 0) == nel
   copied <- n_pos == nel & amax == amin & abs(amax - err) <= 1
@@ -1332,68 +1341,12 @@ mydata$correctednotes[has_sec] <- ifelse(
   paste0(sec_note[has_sec], "+", mydata$correctednotes[has_sec])
 )
 
-# Nature 97 / agency 26 (change not required to be reported or acted upon): that variance is not an error.
-# Every variance 97 / 26: the budgeted benefit was correct, so the FS side is set to the reconstructed raw side and
-# the variance fields are cleared (no_action_required_i).
-# Some variances 97 / 26 and some not (no_action_partial_i): the 97 / 26 elements' variables take the reconstructed
-# (agency) value on the FS side too, FSBEN moves by the benefit change that makes, and the error amount, finding and
-# over-threshold flag are recomputed from what is left. A variable that a real element also uses cannot be
-# separated and stays in the error. The element / nature labels move to the first real element.
-el_m <- slot_matrix(mydata, "ELEMENT")
-na_m <- slot_matrix(mydata, "NATURE")
-ag_m <- slot_matrix(mydata, "AGENCY")
-present <- !is.na(el_m)
-na_slot <- present & (na_m %in% 97 | ag_m %in% 26)
-real_slot <- present & !na_slot
-no_action_required <- rowSums(na_slot) > 0 & rowSums(real_slot) == 0
-no_action_partial  <- rowSums(na_slot) > 0 & rowSums(real_slot) > 0
-
-p <- which(no_action_partial)
-if (length(p) > 0) {
-  num <- function(x) { x <- as.numeric(x); x[is.na(x)] <- 0; x }
-  fs_cols <- c(rawearn = "FSEARN", rawunearn = "FSUNEARN", rawrent = "RENT", rawutil = "UTIL",
-               rawmedded = "FSMEDDED", rawdepded = "FSDEPDED", rawcsded = "FSCSDED")
-  d <- mydata[p, ]
-  fs_side <- list(rawearn = num(d$FSEARN), rawunearn = num(d$FSUNEARN), rawdepded = num(d$FSDEPDED),
-                  rawmedded = num(d$FSMEDDED), rawcsded = num(d$FSCSDED), rawstdded = num(d$FSSTDDED),
-                  rawrent = num(d$RENT), rawutil = num(d$UTIL), max_shelter_deduction = d$max_shelter_deduction,
-                  rawhomeless_ded = num(d$HOMELESS_DED), rawbenmax = num(d$BENMAX), rawminimum_ben = num(d$fsminimum_ben))
-  swapped <- fs_side
-  for (v in unique(step7_vars)) {
-    els <- as.numeric(names(step7_vars)[step7_vars == v])
-    has_v <- matrix(el_m[p, , drop = FALSE] %in% els, ncol = 9)
-    sw <- rowSums(na_slot[p, , drop = FALSE] & has_v) > 0 & rowSums(real_slot[p, , drop = FALSE] & has_v) == 0
-    swapped[[v]][sw] <- as.numeric(d[[v]][sw])
-    mydata[[fs_cols[[v]]]][p[sw]] <- as.numeric(d[[v]][sw])
-  }
-  # Benefit change from the swap, on the FS-side formula (so its rounding cancels out)
-  shift <- calculate_raw_benefits(swapped)$rawben_recreated - calculate_raw_benefits(fs_side)$rawben_recreated
-  old_diff <- as.numeric(mydata$bendiff[p])
-  mydata$FSBEN[p] <- as.numeric(mydata$FSBEN[p]) + shift
-  new_diff <- as.numeric(mydata$RAWBEN[p]) - as.numeric(mydata$FSBEN[p])
-  mydata$bendiff[p] <- new_diff
-  mydata$absbendiff[p] <- abs(new_diff)
-  mydata$AMTERR[p] <- pmax(as.numeric(mydata$AMTERR[p]) + abs(new_diff) - abs(old_diff), 0)
-  mydata$over_threshold[p] <- as.integer(abs(new_diff) > mydata$threshold[p])
-  mydata$STATUS[p] <- ifelse(new_diff > 0, 2, ifelse(new_diff < 0, 3, 1))
-  first_real <- apply(real_slot[p, , drop = FALSE], 1, function(x) which(x)[1])
-  mydata$element[p] <- qc_elements$description[match(el_m[cbind(p, first_real)], qc_elements$code)]
-  mydata$nature[p]  <- qc_natures$description[match(na_m[cbind(p, first_real)], qc_natures$code)]
-  cat("nature 97 / agency 26 next to a real error:", length(p), "cases;", sum(shift != 0),
-      "had the 97 / 26 part taken out of the error,", sum(abs(old_diff) > mydata$threshold[p] & !(abs(new_diff) > mydata$threshold[p])),
-      "fell under the threshold\n")
-}
-mydata$no_action_partial_i <- no_action_partial
-
-fs_map <- c(FSUSIZE = "rawusize", FSGRINC = "rawgrinc", FSEARN = "rawearn", FSUNEARN = "rawunearn", FSERNDED = "rawernded", FSMEDDED = "rawmedded", FSDEPDED = "rawdepded", FSCSDED = "rawcsded", FSSLTDED = "rawsltded", FSSLTEXP = "rawsltexp", RENT = "rawrent", UTIL = "rawutil", FSSTDDED = "rawstdded", HOMELESS_DED = "rawhomeless_ded", BENMAX = "rawbenmax",
-            fsminimum_ben = "rawminimum_ben", fsnet_before_shelter = "rawnet_before_shelter", fsnet_adjusted_half = "rawnet_adjusted_half", fssltded_uncapped = "rawsltded_uncapped", fssltded_recalculated = "rawsltded", fsnet_allow_negative = "rawnet_allow_negative", FSNETINC = "rawnet_capped", fsben_uncapped = "rawben_uncapped", fsben_recreated = "rawben_recreated", unc_fsben_rel_max = "unc_rawben_rel_max", FSBEN = "rawben_recreated")
-for (v in names(fs_map)) mydata[[v]][no_action_required] <- as.numeric(mydata[[fs_map[[v]]]][no_action_required])
-for (v in c("AMTERR", "bendiff", "absbendiff", "over_threshold")) mydata[[v]][no_action_required] <- 0
-mydata$STATUS[no_action_required] <- 1
-mydata$no_action_required_i <- no_action_required
-for (v in grep("^(ELEMENT|NATURE|AGENCY|AMOUNT|DISCOV|E_FINDG|OCCDATE|TIMEPER|VERIF)[1-9]$", names(mydata), value = TRUE)) mydata[[v]][no_action_required] <- NA
-mydata[no_action_required, c("element", "nature")] <- NA
-mydata$second_element_i[no_action_required] <- FALSE
+# Flag Nature 97 / agency 26 (change not required to be reported or acted upon)
+present <- !is.na(slot_matrix(mydata, "ELEMENT"))
+na_slot <- present & (slot_matrix(mydata, "NATURE") %in% 97 | slot_matrix(mydata, "AGENCY") %in% 26)
+mydata$no_action_required_i <- rowSums(na_slot) > 0 & rowSums(present & !na_slot) == 0
+mydata$no_action_partial_i  <- rowSums(na_slot) > 0 & rowSums(present & !na_slot) > 0
+rm(present, na_slot)
 
 # Save data
 saveRDS(mydata, paste0(folder, "final.rds"))
@@ -1508,7 +1461,7 @@ reg_model_data <- df %>%
          gross_inc_to_poverty_FS = tpov, #"Gross income/poverty level ratio"
          raw_benefit_amount = rawben_recreated, #"Reported SNAP benefit received"
          maximum_benefit_for_HH_size = rawbenmax, #Maximum benefit amount
-         total_error_amount = absbendiff, #"Amount of benefit in error"
+         total_error_amount = amterr, #"Amount of benefit in error" (QC's AMTERR, for every case)
          children_i = children_present,
          elderly_i = elderly_present,
          months_since_cert_n = lastcert, #Months since last SNAP certification
@@ -1522,25 +1475,6 @@ reg_model_data <- df %>%
          percent_abawd = pct_abawd,
          rawgross = rawgrinc,
          utilities = rawutil) 
-
-# Rule 2: put error dollars back on QC's recorded (prorated) basis. Cases changed by the nature 97 / agency 26
-# step are scaled back by the share of the month paid instead.
-r2 <- reg_model_data$proration_error_scaled_i %in% TRUE
-touched <- (reg_model_data$no_action_required_i %in% TRUE) | (reg_model_data$no_action_partial_i %in% TRUE)
-share <- reg_model_data$rawben_prorated / (reg_model_data$rawben_prorated + as.numeric(reg_model_data$amtadj))
-reg_model_data$total_error_amount[r2 & !touched] <- reg_model_data$amterr_qc[r2 & !touched]
-reg_model_data$total_error_amount[r2 & touched]  <- round(reg_model_data$total_error_amount[r2 & touched] * share[r2 & touched])
-# Re-label those from the prorated error
-idx <- r2 & touched
-over <- as.integer(reg_model_data$total_error_amount[idx] > reg_model_data$threshold[idx])
-if (is.factor(reg_model_data$over_threshold)) {
-  reg_model_data$over_threshold[idx] <- as.character(over)
-} else {
-  reg_model_data$over_threshold[idx] <- over
-}
-cat("rule 2 error dollars set to QC's recorded (prorated) amount:", sum(r2), "cases;", sum(r2 & touched),
-    "also changed by the nature 97 / agency 26 step\n")
-rm(r2, touched, share, idx, over)
 
 reg_model_data <- reg_model_data %>% 
   mutate(state = as.factor(state_name),
