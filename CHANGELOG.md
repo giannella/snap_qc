@@ -90,15 +90,12 @@ moved or behaves differently.
   the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /
   `homeless_down`). Homeless cases with a rent or utility error no longer
   keep the homeless shelter deduction.
-- **Nature 97 / agency 26 variances** (change not required to be acted on)
-  are not errors. Their elements are recreated exactly like any other, and
-  only then taken out of the error. When every variance is 97 / 26, the
-  case is treated as correctly paid: the QC side is set to the
-  reconstructed values and the error fields are cleared
-  (`no_action_required_i`). When a case also has a real error, only the
-  97 / 26 elements' variables take the reconstructed value on the QC side,
-  and FSBEN, the error amount, finding and over-threshold flag are
-  recomputed from what is left (`no_action_partial_i`).
+- **Nature 97 / agency 26 variances** (change not required to be reported or
+  acted on) are flagged, not removed: `no_action_required_i` when every
+  variance is 97 / 26, `no_action_partial_i` when some are and some are not.
+  Their elements are recreated like any other, and the QC record (QC side,
+  error amount, finding, variance fields) is left as published. Filter on the
+  flags for analyses of errors.
 - **Smoothing of reconstructed values at the maximum and minimum benefit:**
   cases whose RAWBEN is the maximum allotment, or the minimum benefit for
   1-2 person units, only give a bound and were left exactly on the limit.
