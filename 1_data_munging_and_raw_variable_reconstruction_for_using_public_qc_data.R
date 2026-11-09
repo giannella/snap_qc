@@ -14,6 +14,14 @@
 # amount_pattern: How a multi-element case's AMOUNT1-9 relate to its error: all_zero, amount1_only, copied, even_split, clean_split, or other.
 # cascade_type, cascade_hit_limit: Cases with several Step 7 variables; "capped" when each element moved by its own AMOUNT, otherwise "uncapped"; hit_limit when a continuous variable was maxed out before the next took over.
 # imputed_at_bound: "max" / "min" / "shelter_cap" when the smoothing redrew a value for a case stuck on that limit (QA flag, not a modeling feature).
+# prorated_flag_i: ALLADJ = 2 (QC flagged the benefit as prorated).
+# rawben_prorated: RAWBEN as published, before any prorated case is restored to the full month.
+# amterr_full_month: Working error amount for the reconstruction: AMTERR, scaled to the full month for rule 2 cases.
+# proration_backed_out_i: Prorated case whose RAWBEN was restored to the full month (rule 1 or rule 2).
+# proration_error_scaled_i: Rule 2 case: QC recorded AMTERR on the prorated basis.
+# initial_month_i: Prorated benefit (ALLADJ = 2) certified in the sample month (LASTCERT = 0).
+# no_action_required_i: Every variance is nature 97 / agency 26 (change not required to be reported or acted on).
+# no_action_partial_i: Some variances are nature 97 / agency 26 and some are not.
 #
 # Key variables from the public QC data:
 #
@@ -21,7 +29,7 @@
 # FSBEN: Corrected benefit amount determined by the QC review/calculation: the amount the household should have received.
 # RAWBEN: Original benefit amount issued by the agency (restored to the full month for prorated cases; see below).
 # ALLADJ / AMTADJ: Allotment adjustment (2 = prorated benefit) and its dollar amount.
-# absbendiff: Public QC field representing the absolute difference between the original issued benefit and the corrected/reviewed benefit.
+# absbendiff: |RAWBEN - FSBEN|, computed in features.R. For restored prorated cases it is the full-month gap, so it can differ from AMTERR.
 # FSGRINC: Final gross countable household income reported in the QC data.
 # FSUSIZE: Reported household size in the QC data.
 # FSERNDED, FSDEPDED, FSMEDDED, FSCSDED, FSSTDDED: Reported earned-income, dependent-care, medical, child-support, and standard deductions.
@@ -134,7 +142,7 @@ kept  <- mydata$prorated_flag_i & !rule1 & (abs(gap_paid - mydata$AMTERR) <= 5) 
 rule2 <- candidate & !rule1 & !kept & (paid_share > 0) %in% TRUE &
   (abs(gap_full - mydata$AMTERR / paid_share) <= 5) %in% TRUE
 # Rule 2 cases at or under the threshold as recorded but over it once scaled to the full month: restored and kept,
-# labelled from AMTERR (no error).
+# labelled from AMTERR (under the threshold).
 under_as_recorded <- rule2 & (mydata$AMTERR <= mydata$threshold) %in% TRUE &
   (mydata$AMTERR / paid_share > mydata$threshold) %in% TRUE
 restored <- rule1 | rule2
@@ -155,7 +163,7 @@ mydata$initial_month_i <- mydata$ALLADJ %in% 2 & (num(mydata$LASTCERT) == 0) %in
 # Recompute from the restored RAWBEN
 mydata$bendiff        <- mydata$RAWBEN - num(mydata$FSBEN)
 mydata$absbendiff     <- abs(mydata$bendiff)
-# QC's finding: AMTERR over the review year's threshold (same as add_external_data
+# QC's finding: AMTERR over the review year's threshold (same as add_external_data)
 mydata$over_threshold <- factor(as.integer(mydata$AMTERR > mydata$threshold), levels = c(0, 1))
 cat("prorated (ALLADJ == 2):", sum(mydata$prorated_flag_i), "cases;", sum(rule1), "restored (full-month error);",
     sum(rule2), "restored (prorated error, scaled), of which", sum(under_as_recorded),

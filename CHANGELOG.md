@@ -16,10 +16,10 @@ moved or behaves differently.
   with AMTERR. QC records AMTERR two ways: as the full-month error (used
   as is) or the prorated one (scaled to the full month by the share of the
   month paid). Prorated errors at or under the threshold as recorded stay
-  in as no error, even when the scaled full-month error is over it.
+  in as under-threshold errors, even when the scaled full-month error is
+  over it.
   Prorated cases reaching Step 8 go
-  from 964 to 6,826 (counted before those cases were kept; rerun for the
-  new figure).
+  from 964 to 6,972.
 - **`over_threshold` and `total_error_amount` come only from QC's AMTERR:**
   `over_threshold` is AMTERR over the review year's threshold, and
   `total_error_amount` is AMTERR, for every case. Previously both came from
