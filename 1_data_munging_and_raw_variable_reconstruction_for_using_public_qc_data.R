@@ -56,12 +56,7 @@ if (exclude_2020_2021) {
   data_2020 <- NULL
   data_2021 <- NULL
 } else {
-  # Merge 2020 data which was split into three parts
-  data_2020 <- bind_rows(
-    read_sav(paste0(folder, "qc_data/qc_pub_fy2020.sav")),
-    read_sav(paste0(folder, "qc_data/qc_pub_fy2020_per1.sav")),
-    read_sav(paste0(folder, "qc_data/qc_pub_fy2020_per2.sav"))
-  )
+  data_2020 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2020.sav"))
   data_2021 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2021.sav"))
 }
 data_2022 <- read_sav(paste0(folder, "qc_data/qc_pub_fy2022.sav"))
