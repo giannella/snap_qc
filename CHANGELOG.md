@@ -15,9 +15,19 @@ moved or behaves differently.
   prorated cases (`ALLADJ = 2`) get RAWBEN + AMTADJ when that reconciles
   with AMTERR. QC records AMTERR two ways: as the full-month error (used
   as is) or the prorated one (scaled to the full month by the share of the
-  month paid). Prorated errors that only go over the threshold once scaled
-  are dropped, since QC never ran Comparison II on them. Prorated cases
-  reaching Step 8 go from 964 to 6,826.
+  month paid). Prorated errors at or under the threshold as recorded stay
+  in as no error, even when the scaled full-month error is over it.
+  Prorated cases reaching Step 8 go
+  from 964 to 6,826 (counted before those cases were kept; rerun for the
+  new figure).
+- **`over_threshold` and `total_error_amount` come only from QC's AMTERR:**
+  `over_threshold` is AMTERR over the review year's threshold, and
+  `total_error_amount` is AMTERR, for every case. Previously both came from
+  |RAWBEN - FSBEN|, which differs from AMTERR by up to $5 and could put a
+  case on the other side of the threshold. AMTERR is never changed: the
+  full-month amount used to reconstruct restored prorated cases is the new
+  working column `amterr_full_month`; `amterr_qc` is gone (it equals
+  AMTERR). The frame now also keeps `absbendiff`.
 - **Benefit reconstruction follows one path for every case:** discrete
   variables are set first (household size, the homeless deduction, then
   utilities, from any element slot), then the continuous ones (earned and
