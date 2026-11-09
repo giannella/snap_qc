@@ -125,7 +125,9 @@ moved or behaves differently.
   did nothing at the minimum.
 
 ### Added
-- Proration columns, including `initial_month_i`.
+- Proration columns, including `initial_month_i`: a prorated benefit
+  (`ALLADJ = 2`) certified in the sample month (`LASTCERT = 0`), both from
+  the case record.
 - `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
   asset limits by state and fiscal year, FY1996-FY2027 (ERS SNAP Policy
   Database, QC Technical Documentation, SNAP Screener).

@@ -150,8 +150,8 @@ small_over <- restored & (mydata$RAWBEN - num(mydata$BENMAX)) %in% 1:5
 mydata$RAWBEN[small_over] <- num(mydata$BENMAX[small_over])
 mydata$proration_backed_out_i  <- restored
 mydata$proration_error_scaled_i <- rule2
-# Initial month (for the model): prorated and either certified in the sample month or restored
-mydata$initial_month_i <- mydata$prorated_flag_i & ((num(mydata$LASTCERT) == 0) %in% TRUE | restored)
+# Initial month: prorated benefit (ALLADJ 2) and certified in the sample month (LASTCERT 0)
+mydata$initial_month_i <- mydata$ALLADJ %in% 2 & (num(mydata$LASTCERT) == 0) %in% TRUE
 # Recompute from the restored RAWBEN
 mydata$bendiff        <- mydata$RAWBEN - num(mydata$FSBEN)
 mydata$absbendiff     <- abs(mydata$bendiff)
