@@ -1852,3 +1852,205 @@ features were slightly less precise on FY2022 than the other top rules
 errors).
 
 -> detailed record: modeling_findings_detailed.md section 42.
+
+## 43. Exploratory: case scoring by rule votes, FY2019 exploration window: a 300-rule vote score finds about half again as many error dollars per reviewed case as issued benefit times the base rate; the gain flattens past 300 rules
+
+> **Takeaway (about our pipeline).** Cases were ranked by expected error
+> dollars, built from how many of 300 national rules flag each case. In each
+> state's top 5% of FY2019 cases, that ranking found $43-45 in error dollars
+> per reviewed case. Ranking by issued benefit times the household-size
+> group's error rate found $29-30, and random order $12.39. The vote score's
+> gain is 43-54% in dollars and 81-87% in precision: 29-30% of its reviewed
+> cases are errors, against 16.0%, with a base rate of 10.1%. The rules were
+> mined one year earlier, on FY2017-18. The gain rises from 28% at 100 rules
+> to 45% at 300, then stays at 46-50% through 900, within seed noise. This
+> is the exploration window of a pre-registered study. The deciding test is
+> not yet run: rules mined on FY2017-19, scored on FY2022 with the curve
+> carried unchanged.
+
+**How it was tested.**
+- **Mining:** rules were mined on FY2017-18 at three random seeds.
+- **Groups:** within each household-size group, the top rules were grouped
+  when they flag mostly the same cases.
+- **The vote:** a case's vote is the number of groups whose leading rule
+  flags it.
+- **Fitting:** on FY2019, an error-rate curve by vote and a model of error
+  size were fitted out of fold by state.
+- **Readout:** each state's top 5% (1,911 cases nationally) was compared with
+  the simple ordering on the same cases.
+
+**Gain by rule count** (seed means):
+
+| Rules | Precision | $ per reviewed case | Gain in $ |
+|---|---|---|---|
+| 100 | 0.267 | $38.18 | 28% |
+| 200 | 0.287 | $41.47 | 39% |
+| 300 | 0.293 | $43.35 | 45% |
+| 500 | 0.296 | $43.75 | 47% |
+| 900 | 0.300 | $44.22 | 48% |
+| Simple ordering | 0.160 | $29.85 | |
+
+**What this does and does not show.**
+- **Gains past 300.** Beyond 300 rules, the gain moves by less than a change
+  of random seed moves it (3-7 points).
+- **Optimism.** The FY2019 figures are optimistic in two ways. The curve was
+  fitted on FY2019 itself, and the rules are only one year old.
+- **Power.** The confirmation can detect a true gain of about 47% (80% power)
+  against its bar of a 20% gain with the 95% low end above 20%. A smaller
+  real gain may be recorded as a gain under the bar.
+
+-> detailed record: modeling_findings_detailed.md section 43.
+
+## 44. Case scoring by rule votes, confirmation: three years ahead the vote score finds 28% more error dollars per reviewed case at each state's top 5% (95% 6-49%), short of the pre-set bar; one year ahead 42%; shipped by the project lead's decision on the interval above zero
+
+> **Takeaway (about our pipeline).** Rules mined on FY2017-19 were scored
+> on FY2022, with the vote curve and error-size model carried unchanged from
+> FY2019. In each state's top 5%, the vote score found $56.73 of error per
+> reviewed case; issued benefit times the base rate found $44.43. The gain is
+> 28% (seeds 30, 21 and 32%; 95% interval 6% to 49%). The pre-registered bar
+> needed the interval's low end above 20%, and it was not. One year ahead
+> (FY2022-23 rules on FY2024) the gain was 42% (24% to 60%). Neither window
+> shows harm to individual states. On 2026-10-29, after the readout, Eric
+> decided to ship the score because the interval lies above zero. That
+> departs from the pre-set rule, and both readings are recorded here.
+
+**How it was tested.** The specification fixed on FY2019 (section 43) was
+frozen and scored on two years the rules never saw: FY2022 with rules from
+FY2017-19 (deciding) and FY2024 with rules from FY2022-23 (must agree), at
+three seeds.
+
+**Gain at each state's top 5%** (seed means, error $ per reviewed case):
+
+| Window | Vote score | Simple ordering | Gain (95%) |
+|---|---|---|---|
+| Three years ahead (FY2022) | $56.73 | $44.43 | 28% (6% to 49%) |
+| One year ahead (FY2024) | $82.24 | $57.95 | 42% (24% to 60%) |
+
+**Against the other orderings at each state's top 5%** (seed means, error $
+per reviewed case):
+
+| Ordering | FY2022 | FY2024 |
+|---|---|---|
+| Reference: two-part xgboost on all inputs, by size group | $65.26 | $91.66 |
+| Reference: ridge on the same 300 rules | $58.56 | $82.86 |
+| Vote score (vote curve x error size) | $56.73 | $82.24 |
+| Highest LCB among flagging rules | $41.63 | $69.63 |
+| Simple ordering | $44.43 | $57.95 |
+
+**What a state's top 5% looks like** (seed means; each slice is one
+percentage point of the state's caseload):
+
+| Position | FY2022 mean votes | FY2022 precision | FY2024 mean votes | FY2024 precision |
+|---|---|---|---|---|
+| Top 1% | 10.6 | 0.40 | 10.0 | 0.46 |
+| 1-2% | 5.3 | 0.28 | 5.9 | 0.36 |
+| 2-3% | 3.9 | 0.26 | 4.3 | 0.31 |
+| 3-4% | 3.4 | 0.26 | 3.4 | 0.29 |
+| 4-5% | 3.0 (median 1) | 0.22 | 3.2 (median 2) | 0.32 |
+
+The median state lists 40-42 cases. The first case carries a median of 15-18
+votes and the last 1-2. Households of 4 or more are 60-71% of the list,
+because large benefits carry large expected errors even at few votes.
+
+**What this does and does not show.**
+- **Bars.** The three-years-ahead gain missed the pre-set bar (low end above
+  20%). Harm and companion checks passed in both windows.
+- **Decision.** Eric decided after the readout to ship on the interval above
+  zero. By the pre-set rule it would not ship.
+- **Curve.** Relative risks by vote carry over; levels drift up 10-20%, so
+  the workbook sets the level from the state's FNS payment error rate.
+- **References.** Ridge weights on the same rules add 1-3%; a full xgboost
+  model adds 11-15%.
+
+-> detailed record: modeling_findings_detailed.md section 44.
+
+## 45. Re-mined on Ben's reconstruction fixes (frame eb989fda): the state lists flag about four in five of the same cases, and the vote score's three-years-ahead gain is unchanged at 31% (staging only)
+
+> **Takeaway (about our pipeline).** Everything the workbooks carry was
+> re-mined on the staging frame eb989fda, which adds Ben's reconstruction
+> fixes: the 196 delivery lists, the 300 national vote rules, and the vote
+> table. The lists' rule strings almost all changed, because cut-points move
+> when the data change, but the lists flag largely the same cases: 80-81% of
+> the cases the shipped 10% lists flag are still flagged, and in-sample
+> errors caught rose 2-3%. The vote table's FY2023 check is unchanged: at
+> each state's top 5%, the vote score finds 31% more error dollars per
+> reviewed case than the simple ordering (32% on the v2.7 frame). One change
+> needs watching: the new vote rules give 10.1% of FY2022-24 cases at least
+> one vote, against 14.1% for the interim rules. None of this is on main.
+
+**What changed in the frame.** Same 231,619 cases and error labels as the
+v2.7 frame (1dbe8733). Household size is one larger on 337 rows. FY2022-24
+rows whose reconstructed benefit does not match the issued benefit fell from
+572 to 359 (0.49% to 0.31% of rows). Income-pile rows: 1,399.
+
+**What "gain over simple ordering" means.** In each state, cases are ranked
+two ways. The vote score ranks by expected error dollars: the vote table's
+error rate for the case's household-size group and vote count, times the
+size model's expected error amount. The simple ordering ranks by issued
+benefit times the household-size group's national error rate; it uses no
+rules. Each ranking's top 5% (or 10%) of each state's cases is "reviewed",
+and the over-tolerance error dollars QC found in those cases are summed and
+divided by the number of cases reviewed. Gain = vote-score dollars per case
+/ simple-ordering dollars per case - 1. Precision is the share of reviewed
+cases with an over-tolerance error. The simple ordering is a strong
+baseline: in the FY2019 exploration it found $29-30 per case, against
+$12.39 for random order.
+
+**Vote table, FY2023 check** (rules mined on FY2017-19 at seeds 117-119,
+table fitted on FY2022, scored on FY2023; seed means):
+
+| Each state's top share | v2.7 frame (1dbe8733) | Ben's frame (eb989fda) |
+|---|---|---|
+| Top 5%: vote score, error $ per reviewed case | $70.87 | $70.49 |
+| Top 5%: simple ordering, error $ per reviewed case | $53.66 | $53.75 |
+| Top 5%: gain over simple ordering | 32.1% | 31.1% |
+| Top 5%: precision, vote score / simple | 0.307 / 0.190 | 0.317 / 0.191 |
+| Top 10%: gain over simple ordering | 22.1% | 22.2% |
+
+By seed, the top-5% gain is 28-34% on the new frame and 32-33% on the old;
+the difference is inside seed noise.
+
+**Delivery lists** (10% budget; both versions evaluated on the eb989fda
+frame, each state's FY2022-24 cases; in-sample, and the new lists were mined
+on these cases and this frame):
+
+| List | Cases flagged, old -> new | Old flags still flagged | Errors caught, old -> new | Precision, old -> new | States with more / fewer errors |
+|---|---|---|---|---|---|
+| Blended | 34,149 -> 34,647 | 80% (73-87% by state) | 8,837 -> 9,021 | 0.259 -> 0.260 | 34 / 14 |
+| National-only | 34,041 -> 34,647 | 81% (75-89%) | 8,006 -> 8,231 | 0.235 -> 0.238 | 34 / 10 |
+
+**Vote rules.** The 300 shipped vote rules now come from a FY2022-24 mine at
+seed 117 on eb989fda. Share of FY2022-24 cases with at least one vote:
+
+| | Interim rules (FY2022-23 mine, 1dbe8733) | New rules (FY2022-24 mine, eb989fda) |
+|---|---|---|
+| All states | 14.1% | 10.1% |
+| Washington | 13.5% | 7.9% |
+| District of Columbia | 9.3% | 7.9% |
+| Michigan | 16.8% | 11.6% |
+
+The rules flag about as many cases each (median training flags 126 / 62 /
+74 by size group, against 102 / 59 / 85), so they likely overlap more. The
+FY2022-24 mine was never run on the old frame, so the change cannot yet be
+split between the added year and the frame. The table was fitted on rules
+that flag 12.0% of FY2022 cases.
+
+**What this does and does not show.**
+- **Lists.** The list comparison is in-sample on FY2022-24; it shows the
+  lists are stable, not that the new ones are better.
+- **Vote table.** Ben's fixes leave the vote score's tested gain where it
+  was.
+- **Coverage.** Fewer cases with any vote means more of each state's ranking
+  past its voted cases rests on benefit and household size.
+- **Pile gate.** The re-mined lists carry staging's income-pile gate
+  (issue #29), which main's lists do not. The gate missed its own merge
+  rule (44 of 47 released workbooks within 3 points of headline precision,
+  against 45 needed). WA drops most: the Include? rules on WA's FY2022-24
+  cases go from 67 errors in 194 flags (0.345) on main to 46 in 189 (0.243)
+  here, and the gate accounts for most of that (to 0.265 on the old frame).
+  Eric decided on 2026-10-30 to keep the gate despite the missed rule: the
+  rules it drops rest on a misleading reconstruction artifact.
+- **Status.** On staging-v2.7 only, uncommitted; moving it to main is the
+  project lead's decision.
+
+-> detailed record: modeling_findings_detailed.md section 45.
