@@ -1,0 +1,82 @@
+B2: Masking AMOUNTs in states that report them well
+Pre-registration, written 2026-10-30 20:25 PT, before any B2 result was computed.
+
+Disclosure. An exploratory version was run earlier tonight (mask_amounts_real.R): on all 820 clean_split
+cases, masking AMOUNTs gave 47.3% agreement with the AMOUNT-guided result (82% where slot 1 carries >= 90%).
+The thresholds below were set knowing that figure. They were not tuned to it, and no B2 numbers had been seen.
+
+1. Data and code
+- Input: the pre-Step-7 snapshot (scratch/pre7_env.RData, built from the tracked script at 2570391).
+- Code: that snapshot's copies of recreate_elements() and amount_pattern(). No tracked file is used or edited.
+
+2. Which state-years "report well" (fixed in advance)
+- Unit: state x fiscal year.
+- A state-year reports well when both hold:
+  (a) at least 10 multi-element cases are classified clean_split;
+  (b) informative cases are at least 20% of its multi-element cases. Informative means clean_split, plus
+      "other" cases whose positive AMOUNTs sum to within $2 of AMTERR and where every present slot has
+      AMOUNT > 0. The second kind is good reporting with missing or mixed E_FINDG signs.
+- The "other" cases count toward the share only. They are not evaluation cases, because the AMOUNT-guided
+  (capped) path, which supplies the truth, does not run on them.
+- Sensitivity run: all clean_split cases nationally, whatever their state-year.
+
+3. Evaluation cases
+- clean_split cases in report-well state-years that the unmasked run puts on the capped path
+  (cascade_type == "capped") and that reach RAWBEN exactly.
+- Truth: the raw values from that unmasked, AMOUNT-guided run.
+
+4. Masking arms (they mirror the real reporting patterns)
+- zero: AMOUNT1-9 = 0; E_FINDG kept as reported.
+- copied: every present slot = AMTERR; every E_FINDG = the case direction (2 if RAWBEN > FSBEN, else 3).
+- amount1_only: AMOUNT1 = AMTERR, other slots 0; E_FINDG kept.
+- After masking, amount_pattern() is recomputed, as the code would do.
+
+5. Fallbacks compared on the masked cases
+- F0 (current code): recreate_elements() on the masked case. This is the greedy cascade in slot order,
+  utilities first.
+- F1 (proportional split): the gap RAWBEN - FSBEN is split across slots in proportion to empirical slot
+  shares, and each element then moves the benefit by its share, as on the capped path. Mechanics:
+  AMOUNTi = share_i x AMTERR, every E_FINDG = the case direction, amount_pattern forced to "clean_split".
+  Shares are the mean |AMOUNTi| / sum|AMOUNT| by slot, within the element mix (the variable class of each
+  slot, in slot order, e.g. "earn|rent"). A mix with fewer than 10 training cases uses the training mean
+  share by slot position for that number of elements.
+- F2 (typical-largest-first order): the greedy cascade with slots ordered by each variable class's mean
+  AMOUNT share in training, not by slot. Mechanics: AMOUNTi = that class mean, amount_pattern forced to
+  "other", so the code orders by AMOUNT and moves greedily.
+- F1 and F2 depend only on the element codes, so they give the same result under every masking arm. They
+  are run once, on the zero arm.
+- Out of sample: report-well state-years are split at random (seed 20261030) into two halves. Shares are
+  fitted on one half and applied to the other, and then the reverse (two-fold cross-fitting by state-year
+  cluster). Every evaluated case is therefore scored with shares that did not use its own state-year.
+
+6. Metrics, per case and against the truth
+- all_agree: every Step 7 variable is within max($10, 2% of the truth value) of the truth. Primary.
+- var_agree: the same test per variable, for variables the truth or the arm moved.
+- MAE: sum over variables of |arm - truth|, in dollars.
+- reached: the recreated benefit equals RAWBEN exactly.
+- slot1_share: the share of the case's gap (RAWBEN minus the starting benefit) produced by moving only
+  slot 1's variable from its start to its reconstructed value. The attribution error is
+  |slot1_share(arm) - slot1_share(truth)|; attr_agree means that error is at most 0.10.
+- Intervals: cluster bootstrap by state-year, 1,000 resamples, for the headline rates and for the
+  differences F1 - F0 and F2 - F0.
+
+7. Breakdowns
+- Number of elements (2, 3+).
+- Element mix (mixes with at least 15 cases).
+- State.
+- Household size (1, 2, 3, 4+).
+- Truth slot-1 share (>= 0.9 vs < 0.9). This breakdown was added because of the exploratory result.
+
+8. Grading the greedy fallback (F0, zero arm, all_agree)
+- Good: at least 75%.
+- Acceptable: 50% to under 75%.
+- Poor: under 50%.
+- A fallback beats F0 if its all_agree is at least 5 points higher, the 95% cluster-bootstrap interval of
+  the difference excludes 0, and its mean MAE is not higher.
+- Equal within 5 points means no preference. The simpler rule, F0, then stays.
+
+9. Limitation stated in advance
+- Report-well states (a handful, e.g. WV, MT, VA, ND, IL) may differ from all_zero states in their error
+  mix and in how they split errors.
+- The capped-path truth assumes QC's AMOUNTs are correct, and that the code's order (utilities, then
+  largest AMOUNT) matches the order QC used to compute them.

@@ -1,0 +1,21 @@
+"direction","arm","ranked_by","share","flagged","errors","precision","dollars_per_flag","dollar_recall","auc"
+"over","stack","P(error)",0.05,1910,395,0.2068,27.7,0.1425,0.7359
+"over","stack_dollars","expected error $",0.05,1910,394,0.2063,33.5,0.1724,0.7286
+"over","direction_stack","P(error)",0.05,1910,452,0.2366,33.35,0.1716,0.7492
+"over","direction_dollars","expected error $",0.05,1910,417,0.2183,37.45,0.1927,0.7381
+"over","direction_dollars_fns_level","expected error $",0.05,1910,409,0.2141,38.85,0.1999,0.7659
+"over","stack","P(error)",0.1,3816,710,0.1861,25.04,0.2574,0.7359
+"over","stack_dollars","expected error $",0.1,3816,699,0.1832,28.95,0.2976,0.7286
+"over","direction_stack","P(error)",0.1,3816,766,0.2007,27.47,0.2823,0.7492
+"over","direction_dollars","expected error $",0.1,3816,717,0.1879,30.79,0.3165,0.7381
+"over","direction_dollars_fns_level","expected error $",0.1,3816,695,0.1821,30.57,0.3143,0.7659
+"under","stack","P(error)",0.05,1910,123,0.0644,7.15,0.1349,0.7008
+"under","stack_dollars","expected error $",0.05,1910,115,0.0602,7.27,0.1371,0.6759
+"under","direction_stack","P(error)",0.05,1910,185,0.0969,10.84,0.2045,0.7929
+"under","direction_dollars","expected error $",0.05,1910,185,0.0969,11.7,0.2208,0.7902
+"under","direction_dollars_fns_level","expected error $",0.05,1910,185,0.0969,11.81,0.2227,0.8132
+"under","stack","P(error)",0.1,3816,227,0.0595,6.75,0.2545,0.7008
+"under","stack_dollars","expected error $",0.1,3816,218,0.0571,6.51,0.2454,0.6759
+"under","direction_stack","P(error)",0.1,3816,341,0.0894,10.23,0.3856,0.7929
+"under","direction_dollars","expected error $",0.1,3816,323,0.0846,10.02,0.3775,0.7902
+"under","direction_dollars_fns_level","expected error $",0.1,3816,323,0.0846,10.06,0.3793,0.8132

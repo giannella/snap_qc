@@ -1,0 +1,16 @@
+[11-10 04:04:31] === deploy on f1109 
+[11-10 04:04:42] deploy: 237557 rows (2017,2018,2019,2022,2023,2024), percentiles FALSE, method holdout, FY2024 held back for settings 
+[11-10 04:11:19]   tune deploy P:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.5 0.3169917 1250 |          5                5              0.8 0.3170136 1799 |          6                5              0.8 0.3170875 1046 
+[11-10 04:12:05]   tune deploy size:  max_depth min_child_weight  off      crit best |          4               25 TRUE 0.3046571  681 |          4                5 TRUE 0.3056917  496 |          3               25 TRUE 0.3058821  806 
+[11-10 04:12:05] deploy settings: P max_depth 6 min_child_weight 5 colsample_bytree 0.5, 1507 rounds; size max_depth 4 min_child_weight 25 off 1, 850 rounds 
+[11-10 04:12:26] deploy seed 117: 0.3 min 
+[11-10 04:12:46] deploy seed 118: 0.3 min 
+[11-10 04:13:06] deploy seed 119: 0.3 min 
+[11-10 04:13:26] deploy seed 120: 0.3 min 
+[11-10 04:13:46] deploy seed 121: 0.3 min 
+[11-10 04:14:07] deploy seed 122: 0.3 min 
+[11-10 04:14:28] deploy seed 123: 0.3 min 
+[11-10 04:14:48] deploy seed 124: 0.3 min 
+[11-10 04:15:09] deploy seed 125: 0.3 min 
+[11-10 04:15:29] deploy seed 126: 0.3 min 
+[11-10 04:15:33] deploy bundle -> C:/Users/ericg/snap_qc_v27/methods/case_predictions/s46/out_f1109/deploy_B_bundle.rds (sha256 cf317959a561fafcada56cab4a29f0c64bd534dc37b16e9bb1714bcc9a623f4d); frame 08e0e825; commit 8b8d99f 

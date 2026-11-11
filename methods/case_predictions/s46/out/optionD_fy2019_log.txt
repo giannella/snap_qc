@@ -1,0 +1,262 @@
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[21:01:49] f1030 fy2019: fitting the stack on FY2017+2018 (77898 rows, 7049 errors)
+[21:01:50]   group 1: 41684 rows, 2564 errors
+[21:02:16]   group 2-3: 23467 rows, 2554 errors
+[21:02:38]   group 4+: 12747 rows, 1931 errors
+[21:02:57]   meta 1: intercept 0.575, xgboost 0.713, ranger 0.499; OOF AUC xgboost 0.7394, ranger 0.7199, stack 0.7410
+[21:02:57]   meta 2-3: intercept 0.579, xgboost 0.510, ranger 0.761; OOF AUC xgboost 0.6586, ranger 0.6499, stack 0.6630
+[21:02:57]   meta 4+: intercept 0.713, xgboost 0.258, ranger 1.151; OOF AUC xgboost 0.5932, ranger 0.6056, stack 0.6077
+[21:02:59] over/underpayment stacks: 5205 overpayment and 1844 underpayment errors in training
+[21:02:59]  overpayment stack
+[21:02:59]   group 1: 41684 rows, 2062 errors
+[21:03:28]   group 2-3: 23467 rows, 1822 errors
+[21:03:50]   group 4+: 12747 rows, 1321 errors
+[21:04:09]  underpayment stack
+[21:04:09]   group 1: 41684 rows, 502 errors
+[21:04:49]   group 2-3: 23467 rows, 732 errors
+[21:05:24]   group 4+: 12747 rows, 610 errors
+ direction                         arm        ranked_by share flagged errors
+      over                       stack         P(error)  0.05    1910    395
+      over               stack_dollars expected error $  0.05    1910    394
+      over             direction_stack         P(error)  0.05    1910    452
+      over           direction_dollars expected error $  0.05    1910    417
+      over direction_dollars_fns_level expected error $  0.05    1910    409
+      over                       stack         P(error)  0.10    3816    710
+      over               stack_dollars expected error $  0.10    3816    699
+      over             direction_stack         P(error)  0.10    3816    766
+      over           direction_dollars expected error $  0.10    3816    717
+      over direction_dollars_fns_level expected error $  0.10    3816    695
+     under                       stack         P(error)  0.05    1910    123
+     under               stack_dollars expected error $  0.05    1910    115
+     under             direction_stack         P(error)  0.05    1910    185
+     under           direction_dollars expected error $  0.05    1910    185
+     under direction_dollars_fns_level expected error $  0.05    1910    185
+     under                       stack         P(error)  0.10    3816    227
+     under               stack_dollars expected error $  0.10    3816    218
+     under             direction_stack         P(error)  0.10    3816    341
+     under           direction_dollars expected error $  0.10    3816    323
+     under direction_dollars_fns_level expected error $  0.10    3816    323
+ precision dollars_per_flag dollar_recall    auc
+    0.2068            27.70        0.1425 0.7359
+    0.2063            33.50        0.1724 0.7286
+    0.2366            33.35        0.1716 0.7492
+    0.2183            37.45        0.1927 0.7381
+    0.2141            38.85        0.1999 0.7659
+    0.1861            25.04        0.2574 0.7359
+    0.1832            28.95        0.2976 0.7286
+    0.2007            27.47        0.2823 0.7492
+    0.1879            30.79        0.3165 0.7381
+    0.1821            30.57        0.3143 0.7659
+    0.0644             7.15        0.1349 0.7008
+    0.0602             7.27        0.1371 0.6759
+    0.0969            10.84        0.2045 0.7929
+    0.0969            11.70        0.2208 0.7902
+    0.0969            11.81        0.2227 0.8132
+    0.0595             6.75        0.2545 0.7008
+    0.0571             6.51        0.2454 0.6759
+    0.0894            10.23        0.3856 0.7929
+    0.0846            10.02        0.3775 0.7902
+    0.0846            10.06        0.3793 0.8132
+[21:07:27] FNS over/under levels: overpayment offsets median 0.667 (-1.238 to 2.048); underpayment median 0.056 (-1.801 to 1.194)
+[21:07:27] FNS level (additional_data/fns_payment_error_rates_fy2019.csv): offsets median 0.579, range -1.378 to 2.045
+ reading                          arm        ranked_by share flagged errors
+     all                      xgboost         P(error)  0.05    1910    508
+     all                       ranger         P(error)  0.05    1910    459
+     all                        stack         P(error)  0.05    1910    518
+     all              xgboost_dollars expected error $  0.05    1910    498
+     all               ranger_dollars expected error $  0.05    1910    435
+     all                stack_dollars expected error $  0.05    1910    509
+     all             over_under_stack         P(error)  0.05    1910    519
+     all     over_under_stack_dollars expected error $  0.05    1910    496
+     all      stack_dollars_fns_level expected error $  0.05    1910    486
+     all         over_under_fns_level         P(error)  0.05    1910    530
+     all over_under_fns_level_dollars expected error $  0.05    1910    485
+     all                      xgboost         P(error)  0.10    3816    917
+     all                       ranger         P(error)  0.10    3816    850
+     all                        stack         P(error)  0.10    3816    937
+     all              xgboost_dollars expected error $  0.10    3816    891
+     all               ranger_dollars expected error $  0.10    3816    809
+     all                stack_dollars expected error $  0.10    3816    917
+     all             over_under_stack         P(error)  0.10    3816    954
+     all     over_under_stack_dollars expected error $  0.10    3816    886
+     all      stack_dollars_fns_level expected error $  0.10    3816    895
+     all         over_under_fns_level         P(error)  0.10    3816    965
+     all over_under_fns_level_dollars expected error $  0.10    3816    870
+   clean                      xgboost         P(error)  0.05    1899    506
+   clean                       ranger         P(error)  0.05    1899    452
+   clean                        stack         P(error)  0.05    1899    515
+   clean              xgboost_dollars expected error $  0.05    1899    494
+   clean               ranger_dollars expected error $  0.05    1899    429
+   clean                stack_dollars expected error $  0.05    1899    505
+   clean             over_under_stack         P(error)  0.05    1899    514
+   clean     over_under_stack_dollars expected error $  0.05    1899    484
+   clean      stack_dollars_fns_level expected error $  0.05    1899    478
+   clean         over_under_fns_level         P(error)  0.05    1899    523
+   clean over_under_fns_level_dollars expected error $  0.05    1899    477
+   clean                      xgboost         P(error)  0.10    3802    907
+   clean                       ranger         P(error)  0.10    3802    842
+   clean                        stack         P(error)  0.10    3802    927
+   clean              xgboost_dollars expected error $  0.10    3802    882
+   clean               ranger_dollars expected error $  0.10    3802    803
+   clean                stack_dollars expected error $  0.10    3802    908
+   clean             over_under_stack         P(error)  0.10    3802    944
+   clean     over_under_stack_dollars expected error $  0.10    3802    874
+   clean      stack_dollars_fns_level expected error $  0.10    3802    884
+   clean         over_under_fns_level         P(error)  0.10    3802    954
+   clean over_under_fns_level_dollars expected error $  0.10    3802    854
+ precision dollars_per_flag dollar_recall    auc
+    0.2660            34.75        0.1405 0.7322
+    0.2403            35.16        0.1421 0.7112
+    0.2712            34.85        0.1409 0.7363
+    0.2607            38.19        0.1544 0.7242
+    0.2277            36.53        0.1477 0.6832
+    0.2665            40.77        0.1648 0.7240
+    0.2717            35.96        0.1454 0.7358
+    0.2597            41.96        0.1696 0.7211
+    0.2545            40.27        0.1628 0.7532
+    0.2775            36.80        0.1488 0.7614
+    0.2539            42.62        0.1723 0.7484
+    0.2403            30.89        0.2495 0.7322
+    0.2227            31.69        0.2560 0.7112
+    0.2455            31.79        0.2568 0.7363
+    0.2335            33.06        0.2670 0.7242
+    0.2120            32.99        0.2665 0.6832
+    0.2403            35.46        0.2864 0.7240
+    0.2500            33.19        0.2681 0.7358
+    0.2322            35.42        0.2861 0.7211
+    0.2345            35.40        0.2859 0.7532
+    0.2529            33.75        0.2726 0.7614
+    0.2280            35.46        0.2864 0.7484
+    0.2665            34.79        0.1424 0.7326
+    0.2380            34.65        0.1418 0.7113
+    0.2712            34.70        0.1420 0.7366
+    0.2601            38.18        0.1563 0.7242
+    0.2259            36.15        0.1480 0.6828
+    0.2659            40.54        0.1659 0.7239
+    0.2707            35.75        0.1463 0.7361
+    0.2549            41.00        0.1678 0.7207
+    0.2517            39.73        0.1626 0.7531
+    0.2754            36.53        0.1495 0.7615
+    0.2512            41.95        0.1717 0.7479
+    0.2386            30.58        0.2506 0.7326
+    0.2215            31.32        0.2567 0.7113
+    0.2438            31.39        0.2572 0.7366
+    0.2320            32.60        0.2672 0.7242
+    0.2112            32.78        0.2686 0.6828
+    0.2388            35.08        0.2875 0.7239
+    0.2483            32.71        0.2680 0.7361
+    0.2299            34.81        0.2853 0.7207
+    0.2325            34.94        0.2863 0.7531
+    0.2509            33.15        0.2716 0.7615
+    0.2246            34.78        0.2850 0.7479
+                                                           precision_diff
+stack_vs_best_engine_10                                      0.0052410901
+stack_vs_best_engine_05                                      0.0052356021
+dollars_vs_p_error_10                                       -0.0052410901
+dollars_vs_p_error_05                                       -0.0047120419
+fns_level_vs_dollars_10                                     -0.0057651992
+over_under_vs_stack_10                                       0.0044549266
+over_under_dollars_vs_stack_dollars_10                      -0.0081236897
+over_under_fns_level_vs_stack_10                             0.0073375262
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_10  -0.0065513627
+over_under_fns_level_dollars_vs_stack_dollars_10            -0.0123165618
+over_under_vs_stack_05                                       0.0005235602
+over_under_dollars_vs_stack_dollars_05                      -0.0068062827
+over_under_fns_level_vs_stack_05                             0.0062827225
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_05  -0.0005235602
+over_under_fns_level_dollars_vs_stack_dollars_05            -0.0125654450
+                                                                     lo
+stack_vs_best_engine_10                                    -0.001713764
+stack_vs_best_engine_05                                    -0.006181351
+dollars_vs_p_error_10                                      -0.014766776
+dollars_vs_p_error_05                                      -0.021607957
+fns_level_vs_dollars_10                                    -0.010355215
+over_under_vs_stack_10                                     -0.003355063
+over_under_dollars_vs_stack_dollars_10                     -0.016007586
+over_under_fns_level_vs_stack_10                           -0.001400287
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_10 -0.015709370
+over_under_fns_level_dollars_vs_stack_dollars_10           -0.021582112
+over_under_vs_stack_05                                     -0.012072952
+over_under_dollars_vs_stack_dollars_05                     -0.021221139
+over_under_fns_level_vs_stack_05                           -0.007085007
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_05 -0.015135995
+over_under_fns_level_dollars_vs_stack_dollars_05           -0.028419649
+                                                                      hi
+stack_vs_best_engine_10                                     1.253753e-02
+stack_vs_best_engine_05                                     1.604905e-02
+dollars_vs_p_error_10                                       4.966013e-03
+dollars_vs_p_error_05                                       1.332813e-02
+fns_level_vs_dollars_10                                    -1.378838e-03
+over_under_vs_stack_10                                      1.272188e-02
+over_under_dollars_vs_stack_dollars_10                      5.719459e-05
+over_under_fns_level_vs_stack_10                            1.632928e-02
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_10  2.553311e-03
+over_under_fns_level_dollars_vs_stack_dollars_10           -3.296934e-03
+over_under_vs_stack_05                                      1.333190e-02
+over_under_dollars_vs_stack_dollars_05                      7.690597e-03
+over_under_fns_level_vs_stack_05                            2.001575e-02
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_05  1.460443e-02
+over_under_fns_level_dollars_vs_stack_dollars_05            3.128922e-03
+                                                           dollars_per_flag_diff
+stack_vs_best_engine_10                                               0.89937107
+stack_vs_best_engine_05                                               0.09371728
+dollars_vs_p_error_10                                                 3.67348008
+dollars_vs_p_error_05                                                 5.92513089
+fns_level_vs_dollars_10                                              -0.06498952
+over_under_vs_stack_10                                                1.40015723
+over_under_dollars_vs_stack_dollars_10                               -0.04009434
+over_under_fns_level_vs_stack_10                                      1.95597484
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_10            0.06210692
+over_under_fns_level_dollars_vs_stack_dollars_10                     -0.00288260
+over_under_vs_stack_05                                                1.11308901
+over_under_dollars_vs_stack_dollars_05                                1.18952880
+over_under_fns_level_vs_stack_05                                      1.95183246
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_05            2.34712042
+over_under_fns_level_dollars_vs_stack_dollars_05                      1.85183246
+                                                           lo_dollars
+stack_vs_best_engine_10                                    -0.4330696
+stack_vs_best_engine_05                                    -2.0101544
+dollars_vs_p_error_10                                       2.0477268
+dollars_vs_p_error_05                                       2.9239204
+fns_level_vs_dollars_10                                    -0.8917775
+over_under_vs_stack_10                                      0.1713188
+over_under_dollars_vs_stack_dollars_10                     -1.5556183
+over_under_fns_level_vs_stack_10                            0.5395092
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_10 -1.5882399
+over_under_fns_level_dollars_vs_stack_dollars_10           -1.6223221
+over_under_vs_stack_05                                     -0.9231004
+over_under_dollars_vs_stack_dollars_05                     -1.4608545
+over_under_fns_level_vs_stack_05                           -0.3243065
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_05 -0.3931788
+over_under_fns_level_dollars_vs_stack_dollars_05           -1.0745240
+                                                           hi_dollars
+stack_vs_best_engine_10                                     2.2448529
+stack_vs_best_engine_05                                     2.2215849
+dollars_vs_p_error_10                                       5.4239977
+dollars_vs_p_error_05                                       9.2430658
+fns_level_vs_dollars_10                                     0.7976866
+over_under_vs_stack_10                                      2.7763512
+over_under_dollars_vs_stack_dollars_10                      1.4659215
+over_under_fns_level_vs_stack_10                            3.3734173
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_10  1.7955224
+over_under_fns_level_dollars_vs_stack_dollars_10            1.6977169
+over_under_vs_stack_05                                      3.3393892
+over_under_dollars_vs_stack_dollars_05                      4.2832659
+over_under_fns_level_vs_stack_05                            4.2287138
+over_under_fns_level_dollars_vs_stack_dollars_fns_level_05  5.0822385
+over_under_fns_level_dollars_vs_stack_dollars_05            4.9808096
+ decile mean_p observed    n
+      1 0.0102   0.0079 3815
+      2 0.0198   0.0191 3815
+      3 0.0338   0.0317 3815
+      4 0.0540   0.0532 3814
+      5 0.0739   0.0773 3815
+      6 0.0903   0.0959 3815
+      7 0.1078   0.1319 3814
+      8 0.1319   0.1578 3815
+      9 0.1595   0.1853 3815
+     10 0.2093   0.2529 3815
+[21:07:27] total P(error) 3397 against 3865 errors in FY2019

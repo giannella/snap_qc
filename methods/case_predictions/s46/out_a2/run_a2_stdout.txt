@@ -1,0 +1,555 @@
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-03 21:33:54] === a2 phase setup (smoke FALSE, out out_a2) 
+[11-03 21:33:54] setup: choices and method copied from out; 12 files hashed 
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-03 21:33:55] === phase freeze  (smoke FALSE) 
+[11-03 21:33:55] freeze: 4 files hashed 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[21:34:02] f1030 seed 117: mining the national pool (FY2017+2018, 77898 rows, 7049 errors) ...
+  [mine any_error | HH 1] 41684 rows, 2564 errors -> xgboost 24880, ranger 24590 rules
+  [mine any_error | HH 2-3] 23467 rows, 2554 errors -> xgboost 25492, ranger 25511 rules
+  [mine any_error | HH 4+] 12747 rows, 1931 errors -> xgboost 24397, ranger 24056 rules
+[21:36:16] raw rules: 148876; scoring on the training rows ...
+  [f1030 seed 117] 148876 rules -> 21452 unique conditions
+[22:06:49] f1030 seed 117: 148876 raw, 52976 admitted -> methods/vote_scoring/fy2019/pools/admitted_f1030_seed117.rds
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[22:06:56] f1030 seed 117: mining the national pool (FY2022+2023, 76028 rows, 8404 errors) ...
+  [mine any_error | HH 1] 45247 rows, 3485 errors -> xgboost 24928, ranger 24555 rules
+  [mine any_error | HH 2-3] 20132 rows, 2882 errors -> xgboost 25381, ranger 24973 rules
+  [mine any_error | HH 4+] 10649 rows, 2037 errors -> xgboost 24412, ranger 23872 rules
+[22:09:09] raw rules: 148053; scoring on the training rows ...
+  [f1030 seed 117] 148053 rules -> 21832 unique conditions
+[22:38:27] f1030 seed 117: 148053 raw, 53255 admitted -> methods/v270_seed_replicates/pools/admitted_f1030_seed117.rds
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-03 22:39:19] wb fy2019 seed 117: 300 rules allotted from methods/vote_scoring/fy2019/pools/admitted_f1030_seed117.rds; 8.1% of FY2019 cases have a vote (max 42) 
+[11-03 22:39:19] wb test 2 scorer: FY2019 votes from FY2017-18 rules; size coefs (Intercept) 3.8499, lben 0.1559, hsz2 0.1358, hsz3 0.1200, hsz4 0.1873, hsz5 0.2044, hsz6+ 0.1837, vote 0.0065 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-03 22:40:36] wb fy2022 seed 117: 300 rules allotted from methods/v270_seed_replicates/fy2022/pools/admitted_f1030_seed117.rds; 7.9% of FY2022 cases have a vote (max 42) 
+[11-03 22:41:46] wb fy2022 seed 118: 300 rules allotted from methods/v270_seed_replicates/fy2022/pools/admitted_f1030_seed118.rds; 8.6% of FY2022 cases have a vote (max 45) 
+[11-03 22:42:57] wb fy2022 seed 119: 300 rules allotted from methods/v270_seed_replicates/fy2022/pools/admitted_f1030_seed119.rds; 8.1% of FY2022 cases have a vote (max 46) 
+[11-03 22:42:57] wb test 3 scorer: FY2022 votes from FY2017-19 rules, seeds 117-119; curve matches the shipped vote_table.csv; size coefs (Intercept) 4.1520, lben 0.1378, hsz2 0.2345, hsz3 0.1658, hsz4 0.2175, hsz5 0.2543, hsz6+ 0.3016, vote 0.0027 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-03 22:43:52] wb fy2024 seed 117: 300 rules allotted from methods/v270_seed_replicates/pools/admitted_f1030_seed117.rds; 10.5% of FY2024 cases have a vote (max 45) 
+[11-03 22:43:53] wb W2: 36850 cases scored with the FY2019 scorer (rules FY2017-2018); score range 45.8-506.1 
+[11-03 22:43:53] wb W3: 39528 cases scored with the FY2022 scorer (rules FY2017-2018-2019); score range 61.3-678.5 
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-03 22:43:54] === a2 phase tuneB (smoke FALSE, out out_a2) 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-03 22:44:03] W1 tuneB holdout: 77898 training rows 
+[11-03 22:45:18]   tune B P holdout:  max_depth min_child_weight colsample_bytree      crit best |          4                5              0.5 0.2773962  878 |          6                5              0.5 0.2774196  453 |          6               25              0.5 0.2774864  440 
+[11-03 22:45:31]   tune B size holdout:  max_depth min_child_weight   off      crit best |          3               25 FALSE 0.3232527  263 |          3                5 FALSE 0.3235140  263 |          2               25 FALSE 0.3237940  437 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-03 22:45:38] W2 tuneB holdout: 116046 training rows 
+[11-03 22:47:53]   tune B P holdout:  max_depth min_child_weight colsample_bytree      crit best |          5                5              0.8 0.2827870  896 |          6                5              0.8 0.2828964  670 |          4                5              0.5 0.2831866 1325 
+[11-03 22:48:15]   tune B size holdout:  max_depth min_child_weight   off      crit best |          4               25 FALSE 0.2937959  485 |          4                5 FALSE 0.2940490  299 |          3                5 FALSE 0.2947031  531 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-03 22:48:23] W3 tuneB holdout: 192074 training rows 
+[11-03 22:52:25]   tune B P holdout:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.8 0.3067215  864 |          5                5              0.8 0.3067888 1413 |          6                5              0.5 0.3068718 1079 
+[11-03 22:52:52]   tune B size holdout:  max_depth min_child_weight  off      crit best |          2                5 TRUE 0.3093933 1261 |          4               25 TRUE 0.3097110  457 |          2               25 TRUE 0.3097309 1053 
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-03 22:52:53] === phase stage1  (smoke FALSE) 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-03 22:53:42]   tune A P:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.8 0.2772019  221 |          5                5              0.8 0.2772662  339 |          4                5              0.8 0.2773290  357 
+[11-03 22:53:53]   tune A size:  max_depth min_child_weight   off      crit best |          2               25 FALSE 0.3227025  437 |          3               25 FALSE 0.3233040  264 |          2                5 FALSE 0.3233761  469 
+[11-03 22:53:53] W1 stage1 A done in 0.9 min 
+[11-03 22:55:49]   tune tweedie p=1.1:  max_depth min_child_weight colsample_bytree   off     crit best |          4                5              0.8 FALSE 49.55260  517 |          4               25              0.5 FALSE 49.55390  604 |          4               25              0.8 FALSE 49.57816  525 
+[11-03 22:57:38]   tune tweedie p=1.2:  max_depth min_child_weight colsample_bytree   off     crit best |          3                5              0.5 FALSE 37.28689  819 |          4                5              0.5 FALSE 37.29039  604 |          4               25              0.5 FALSE 37.29239  534 
+[11-03 22:59:13]   tune tweedie p=1.35:  max_depth min_child_weight colsample_bytree   off     crit best |          4                5              0.5 FALSE 25.66085  492 |          3                5              0.8 FALSE 25.66298  701 |          3               25              0.5 FALSE 25.66996  704 
+[11-03 23:00:26]   tune tweedie p=1.5:  max_depth min_child_weight colsample_bytree   off     crit best |          3                5              0.5 FALSE 19.17905  534 |          3                5              0.8 FALSE 19.18556  492 |          3               25              0.8 FALSE 19.19365  499 
+[11-03 23:00:26]   tweedie p by held-back lift: 1.1:3.3733 1.2:3.3155 1.35:3.2988 1.5:3.1521 
+[11-03 23:00:26] W1 stage1 G done in 6.6 min 
+[11-03 23:02:24]   tune ranger C: best  mtry min.node.size sample.fraction max.depth      crit |     4            25             0.5         0 0.2766311 |     8            25             0.8         0 0.2767213 |     8            25             0.5         0 0.2767750 
+[11-03 23:02:25] W1 stage1 C done in 2.0 min 
+[11-03 23:03:49]   tune ranger GC: best  mtry min.node.size sample.fraction max.depth     crit |     4            25             0.5         0 66.96838 |     4            25             0.8         0 66.99004 |     4           100             0.8         0 67.00238 
+[11-03 23:03:50] W1 stage1 GC done in 1.4 min 
+[11-03 23:06:15]   tune E multinomial:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.8 0.3196489  347 |          5                5              0.8 0.3196947  472 |          5                5              0.5 0.3197522  496 
+[11-03 23:06:28]   tune E size over:  max_depth min_child_weight   off      crit best |          2                5 FALSE 0.3060444  613 |          3                5 FALSE 0.3062954  296 |          4                5 FALSE 0.3071664  222 
+[11-03 23:06:36]   tune E size under:  max_depth min_child_weight   off      crit best |          2                5  TRUE 0.3191744  371 |          2                5 FALSE 0.3193253  293 |          2               25 FALSE 0.3197138  374 
+[11-03 23:06:36] W1 stage1 E done in 2.8 min 
+[11-03 23:07:12]   tune D P 1:  max_depth min_child_weight colsample_bytree      crit best |          4                5              0.8 0.2094521  530 |          5                5              0.5 0.2095883  492 |          3                5              0.8 0.2096660  763 
+[11-03 23:07:21]   tune D size 1:  max_depth min_child_weight  off      crit best |          4               25 TRUE 0.1647887  188 |          4                5 TRUE 0.1653148  158 |          3                5 TRUE 0.1655022  233 
+[11-03 23:08:06]   tune D ranger 1: best  mtry min.node.size sample.fraction max.depth      crit |     8            25             0.8         0 0.2095667 |    14            25             0.8         0 0.2095833 |     4            25             0.8         0 0.2095855 
+[11-03 23:08:30]   tune D P 2-3:  max_depth min_child_weight colsample_bytree      crit best |          6               25              0.5 0.3244971  121 |          5               25              0.5 0.3245372  154 |          6                5              0.8 0.3247476  190 
+[11-03 23:08:39]   tune D size 2-3:  max_depth min_child_weight   off      crit best |          2                5 FALSE 0.3453832  284 |          2               25 FALSE 0.3465633  284 |          3               25 FALSE 0.3476260  162 
+[11-03 23:09:05]   tune D ranger 2-3: best  mtry min.node.size sample.fraction max.depth      crit |     4            25             0.8        12 0.3239590 |     4            25             0.8         0 0.3240129 |     8            25             0.5         0 0.3240455 
+[11-03 23:09:21]   tune D P 4+:  max_depth min_child_weight colsample_bytree      crit best |          3               25              0.5 0.4070266  125 |          3               25              0.8 0.4070329  127 |          3                5              0.8 0.4073223  350 
+[11-03 23:09:25]   tune D size 4+:  max_depth min_child_weight   off      crit best |          2                5  TRUE 0.5107934  109 |          2                5 FALSE 0.5111812   92 |          3                5 FALSE 0.5114899   70 
+[11-03 23:09:40]   tune D ranger 4+: best  mtry min.node.size sample.fraction max.depth      crit |     4            25             0.5        12 0.4067359 |     4            25             0.5         0 0.4067383 |     4           100             0.5        12 0.4068143 
+[11-03 23:09:41] W1 stage1 D done in 3.1 min 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-03 23:10:52]   tune A P:  max_depth min_child_weight colsample_bytree      crit best |          5                5              0.8 0.2841021  440 |          6                5              0.8 0.2842163  350 |          4                5              0.8 0.2842960  670 
+[11-03 23:11:13]   tune A size:  max_depth min_child_weight   off      crit best |          4                5 FALSE 0.2945413  331 |          4               25 FALSE 0.2948612  319 |          3               25 FALSE 0.2950739  508 
+[11-03 23:11:13] W2 stage1 A done in 1.4 min 
+[11-03 23:14:52]   tune tweedie p=1.1:  max_depth min_child_weight colsample_bytree   off     crit best |          5               25              0.8 FALSE 47.62265  575 |          6               25              0.5 FALSE 47.64867  409 |          5                5              0.8 FALSE 47.65431  668 
+[11-03 23:18:51]   tune tweedie p=1.2:  max_depth min_child_weight colsample_bytree   off     crit best |          4               25              0.8 FALSE 35.79971 1051 |          6               25              0.5 FALSE 35.83416  438 |          5               25              0.5 FALSE 35.83553  682 
+[11-03 23:22:26]   tune tweedie p=1.35:  max_depth min_child_weight colsample_bytree   off     crit best |          5                5              0.8 FALSE 24.63983  483 |          6               25              0.8 FALSE 24.64282  317 |          5               25              0.5 FALSE 24.65313  486 
+[11-03 23:25:29]   tune tweedie p=1.5:  max_depth min_child_weight colsample_bytree   off     crit best |          6                5              0.5 FALSE 18.40225  298 |          6               25              0.5 FALSE 18.40475  298 |          5               25              0.5 FALSE 18.40672  380 
+[11-03 23:25:29]   tweedie p by held-back lift: 1.1:3.3264 1.2:3.3332 1.35:3.3098 1.5:3.2318 
+[11-03 23:25:29] W2 stage1 G done in 14.3 min 
+[11-03 23:29:06]   tune ranger C: best  mtry min.node.size sample.fraction max.depth      crit |     4           100             0.8         0 0.2819714 |     4            25             0.5         0 0.2820016 |     4           100             0.5         0 0.2820791 
+[11-03 23:29:07] W2 stage1 C done in 3.6 min 
+[11-03 23:32:28]   tune ranger GC: best  mtry min.node.size sample.fraction max.depth     crit |     4           100             0.8         0 63.99617 |     4            25             0.8         0 64.02887 |     4           100             0.5         0 64.05052 
+[11-03 23:32:29] W2 stage1 GC done in 3.4 min 
+[11-03 23:38:02]   tune E multinomial:  max_depth min_child_weight colsample_bytree      crit best |          4                5              0.8 0.3264561 1215 |          6                5              0.5 0.3265675  702 |          5                5              0.8 0.3265689  788 
+[11-03 23:38:22]   tune E size over:  max_depth min_child_weight   off      crit best |          4                5 FALSE 0.2754035  247 |          4               25 FALSE 0.2756994  313 |          4               25  TRUE 0.2757983  313 
+[11-03 23:38:39]   tune E size under:  max_depth min_child_weight   off      crit best |          4               25 FALSE 0.2735725  199 |          4                5 FALSE 0.2741837  237 |          4               25  TRUE 0.2741905  201 
+[11-03 23:38:39] W2 stage1 E done in 6.2 min 
+[11-03 23:40:15]   tune D P 1:  max_depth min_child_weight colsample_bytree      crit best |          5                5              0.5 0.2158772  778 |          5                5              0.8 0.2159197  620 |          6                5              0.5 0.2159789  620 
+[11-03 23:40:36]   tune D size 1:  max_depth min_child_weight   off      crit best |          2                5 FALSE 0.1522497  997 |          3                5 FALSE 0.1523792  597 |          4                5 FALSE 0.1526461  314 
+[11-03 23:42:00]   tune D ranger 1: best  mtry min.node.size sample.fraction max.depth      crit |     8            25             0.5        12 0.2152643 |     4           100             0.8         0 0.2153049 |     4            25             0.8        12 0.2153071 
+[11-03 23:42:55]   tune D P 2-3:  max_depth min_child_weight colsample_bytree      crit best |          6               25              0.8 0.3340440  344 |          5               25              0.8 0.3342182  437 |          4               25              0.5 0.3342926  612 
+[11-03 23:43:07]   tune D size 2-3:  max_depth min_child_weight   off      crit best |          2               25 FALSE 0.3299233  420 |          3               25 FALSE 0.3303965  292 |          2                5 FALSE 0.3310260  421 
+[11-03 23:43:55]   tune D ranger 2-3: best  mtry min.node.size sample.fraction max.depth      crit |     4            25             0.8        12 0.3333087 |     4           100             0.8         0 0.3333905 |     4           100             0.8        12 0.3334125 
+[11-03 23:44:34]   tune D P 4+:  max_depth min_child_weight colsample_bytree      crit best |          3                5              0.5 0.4190147  726 |          4                5              0.5 0.4193993  503 |          4                5              0.8 0.4195443  564 
+[11-03 23:44:43]   tune D size 4+:  max_depth min_child_weight   off      crit best |          4               25  TRUE 0.4501726  175 |          4               25 FALSE 0.4519513  174 |          3               25 FALSE 0.4525877  156 
+[11-03 23:45:15]   tune D ranger 4+: best  mtry min.node.size sample.fraction max.depth      crit |     4           100             0.5        12 0.4204318 |     4            25             0.5        12 0.4205860 |     4            25             0.8        12 0.4205977 
+[11-03 23:45:16] W2 stage1 D done in 6.6 min 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-03 23:47:46]   tune A P:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.8 0.3095061  514 |          6               25              0.8 0.3098278  524 |          5                5              0.8 0.3098399  943 
+[11-03 23:48:07]   tune A size:  max_depth min_child_weight  off      crit best |          3               25 TRUE 0.3108862  475 |          2                5 TRUE 0.3112299  619 |          4               25 TRUE 0.3113111  322 
+[11-03 23:48:08] W3 stage1 A done in 2.7 min 
+[11-03 23:55:05]   tune tweedie p=1.1:  max_depth min_child_weight colsample_bytree   off     crit best |          5               25              0.5  TRUE 62.08037  874 |          5               25              0.5 FALSE 62.08327  922 |          6               25              0.5  TRUE 62.08424  598 
+[11-04 00:01:55]   tune tweedie p=1.2:  max_depth min_child_weight colsample_bytree   off     crit best |          6               25              0.5 FALSE 45.38849  598 |          5               25              0.5  TRUE 45.40089  806 |          5               25              0.5 FALSE 45.41117  815 
+[11-04 00:08:28]   tune tweedie p=1.35:  max_depth min_child_weight colsample_bytree   off     crit best |          5               25              0.5 FALSE 29.92381  710 |          5                5              0.5  TRUE 29.95402  815 |          5               25              0.5  TRUE 29.95751  815 
+[11-04 00:13:44]   tune tweedie p=1.5:  max_depth min_child_weight colsample_bytree   off     crit best |          4                5              0.5 FALSE 21.44809  875 |          5               25              0.5 FALSE 21.45163  529 |          4               25              0.8 FALSE 21.46210  836 
+[11-04 00:13:44]   tweedie p by held-back lift: 1.1:3.6082 1.2:3.6515 1.35:3.6737 1.5:3.6328 
+[11-04 00:13:45] W3 stage1 G done in 25.6 min 
+Growing trees.. Progress: 74%. Estimated remaining time: 11 seconds.
+Growing trees.. Progress: 82%. Estimated remaining time: 6 seconds.
+[11-04 00:23:32]   tune ranger C: best  mtry min.node.size sample.fraction max.depth      crit |     8            25             0.8         0 0.3063649 |     4            25             0.8         0 0.3064012 |     4            25             0.5         0 0.3064375 
+[11-04 00:23:33] W3 stage1 C done in 9.8 min 
+Growing trees.. Progress: 87%. Estimated remaining time: 4 seconds.
+Growing trees.. Progress: 96%. Estimated remaining time: 1 seconds.
+Growing trees.. Progress: 94%. Estimated remaining time: 1 seconds.
+Growing trees.. Progress: 58%. Estimated remaining time: 22 seconds.
+Growing trees.. Progress: 63%. Estimated remaining time: 18 seconds.
+[11-04 00:33:23]   tune ranger GC: best  mtry min.node.size sample.fraction max.depth     crit |     4            25             0.8         0 86.12430 |     4            25             0.5         0 86.17827 |     4           100             0.8         0 86.21143 
+[11-04 00:33:24] W3 stage1 GC done in 9.8 min 
+[11-04 00:44:16]   tune E multinomial:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.8 0.3557040  810 |          6               25              0.8 0.3560123  858 |          6                5              0.5 0.3560964  856 
+[11-04 00:44:48]   tune E size over:  max_depth min_child_weight  off      crit best |          3                5 TRUE 0.2847127  656 |          3               25 TRUE 0.2848346  802 |          4               25 TRUE 0.2855286  451 
+[11-04 00:44:58]   tune E size under:  max_depth min_child_weight  off      crit best |          2               25 TRUE 0.2846500  442 |          4               25 TRUE 0.2848946  135 |          3               25 TRUE 0.2849492  223 
+[11-04 00:44:58] W3 stage1 E done in 11.6 min 
+[11-04 00:47:54]   tune D P 1:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.5 0.2349115 1024 |          6                5              0.8 0.2351293  727 |          5                5              0.5 0.2352052 1192 
+[11-04 00:48:10]   tune D size 1:  max_depth min_child_weight  off      crit best |          4               25 TRUE 0.1656817  265 |          4                5 TRUE 0.1666515  312 |          3               25 TRUE 0.1667674  352 
+[11-04 00:51:40]   tune D ranger 1: best  mtry min.node.size sample.fraction max.depth      crit |     4            25             0.5         0 0.2348233 |     4            25             0.8         0 0.2349203 |     8            25             0.8         0 0.2349409 
+[11-04 00:52:38]   tune D P 2-3:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.5 0.3831782  394 |          6                5              0.8 0.3833073  397 |          5                5              0.5 0.3835978  400 
+[11-04 00:52:59]   tune D size 2-3:  max_depth min_child_weight  off      crit best |          2               25 TRUE 0.3588561  967 |          2                5 TRUE 0.3597185  791 |          3               25 TRUE 0.3598556  471 
+[11-04 00:54:27]   tune D ranger 2-3: best  mtry min.node.size sample.fraction max.depth      crit |     8            25             0.8         0 0.3836952 |    14            25             0.8         0 0.3836961 |     4            25             0.5         0 0.3837404 
+[11-04 00:55:06]   tune D P 4+:  max_depth min_child_weight colsample_bytree      crit best |          6               25              0.5 0.4559645  306 |          5               25              0.5 0.4561213  315 |          5               25              0.8 0.4561594  304 
+[11-04 00:55:16]   tune D size 4+:  max_depth min_child_weight  off      crit best |          2               25 TRUE 0.4976316  252 |          2                5 TRUE 0.5004028  254 |          4               25 TRUE 0.5024205  155 
+[11-04 00:56:08]   tune D ranger 4+: best  mtry min.node.size sample.fraction max.depth      crit |     4            25             0.8         0 0.4563354 |     8            25             0.8         0 0.4564135 |     4           100             0.8         0 0.4564457 
+[11-04 00:56:09] W3 stage1 D done in 11.2 min 
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-04 00:56:12] === phase freeze2  (smoke FALSE) 
+[11-04 00:56:12] freeze2: 15 files hashed 
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-04 00:56:13] === phase fit A,B,G,C,GC,E,D,F (smoke FALSE) 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-04 00:56:26] W1 holdout A seed 117: 0.1 min 
+[11-04 00:56:30] W1 holdout A seed 118: 0.1 min 
+[11-04 00:56:34] W1 holdout A seed 119: 0.1 min 
+[11-04 00:56:38] W1 holdout A seed 120: 0.1 min 
+[11-04 00:56:42] W1 holdout A seed 121: 0.1 min 
+[11-04 00:56:46] W1 holdout A seed 122: 0.1 min 
+[11-04 00:56:50] W1 holdout A seed 123: 0.1 min 
+[11-04 00:56:54] W1 holdout A seed 124: 0.1 min 
+[11-04 00:56:58] W1 holdout A seed 125: 0.1 min 
+[11-04 00:57:02] W1 holdout A seed 126: 0.1 min 
+[11-04 00:57:11] W1 holdout B seed 117: 0.2 min 
+[11-04 00:57:20] W1 holdout B seed 118: 0.2 min 
+[11-04 00:57:29] W1 holdout B seed 119: 0.2 min 
+[11-04 00:57:38] W1 holdout B seed 120: 0.2 min 
+[11-04 00:57:47] W1 holdout B seed 121: 0.2 min 
+[11-04 00:57:56] W1 holdout B seed 122: 0.2 min 
+[11-04 00:58:05] W1 holdout B seed 123: 0.2 min 
+[11-04 00:58:15] W1 holdout B seed 124: 0.2 min 
+[11-04 00:58:24] W1 holdout B seed 125: 0.2 min 
+[11-04 00:58:33] W1 holdout B seed 126: 0.2 min 
+[11-04 00:58:39] W1 holdout G seed 117: 0.1 min 
+[11-04 00:58:45] W1 holdout G seed 118: 0.1 min 
+[11-04 00:58:51] W1 holdout G seed 119: 0.1 min 
+[11-04 00:58:56] W1 holdout G seed 120: 0.1 min 
+[11-04 00:59:02] W1 holdout G seed 121: 0.1 min 
+[11-04 00:59:07] W1 holdout G seed 122: 0.1 min 
+[11-04 00:59:13] W1 holdout G seed 123: 0.1 min 
+[11-04 00:59:19] W1 holdout G seed 124: 0.1 min 
+[11-04 00:59:25] W1 holdout G seed 125: 0.1 min 
+[11-04 00:59:30] W1 holdout G seed 126: 0.1 min 
+[11-04 01:00:31] W1 holdout C seed 117: 1.0 min 
+[11-04 01:01:30] W1 holdout C seed 118: 1.0 min 
+[11-04 01:02:30] W1 holdout C seed 119: 1.0 min 
+[11-04 01:03:29] W1 holdout C seed 120: 1.0 min 
+[11-04 01:04:29] W1 holdout C seed 121: 1.0 min 
+[11-04 01:05:29] W1 holdout C seed 122: 1.0 min 
+[11-04 01:06:29] W1 holdout C seed 123: 1.0 min 
+[11-04 01:07:29] W1 holdout C seed 124: 1.0 min 
+[11-04 01:08:29] W1 holdout C seed 125: 1.0 min 
+[11-04 01:09:29] W1 holdout C seed 126: 1.0 min 
+[11-04 01:10:13] W1 holdout GC seed 117: 0.7 min 
+[11-04 01:10:57] W1 holdout GC seed 118: 0.7 min 
+[11-04 01:11:41] W1 holdout GC seed 119: 0.7 min 
+[11-04 01:12:25] W1 holdout GC seed 120: 0.7 min 
+[11-04 01:13:09] W1 holdout GC seed 121: 0.7 min 
+[11-04 01:13:53] W1 holdout GC seed 122: 0.7 min 
+[11-04 01:14:37] W1 holdout GC seed 123: 0.7 min 
+[11-04 01:15:21] W1 holdout GC seed 124: 0.7 min 
+[11-04 01:16:04] W1 holdout GC seed 125: 0.7 min 
+[11-04 01:16:48] W1 holdout GC seed 126: 0.7 min 
+[11-04 01:17:05] W1 holdout E seed 117: 0.3 min 
+[11-04 01:17:22] W1 holdout E seed 118: 0.3 min 
+[11-04 01:17:39] W1 holdout E seed 119: 0.3 min 
+[11-04 01:17:57] W1 holdout E seed 120: 0.3 min 
+[11-04 01:18:14] W1 holdout E seed 121: 0.3 min 
+[11-04 01:18:31] W1 holdout E seed 122: 0.3 min 
+[11-04 01:18:48] W1 holdout E seed 123: 0.3 min 
+[11-04 01:19:05] W1 holdout E seed 124: 0.3 min 
+[11-04 01:19:22] W1 holdout E seed 125: 0.3 min 
+[11-04 01:19:39] W1 holdout E seed 126: 0.3 min 
+[11-04 01:20:28] W1 holdout D seed 117: 0.8 min 
+[11-04 01:21:16] W1 holdout D seed 118: 0.8 min 
+[11-04 01:22:04] W1 holdout D seed 119: 0.8 min 
+[11-04 01:22:52] W1 holdout D seed 120: 0.8 min 
+[11-04 01:23:40] W1 holdout D seed 121: 0.8 min 
+[11-04 01:24:28] W1 holdout D seed 122: 0.8 min 
+[11-04 01:25:15] W1 holdout D seed 123: 0.8 min 
+[11-04 01:26:04] W1 holdout D seed 124: 0.8 min 
+[11-04 01:26:52] W1 holdout D seed 125: 0.8 min 
+[11-04 01:27:39] W1 holdout D seed 126: 0.8 min 
+[11-04 01:27:52] W1 holdout F seed 117: 0.2 min 
+[11-04 01:28:05] W1 holdout F seed 118: 0.2 min 
+[11-04 01:28:18] W1 holdout F seed 119: 0.2 min 
+[11-04 01:28:31] W1 holdout F seed 120: 0.2 min 
+[11-04 01:28:43] W1 holdout F seed 121: 0.2 min 
+[11-04 01:28:55] W1 holdout F seed 122: 0.2 min 
+[11-04 01:29:08] W1 holdout F seed 123: 0.2 min 
+[11-04 01:29:21] W1 holdout F seed 124: 0.2 min 
+[11-04 01:29:34] W1 holdout F seed 125: 0.2 min 
+[11-04 01:29:47] W1 holdout F seed 126: 0.2 min 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-04 01:29:59] W2 holdout A seed 117: 0.1 min 
+[11-04 01:30:05] W2 holdout A seed 118: 0.1 min 
+[11-04 01:30:10] W2 holdout A seed 119: 0.1 min 
+[11-04 01:30:15] W2 holdout A seed 120: 0.1 min 
+[11-04 01:30:20] W2 holdout A seed 121: 0.1 min 
+[11-04 01:30:25] W2 holdout A seed 122: 0.1 min 
+[11-04 01:30:30] W2 holdout A seed 123: 0.1 min 
+[11-04 01:30:35] W2 holdout A seed 124: 0.1 min 
+[11-04 01:30:40] W2 holdout A seed 125: 0.1 min 
+[11-04 01:30:44] W2 holdout A seed 126: 0.1 min 
+[11-04 01:30:55] W2 holdout B seed 117: 0.2 min 
+[11-04 01:31:06] W2 holdout B seed 118: 0.2 min 
+[11-04 01:31:16] W2 holdout B seed 119: 0.2 min 
+[11-04 01:31:27] W2 holdout B seed 120: 0.2 min 
+[11-04 01:31:38] W2 holdout B seed 121: 0.2 min 
+[11-04 01:31:48] W2 holdout B seed 122: 0.2 min 
+[11-04 01:31:59] W2 holdout B seed 123: 0.2 min 
+[11-04 01:32:10] W2 holdout B seed 124: 0.2 min 
+[11-04 01:32:21] W2 holdout B seed 125: 0.2 min 
+[11-04 01:32:32] W2 holdout B seed 126: 0.2 min 
+[11-04 01:32:42] W2 holdout G seed 117: 0.2 min 
+[11-04 01:32:53] W2 holdout G seed 118: 0.2 min 
+[11-04 01:33:03] W2 holdout G seed 119: 0.2 min 
+[11-04 01:33:13] W2 holdout G seed 120: 0.2 min 
+[11-04 01:33:24] W2 holdout G seed 121: 0.2 min 
+[11-04 01:33:34] W2 holdout G seed 122: 0.2 min 
+[11-04 01:33:45] W2 holdout G seed 123: 0.2 min 
+[11-04 01:33:55] W2 holdout G seed 124: 0.2 min 
+[11-04 01:34:05] W2 holdout G seed 125: 0.2 min 
+[11-04 01:34:16] W2 holdout G seed 126: 0.2 min 
+[11-04 01:35:28] W2 holdout C seed 117: 1.2 min 
+[11-04 01:36:39] W2 holdout C seed 118: 1.2 min 
+[11-04 01:37:56] W2 holdout C seed 119: 1.3 min 
+[11-04 01:39:09] W2 holdout C seed 120: 1.2 min 
+[11-04 01:40:21] W2 holdout C seed 121: 1.2 min 
+[11-04 01:41:33] W2 holdout C seed 122: 1.2 min 
+[11-04 01:42:46] W2 holdout C seed 123: 1.2 min 
+[11-04 01:43:59] W2 holdout C seed 124: 1.2 min 
+[11-04 01:45:11] W2 holdout C seed 125: 1.2 min 
+[11-04 01:46:23] W2 holdout C seed 126: 1.2 min 
+[11-04 01:47:44] W2 holdout GC seed 117: 1.3 min 
+[11-04 01:49:05] W2 holdout GC seed 118: 1.3 min 
+[11-04 01:50:25] W2 holdout GC seed 119: 1.3 min 
+[11-04 01:51:49] W2 holdout GC seed 120: 1.4 min 
+[11-04 01:53:11] W2 holdout GC seed 121: 1.4 min 
+[11-04 01:54:32] W2 holdout GC seed 122: 1.3 min 
+[11-04 01:55:52] W2 holdout GC seed 123: 1.3 min 
+[11-04 01:57:12] W2 holdout GC seed 124: 1.3 min 
+[11-04 01:58:32] W2 holdout GC seed 125: 1.3 min 
+[11-04 01:59:52] W2 holdout GC seed 126: 1.3 min 
+[11-04 02:00:26] W2 holdout E seed 117: 0.6 min 
+[11-04 02:01:00] W2 holdout E seed 118: 0.6 min 
+[11-04 02:01:34] W2 holdout E seed 119: 0.6 min 
+[11-04 02:02:07] W2 holdout E seed 120: 0.6 min 
+[11-04 02:02:41] W2 holdout E seed 121: 0.6 min 
+[11-04 02:03:15] W2 holdout E seed 122: 0.6 min 
+[11-04 02:03:48] W2 holdout E seed 123: 0.6 min 
+[11-04 02:04:21] W2 holdout E seed 124: 0.6 min 
+[11-04 02:04:55] W2 holdout E seed 125: 0.6 min 
+[11-04 02:05:29] W2 holdout E seed 126: 0.6 min 
+[11-04 02:06:46] W2 holdout D seed 117: 1.3 min 
+[11-04 02:08:03] W2 holdout D seed 118: 1.3 min 
+[11-04 02:09:19] W2 holdout D seed 119: 1.3 min 
+[11-04 02:10:36] W2 holdout D seed 120: 1.3 min 
+[11-04 02:11:53] W2 holdout D seed 121: 1.3 min 
+[11-04 02:13:10] W2 holdout D seed 122: 1.3 min 
+[11-04 02:14:26] W2 holdout D seed 123: 1.3 min 
+[11-04 02:15:42] W2 holdout D seed 124: 1.3 min 
+[11-04 02:16:59] W2 holdout D seed 125: 1.3 min 
+[11-04 02:18:16] W2 holdout D seed 126: 1.3 min 
+[11-04 02:18:30] W2 holdout F seed 117: 0.2 min 
+[11-04 02:18:42] W2 holdout F seed 118: 0.2 min 
+[11-04 02:18:55] W2 holdout F seed 119: 0.2 min 
+[11-04 02:19:09] W2 holdout F seed 120: 0.2 min 
+[11-04 02:19:23] W2 holdout F seed 121: 0.2 min 
+[11-04 02:19:36] W2 holdout F seed 122: 0.2 min 
+[11-04 02:19:49] W2 holdout F seed 123: 0.2 min 
+[11-04 02:20:03] W2 holdout F seed 124: 0.2 min 
+[11-04 02:20:17] W2 holdout F seed 125: 0.2 min 
+[11-04 02:20:30] W2 holdout F seed 126: 0.2 min 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-04 02:20:47] W3 holdout A seed 117: 0.1 min 
+[11-04 02:20:54] W3 holdout A seed 118: 0.1 min 
+[11-04 02:21:00] W3 holdout A seed 119: 0.1 min 
+[11-04 02:21:07] W3 holdout A seed 120: 0.1 min 
+[11-04 02:21:13] W3 holdout A seed 121: 0.1 min 
+[11-04 02:21:19] W3 holdout A seed 122: 0.1 min 
+[11-04 02:21:26] W3 holdout A seed 123: 0.1 min 
+[11-04 02:21:32] W3 holdout A seed 124: 0.1 min 
+[11-04 02:21:38] W3 holdout A seed 125: 0.1 min 
+[11-04 02:21:45] W3 holdout A seed 126: 0.1 min 
+[11-04 02:21:59] W3 holdout B seed 117: 0.2 min 
+[11-04 02:22:13] W3 holdout B seed 118: 0.2 min 
+[11-04 02:22:27] W3 holdout B seed 119: 0.2 min 
+[11-04 02:22:41] W3 holdout B seed 120: 0.2 min 
+[11-04 02:22:55] W3 holdout B seed 121: 0.2 min 
+[11-04 02:23:10] W3 holdout B seed 122: 0.2 min 
+[11-04 02:23:24] W3 holdout B seed 123: 0.2 min 
+[11-04 02:23:38] W3 holdout B seed 124: 0.2 min 
+[11-04 02:23:53] W3 holdout B seed 125: 0.2 min 
+[11-04 02:24:07] W3 holdout B seed 126: 0.2 min 
+[11-04 02:24:16] W3 holdout G seed 117: 0.2 min 
+[11-04 02:24:26] W3 holdout G seed 118: 0.2 min 
+[11-04 02:24:35] W3 holdout G seed 119: 0.2 min 
+[11-04 02:24:45] W3 holdout G seed 120: 0.2 min 
+[11-04 02:24:54] W3 holdout G seed 121: 0.2 min 
+[11-04 02:25:04] W3 holdout G seed 122: 0.2 min 
+[11-04 02:25:13] W3 holdout G seed 123: 0.2 min 
+[11-04 02:25:23] W3 holdout G seed 124: 0.2 min 
+[11-04 02:25:32] W3 holdout G seed 125: 0.2 min 
+[11-04 02:25:42] W3 holdout G seed 126: 0.2 min 
+Growing trees.. Progress: 40%. Estimated remaining time: 46 seconds.
+Growing trees.. Progress: 81%. Estimated remaining time: 14 seconds.
+[11-04 02:28:12] W3 holdout C seed 117: 2.5 min 
+Growing trees.. Progress: 41%. Estimated remaining time: 45 seconds.
+Growing trees.. Progress: 81%. Estimated remaining time: 14 seconds.
+[11-04 02:30:41] W3 holdout C seed 118: 2.5 min 
+Growing trees.. Progress: 42%. Estimated remaining time: 43 seconds.
+Growing trees.. Progress: 83%. Estimated remaining time: 12 seconds.
+[11-04 02:33:08] W3 holdout C seed 119: 2.4 min 
+Growing trees.. Progress: 41%. Estimated remaining time: 44 seconds.
+Growing trees.. Progress: 82%. Estimated remaining time: 13 seconds.
+[11-04 02:35:37] W3 holdout C seed 120: 2.5 min 
+Growing trees.. Progress: 40%. Estimated remaining time: 46 seconds.
+Growing trees.. Progress: 81%. Estimated remaining time: 14 seconds.
+[11-04 02:38:08] W3 holdout C seed 121: 2.5 min 
+Growing trees.. Progress: 41%. Estimated remaining time: 44 seconds.
+Growing trees.. Progress: 82%. Estimated remaining time: 13 seconds.
+[11-04 02:40:39] W3 holdout C seed 122: 2.5 min 
+Growing trees.. Progress: 40%. Estimated remaining time: 46 seconds.
+Growing trees.. Progress: 81%. Estimated remaining time: 14 seconds.
+[11-04 02:43:10] W3 holdout C seed 123: 2.5 min 
+Growing trees.. Progress: 40%. Estimated remaining time: 46 seconds.
+Growing trees.. Progress: 81%. Estimated remaining time: 14 seconds.
+[11-04 02:45:43] W3 holdout C seed 124: 2.5 min 
+Growing trees.. Progress: 41%. Estimated remaining time: 45 seconds.
+Growing trees.. Progress: 81%. Estimated remaining time: 14 seconds.
+[11-04 02:48:20] W3 holdout C seed 125: 2.6 min 
+Growing trees.. Progress: 41%. Estimated remaining time: 44 seconds.
+Growing trees.. Progress: 82%. Estimated remaining time: 13 seconds.
+[11-04 02:50:55] W3 holdout C seed 126: 2.6 min 
+Growing trees.. Progress: 58%. Estimated remaining time: 22 seconds.
+[11-04 02:52:50] W3 holdout GC seed 117: 1.9 min 
+Growing trees.. Progress: 53%. Estimated remaining time: 27 seconds.
+[11-04 02:54:48] W3 holdout GC seed 118: 2.0 min 
+Growing trees.. Progress: 57%. Estimated remaining time: 23 seconds.
+[11-04 02:56:39] W3 holdout GC seed 119: 1.9 min 
+Growing trees.. Progress: 57%. Estimated remaining time: 23 seconds.
+[11-04 02:58:30] W3 holdout GC seed 120: 1.9 min 
+Growing trees.. Progress: 58%. Estimated remaining time: 22 seconds.
+[11-04 03:00:21] W3 holdout GC seed 121: 1.8 min 
+Growing trees.. Progress: 58%. Estimated remaining time: 22 seconds.
+[11-04 03:02:13] W3 holdout GC seed 122: 1.9 min 
+Growing trees.. Progress: 57%. Estimated remaining time: 23 seconds.
+[11-04 03:04:05] W3 holdout GC seed 123: 1.9 min 
+Growing trees.. Progress: 57%. Estimated remaining time: 23 seconds.
+[11-04 03:05:56] W3 holdout GC seed 124: 1.9 min 
+Growing trees.. Progress: 58%. Estimated remaining time: 22 seconds.
+[11-04 03:07:47] W3 holdout GC seed 125: 1.8 min 
+Growing trees.. Progress: 58%. Estimated remaining time: 22 seconds.
+[11-04 03:09:38] W3 holdout GC seed 126: 1.9 min 
+[11-04 03:10:14] W3 holdout E seed 117: 0.6 min 
+[11-04 03:10:50] W3 holdout E seed 118: 0.6 min 
+[11-04 03:11:26] W3 holdout E seed 119: 0.6 min 
+[11-04 03:12:02] W3 holdout E seed 120: 0.6 min 
+[11-04 03:12:38] W3 holdout E seed 121: 0.6 min 
+[11-04 03:13:14] W3 holdout E seed 122: 0.6 min 
+[11-04 03:13:50] W3 holdout E seed 123: 0.6 min 
+[11-04 03:14:26] W3 holdout E seed 124: 0.6 min 
+[11-04 03:15:01] W3 holdout E seed 125: 0.6 min 
+[11-04 03:15:37] W3 holdout E seed 126: 0.6 min 
+[11-04 03:17:30] W3 holdout D seed 117: 1.9 min 
+[11-04 03:19:23] W3 holdout D seed 118: 1.9 min 
+[11-04 03:21:15] W3 holdout D seed 119: 1.9 min 
+[11-04 03:23:07] W3 holdout D seed 120: 1.9 min 
+[11-04 03:25:00] W3 holdout D seed 121: 1.9 min 
+[11-04 03:26:52] W3 holdout D seed 122: 1.9 min 
+[11-04 03:28:45] W3 holdout D seed 123: 1.9 min 
+[11-04 03:30:36] W3 holdout D seed 124: 1.9 min 
+[11-04 03:32:28] W3 holdout D seed 125: 1.9 min 
+[11-04 03:34:21] W3 holdout D seed 126: 1.9 min 
+[11-04 03:34:34] W3 holdout F seed 117: 0.2 min 
+[11-04 03:34:48] W3 holdout F seed 118: 0.2 min 
+[11-04 03:35:02] W3 holdout F seed 119: 0.2 min 
+[11-04 03:35:17] W3 holdout F seed 120: 0.2 min 
+[11-04 03:35:32] W3 holdout F seed 121: 0.2 min 
+[11-04 03:35:46] W3 holdout F seed 122: 0.2 min 
+[11-04 03:36:00] W3 holdout F seed 123: 0.2 min 
+[11-04 03:36:15] W3 holdout F seed 124: 0.2 min 
+[11-04 03:36:29] W3 holdout F seed 125: 0.2 min 
+[11-04 03:36:44] W3 holdout F seed 126: 0.3 min 
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-04 03:36:45] === phase score  (smoke FALSE) 
+[11-04 03:36:45] scoring A,B,G,C,GC,E,D,F 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+  note: homeless coerced to 0/1 (1 = "TRUE")
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-04 03:40:14] choice B (top GC) 
+   cand rank        Q       se_Q Q_minus_A    se_vs_A Q_equal_weights
+A     A    1 3.389196 0.09154775 0.0000000 0.01013238        3.382376
+B     B    2 3.501862 0.09271279 0.1126659 0.04791832        3.484321
+G     G    2 3.465564 0.09432415 0.0763688 0.06146906        3.444034
+C     C    3 3.497756 0.09551293 0.1085601 0.05115017        3.490034
+GC   GC    3 3.506249 0.09542260 0.1170535 0.06094190        3.503432
+E     E    3 3.482164 0.09272543 0.0929679 0.05540282        3.471050
+D     D    4 3.423497 0.09204854 0.0343017 0.06281461        3.408422
+F     F    5 3.503825 0.09577009 0.1146297 0.05116841        3.494245
+   prec5_pooled eligible
+A     0.2699074     TRUE
+B     0.2799594     TRUE
+G     0.2769389    FALSE
+C     0.2775459     TRUE
+GC    0.2750203     TRUE
+E     0.2770248     TRUE
+D     0.2702042     TRUE
+F     0.2768856     TRUE
+  left_out chosen   gain_vs_A
+1       W1      B 0.014437235
+2       W2     GC 0.003912526
+3       W3      B 0.038248830
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-04 03:40:15] === a2 phase extra (smoke FALSE, out out_a2) 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-04 03:40:31]   tune B0 size (offset off):  max_depth min_child_weight   off      crit best |          3               25 FALSE 0.3232527  263 |          3                5 FALSE 0.3235140  263 |          2               25 FALSE 0.3237940  437 
+[11-04 03:40:31] W1 B0 size: depth 3, mcw 25, 533 rounds (B: offset FALSE) 
+[11-04 03:40:40] W1 holdout B0 seed 117: 0.2 min 
+[11-04 03:40:49] W1 holdout B0 seed 118: 0.2 min 
+[11-04 03:40:58] W1 holdout B0 seed 119: 0.2 min 
+[11-04 03:41:07] W1 holdout B0 seed 120: 0.2 min 
+[11-04 03:41:16] W1 holdout B0 seed 121: 0.1 min 
+[11-04 03:41:25] W1 holdout B0 seed 122: 0.2 min 
+[11-04 03:41:34] W1 holdout B0 seed 123: 0.1 min 
+[11-04 03:41:43] W1 holdout B0 seed 124: 0.1 min 
+[11-04 03:41:52] W1 holdout B0 seed 125: 0.2 min 
+[11-04 03:42:01] W1 holdout B0 seed 126: 0.1 min 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-04 03:42:21]   tune B0 size (offset off):  max_depth min_child_weight   off      crit best |          4               25 FALSE 0.2937959  485 |          4                5 FALSE 0.2940490  299 |          3                5 FALSE 0.2947031  531 
+[11-04 03:42:21] W2 B0 size: depth 4, mcw 25, 751 rounds (B: offset FALSE) 
+[11-04 03:42:32] W2 holdout B0 seed 117: 0.2 min 
+[11-04 03:42:43] W2 holdout B0 seed 118: 0.2 min 
+[11-04 03:42:53] W2 holdout B0 seed 119: 0.2 min 
+[11-04 03:43:04] W2 holdout B0 seed 120: 0.2 min 
+[11-04 03:43:15] W2 holdout B0 seed 121: 0.2 min 
+[11-04 03:43:26] W2 holdout B0 seed 122: 0.2 min 
+[11-04 03:43:36] W2 holdout B0 seed 123: 0.2 min 
+[11-04 03:43:47] W2 holdout B0 seed 124: 0.2 min 
+[11-04 03:43:57] W2 holdout B0 seed 125: 0.2 min 
+[11-04 03:44:08] W2 holdout B0 seed 126: 0.2 min 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-04 03:44:32]   tune B0 size (offset off):  max_depth min_child_weight   off      crit best |          4               25 FALSE 0.3253844  475 |          2               25 FALSE 0.3253985 1031 |          2                5 FALSE 0.3255457 1031 
+[11-04 03:44:32] W3 B0 size: depth 4, mcw 25, 616 rounds (B: offset TRUE) 
+[11-04 03:44:44] W3 holdout B0 seed 117: 0.2 min 
+[11-04 03:44:57] W3 holdout B0 seed 118: 0.2 min 
+[11-04 03:45:10] W3 holdout B0 seed 119: 0.2 min 
+[11-04 03:45:23] W3 holdout B0 seed 120: 0.2 min 
+[11-04 03:45:35] W3 holdout B0 seed 121: 0.2 min 
+[11-04 03:45:48] W3 holdout B0 seed 122: 0.2 min 
+[11-04 03:46:00] W3 holdout B0 seed 123: 0.2 min 
+[11-04 03:46:13] W3 holdout B0 seed 124: 0.2 min 
+[11-04 03:46:26] W3 holdout B0 seed 125: 0.2 min 
+[11-04 03:46:38] W3 holdout B0 seed 126: 0.2 min 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-04 03:46:52] WB scored on: W2,W3 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+  note: homeless coerced to 0/1 (1 = "TRUE")
+  note: homeless coerced to 0/1 (1 = "TRUE")
+     window cand    L L_5pct prec5 L_full slope shape
+W1.1     W1    A 3.35   3.26 0.239   3.16 0.902 0.927
+W1.2     W1    B 3.40   3.36 0.243   3.22 0.935 0.920
+W1.3     W1   B0 3.40   3.36 0.243   3.22 0.935 0.920
+W2.1     W2    A 3.37   3.29 0.257   3.22 0.859 0.925
+W2.2     W2    B 3.49   3.42 0.268   3.36 0.856 0.925
+W2.3     W2   B0 3.49   3.42 0.268   3.36 0.856 0.925
+W2.4     W2   WB 2.90   3.01 0.244   2.84 0.978 1.083
+W3.1     W3    A 3.43   3.42 0.298   3.37 1.006 1.026
+W3.2     W3    B 3.56   3.52 0.310   3.48 1.026 0.998
+W3.3     W3   B0 3.60   3.52 0.311   3.54 1.031 1.015
+W3.4     W3   WB 3.18   3.24 0.300   3.17 1.063 1.148
+                         comparison   Q_B Q_other     diff      se
+1 B - B0, three tests (0.2/0.4/0.4) 3.502   3.519 -0.01667 0.01906
+2 B - WB, tests 2+3 (equal weights) 3.528   3.041  0.48675 0.10257
+3 A - WB, tests 2+3 (equal weights) 3.399   3.041  0.35800 0.09842
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-04 03:48:52] === post phase deploy 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-04 03:49:03] deploy: 231602 rows (2017,2018,2019,2022,2023,2024), percentiles FALSE, method holdout, FY2024 held back for settings 
+[11-04 03:54:54]   tune deploy P:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.5 0.3205346 1231 |          6                5              0.8 0.3206230 1065 |          5                5              0.5 0.3207717 1540 
+[11-04 03:55:40]   tune deploy size:  max_depth min_child_weight  off      crit best |          4               25 TRUE 0.3026391  468 |          4                5 TRUE 0.3033851  508 |          3                5 TRUE 0.3038116  855 
+[11-04 03:55:40] deploy settings: P max_depth 6 min_child_weight 5 colsample_bytree 0.5, 1485 rounds; size max_depth 4 min_child_weight 25 off 1, 584 rounds 
+[11-04 03:55:59] deploy seed 117: 0.3 min 
+[11-04 03:56:17] deploy seed 118: 0.3 min 
+[11-04 03:56:35] deploy seed 119: 0.3 min 
+[11-04 03:56:53] deploy seed 120: 0.3 min 
+[11-04 03:57:11] deploy seed 121: 0.3 min 
+[11-04 03:57:29] deploy seed 122: 0.3 min 
+[11-04 03:57:47] deploy seed 123: 0.3 min 
+[11-04 03:58:04] deploy seed 124: 0.3 min 
+[11-04 03:58:23] deploy seed 125: 0.3 min 
+[11-04 03:58:40] deploy seed 126: 0.3 min 
+[11-04 03:58:44] deploy bundle -> C:/Users/ericg/snap_qc_v27/methods/case_predictions/s46/out_a2/deploy_B_bundle.rds (sha256 7fe930be8c7c467534d4a3cbf16453a73576e3352d7dd23a734b10b150d354bd); frame e3714039; commit 6a63a4d 
+   model_rate      fns_rate_fy2025   dollar_factor    p_logit_offset   
+ Min.   :0.01245   Min.   :0.02470   Min.   :0.8558   Min.   :-0.1849  
+ 1st Qu.:0.04307   1st Qu.:0.06860   1st Qu.:1.4199   1st Qu.: 0.4489  
+ Median :0.05649   Median :0.09440   Median :1.7475   Median : 0.7390  
+ Mean   :0.05677   Mean   :0.09574   Mean   :1.7634   Mean   : 0.6964  
+ 3rd Qu.:0.07119   3rd Qu.:0.12320   3rd Qu.:2.0300   3rd Qu.: 0.9572  
+ Max.   :0.13061   Max.   :0.18660   Max.   :2.9908   Max.   : 1.3687  
+states without an FY2025 rate:  

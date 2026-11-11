@@ -1,0 +1,6 @@
+freeze written 2026-11-03 21:33:55
+c852f8b23419ac76673d98b531a93b03f6cd1c37c4225bcd4737326800de3d34  methods/case_predictions/s46/s46_lib.R
+e4de46fa32fedfb10506ec5753eb41f83ec20aacc03ca5d324d93d8c4513b7d2  methods/case_predictions/s46/s46_models.R
+8da9c5168fad9a1beb7c3ae90d670311aea4f1121849e844ced9977a1f84e999  methods/case_predictions/s46/s46_run.R
+845270e8783b97540de3562fbfbcf3a728956f4ca0604c705ad63504fc1a4789  methods/modeling_findings_detailed.md
+seeds 117-126; grids P 16, size 12, tweedie 32 x p 1.1/1.2/1.35/1.5, ranger 24

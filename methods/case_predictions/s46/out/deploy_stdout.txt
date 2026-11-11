@@ -1,0 +1,28 @@
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-02 21:03:59] === post phase deploy 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-02 21:04:14] deploy: 231602 rows (2017,2018,2019,2022,2023,2024), percentiles FALSE, method holdout, FY2024 held back for settings 
+[11-02 21:10:32]   tune deploy P:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.5 0.3205346 1231 |          6                5              0.8 0.3206230 1065 |          5                5              0.5 0.3207717 1540 
+[11-02 21:11:09]   tune deploy size:  max_depth min_child_weight  off      crit best |          4               25 TRUE 0.3069545  461 |          3               25 TRUE 0.3071704  937 |          4                5 TRUE 0.3076638  632 
+[11-02 21:11:09] deploy settings: P max_depth 6 min_child_weight 5 colsample_bytree 0.5, 1485 rounds; size max_depth 4 min_child_weight 25 off 1, 575 rounds 
+[11-02 21:11:26] deploy seed 117: 0.3 min 
+[11-02 21:11:42] deploy seed 118: 0.3 min 
+[11-02 21:11:59] deploy seed 119: 0.3 min 
+[11-02 21:12:17] deploy seed 120: 0.3 min 
+[11-02 21:12:34] deploy seed 121: 0.3 min 
+[11-02 21:12:51] deploy seed 122: 0.3 min 
+[11-02 21:13:09] deploy seed 123: 0.3 min 
+[11-02 21:13:27] deploy seed 124: 0.3 min 
+[11-02 21:13:44] deploy seed 125: 0.3 min 
+[11-02 21:14:02] deploy seed 126: 0.3 min 
+[11-02 21:14:06] deploy bundle -> C:/Users/ericg/snap_qc_v27/methods/case_predictions/s46/out/deploy_B_bundle.rds (sha256 8725b6b1b5e0e0fc723c7221637c50464de8c7baa4e4b6142df4995f985685ac); frame e3714039; commit 6a63a4d 
+   model_rate      fns_rate_fy2025   dollar_factor    p_logit_offset   
+ Min.   :0.01249   Min.   :0.02470   Min.   :0.8549   Min.   :-0.1862  
+ 1st Qu.:0.04318   1st Qu.:0.06860   1st Qu.:1.4202   1st Qu.: 0.4497  
+ Median :0.05701   Median :0.09440   Median :1.7337   Median : 0.7258  
+ Mean   :0.05712   Mean   :0.09574   Mean   :1.7518   Mean   : 0.6877  
+ 3rd Qu.:0.07141   3rd Qu.:0.12320   3rd Qu.:2.0214   3rd Qu.: 0.9351  
+ Max.   :0.13073   Max.   :0.18660   Max.   :2.9733   Max.   : 1.3604  
+states without an FY2025 rate:  
