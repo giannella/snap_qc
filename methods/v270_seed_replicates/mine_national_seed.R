@@ -11,6 +11,7 @@ FR <- Sys.getenv("SR_FRAME"); SEED <- as.integer(Sys.getenv("SR_SEED"))
 stopifnot(FR %in% names(FRAMES), !is.na(SEED))
 fn_adm <- pool_file(FR, SEED, "admitted"); fn_raw <- pool_file(FR, SEED, "raw")
 if (file.exists(fn_adm)) {   # an admitted pool on disk is kept (night 3 reuses two cached benchmark pools, which have no raw file)
+  invisible(read_pool(fn_adm))   # stops if that pool was mined on other years
   stamp("%s seed %d: pool already on disk, nothing to mine", FR, SEED)
   quit(save = "no", status = 0)
 }
@@ -37,6 +38,7 @@ ix_adm <- match(paste(natl$hh, natl$rule), paste(rdf$hh, rdf$rule))
 natl$mm_n <- sc[ix_adm, 3]; natl$mm_k <- sc[ix_adm, 4]
 rdf$n <- as.integer(sc[, 1]); rdf$k <- sc[, 2]; rdf$mm_n <- sc[, 3]; rdf$mm_k <- sc[, 4]
 attr(rdf, "base_by_hh") <- base_by_hh
+attr(rdf, "train_years") <- TRAIN_YEARS; attr(natl, "train_years") <- TRAIN_YEARS
 saveRDS(rdf, fn_raw); saveRDS(natl, fn_adm)
 stamp("%s seed %d: %d raw, %d admitted -> %s", FR, SEED, nrow(rdf), nrow(natl), fn_adm)
 

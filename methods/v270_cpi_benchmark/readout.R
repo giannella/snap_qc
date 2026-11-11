@@ -12,9 +12,12 @@
 # CPI inflation to 2026 dollars (median new/old 1.06-1.36 by year), and
 # total_deductions_by_hh_size by a REDEFINITION as well (standard and homeless
 # deductions added; median new/old 1.43-1.84). Label it "CPI + total-deductions
-# redefinition". Rows, error flags, error dollars and utilities_sua are
-# identical across arms (archive_data/munging_rebuild_run_2026-09-24.log), so
-# any-error and frame-relative readings coincide. The fy2019 nominal arm is
+# redefinition". Rows, error flags and error dollars are identical across
+# arms (archive_data/munging_rebuild_run_2026-09-24.log), so any-error and
+# frame-relative readings coincide. Since the 2026-09-29 rebuild the bundle
+# also holds the $10 SUA-tier tolerance: utilities_sua differs between arms
+# on the 1,405 rows within $10 below their standard
+# (archive_data/frame_check_suatol_2026-09-29.log). The fy2019 nominal arm is
 # also the pending era-2 replication of ledger row 87 (utilities_sua under
 # the max_sua anchor); era2_variant/ and era2_baseline/ hold only smokes.
 #   Rscript methods/v270_cpi_benchmark/readout.R
@@ -24,7 +27,7 @@
 suppressMessages(library(dplyr))
 setwd("C:/Users/ericg/snap_qc")
 D <- "methods/v270_cpi_benchmark"
-LABEL <- "v2.7 frame (dollar amounts CPI-inflated to 2026 by fiscal year, total deductions including the standard and homeless deductions, benefit ratios and SUA tier in review-year terms; rebuilt 2026-09-28) vs nominal (main, 2026-09-21 frame)"
+LABEL <- "v2.7 frame (dollar amounts CPI-inflated to 2026 by fiscal year, total deductions including the standard and homeless deductions, benefit ratios and SUA tier in review-year terms, October CPI per fiscal year, $10 SUA-tier tolerance; rebuilt 2026-09-29) vs nominal (main, 2026-09-21 frame)"
 
 load_arm <- function(fn) {
   if (!file.exists(fn)) return(NULL)
@@ -46,7 +49,7 @@ paired <- list(); arms <- list()
 md <- c("# v2.7 frame measurement: readout", "",
         sprintf("Generated %s. %s.", format(Sys.time(), "%Y-%m-%d %H:%M"), LABEL),
         "Blended lists (national + state pools), shipped recipe, seed 117; per window the two arms differ only in the frame file.",
-        "Rows, error flags, error dollars and utilities_sua are identical across arms, so any-error and frame-relative readings coincide.",
+        "Rows, error flags and error dollars are identical across arms, so any-error and frame-relative readings coincide. utilities_sua differs on the 1,405 of 231,619 rows within $10 below their standard (tier 1 in the nominal frame, tier 2 in the v2.7 frame).",
         "Harmed / helped count states whose paired change is below -0.05 / above +0.05 (absolute); for recall rows a relative cut of -20% / +20% is also given, since 0.05 absolute is about 40% of a 5%-budget recall.", "")
 for (w in c("fy2024", "fy2019", "fy2022")) {
   A <- load_arm(file.path(D, paste0(w, "_nominal"), "v250_benchmark_2024.csv"))
@@ -81,7 +84,7 @@ for (w in c("fy2024", "fy2019", "fy2022")) {
     }
     for (arm in c("nominal", "cpi")) {
       x <- if (arm == "nominal") a else z
-      arms[[length(arms) + 1]] <- data.frame(window = w, arm = if (arm == "cpi") "v2.7 frame (CPI + total-deductions redefinition)" else "nominal frame", budget = b,
+      arms[[length(arms) + 1]] <- data.frame(window = w, arm = if (arm == "cpi") "v2.7 frame (CPI, total-deductions redefinition, ABAWD denominator, SUA tolerance)" else "nominal frame", budget = b,
         median_precision = median(x$precision), mean_precision = mean(x$precision),
         median_recall = median(x$recall, na.rm = TRUE), median_dollar_recall = median(x$dollar_recall),
         pooled_precision = pooled(x, "precision"), pooled_recall = pooled(x, "recall"),

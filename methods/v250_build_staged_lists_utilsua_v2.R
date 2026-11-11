@@ -80,6 +80,16 @@ SIGNIF_DIGITS <- 3
 
 EXPECT_ROWS  <- 115559L    # FY2022-24; row/error counts are fix-invariant
 EXPECT_ERRS  <- 13161L     # (verified on the 2026-08-12 rebuilt frame)
+# frame f1030 (2026-10-30, Ben's reconstruction rewrite): 3 FY2022-24 rows dropped and the
+# nature 97 / agency 26 variances taken out of the error (frame_check_f1030.R)
+F1030 <- exists("reg_model_data") && nrow(reg_model_data) == 231602L
+if (F1030) { EXPECT_ROWS <- 115556L; EXPECT_ERRS <- 13164L }
+# frame f1104 (2026-11-04, Ben's donor matching): 28 FY2022-24 error cases dropped, one label now clean
+F1104 <- exists("reg_model_data") && nrow(reg_model_data) == 231551L
+if (F1104) { EXPECT_ROWS <- 115528L; EXPECT_ERRS <- 13135L }
+# frame f1109 (2026-11-09, Ben's AMTERR labels; nature 97 / agency 26 variances flagged, not removed)
+F1109 <- exists("reg_model_data") && nrow(reg_model_data) == 237557L
+if (F1109) { EXPECT_ROWS <- 118247L; EXPECT_ERRS <- 13297L }
 
 BASE_FEATURES <- c(
   "HH_size_n", "children_i", "elderly_disabled_i", "total_deductions_by_hh_size",
@@ -114,7 +124,7 @@ stamp <- function(...) cat(sprintf("[%s] %s\n", format(Sys.time(), "%H:%M:%S"),
                                    sprintf(...)))
 
 ## ---- frame ------------------------------------------------------------------
-stopifnot(nrow(reg_model_data) == 231619L)
+stopifnot(nrow(reg_model_data) == (if (F1109) 237557L else if (F1104) 231551L else if (F1030) 231602L else 231619L))
 adf0 <- reg_model_data %>% filter(fiscal_year %in% YEARS)
 # UTILITIES-SUA TIER VARIANT (2026-08-22; design + result in
 # methods/v250_benchmark_2024_utilrel/): same construction as the
@@ -145,6 +155,10 @@ MM_TAG_SHARE  <- 0.25   # identification bar (either flags or errors)
 MM_POOL_MAX   <- 0.02   # displacement: max tagged share of any admitted pool
 MM_TOP40_MAX  <- 1L     # displacement: max tagged in national top 40 by LCB
 MM_TOP10_MAX  <- 0L     # displacement: none in the national top 10
+# V250_HEAD_GATE=report (Eric, 2026-11-05, f1104 build only): a head breach (top40/top10, national or
+# blend) is logged instead of halting. Tagged rules are still dropped before the fill, and the
+# pool-share gate still halts. Default: halt, as calibrated 2026-08-12.
+HEAD_GATE_REPORT <- identical(Sys.getenv("V250_HEAD_GATE"), "report")
 HOLD_STATE_POOLS <- character(0)  # Illinois hold LIFTED 2026-08-13 (the IL standard-deduction offset fix landed and is verified by the recon diagnostics)
 # reconstruction income piles (see header, PILE GATE)
 PILE_TAG_SHARE <- 0.25
@@ -153,7 +167,7 @@ pile_all <- income_pile_rows(adf0)
 stamp("income-pile rows on this frame: %d (%.2f%% of rows, %.2f%% of errors) | gate %s",
       sum(pile_all), 100 * mean(pile_all), 100 * sum(pile_all & ie_all) / sum(ie_all),
       if (PILE_GATE) "ON (tagged rules dropped before the fill)" else "OFF (tagged, kept)")
-stopifnot(sum(pile_all) == 1399L)   # frame eb989fda (2026-10-27, Ben's reconstruction fixes); was 1394 on the v2.7 frame
+stopifnot(sum(pile_all) == (if (F1109) 208L else if (F1104) 212L else if (F1030) 208L else 1399L))   # 208 on f1109; 212 on f1104; 208 on f1030 (rewrite smooths values stuck at the max); 1399 on eb989fda; 1394 on the v2.7 frame
 
 STATES <- sort(unique(st))
 if (SMOKE) STATES <- c("Washington", "Maine", "Mississippi", "Illinois")
@@ -213,6 +227,11 @@ tag_and_gate <- function(adm, unit, head_gate = FALSE) {
     stamp("  [%s] WARNING: total tagged share %.1f%% exceeds 10%% - mismatch behaves differently at this scale; head gates and invariance still protect, but flag for review",
           unit, 100 * mean(adm$artifact_i))
   head_breach <- head_gate && (top40 > MM_TOP40_MAX || top10 > MM_TOP10_MAX)
+  if (head_breach && HEAD_GATE_REPORT && share_flag <= MM_POOL_MAX) {
+    stamp("  [%s] HEAD GATE BREACH REPORTED, NOT HALTED (V250_HEAD_GATE=report): top40 %d (max %d) | top10 %d (max %d); tagged rules dropped before the fill",
+          unit, top40, MM_TOP40_MAX, top10, MM_TOP10_MAX)
+    return(adm)
+  }
   if (share_flag > MM_POOL_MAX || head_breach)
     stop(sprintf("DISPLACEMENT HALT [%s]: flag-tagged share %.3f (max %.2f) | top40 %d | top10 %d. Upstream displacement is not repairable post hoc; the run stops (statistician's gate, calibrated 2026-08-12).",
                  unit, share_flag, MM_POOL_MAX, top40, top10))
@@ -252,6 +271,11 @@ blend_head_gate <- function(pool_shadow, unit) {
             unit, r, pool_shadow$lcb[r], pool_shadow$mm_share_flags[r],
             pool_shadow$mm_share_errors[r], pool_shadow$mm_inflation[r],
             pool_shadow$rule[r])
+  }
+  if ((top40 > MM_TOP40_MAX || top10 > MM_TOP10_MAX) && HEAD_GATE_REPORT) {
+    stamp("  [blend head, %s] HEAD GATE BREACH REPORTED, NOT HALTED (V250_HEAD_GATE=report): top40 %d (max %d) | top10 %d (max %d); tagged rules dropped before the fill",
+          unit, top40, MM_TOP40_MAX, top10, MM_TOP10_MAX)
+    return(invisible(c(top40 = top40, top10 = top10)))
   }
   if (top40 > MM_TOP40_MAX || top10 > MM_TOP10_MAX)
     stop(sprintf("DISPLACEMENT HALT [blend head, %s]: tagged in blend top40 %d (max %d) | top10 %d (max %d) - genuine head displacement; the run stops (statistician's gate, calibrated 2026-08-12).",
