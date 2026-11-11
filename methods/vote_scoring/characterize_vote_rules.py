@@ -6,7 +6,7 @@ bound, so the characterization columns (error $ per flag, national error cases,
 elements, natures, overissuance / agency / case-file / certification shares)
 were blank for them. This runs the same characterization the delivery lists get
 (methods/v250_characterize_lists.py, FY2022-24 national frame, merged as in
-runners/run_f1104_build.R) on the vote rules, and adds dollars_per_flag_train:
+runners/run_f1109_build.R) on the vote rules, and adds dollars_per_flag_train:
 over-threshold error $ caught per flagged case on that frame, in the rule's
 household-size group. Descriptive only: no rule, flag or vote changes.
 
@@ -14,7 +14,9 @@ Input:  deploy/vote_rules_fy2022_2024.csv (export_vote_rules.R)
 Output: deploy/vote_rules_fy2022_2024_char.csv (same rows, eight columns added);
         the work folder deploy/vote_char/ keeps the characterization sheet.
 Check:  dollars_per_flag_train computed this way must reproduce the mined value
-        on the national-pool rules of the f1104 blended lists.
+        on the national-pool rules of the blended lists in LISTS: the f1109
+        build's folder (runners/run_f1109_build.R), which also holds the frame
+        export; set SNAP_LIST_DIR=methods/f1104_lists to rerun on f1104.
 Run:    python methods/vote_scoring/characterize_vote_rules.py
 """
 import glob
@@ -28,7 +30,7 @@ import pandas as pd
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEPLOY = os.path.join(ROOT, "methods", "vote_scoring", "deploy")
-LISTS = os.path.join(ROOT, "methods", "f1104_lists")
+LISTS = os.path.join(ROOT, os.environ.get("SNAP_LIST_DIR", os.path.join("methods", "f1109_lists")))
 SRC = os.environ.get("VOTE_RULES_IN", os.path.join(DEPLOY, "vote_rules_fy2022_2024.csv"))
 OUT = os.environ.get("VOTE_RULES_OUT", SRC.replace(".csv", "_char.csv"))
 WORK = os.path.join(DEPLOY, "vote_char")
@@ -45,7 +47,8 @@ FEATS = ["utilities_sua" if f == "utilities" else f for f in FEATURES19]
 def frame():
     df = pd.read_csv(os.path.join(LISTS, "frame_for_profiles.csv"), low_memory=False,
                      float_precision="round_trip")
-    assert len(df) == 115528, len(df)
+    # FY2022-24 rows: 115,528 on f1104, 118,247 on f1109 (97/26 cases kept)
+    assert len(df) in (115528, 118247), len(df)
     for f in FEATS:
         if df[f].dtype == object:
             df[f] = df[f].astype(str).str.upper().map({"TRUE": 1.0, "FALSE": 0.0}).astype(float)
