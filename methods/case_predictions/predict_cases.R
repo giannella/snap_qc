@@ -1,7 +1,6 @@
 # Per-case predictions for states that deploy a model rather than a workbook: candidate B of §46
-# (modeling_findings_detailed.md §46, Amendment 2 and §48; Eric, 2026-11-06). It replaces the option-D
-# stack, which is kept in archive_optionD/predict_cases_optionD.R.
-#
+# (modeling_findings_detailed.md §46, Amendment 2 and §48; Eric, 2026-11-06). 
+
 # B is a tuned xgboost model of P(error over the federal tolerance) with a state term, times a boosted gamma
 # model of the error amount given an error (the size), bagged over ten seeds. Expected $ = P x size. Cases are
 # ranked within the state by expected $. This is the live script. By default it uses the bundle fitted by
@@ -15,8 +14,8 @@
 #
 # Inputs are the 18 leak-free features the miners use (bundle$base_inputs), the state, and the benefit for the
 # size model's offset: the recreated benefit (raw_benefit_amount) on the frame, or the issued benefit (rawben)
-# in a state's own file, which has only that one. The delivery lists are not inputs; the output names the
-# state's list rules that flag each case, as an explanation.
+# in a state's own file, which has only that one. The delivery lists are not modeling inputs; the output names the
+# state's list rules that flag each case solely to help with interpreting the results.
 #
 # Usage (from the repo root):
 #   PC_STATE=Washington [PC_INPUT=cases.csv] [PC_YEARS=2024] Rscript methods/case_predictions/predict_cases.R
