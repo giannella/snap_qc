@@ -7,7 +7,7 @@ rem A state's f1104 workbooks are copied to custom_one_off\<state>\f1104\ only i
 rem yet (states built earlier today already have it; a second copy would overwrite it with f1109 files).
 rem Each state's frame export is rebuilt. One python call per state, so a failure stops only that state.
 rem Logs: methods\vote_scoring\deploy\logs\vote_f1109\all\  End: ALL_DONE.txt (lists failures).
-set SNAP_LIST_DIR=methods/f1109_lists
+set SNAP_LIST_DIR=state_delivery_lists
 set SNAP_VOTE_RULES_CSV=C:\Users\ericg\snap_qc_v27\methods\vote_scoring\deploy\vote_rules_fy2022_2024.csv
 set PY="C:\Users\ericg\AppData\Local\Python\pythoncore-3.14-64\python.exe"
 set L=C:\Users\ericg\snap_qc_v27\methods\vote_scoring\deploy\logs\vote_f1109\all

@@ -3,9 +3,11 @@
 One ranked rule list per state and review budget (5% and 10% of caseload).
 This is the default deployment deliverable described in the README and
 `methods/modeling_findings.md` (sections 14-16). The current lists are the
-v2.7 build (2026-09-30, `runners/run_v270_build.R`, which runs the v2.5.0
-staged builder `methods/v250_build_staged_lists_utilsua_v2.R` verbatim),
-mined fresh on the 2022-24 frame rebuilt 2026-09-29: dollar fields in 2026
+v2.8 build (2026-11-09, `runners/run_f1109_build.R`), mined on frame f1109
+(`additional_data/reg_model_data.rds`, sha256 `08e0e825`: Ben's
+reconstruction fixes and AMTERR error amounts). The method is the v2.7
+build's (`runners/run_v270_build.R`, which runs the v2.5.0 staged builder
+`methods/v250_build_staged_lists_utilsua_v2.R` verbatim): dollar fields in 2026
 dollars, converted by each case's fiscal year with the October CPI, 2026
 deduction and utility-allowance anchors for every year, and the standard
 and homeless deductions counted in total deductions. `utilities_sua` (a

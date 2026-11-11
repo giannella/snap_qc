@@ -6,7 +6,7 @@
 # model of the error amount given an error (the size), bagged over ten seeds. Expected $ = P x size. Cases are
 # ranked within the state by expected $. This is the live script. By default it uses the bundle fitted by
 # s46/s46_deploy_f1109.R (s46_post.R's deploy step on frame f1109, the latest reconstructed data) and the
-# f1109 delivery lists in methods/f1109_lists (Eric, 2026-11-10); it only scores cases with that bundle. The
+# f1109 delivery lists in state_delivery_lists (Eric, 2026-11-10); it only scores cases with that bundle. The
 # selection study and its tests are in s46/ (on f1109: s46_f1109.R, out_f1109_eval/); this script does no
 # evaluation of its own.
 #
@@ -27,14 +27,14 @@
 #   PC_MODE=check Rscript methods/case_predictions/predict_cases.R
 #     scores every state's FY2024 frame rows and checks P and the model's dollar rate against the levels the
 #     deploy step computed inside the bundle; a mismatch stops the script.
-#   PC_BUNDLE (default s46/out_f1109/deploy_B_bundle.rds); SNAP_LIST_DIR (default methods/f1109_lists).
+#   PC_BUNDLE (default s46/out_f1109/deploy_B_bundle.rds); SNAP_LIST_DIR (default state_delivery_lists).
 #   The frame read for in-sample scoring and the check is the bundle's own (b$frame).
 source("methods/v270_seed_replicates/common.R")   # FRAMES, VOCAB19, prep_features, hh_group_of, flags_for_rules, stamp
 suppressMessages(library(xgboost))
 MODE <- Sys.getenv("PC_MODE", "predict"); stopifnot(MODE %in% c("predict", "check"))
 OUT <- "methods/case_predictions"
 BUNDLE <- Sys.getenv("PC_BUNDLE", file.path(OUT, "s46/out_f1109/deploy_B_bundle.rds"))
-LIST_DIR <- Sys.getenv("SNAP_LIST_DIR", "methods/f1109_lists")
+LIST_DIR <- Sys.getenv("SNAP_LIST_DIR", "state_delivery_lists")
 b <- readRDS(BUNDLE)
 stopifnot(!is.null(b$frame), b$frame %in% names(FRAMES), length(b$models) == 10)
 CPI_LAST <- unname(b$cpi_by_year[length(b$cpi_by_year)])   # training dollars are deflated by year; report in the latest year's $
