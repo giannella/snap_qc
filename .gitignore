@@ -60,3 +60,6 @@ methods/f1030_lists/
 methods/f1104_lists/
 # the f1109 build stages its lists here (runners/run_f1109_build.R); the shipped copy is state_delivery_lists/
 methods/f1109_lists/
+
+# built state model package (make_case_model_package.R); shipped as a release asset
+methods/case_predictions/dist/

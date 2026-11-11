@@ -1,0 +1,83 @@
+Warning message:
+package 'xgboost' was built under R version 4.5.2 
+Warning message:
+In dir.create(OUT, recursive = TRUE) :
+  'methods\case_predictions\dist\snap_case_model' already exists
+Scored 710 cases for Washington (fiscal year 2024).
+  Broad-based categorical eligibility read from the file: FY2024 yes
+  Blank model inputs (the model scores these as missing): homeless 6
+  Mean error probability 0.079; mean expected error $14.90 per case (FY2024 dollars).
+  list_rules_flagging: ranks of the 246 rules in rules/blended_delivery_Washington_2022_2024_budget10.csv (rules using count_divisible_by_100 are not checked).
+package -> methods/case_predictions/dist/snap_case_model (70 files); zip -> C:\Users\ericg\snap_qc_v27\methods\case_predictions\dist\snap_case_model_v2.8.0.zip (20.6 MB)
+Warning message:
+package 'xgboost' was built under R version 4.5.2 
+1. package model file = deploy bundle (models, inputs, states, offset, CPI): TRUE
+
+2. FY2017-19: feature match, all states pooled (119310 cases, 49 states); lowest single state in brackets
+   bbce_state_i                 100.000%   [Alabama 100.000%]
+   children_i                   100.000%   [Alabama 100.000%]
+   earned_by_hh_size            100.000%   [Alabama 100.000%]
+   elderly_disabled_i           100.000%   [Alabama 100.000%]
+   expedited_i                  100.000%   [Alabama 100.000%]
+   gross_by_hh_size             100.000%   [Alabama 100.000%]
+   HH_size_n                    100.000%   [Alabama 100.000%]
+   homeless                     100.000%   [Alabama 100.000%]
+   married                      100.000%   [Alabama 100.000%]
+   medical_deductions           100.000%   [Alabama 100.000%]
+   months_since_cert_n          100.000%   [Alabama 100.000%]
+   percent_abawd                100.000%   [Alabama 100.000%]
+   rawben_rel_max                99.841%   [Michigan 96.656%]
+   shelter_expenses_by_hh_size  100.000%   [Alabama 100.000%]
+   total_deductions_by_hh_size  100.000%   [Alabama 100.000%]
+   unc_rawben_rel_max            99.769%   [Michigan 96.616%]
+   unearned_by_hh_size          100.000%   [Alabama 100.000%]
+   utilities_sua                100.000%   [Alabama 100.000%]
+3. FY2017-19 scores: cases with every feature matching 99.769%; P identical 99.864%; max |P diff| 2.98e-02; max |$ diff| 6.70;
+   lowest state Spearman (expected $) 0.9999 (Michigan); lowest top-10% overlap 1.000 (Alabama); recomputed benefit = frame's in 99.764% of cases
+
+2. FY2022-24: feature match, all states pooled (118247 cases, 49 states); lowest single state in brackets
+   bbce_state_i                 100.000%   [Alabama 100.000%]
+   children_i                   100.000%   [Alabama 100.000%]
+   earned_by_hh_size            100.000%   [Alabama 100.000%]
+   elderly_disabled_i           100.000%   [Alabama 100.000%]
+   expedited_i                  100.000%   [Alabama 100.000%]
+   gross_by_hh_size             100.000%   [Alabama 100.000%]
+   HH_size_n                    100.000%   [Alabama 100.000%]
+   homeless                     100.000%   [Alabama 100.000%]
+   married                      100.000%   [Alabama 100.000%]
+   medical_deductions           100.000%   [Alabama 100.000%]
+   months_since_cert_n          100.000%   [Alabama 100.000%]
+   percent_abawd                100.000%   [Alabama 100.000%]
+   rawben_rel_max                99.964%   [Utah 99.702%]
+   shelter_expenses_by_hh_size  100.000%   [Alabama 100.000%]
+   total_deductions_by_hh_size  100.000%   [Alabama 100.000%]
+   unc_rawben_rel_max            99.919%   [Indiana 99.544%]
+   unearned_by_hh_size          100.000%   [Alabama 100.000%]
+   utilities_sua                100.000%   [Alabama 100.000%]
+3. FY2022-24 scores: cases with every feature matching 99.919%; P identical 99.929%; max |P diff| 2.93e-02; max |$ diff| 10.84;
+   lowest state Spearman (expected $) 0.9999 (Arkansas); lowest top-10% overlap 0.985 (Maryland); recomputed benefit = frame's in 99.919% of cases
+[1] TRUE
+[1] TRUE
+
+3b. Washington FY2024, package vs predict_cases.R output (710 cases): max |P diff| 0.00e+00, max |expected $ diff| 0.00, same priority_rank 100.0%, same rules listed 100.0%
+
+4. share of training cases with a blank input (largest): months_since_cert_n 0.062%; homeless 0.020%; expedited_i 0.007%
+   median over states (worst state) of top-10% overlap, and median mean P (full input 0.105):
+   HOMELESS_DEDUCTION         blank 0.54 (0.32) P 0.170   zero 1.00 (0.99) P 0.105
+   HOMELESS_FLAG              blank 0.86 (0.65) P 0.112   zero 1.00 (0.89) P 0.105
+   CHILD_SUPPORT_EXPENSES     blank 0.54 (0.32) P 0.170   zero 0.99 (0.95) P 0.105
+   NUM_ABAWD                  blank 0.68 (0.53) P 0.194   zero 0.98 (0.83) P 0.105
+   EXPEDITED                  blank 0.88 (0.79) P 0.109   zero 0.98 (0.92) P 0.106
+   DEPENDENT_CARE_DEDUCTION   blank 0.54 (0.32) P 0.170   zero 0.97 (0.89) P 0.104
+   MEDICAL_DEDUCTION          blank 0.46 (0.24) P 0.167   zero 0.97 (0.86) P 0.100
+   MARRIED_FLAG               blank 0.66 (0.40) P 0.152   zero 0.96 (0.85) P 0.106
+   NUM_ELDERLY                blank 0.39 (0.15) P 0.219   zero 0.94 (0.80) P 0.108
+   NUM_DISABLED               blank 0.39 (0.15) P 0.219   zero 0.94 (0.89) P 0.108
+   CATEGORICALLY_ELIGIBLE     blank 1.00 (0.77) P 0.106   zero 0.92 (0.87) P 0.085
+   NUM_CHILDREN               blank 0.67 (0.48) P 0.160   zero 0.88 (0.74) P 0.113
+   MONTHS_SINCE_CERT          blank 0.78 (0.64) P 0.092   zero 0.81 (0.59) P 0.097
+   UTILITY_COSTS              blank 0.47 (0.27) P 0.282   zero 0.75 (0.62) P 0.097
+   EARNED_INCOME              blank 0.48 (0.26) P 0.244   zero 0.68 (0.46) P 0.086
+   RENT                       blank 0.48 (0.30) P 0.313   zero 0.67 (0.52) P 0.078
+   UNEARNED_INCOME            blank 0.50 (0.30) P 0.338   zero 0.32 (0.08) P 0.132
+   ORIGINAL_BENEFIT_AMOUNT    blank 1.00 (1.00) P 0.105   zero -

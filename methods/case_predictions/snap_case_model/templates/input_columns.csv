@@ -1,0 +1,22 @@
+column,type,example,what it is,if your system does not record it
+CASE_ID,text or number,A123456,"Your case identifier, copied to the output so you can match predictions back to cases.",Optional. Rows are numbered 1 to N.
+REVIEW_FISCAL_YEAR,whole number,2026,"Federal fiscal year (October-September) of the benefit month being scored. Sets which federal tables apply and how dollar amounts are adjusted for inflation.",Required.
+HOUSEHOLD_SIZE,whole number,3,Certified SNAP unit size: members on the case.,Required.
+NUM_CHILDREN,whole number,2,Children in the unit.,Required.
+NUM_ELDERLY,whole number,0,Members aged 60 or older.,Fill with 0.
+NUM_DISABLED,whole number,1,Disabled members.,Fill with 0.
+NUM_ABAWD,whole number,0,Members with able-bodied adult without dependents (ABAWD) status.,Fill with 0.
+MARRIED_FLAG,0 or 1,1,1 if a spouse is present in the unit.,Fill with 0.
+EXPEDITED,0 or 1,0,1 if the case received expedited service.,Fill with 0.
+CATEGORICALLY_ELIGIBLE,0 or 1,1,"1 if the unit is categorically eligible. The model also reads the state's broad-based categorical eligibility from this column: 1 for a fiscal year when at least half the file's cases that year are 1.",Required.
+HOMELESS_FLAG,0 or 1,0,1 if the unit is homeless.,Fill with 0.
+MONTHS_SINCE_CERT,whole number,7,Months since the last certification.,Required.
+EARNED_INCOME,"dollars, monthly",1450,"Total earned income as budgeted on the case, in that fiscal year's dollars.",Required.
+UNEARNED_INCOME,"dollars, monthly",0,"Total unearned income as budgeted on the case, in that fiscal year's dollars.",Required.
+MEDICAL_DEDUCTION,"dollars, monthly",0,Medical expense deduction.,Fill with 0.
+DEPENDENT_CARE_DEDUCTION,"dollars, monthly",250,Dependent care deduction.,Fill with 0.
+CHILD_SUPPORT_EXPENSES,"dollars, monthly",0,"Child support payments. Give the expenses, not the deduction, so states that exclude child support instead of deducting it are handled as in the workbook.",Fill with 0.
+HOMELESS_DEDUCTION,"dollars, monthly",0,Homeless household shelter deduction.,Fill with 0.
+RENT,"dollars, monthly",950,Rent or mortgage.,Required.
+UTILITY_COSTS,"dollars, monthly",459,"Utility costs, including a standard utility allowance when one is used.",Required.
+ORIGINAL_BENEFIT_AMOUNT,"dollars, monthly",512,"The benefit issued for the month. Shown in the output; used as the size model's starting value when the benefit cannot be recomputed from the other columns; and, for the states in lookups/state_options.csv, used to tell whether a case was budgeted on last year's federal tables.",May be left blank.
