@@ -26,7 +26,7 @@ methods/state_similarity_v2/era_validation_train1718_test19/raw_vocab/
 methods/delivery_pools_2022_2024_v3/
 
 # Claude Code personal/local
-.claude/settings.local.json
+**/.claude/settings.local.json
 # Session working memory, kept local. The durable public record of findings is
 # methods/modeling_findings.md.
 RESUME.md
