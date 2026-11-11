@@ -7,8 +7,10 @@ rem A state's f1104 workbooks are copied to custom_one_off\<state>\f1104\ only i
 rem yet (states built earlier today already have it; a second copy would overwrite it with f1109 files).
 rem Each state's frame export is rebuilt. One python call per state, so a failure stops only that state.
 rem Logs: methods\vote_scoring\deploy\logs\vote_f1109\all\  End: ALL_DONE.txt (lists failures).
+rem Rerun 2026-11-10 night on the characterized vote rules (vote_rules_fy2022_2024_char.csv), so the Step 3
+rem vote rows carry their characterization columns as the f1104 books did; first run's logs: all_nochar_2026-11-10\.
 set SNAP_LIST_DIR=state_delivery_lists
-set SNAP_VOTE_RULES_CSV=C:\Users\ericg\snap_qc_v27\methods\vote_scoring\deploy\vote_rules_fy2022_2024.csv
+set SNAP_VOTE_RULES_CSV=C:\Users\ericg\snap_qc_v27\methods\vote_scoring\deploy\vote_rules_fy2022_2024_char.csv
 set PY="C:\Users\ericg\AppData\Local\Python\pythoncore-3.14-64\python.exe"
 set L=C:\Users\ericg\snap_qc_v27\methods\vote_scoring\deploy\logs\vote_f1109\all
 set FR=C:\Users\ericg\snap_qc_v27\methods\excel_rules_for_states\.frames
