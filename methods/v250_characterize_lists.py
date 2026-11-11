@@ -53,7 +53,8 @@ def main():
     frame_path = os.path.join(STAGE_DIR, "frame_for_profiles.csv")
     df = pd.read_csv(frame_path, low_memory=False,
                      float_precision="round_trip")
-    assert len(df) == 115559, "expected the 115,559-row FY2022-24 frame, got %d" % len(df)
+    # 115,556 on frame f1030 (2026-10-30, Ben's reconstruction rewrite); 115,528 on f1104 (2026-11-04, donor matching); 118,247 on f1109 (2026-11-09, 97/26 kept)
+    assert len(df) in (115559, 115556, 115528, 118247), "expected the 115,559-, 115,556-, 115,528- or 118,247-row FY2022-24 frame, got %d" % len(df)
     for f in FEATURES19:
         if df[f].dtype == object:
             df[f] = (df[f].astype(str).str.upper()
@@ -68,7 +69,7 @@ def main():
     lists = sorted(glob.glob(os.path.join(
         STAGE_DIR, os.getenv("V250_LIST_GLOB", "blended_delivery_*.csv"))))
     assert lists, "no staged lists found in %s" % STAGE_DIR
-    dep = pd.concat([pd.read_csv(p, usecols=["hh", "rule"]) for p in lists],
+    dep = pd.concat([pd.read_csv(p, usecols=["hh", "rule"], dtype={"hh": str}) for p in lists],
                     ignore_index=True)
     # usecols returns FILE-ordered columns; select explicitly so itertuples
     # yields (hh, rule) and not (rule, hh)

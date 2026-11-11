@@ -70,7 +70,7 @@ discipline at the list level: hold-out precision rises and recall falls as the
 LCB floor tightens, and no error is double-counted in the union.
 
 Anything that touches `rule_mining_helpers.R` must keep the regression test
-green (27 checks in about 7 seconds, including `wilson_lcb` sanity and sweep
+green (29 checks in about 7 seconds, including `wilson_lcb` sanity and sweep
 monotonicity):
 
 ```bash

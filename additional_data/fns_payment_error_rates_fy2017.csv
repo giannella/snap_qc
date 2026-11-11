@@ -1,0 +1,55 @@
+state,overpayment_rate,underpayment_rate,payment_error_rate
+Alabama,3.15,1.04,4.19
+Alaska,5.80,1.47,7.27
+Arizona,7.55,1.54,9.08
+Arkansas,5.17,1.68,6.85
+California,6.61,1.33,7.93
+Colorado,4.75,1.48,6.22
+Connecticut,4.71,0.87,5.58
+Delaware,12.27,1.67,13.95
+District of Columbia,8.72,1.99,10.70
+Florida,5.28,1.14,6.42
+Georgia,5.50,1.03,6.53
+Guam,5.00,2.56,7.56
+Hawaii,4.74,1.10,5.84
+Idaho,2.05,0.33,2.38
+Illinois,5.01,0.71,5.73
+Indiana,8.84,1.05,9.89
+Iowa,8.36,1.25,9.61
+Kansas,2.90,0.95,3.85
+Kentucky,5.63,0.69,6.32
+Louisiana,5.51,1.04,6.56
+Maine,9.56,1.49,11.04
+Maryland,5.21,1.23,6.44
+Massachusetts,3.09,0.95,4.04
+Michigan,9.06,2.07,11.13
+Minnesota,5.71,1.43,7.14
+Mississippi,2.80,0.49,3.29
+Missouri,7.06,1.26,8.32
+Montana,7.34,1.20,8.54
+Nebraska,3.54,0.52,4.06
+Nevada,4.77,0.99,5.76
+New Hampshire,3.63,1.01,4.64
+New Jersey,4.44,0.97,5.41
+New Mexico,5.81,1.09,6.90
+New York,4.65,0.88,5.53
+North Carolina,3.78,1.47,5.25
+North Dakota,3.68,1.26,4.93
+Ohio,4.47,1.04,5.51
+Oklahoma,4.50,1.03,5.53
+Oregon,5.69,0.47,6.15
+Pennsylvania,4.64,0.44,5.08
+Rhode Island,10.07,1.17,11.24
+South Carolina,3.05,1.16,4.21
+South Dakota,0.85,0.36,1.21
+Tennessee,3.96,0.52,4.48
+Texas,2.81,1.32,4.13
+Utah,4.51,1.08,5.59
+Vermont,6.51,1.17,7.68
+Virgin Islands,2.87,0.47,3.34
+Virginia,7.95,1.75,9.70
+Washington,4.52,0.90,5.42
+West Virginia,8.15,1.43,9.58
+Wisconsin,6.26,0.92,7.17
+Wyoming,2.52,0.83,3.35
+United States,5.19,1.11,6.30

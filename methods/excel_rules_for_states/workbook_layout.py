@@ -16,6 +16,7 @@ Data tab column layout (fixed from the first build stage):
   [ helper columns ]    the benefit-recomputation chain, added by
                         make_input_workbook (hidden)
 """
+import os
 
 DICT_SHEET    = 'Step 1. Data Dictionary'
 DATA_SHEET    = 'Step 2. Import Testing Data'
@@ -23,6 +24,15 @@ BLENDED_SHEET = 'Step 3. Select Rules'
 EXPORT_SHEET  = 'Step 4. Export Rules'
 SCREEN_SHEET  = 'Step 5.1 Screen New Cases'
 FLAGGED_SHEET = 'Step 5.2 Flagged New Cases'
+# Vote builds with the national vote rules (Eric's tab names, 2026-10-29):
+# Step 5.2 becomes 5.2.a and the vote tab follows it as 5.2.b ("Step 5.2.b
+# Expected Error Amounts" would pass the 31-character cap)
+VOTE_RULES_BUILD = (os.environ.get('SNAP_VOTE') == '1'
+                    and bool(os.environ.get('SNAP_VOTE_RULES_CSV')))
+FLAGGED_SHEET_VOTE = 'Step 5.2.a Flagged New Cases'
+if VOTE_RULES_BUILD:
+    FLAGGED_SHEET = FLAGGED_SHEET_VOTE
+VOTE_SHEET    = '5.2.b Expected Error Amounts'
 PRIORITY_SHEET = 'Step 5.3 Case Priority List'   # 2026-09-17: pasted cases ranked by rules-flagging x benefit
 # "Share aggregate results back" exceeds Excel's 31-char sheet-name cap;
 # the full phrase lives in the sheet's title band instead
@@ -39,11 +49,15 @@ def qref(name):
 # Column names follow features.R's state_col_map style: generic reported-value
 # concepts a state maps its own system's fields onto. The Data Dictionary tab
 # carries the crosswalk to the QC technical manual's variables. The QC outcome
-# arrives as the pair ORIGINAL_BENEFIT_AMOUNT / CORRECTED_BENEFIT_AMOUNT (QC
-# manual RAWBEN / FSBEN); the error amount and the over-threshold flag are
-# computed from them against the FederalTables error-threshold table, and
-# STATUS carries the review disposition (2 = overissuance, 3 = underissuance,
-# 4 = ineligible household).
+# arrives as ORIGINAL_BENEFIT_AMOUNT / CORRECTED_BENEFIT_AMOUNT (QC manual
+# RAWBEN / FSBEN), STATUS (the review disposition: 2 = overissuance,
+# 3 = underissuance, 4 = ineligible household) and ERROR_AMOUNT (QC manual
+# AMTERR). The error amount is ERROR_AMOUNT, as in the munging since Ben's
+# 2026-11-09 change (Eric, 2026-11-10); the over-threshold flag compares it
+# with the FederalTables error-threshold table. A blank ERROR_AMOUNT falls
+# back to |ORIGINAL - CORRECTED|. ERROR_AMOUNT and ALLOTMENT_ADJUSTMENT (QC
+# manual ALLADJ, optional) sit last so earlier paste layouts still line up:
+# the benefit check skips cases coded 2 (prorated) or 3 (other adjustment).
 RAW_COLS = [
     'CASE_ID', 'REVIEW_FISCAL_YEAR',
     'HOUSEHOLD_SIZE',
@@ -56,5 +70,6 @@ RAW_COLS = [
     'HOMELESS_DEDUCTION',
     'RENT', 'UTILITY_COSTS',
     'ORIGINAL_BENEFIT_AMOUNT', 'CORRECTED_BENEFIT_AMOUNT', 'STATUS',
+    'ERROR_AMOUNT', 'ALLOTMENT_ADJUSTMENT',
 ]
 RAW_OFF = len(RAW_COLS)               # feature block starts at column RAW_OFF + 1

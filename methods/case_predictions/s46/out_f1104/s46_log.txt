@@ -1,0 +1,58 @@
+[11-06 10:35:18] === f1104 phase setup (out out_f1104) 
+[11-06 10:35:21] W1 B settings: P depth 4 mcw 5 colsample 0.5, 1715 rounds; size depth 3 mcw 25 offset FALSE, 533 rounds; old years FALSE, percentiles TRUE 
+[11-06 10:35:21] W2 B settings: P depth 5 mcw 5 colsample 0.8, 1335 rounds; size depth 4 mcw 25 offset FALSE, 751 rounds; old years FALSE, percentiles FALSE 
+[11-06 10:35:21] W3 B settings: P depth 6 mcw 5 colsample 0.8, 1086 rounds; size depth 2 mcw 5 offset TRUE, 1635 rounds; old years TRUE, percentiles FALSE 
+[11-06 10:35:22] === f1104 phase fit (out out_f1104) 
+[11-06 10:35:52] W1 holdout B seed 117: 0.2 min 
+[11-06 10:36:07] W1 holdout B seed 118: 0.3 min 
+[11-06 10:36:23] W1 holdout B seed 119: 0.3 min 
+[11-06 10:36:37] W1 holdout B seed 120: 0.2 min 
+[11-06 10:36:52] W1 holdout B seed 121: 0.2 min 
+[11-06 10:37:08] W1 holdout B seed 122: 0.3 min 
+[11-06 10:37:23] W1 holdout B seed 123: 0.3 min 
+[11-06 10:37:38] W1 holdout B seed 124: 0.3 min 
+[11-06 10:37:53] W1 holdout B seed 125: 0.2 min 
+[11-06 10:38:08] W1 holdout B seed 126: 0.3 min 
+[11-06 10:38:41] W2 holdout B seed 117: 0.3 min 
+[11-06 10:38:59] W2 holdout B seed 118: 0.3 min 
+[11-06 10:39:17] W2 holdout B seed 119: 0.3 min 
+[11-06 10:39:35] W2 holdout B seed 120: 0.3 min 
+[11-06 10:39:52] W2 holdout B seed 121: 0.3 min 
+[11-06 10:40:09] W2 holdout B seed 122: 0.3 min 
+[11-06 10:40:26] W2 holdout B seed 123: 0.3 min 
+[11-06 10:40:43] W2 holdout B seed 124: 0.3 min 
+[11-06 10:41:00] W2 holdout B seed 125: 0.3 min 
+[11-06 10:41:18] W2 holdout B seed 126: 0.3 min 
+[11-06 10:41:55] W3 holdout B seed 117: 0.4 min 
+[11-06 10:42:16] W3 holdout B seed 118: 0.4 min 
+[11-06 10:42:37] W3 holdout B seed 119: 0.4 min 
+[11-06 10:42:59] W3 holdout B seed 120: 0.4 min 
+[11-06 10:43:21] W3 holdout B seed 121: 0.4 min 
+[11-06 10:43:43] W3 holdout B seed 122: 0.4 min 
+[11-06 10:44:05] W3 holdout B seed 123: 0.4 min 
+[11-06 10:44:27] W3 holdout B seed 124: 0.4 min 
+[11-06 10:44:49] W3 holdout B seed 125: 0.4 min 
+[11-06 10:45:11] W3 holdout B seed 126: 0.4 min 
+[11-06 10:45:13] === f1104 phase score (out out_f1104) 
+[11-06 10:46:12] f1104 W1: L 3.236, at 5%: precision 0.238, $/flag 38, dollar recall 0.169 
+[11-06 10:47:07] f1104 W2: L 3.442, at 5%: precision 0.267, $/flag 55, dollar recall 0.173 
+[11-06 10:48:11] f1104 W3: L 3.495, at 5%: precision 0.310, $/flag 74, dollar recall 0.183 
+[11-06 10:49:08] f1030 W1: L 3.397, at 5%: precision 0.243, $/flag 39, dollar recall 0.176 
+[11-06 10:49:45] f1030 W2: L 3.495, at 5%: precision 0.268, $/flag 56, dollar recall 0.175 
+[11-06 10:50:21] f1030 W3: L 3.561, at 5%: precision 0.310, $/flag 75, dollar recall 0.184 
+[11-06 11:01:43] === deploy on f1104 
+[11-06 11:01:54] deploy: 231551 rows (2017,2018,2019,2022,2023,2024), percentiles FALSE, method holdout, FY2024 held back for settings 
+[11-06 11:08:11]   tune deploy P:  max_depth min_child_weight colsample_bytree      crit best |          6                5              0.8 0.3193972 1133 |          6                5              0.5 0.3196793 1129 |          5                5              0.8 0.3197048 1584 
+[11-06 11:08:56]   tune deploy size:  max_depth min_child_weight  off      crit best |          4               25 TRUE 0.3028528  572 |          4                5 TRUE 0.3036934  573 |          3                5 TRUE 0.3040958  979 
+[11-06 11:08:56] deploy settings: P max_depth 6 min_child_weight 5 colsample_bytree 0.8, 1367 rounds; size max_depth 4 min_child_weight 25 off 1, 713 rounds 
+[11-06 11:09:15] deploy seed 117: 0.3 min 
+[11-06 11:09:34] deploy seed 118: 0.3 min 
+[11-06 11:09:52] deploy seed 119: 0.3 min 
+[11-06 11:10:10] deploy seed 120: 0.3 min 
+[11-06 11:10:29] deploy seed 121: 0.3 min 
+[11-06 11:10:47] deploy seed 122: 0.3 min 
+[11-06 11:11:06] deploy seed 123: 0.3 min 
+[11-06 11:11:25] deploy seed 124: 0.3 min 
+[11-06 11:11:43] deploy seed 125: 0.3 min 
+[11-06 11:12:01] deploy seed 126: 0.3 min 
+[11-06 11:12:06] deploy bundle -> C:/Users/ericg/snap_qc_v27/methods/case_predictions/s46/out_f1104/deploy_B_bundle.rds (sha256 9c7029799e03ff79ebff23e1c94929d7499593360f4765667cd13ca7212a9e81); frame 4de2373e; commit cc051b4 

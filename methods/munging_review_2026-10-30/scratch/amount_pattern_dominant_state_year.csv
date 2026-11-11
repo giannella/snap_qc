@@ -1,0 +1,239 @@
+"state_name","fiscal_year","amount_pattern","n","share","tot"
+"Alabama",2017,"all_zero",15,0.681818181818182,22
+"Alabama",2018,"all_zero",10,0.384615384615385,26
+"Alabama",2019,"all_zero",15,0.555555555555556,27
+"Alabama",2022,"all_zero",25,0.5,50
+"Alabama",2023,"all_zero",40,0.579710144927536,69
+"Alabama",2024,"copied",42,0.591549295774648,71
+"Arkansas",2018,"all_zero",1,1,1
+"California",2022,"copied",15,0.483870967741935,31
+"California",2023,"copied",36,0.72,50
+"California",2024,"copied",41,0.611940298507463,67
+"Colorado",2017,"all_zero",81,1,81
+"Colorado",2018,"all_zero",77,1,77
+"Colorado",2019,"all_zero",97,1,97
+"Colorado",2022,"all_zero",94,1,94
+"Colorado",2023,"all_zero",121,1,121
+"Colorado",2024,"all_zero",105,1,105
+"Connecticut",2017,"amount1_only",28,0.875,32
+"Connecticut",2018,"amount1_only",16,0.516129032258065,31
+"Connecticut",2019,"amount1_only",26,0.541666666666667,48
+"Connecticut",2022,"amount1_only",39,0.493670886075949,79
+"Connecticut",2023,"amount1_only",30,0.566037735849057,53
+"Connecticut",2024,"all_zero",36,0.493150684931507,73
+"Delaware",2022,"copied",3,0.6,5
+"Delaware",2023,"amount1_only",39,0.75,52
+"Delaware",2024,"amount1_only",74,0.870588235294118,85
+"District of Columbia",2017,"copied",40,0.512820512820513,78
+"District of Columbia",2018,"copied",49,0.515789473684211,95
+"District of Columbia",2019,"copied",53,0.535353535353535,99
+"District of Columbia",2022,"copied",33,0.452054794520548,73
+"District of Columbia",2023,"copied",79,0.516339869281046,153
+"District of Columbia",2024,"copied",71,0.541984732824427,131
+"Florida",2017,"clean_split",1,0.333333333333333,3
+"Florida",2019,"clean_split",3,0.5,6
+"Florida",2022,"all_zero",4,0.4,10
+"Florida",2023,"copied",7,0.368421052631579,19
+"Florida",2024,"all_zero",7,0.35,20
+"Georgia",2017,"all_zero",117,1,117
+"Georgia",2018,"all_zero",166,1,166
+"Georgia",2019,"all_zero",128,1,128
+"Georgia",2022,"all_zero",234,1,234
+"Georgia",2023,"all_zero",217,1,217
+"Georgia",2024,"all_zero",200,1,200
+"Illinois",2017,"all_zero",91,0.745901639344262,122
+"Illinois",2018,"all_zero",43,0.494252873563218,87
+"Illinois",2019,"all_zero",39,0.423913043478261,92
+"Illinois",2022,"other",47,0.439252336448598,107
+"Illinois",2023,"other",55,0.53921568627451,102
+"Illinois",2024,"other",56,0.455284552845528,123
+"Indiana",2017,"amount1_only",45,0.584415584415584,77
+"Indiana",2018,"amount1_only",40,0.606060606060606,66
+"Indiana",2019,"amount1_only",37,0.627118644067797,59
+"Indiana",2022,"amount1_only",71,0.747368421052632,95
+"Indiana",2023,"amount1_only",70,0.707070707070707,99
+"Indiana",2024,"amount1_only",81,0.757009345794392,107
+"Iowa",2018,"all_zero",1,0.5,2
+"Iowa",2019,"copied",1,0.5,2
+"Kansas",2017,"all_zero",18,0.428571428571429,42
+"Kansas",2018,"amount1_only",96,0.635761589403974,151
+"Kansas",2019,"amount1_only",55,0.486725663716814,113
+"Kansas",2022,"all_zero",51,0.520408163265306,98
+"Kansas",2023,"all_zero",52,0.590909090909091,88
+"Kansas",2024,"all_zero",41,0.328,125
+"Kentucky",2017,"all_zero",59,0.983333333333333,60
+"Kentucky",2018,"all_zero",63,0.954545454545455,66
+"Kentucky",2019,"all_zero",66,1,66
+"Kentucky",2022,"all_zero",69,0.958333333333333,72
+"Kentucky",2023,"all_zero",64,0.984615384615385,65
+"Kentucky",2024,"all_zero",63,1,63
+"Louisiana",2017,"all_zero",150,1,150
+"Louisiana",2018,"all_zero",112,1,112
+"Louisiana",2019,"all_zero",120,1,120
+"Louisiana",2022,"all_zero",177,1,177
+"Louisiana",2023,"all_zero",150,1,150
+"Louisiana",2024,"all_zero",198,0.994974874371859,199
+"Maine",2017,"all_zero",5,0.454545454545455,11
+"Maine",2018,"all_zero",7,0.7,10
+"Maine",2019,"copied",11,0.6875,16
+"Maine",2022,"all_zero",2,0.5,4
+"Maine",2023,"all_zero",1,1,1
+"Maryland",2017,"copied",16,1,16
+"Maryland",2018,"copied",14,1,14
+"Maryland",2019,"copied",12,1,12
+"Maryland",2022,"copied",6,0.6,10
+"Maryland",2023,"copied",16,0.470588235294118,34
+"Maryland",2024,"all_zero",18,0.5625,32
+"Massachusetts",2017,"copied",20,0.5,40
+"Massachusetts",2018,"all_zero",34,0.653846153846154,52
+"Massachusetts",2019,"all_zero",28,0.717948717948718,39
+"Massachusetts",2022,"all_zero",22,0.666666666666667,33
+"Massachusetts",2023,"all_zero",31,0.645833333333333,48
+"Massachusetts",2024,"all_zero",27,0.5,54
+"Michigan",2017,"all_zero",116,1,116
+"Michigan",2018,"all_zero",216,1,216
+"Michigan",2019,"all_zero",128,1,128
+"Michigan",2022,"all_zero",115,1,115
+"Michigan",2023,"all_zero",158,1,158
+"Michigan",2024,"all_zero",153,1,153
+"Minnesota",2017,"all_zero",96,0.989690721649485,97
+"Minnesota",2018,"all_zero",46,1,46
+"Minnesota",2019,"all_zero",60,0.48,125
+"Minnesota",2022,"copied",83,0.619402985074627,134
+"Minnesota",2023,"copied",65,0.555555555555556,117
+"Minnesota",2024,"copied",69,0.644859813084112,107
+"Missouri",2017,"all_zero",61,0.603960396039604,101
+"Missouri",2018,"amount1_only",57,0.542857142857143,105
+"Missouri",2019,"all_zero",60,0.674157303370786,89
+"Missouri",2022,"all_zero",57,0.626373626373626,91
+"Missouri",2023,"all_zero",68,0.701030927835051,97
+"Missouri",2024,"all_zero",57,0.626373626373626,91
+"Montana",2017,"all_zero",21,0.308823529411765,68
+"Montana",2018,"other",28,0.363636363636364,77
+"Montana",2019,"other",37,0.5,74
+"Montana",2022,"other",42,0.591549295774648,71
+"Montana",2023,"other",27,0.509433962264151,53
+"Montana",2024,"clean_split",36,0.391304347826087,92
+"Nebraska",2017,"all_zero",34,0.373626373626374,91
+"Nebraska",2018,"all_zero",31,0.36046511627907,86
+"Nebraska",2019,"all_zero",21,0.42,50
+"Nebraska",2022,"all_zero",32,0.463768115942029,69
+"Nebraska",2023,"all_zero",33,0.523809523809524,63
+"Nebraska",2024,"all_zero",33,0.485294117647059,68
+"New Hampshire",2017,"all_zero",8,0.666666666666667,12
+"New Hampshire",2018,"all_zero",8,0.666666666666667,12
+"New Hampshire",2019,"all_zero",10,0.416666666666667,24
+"New Hampshire",2022,"all_zero",12,0.413793103448276,29
+"New Hampshire",2023,"all_zero",26,0.634146341463415,41
+"New Hampshire",2024,"other",24,0.470588235294118,51
+"New Jersey",2017,"amount1_only",2,1,2
+"New Jersey",2018,"all_zero",9,0.818181818181818,11
+"New Jersey",2019,"all_zero",9,0.692307692307692,13
+"New Jersey",2022,"other",11,0.6875,16
+"New Jersey",2023,"all_zero",11,0.523809523809524,21
+"New Jersey",2024,"all_zero",7,0.411764705882353,17
+"New Mexico",2017,"all_zero",59,0.567307692307692,104
+"New Mexico",2018,"all_zero",78,0.65546218487395,119
+"New Mexico",2019,"all_zero",77,0.611111111111111,126
+"New Mexico",2022,"amount1_only",92,0.571428571428571,161
+"New Mexico",2023,"all_zero",92,0.497297297297297,185
+"New Mexico",2024,"amount1_only",90,0.511363636363636,176
+"North Carolina",2017,"amount1_only",62,0.681318681318681,91
+"North Carolina",2018,"amount1_only",63,0.617647058823529,102
+"North Carolina",2019,"amount1_only",65,0.590909090909091,110
+"North Carolina",2022,"amount1_only",55,0.604395604395604,91
+"North Carolina",2023,"amount1_only",104,0.654088050314465,159
+"North Carolina",2024,"amount1_only",79,0.593984962406015,133
+"North Dakota",2017,"all_zero",3,0.375,8
+"North Dakota",2018,"all_zero",12,0.571428571428571,21
+"North Dakota",2019,"all_zero",7,0.4375,16
+"North Dakota",2022,"clean_split",18,0.642857142857143,28
+"North Dakota",2023,"clean_split",23,0.410714285714286,56
+"North Dakota",2024,"clean_split",29,0.58,50
+"Ohio",2017,"all_zero",131,0.977611940298508,134
+"Ohio",2018,"all_zero",133,1,133
+"Ohio",2019,"all_zero",144,0.986301369863014,146
+"Ohio",2022,"all_zero",156,1,156
+"Ohio",2023,"all_zero",170,1,170
+"Ohio",2024,"all_zero",179,1,179
+"Oklahoma",2017,"all_zero",82,0.82,100
+"Oklahoma",2018,"all_zero",103,0.971698113207547,106
+"Oklahoma",2019,"all_zero",93,0.96875,96
+"Oklahoma",2022,"all_zero",94,0.824561403508772,114
+"Oklahoma",2023,"all_zero",140,0.858895705521472,163
+"Oklahoma",2024,"all_zero",145,0.878787878787879,165
+"Oregon",2017,"all_zero",72,0.489795918367347,147
+"Oregon",2018,"all_zero",56,0.459016393442623,122
+"Oregon",2019,"all_zero",52,0.419354838709677,124
+"Oregon",2022,"amount1_only",51,0.435897435897436,117
+"Oregon",2023,"amount1_only",68,0.647619047619048,105
+"Oregon",2024,"amount1_only",75,0.707547169811321,106
+"Pennsylvania",2017,"clean_split",1,1,1
+"Pennsylvania",2018,"amount1_only",1,1,1
+"Rhode Island",2017,"copied",102,0.582857142857143,175
+"Rhode Island",2018,"copied",73,0.776595744680851,94
+"Rhode Island",2019,"copied",176,0.745762711864407,236
+"Rhode Island",2022,"copied",63,0.588785046728972,107
+"Rhode Island",2023,"copied",142,0.682692307692308,208
+"Rhode Island",2024,"copied",92,0.56441717791411,163
+"South Carolina",2017,"amount1_only",3,1,3
+"South Carolina",2018,"all_zero",4,0.571428571428571,7
+"South Carolina",2019,"amount1_only",2,0.5,4
+"South Carolina",2022,"amount1_only",1,1,1
+"South Carolina",2023,"amount1_only",5,0.714285714285714,7
+"South Carolina",2024,"copied",6,0.666666666666667,9
+"South Dakota",2017,"all_zero",23,0.851851851851852,27
+"South Dakota",2018,"all_zero",28,0.848484848484849,33
+"South Dakota",2019,"all_zero",31,0.885714285714286,35
+"South Dakota",2022,"all_zero",26,0.838709677419355,31
+"South Dakota",2023,"all_zero",32,0.842105263157895,38
+"South Dakota",2024,"all_zero",32,0.780487804878049,41
+"Tennessee",2017,"amount1_only",12,0.666666666666667,18
+"Tennessee",2018,"amount1_only",15,0.9375,16
+"Tennessee",2019,"amount1_only",21,0.525,40
+"Tennessee",2022,"all_zero",22,0.564102564102564,39
+"Tennessee",2023,"all_zero",39,0.696428571428571,56
+"Tennessee",2024,"all_zero",46,0.666666666666667,69
+"Texas",2017,"all_zero",130,1,130
+"Texas",2018,"all_zero",89,1,89
+"Texas",2019,"all_zero",116,1,116
+"Texas",2022,"all_zero",153,1,153
+"Texas",2023,"all_zero",121,0.991803278688525,122
+"Texas",2024,"all_zero",155,1,155
+"Utah",2017,"all_zero",113,0.982608695652174,115
+"Utah",2018,"all_zero",100,0.952380952380952,105
+"Utah",2019,"all_zero",81,0.98780487804878,82
+"Utah",2022,"all_zero",41,0.594202898550725,69
+"Utah",2023,"all_zero",34,0.653846153846154,52
+"Utah",2024,"all_zero",29,0.537037037037037,54
+"Vermont",2017,"all_zero",29,0.659090909090909,44
+"Vermont",2018,"all_zero",44,0.785714285714286,56
+"Vermont",2019,"all_zero",46,0.821428571428571,56
+"Vermont",2022,"all_zero",68,0.918918918918919,74
+"Vermont",2023,"all_zero",69,0.985714285714286,70
+"Vermont",2024,"all_zero",61,0.968253968253968,63
+"Virginia",2017,"clean_split",12,0.4,30
+"Virginia",2018,"other",17,0.34,50
+"Virginia",2019,"other",23,0.46,50
+"Virginia",2022,"other",28,0.459016393442623,61
+"Virginia",2023,"other",49,0.510416666666667,96
+"Virginia",2024,"other",52,0.456140350877193,114
+"Washington",2017,"all_zero",35,0.648148148148148,54
+"Washington",2018,"all_zero",24,0.489795918367347,49
+"Washington",2019,"all_zero",29,0.491525423728814,59
+"Washington",2022,"amount1_only",46,0.754098360655738,61
+"Washington",2023,"amount1_only",30,0.612244897959184,49
+"Washington",2024,"amount1_only",44,0.830188679245283,53
+"West Virginia",2017,"clean_split",39,0.438202247191011,89
+"West Virginia",2018,"other",53,0.464912280701754,114
+"West Virginia",2019,"other",58,0.369426751592357,157
+"West Virginia",2022,"copied",104,0.536082474226804,194
+"West Virginia",2023,"copied",53,0.424,125
+"West Virginia",2024,"other",39,0.464285714285714,84
+"Wisconsin",2017,"all_zero",112,0.991150442477876,113
+"Wisconsin",2018,"all_zero",94,0.989473684210526,95
+"Wisconsin",2019,"all_zero",101,0.971153846153846,104
+"Wisconsin",2022,"all_zero",69,1,69
+"Wisconsin",2023,"all_zero",58,1,58
+"Wisconsin",2024,"all_zero",60,0.983606557377049,61
+"Wyoming",2022,"all_zero",1,1,1

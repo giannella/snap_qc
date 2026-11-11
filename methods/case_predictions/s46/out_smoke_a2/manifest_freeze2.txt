@@ -1,0 +1,11 @@
+freeze2 written 2026-11-03 21:30:53
+c852f8b23419ac76673d98b531a93b03f6cd1c37c4225bcd4737326800de3d34  methods/case_predictions/s46/s46_lib.R
+e4de46fa32fedfb10506ec5753eb41f83ec20aacc03ca5d324d93d8c4513b7d2  methods/case_predictions/s46/s46_models.R
+8da9c5168fad9a1beb7c3ae90d670311aea4f1121849e844ced9977a1f84e999  methods/case_predictions/s46/s46_run.R
+845270e8783b97540de3562fbfbcf3a728956f4ca0604c705ad63504fc1a4789  methods/modeling_findings_detailed.md
+17c9b4f09a97b5fa8c8826d18859127709991fa0f542b49c660dceaa3e2fe27b  methods/case_predictions/s46/out_smoke_a2/choices_S0.rds
+e8312181c690343b6950e4a86b2abd913fffb929b37eff3f0e7ba3e3fad9f58e  methods/case_predictions/s46/out_smoke_a2/method.rds
+cc1a8a18d776ec6978c50265f64e74218cffd8a987d2174214346dfc80c1767e  methods/case_predictions/s46/out_smoke_a2/S1_S0.rds
+90c9dd3f1d6956d0449a6679428066a84403efc853966b4cfbfefb4b35e9f99c  methods/case_predictions/s46/out_smoke_a2/S1B_S0_holdout.rds
+ba3fe358ec51dff788b3b99259cdf50db4260ef981ffe32d59c9cc5eebcc3881  methods/case_predictions/s46/out_smoke_a2/s46_log.txt
+seeds 117-118; grids P 2, size 2, tweedie 2 x p 1.2/1.5, ranger 2

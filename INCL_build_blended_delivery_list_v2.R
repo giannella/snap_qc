@@ -99,6 +99,11 @@ FRAME_TAG <- if (identical(MINING_FRAMES, "any_error")) "anyerror" else
   sprintf("%dframes", length(MINING_FRAMES))
 
 POOL_CACHE <- "methods/delivery_pools_2022_2024_v3"   # keyed by admission below
+# NB: the pools committed in this folder are the July 2026 caches, mined
+# before the v2.5.0 frame fix and vocabulary change; a run that finds them
+# reuses them. To rebuild on the current frame, delete the folder or point
+# POOL_CACHE elsewhere. The shipped lists were built by
+# methods/v250_build_staged_lists_v2.R.
 # out_dir is pre-settable so the identity check can build into a temp dir
 # without touching the user-facing lists
 if (!exists("out_dir")) out_dir <- "state_delivery_lists"

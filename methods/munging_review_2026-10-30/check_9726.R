@@ -1,0 +1,30 @@
+# Munging review 2026-10-30: where the nature 97 / agency 26 FS-side swap changes labels. Read-only.
+setwd("C:/Users/ericg/snap_qc_v27")
+fin <- readRDS("final.rds"); cor <- readRDS("corrected.rds")
+kf <- paste(fin$STATE, fin$fiscal_year, fin$HHLDNO); kc <- paste(cor$STATE, cor$fiscal_year, cor$HHLDNO); mc <- match(kf, kc)
+el <- as.matrix(cor[mc, paste0("ELEMENT", 1:9)]); na <- as.matrix(cor[mc, paste0("NATURE", 1:9)]); ag <- as.matrix(cor[mc, paste0("AGENCY", 1:9)])
+pres <- !is.na(el); nas <- pres & (na %in% 97 | ag %in% 26); dim(nas) <- dim(el)
+p <- which(fin$no_action_partial_i)
+first97 <- apply(nas[p, , drop = FALSE], 1, function(x) which(x)[1])
+shift <- fin$FSBEN[p] - cor$FSBEN[mc[p]]
+oldo <- cor$over_threshold[mc[p]]; newo <- fin$over_threshold[p]
+tr <- ifelse(oldo == 1 & newo == 0, "err->clean", ifelse(oldo == 0 & newo == 1, "clean->err", ifelse(newo == 1, "err->err", "clean->clean")))
+cat("partial rows:", length(p), "\n")
+cat("first 97/26 slot x FSBEN shifted:\n"); print(table(slot97 = first97, shifted = shift != 0))
+cat("amount_pattern x shifted:\n"); print(table(fin$amount_pattern[p], shifted = shift != 0, useNA = "ifany"))
+cat("transition x first 97/26 slot:\n"); print(table(tr, slot97 = first97))
+cat("transition x amount_pattern:\n"); print(table(tr, fin$amount_pattern[p], useNA = "ifany"))
+cat("share of |old diff| removed when shifted: median", round(median(1 - abs(fin$bendiff[p]) / abs(cor$bendiff[mc[p]]), na.rm = TRUE)[1], 3), "\n")
+cat("shifted rows where the new |diff| is ~0 (<=2):", sum(shift != 0 & abs(fin$bendiff[p]) <= 2), "of", sum(shift != 0), "\n")
+cat("partial rows with an imputed (smoothed) value:", sum(!is.na(fin$imputed_at_bound[p])), "; of those shifted:", sum(!is.na(fin$imputed_at_bound[p]) & shift != 0),
+    "; label changed:", sum(!is.na(fin$imputed_at_bound[p]) & tr %in% c("err->clean", "clean->err")), "\n")
+cat("partial rows whose reconstruction missed RAWBEN (_error):", sum(grepl("_error", fin$correctednotes[p])), "; shifted among them:", sum(grepl("_error", fin$correctednotes[p]) & shift != 0), "\n")
+q <- which(fin$no_action_required_i)
+cat("required rows:", length(q), "; reconstruction missed RAWBEN by > $0:", sum(fin$RAWBEN[q] != fin$FSBEN[q]),
+    "; by more than the threshold:", sum(abs(fin$RAWBEN[q] - fin$FSBEN[q]) > fin$threshold[q]), "\n")
+cat("required rows, pre-clear |RAWBEN-FSBEN| quantiles:\n"); print(quantile(abs(cor$RAWBEN[mc[q]] - cor$FSBEN[mc[q]]), c(.5, .9, .99, .999, 1)))
+cat("threshold by FY:\n"); print(tapply(fin$threshold, fin$fiscal_year, unique))
+cat("all STATUS 2/3 rows not 97/26: |RAWBEN-FSBEN| quantiles:\n")
+o <- which(!fin$no_action_required_i & !fin$no_action_partial_i & cor$STATUS[mc] %in% 2:3); print(quantile(abs(cor$RAWBEN[mc[o]] - cor$FSBEN[mc[o]]), c(.5, .9, .99)))
+cat("share over threshold: 97/26-only", round(mean(cor$over_threshold[mc[q]] == 1), 4), "; other STATUS 2/3", round(mean(cor$over_threshold[mc[o]] == 1), 4), "\n")
+cat("97/26-only rows by nature/agency of slot 1:\n"); print(head(sort(table(paste0("N", na[q, 1], "/A", ag[q, 1])), decreasing = TRUE), 8))

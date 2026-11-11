@@ -40,6 +40,17 @@ state_delivery_lists/ are untouched; this reshapes what the WORKBOOK ships:
   4. SORT the final list descending by error dollars caught on the state
      frame at delivered thresholds (the Step 3 tab's static order).
 
+  0. PINNED rules (role = "pinned" in the CSV; opt-in, 2026-10-07): a rule a
+     state validated on its own data, placed at the top by hand. Pinned
+     rules pass the same gates (the build stops if one would be dropped)
+     and take capacity first: the core rules then enter in delivery-rank
+     order only while the union stays within the ORIGINAL core list's
+     workload (a rule that would overshoot is skipped, the walk continues),
+     so the review budget holds. Core rules that no longer fit stay in the
+     workbook with Include? = FALSE. Pinned rules always sort first, in
+     their CSV rank order. No standard delivery list carries the role, so
+     standard builds are unchanged.
+
 Rule ids ("num") stay the delivery-CSV rank, so an id refers to the same
 rule across workbook releases regardless of the sort. The result is also
 written to .build/effective_rules_<ABBR>.csv in the delivery-CSV schema
@@ -56,6 +67,19 @@ COND_PAT = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\s*(>=|<=|>|<|==)\s*(-?[0-9.]+)'
 NSLOTS = 4                        # condition slots in the workbook's engines
 DROP_VARS = {'count_divisible_by_100'}
 STRIP_VAR = 'bbce_state_i'
+VOTE_NUM0 = 1000                  # vote-only rules are numbered 1001-1300
+# the benefit check (element 520, Eric 2026-11-09): one rule per household-size
+# group, numbered 2001-2003, in every workbook with Include? = TRUE. Its
+# feature is blank on the shipped sample (make_input_workbook.SAMPLE_PREFIX),
+# so on the frame the rule flags nothing; Step 3's rule text quotes
+# benefit_check_national.csv.
+CHECK_VAR = 'benefit_calc_off'
+CHECK_NUM0 = 2000
+CHECK_HH = ('1', '2-3', '4+')
+
+
+def is_check(rule):
+    return any(c['var'] == CHECK_VAR for c in rule['conds'])
 
 # Narrow-interval width floor (shipped 2026-08-21 after clearing its
 # pre-registered bar: methods/width_floor_rewalk/, median paired change
@@ -267,8 +291,9 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
     """The workbook's rule list: transformed core + promoted buffer, sorted by
     error dollars caught on the state frame. See the module docstring."""
     rows = _parse_rows(csv_path, char_keys)
+    pinned = [r for r in rows if r['role'] == 'pinned']
     core   = [r for r in rows if r['role'] == 'core']
-    buffer = [r for r in rows if r['role'] != 'core']
+    buffer = [r for r in rows if r['role'] not in ('core', 'pinned')]
 
     # capacity target: what the delivered core list flags on this frame
     orig_union = np.zeros(len(df), bool)
@@ -292,6 +317,28 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
         f'(span < {RATIO_SPAN_FLOOR} off 1.0), {n_lowd_c} low-dollar bands '
         f'(<= ${LOW_DOLLAR_CAP:.0f}); stripped {STRIP_VAR} from {n_strip_c})')
 
+    displaced = []
+    if pinned:
+        kept_p = _transform(pinned, df, log, med_zone)[0]
+        if len(kept_p) != len(pinned):
+            raise SystemExit('a pinned rule fails the delivery gates; fix it in the CSV')
+        u = np.zeros(len(df), bool)
+        for r in kept_p:
+            u |= rule_mask(df, r)
+        n_pin = int(u.sum())
+        fit = []
+        for r in kept:                      # transformed core, delivery-rank order
+            cand = u | rule_mask(df, r)
+            if int(cand.sum()) <= target:
+                u = cand
+                fit.append(r)
+            else:
+                displaced.append(dict(r, ship=False))
+        kept = [dict(r, pinned=True) for r in kept_p] + fit
+        log(f'pinned: {len(kept_p)} rule(s) placed first (ids '
+            f'{", ".join(str(r["num"]) for r in kept_p)}) flagging {n_pin} of target {target}; '
+            f'core rules within the original workload {len(fit)}, moved to Include? = FALSE {len(displaced)}')
+
     union = np.zeros(len(df), bool)
     for r in kept:
         union |= rule_mask(df, r)
@@ -306,6 +353,7 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
     log(f'buffer promoted: {promoted} of {len(promotable)} '
         f'(union {int(union.sum())} of target {target} flagged rows, '
         f'{int(union.sum())/max(len(df),1):.1%} of the frame)')
+    kept += displaced                      # pinned builds only: Include? = FALSE
 
     # measurement tier (2026-08-27, share_back_transfer_plan.md): rules
     # appended for the Step 6 read-out only. They ship Include? = FALSE and
@@ -330,6 +378,56 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
             f'{os.path.basename(mcsv)} (Include? = FALSE, zero deployed '
             'capacity)')
 
+    # national vote rules (2026-10-29, methods/vote_scoring/deploy_table.R and
+    # export_vote_rules.R): the representative rules of the shipped vote
+    # score. They ship Include? = FALSE and Vote? = TRUE and are appended
+    # after the capacity walk, like the measurement tier. No quality gates:
+    # the vote table was fitted on these rules as mined. Only the
+    # state-constant bbce conjunct is resolved: stripped where it always
+    # holds; where it never holds the rule cannot vote here and is left out.
+    # A vote rule that duplicates a list rule marks that rule Vote? = TRUE.
+    vcsv = os.environ.get('SNAP_VOTE_RULES_CSV')
+    if vcsv and os.path.isfile(vcsv):
+        vrows = _parse_rows(vcsv, char_keys)
+        gid = {int(k): str(g) for k, g in zip(pd.read_csv(vcsv)['rank'], pd.read_csv(vcsv)['group'])}
+        seen = {(r['hh'], rule_text(r['conds'])): r for r in kept}
+        added = merged = never = 0
+        for r in vrows:
+            bb = [c for c in r['conds'] if c['var'] == STRIP_VAR]
+            other = [c for c in r['conds'] if c['var'] != STRIP_VAR]
+            if bb:
+                sat = cond_mask(df, bb)
+                if not sat.any():
+                    never += 1
+                    continue
+                if sat.all() and other:
+                    r = dict(r, conds=other)
+            key = (r['hh'], rule_text(r['conds']))
+            g = gid[r['num']]
+            if key in seen:
+                seen[key]['vote'] = True
+                seen[key]['group'] = g
+                merged += 1
+                continue
+            r = dict(r, ship=False, vote=True, vote_only=True, group=g, num=VOTE_NUM0 + r['num'])
+            kept.append(r)
+            seen[key] = r
+            added += 1
+        log(f'vote rules: {added} appended, {merged} already on the list, {never} never '
+            f'applicable here, of {len(vrows)} in {os.path.basename(vcsv)} (Include? = FALSE, Vote? = TRUE)')
+
+    # the benefit check, appended after the capacity walk like the tiers
+    # above, so the delivered list's own rules are unchanged by it
+    cols = rows[0]['_row'].index
+    for k, hh in enumerate(CHECK_HH, 1):
+        conds = [{'var': CHECK_VAR, 'op': '>=', 'thr': 1.0}]
+        own = {'rank': CHECK_NUM0 + k, 'role': 'check', 'rule': rule_text(conds), 'hh': hh}
+        rec = pd.Series({c: own.get(c, np.nan) for c in cols}, dtype=object)
+        kept.append({'num': CHECK_NUM0 + k, 'hh': hh, 'conds': conds, 'role': 'check',
+                     'prec_train': np.nan, 'prec_lcb': np.nan, 'engine': '', 'frame': '',
+                     'char': {}, '_row': rec, 'ship': True, 'check': True})
+    log(f'benefit check: {len(CHECK_HH)} rules appended ({CHECK_VAR} >= 1, Include? = TRUE)')
+
     # dollars caught on the frame at delivered thresholds -> Step 3 sort order
     is_err = (pd.to_numeric(df['over_threshold'], errors='coerce')
               .fillna(0).values == 1) if 'over_threshold' in df else \
@@ -338,9 +436,15 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
                   pd.to_numeric(df['total_error_amount'], errors='coerce')
                   .fillna(0).abs().values, 0.0)
     for r in kept:
-        r['dollars_frame'] = float(ed[rule_mask(df, r)].sum())
-    # deployed rules (Include? = TRUE) first, then measurement-only rules, each block by dollars caught (2026-09-17)
-    kept.sort(key=lambda r: (not bool(r.get('ship', True)), -r['dollars_frame']))
+        r['dollars_frame'] = 0.0 if r.get('check') else float(ed[rule_mask(df, r)].sum())
+    # pinned rules first in their CSV order (2026-10-07); then deployed rules
+    # (Include? = TRUE) by dollars caught; then the benefit check, after the
+    # rules it does not resemble (Eric, 2026-11-10: confusing at the top);
+    # then measurement-only rules, then vote-only rules, each by dollars
+    # caught (2026-09-17; 2026-10-29)
+    kept.sort(key=lambda r: (0, r['num'], 0, 0.0) if r.get('pinned') else
+              (1, 0, 1, float(r['num'])) if r.get('check') else
+              (1, int(not bool(r.get('ship', True))), int(bool(r.get('vote_only'))), -r['dollars_frame']))
 
     for r in kept:
         assert not any(c['var'] in DROP_VARS for c in r['conds'])
@@ -351,6 +455,9 @@ def effective_rules(csv_path, df, char_keys, out_csv=None, log=print,
             rec = r['_row'].copy()
             rec['rule'] = rule_text(r['conds'])
             rec['ship'] = bool(r.get('ship', True))
+            if vcsv:
+                rec['vote'] = bool(r.get('vote', False))
+                rec['group'] = r.get('group', '')
             recs.append(rec)
         pd.DataFrame(recs).to_csv(out_csv, index=False)
         log(f'effective list written: {out_csv} ({len(recs)} rules)')

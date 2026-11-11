@@ -133,6 +133,10 @@ extra <- intersect(c("cert_HH_size_FS_n", "over_threshold", "total_error_amount"
                      # 1 = correct, 2 = overissuance, 3 = underissuance
                      # (4 = ineligible never occurs in the public files).
                      "rawben", "benefit_amount_FS", "status",
+                     # allotment adjustment (QC ALLADJ, from the case record:
+                     # 1 none, 2 prorated, 3 other): the workbook's benefit
+                     # check skips codes 2 and 3 (2026-11-09)
+                     "alladj",
                      # child support expense (QC FSCSEXP): shipped so the
                      # workbook's CHILD_SUPPORT_EXPENSES input column can
                      # demo the exclusion-state ask (2026-08-21); the

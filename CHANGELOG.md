@@ -8,7 +8,237 @@ If you only read one thing before updating: the **Changed** and **Removed**
 sections of each release tell you whether anything you currently run or read
 moved or behaves differently.
 
-## [Unreleased]
+## [2.8.0] - 2026-11-11
+
+If you use the delivery lists or the state workbooks, re-download them:
+every list was re-mined on a rebuilt frame, so rules and rule numbers differ
+from v2.7.0. The workbooks are on the v2.8.0 release page, under the same
+file names as v2.7.0 (`SNAP_flagging_rules_XX.xlsb`), and now cover all 49
+states in the data, DC and Georgia included.
+
+### Changed
+- **All delivery lists re-mined on frame f1109**
+  (`additional_data/reg_model_data.rds`, sha256 `08e0e825`, 2026-11-09):
+  98 blended lists, 98 national-only lists, the rule sheet and the national
+  pool in `state_delivery_lists/`. The walk and gates, the income-pile gate
+  included, are v2.7.0's. The frame carries the reconstruction and labelling
+  changes below. It has 237,557 rows against v2.7.0's 231,619 (`1dbe8733`),
+  mostly because nature 97 / agency 26 cases are now kept and flagged
+  rather than dropped; FY2022-24 has 118,247 cases and 13,297 over-threshold
+  errors. Cases on a reconstructed income pile fall from 1,399 to 208.
+- **Delivery lists carry `pile_share_flags` and `pile_share_errors`**
+  after `mm_inflation` (columns 15 and 16 of 25), so every later column
+  sits two places to the right; read the lists by column name. The columns
+  came with the income-pile gate (see 2.7.0), which reached the lists the
+  day after the v2.7.0 tag: lists checked out at that tag do not have them.
+- **The workbooks rank new cases by expected error dollars from rule
+  votes** (issues #16 and #21; findings sections 43-45). Step 3 adds 300
+  national rules, 100 per household-size group, that vote rather than
+  flag. A case's votes, its household-size group and
+  issued benefit give its expected error dollars from a fixed table: rules
+  mined on FY2017-19 and fitted on FY2022, times a size model of the error
+  amount. Dollars are scaled so they add up to the state's FY2025 payment
+  error rate as FNS published it; the scaling does not change the order.
+  Step 5.2 is now "Step 5.2.a Flagged New Cases", and the new tab "5.2.b
+  Expected Error Amounts" lists the Step 5.1 cases from the highest expected
+  error dollars down, all cases together and by household-size group. Seven
+  or more votes count as seven and show as "7+". In the confirmation test
+  (on the v2.7.0 frame), a state's top 5% by this ranking held 41.9% more
+  error dollars per case on FY2024 cases than ranking by issued benefit
+  times the group's error rate (FY2022: 27.6%, 95% interval 5.9-49.4%).
+- **Step 2 takes the error amount QC recorded** in a new input column,
+  `ERROR_AMOUNT` (AMTERR), matching the frame. Total error amount falls
+  back to |original - corrected benefit| when it is blank.
+- **Blank inputs stay blank.** `EXPEDITED`, `HOMELESS_FLAG` and
+  `MONTHS_SINCE_CERT` are no longer read as 0 when missing, and a rule on a
+  missing input does not flag the case, as in the mining code.
+- **`INCL_mine_internal_and_blend_with_national_v2.R` is renamed
+  `INCL_mine_internal_and_optionally_blend_with_national_v2.R`.** Update
+  any runner or link that calls it by the old name. A new setting,
+  `NATIONAL`, picks the national side: `"published"` (the default, and the
+  only behavior before this release) blends with the published pool;
+  `"remine"` first mines the national pool from the public frame
+  (`PUBLIC_FRAME`, years `NATIONAL_YEARS`) with the recipe that built the
+  published pool, saving it to `REMINED_POOL` for reuse; and
+  `"internal_rules_only"` skips the national pool and writes only the
+  rules admitted from the internal file.
+- **Initial-month proration is backed out before the AMTERR check:**
+  prorated cases (`ALLADJ = 2`) get RAWBEN + AMTADJ when that reconciles
+  with AMTERR. QC records AMTERR two ways: as the full-month error (used
+  as is) or the prorated one (scaled to the full month by the share of the
+  month paid). Prorated errors at or under the threshold as recorded stay
+  in as under-threshold errors, even when the scaled full-month error is
+  over it.
+  Prorated cases reaching Step 8 go
+  from 964 to 6,972.
+- **`over_threshold` and `total_error_amount` come only from QC's AMTERR:**
+  `over_threshold` is AMTERR over the review year's threshold, and
+  `total_error_amount` is AMTERR, for every case. Previously both came from
+  |RAWBEN - FSBEN|, which differs from AMTERR by up to $5 and could put a
+  case on the other side of the threshold. AMTERR is never changed: the
+  full-month amount used to reconstruct restored prorated cases is the new
+  working column `amterr_full_month`; `amterr_qc` is gone (it equals
+  AMTERR). The frame now also keeps `absbendiff`.
+- **Household size rises by one person** where the issued benefit exceeds
+  the maximum allotment for the corrected size (and does not equal the
+  prior year's maximum): 337 cases, 299 of them errors. 163 move from the
+  one-person stratum to 2-3, and 40 from 2-3 to 4+.
+- **Benefit reconstruction follows one path for every case:** discrete
+  variables are set first (household size, the homeless deduction, then
+  utilities, from any element slot), then the continuous ones (earned and
+  unearned income, rent, medical, dependent care, child support) close the
+  rest of the gap to RAWBEN, largest AMOUNT first; a single-element case is
+  the one-variable version. Previously only ELEMENT1 was corrected. Where a
+  multi-element case's AMOUNTs add up to its error, each element moves the
+  benefit by its own AMOUNT (`cascade_type`, `amount_pattern`). Later
+  elements are also corrected after an ELEMENT1 household size or homeless
+  correction. Notes list every variable moved (`util_down+med_up`,
+  `hhsize_up+earn_down`), with `+cascade_error` when RAWBEN is not reached.
+- **No leftover amounts in benefit reconstruction:** a variable cut to $25
+  or less, or by 90% or more, goes to $0 instead (rather than keeping, say,
+  $4 of $500 in earnings) when that lands within $5 of RAWBEN or a later
+  variable can take up the rest. Likewise a variable at $0 is not raised to
+  $25 or less.
+- **Utilities in benefit reconstruction** move only between published
+  allowances by state, month and household size (new
+  `additional_data/utilities/`). Cited alone, a utility moves to the
+  allowance closest to RAWBEN; with other elements, to the closest one at
+  least $50 away that does not pass RAWBEN. When ELEMENT1 is not recreated
+  (standard deduction, arithmetic computation, ...), a utility in a later
+  slot follows its nature code alone (52: one step down; 53: the top
+  allowance).
+- **Medical in standard medical deduction (SMD) states** only takes $0,
+  the state's SMD, or an actual deduction above it, chosen in the
+  reconstruction with the other variables. It was previously snapped to the
+  SMD after the fact, which could undo a match.
+- **Direction codes in benefit reconstruction:** a correction never moves a
+  variable in a direction that none of its recorded codes support (E_FINDG:
+  overissuance or underissuance; the nature code). When the two disagree,
+  the one that points the way QC's own benefit result does lets the move
+  through. For ELEMENT2-9 of multi-element cases whose AMOUNTs do not add
+  up, the nature code decides: states usually copy the case's E_FINDG into
+  every slot. A blocked variable keeps the QC value (`_error` when it is the
+  only one).
+- **Household size in benefit reconstruction:** household size errors in
+  any element slot shift household size before the other corrections:
+  unit composition (150) and the person-eligibility elements (111 student,
+  130 citizenship, 151 disqualification, 160-166 work rules, 170 SSN), in
+  the direction of the nature (eligible person excluded: one fewer;
+  ineligible person included: one more). A case shifts by one person (two
+  only on an exact match; see element 150 below), and cases whose elements
+  disagree are left alone. Cases paid
+  above the maximum allotment for their size get one more person.
+- **Element 150 natures 13 and 15** (eligible member with income or
+  expenses excluded): one fewer person. When ELEMENT1 is an eligible person
+  excluded who may have had income (150 nature 13, or a person element with
+  nature 6), the income of the member whose removal brings the benefit
+  closest to RAWBEN, within $5, is also taken out of FSEARN/FSUNEARN
+  (`hhsize_up+income_down`), retrying with a utility error in a later slot
+  set by its nature code. When one fewer person is still more than $5 off
+  after the rest of the reconstruction (so QC's other cited elements go
+  first), a second person comes off instead if that lands within $5: on its
+  own for natures 12 / 16, with one or two members' income for nature 13 and
+  person elements with nature 6 (the closest; left alone if different
+  amounts tie) (`hhsize_up_2`).
+- **Arithmetic computation (520) and standard deduction (361) errors in
+  ELEMENT1** that still miss RAWBEN are tried with the previous fiscal
+  year's maximum allotment, standard deduction and shelter cap (alone, in
+  pairs, then all three), kept only on an exact match
+  (`prior_year_tables`). Most matches are October-December reviews, just
+  after the annual update.
+- **Unit composition "other" (element 150 nature 99)** in ELEMENT1 takes
+  its direction from E_FINDG1 when the case still misses RAWBEN (one more
+  person on an overissuance, one fewer on an underissuance), kept when the
+  benefit then lands within $5 of RAWBEN.
+- **Homeless shelter deduction errors (element 362)** are corrected in any
+  element slot: nature 53 gives the agency side the homeless standard for
+  the review's fiscal year, nature 52 gives it $0 (notes `homeless_up` /
+  `homeless_down`). Homeless cases with a rent or utility error no longer
+  keep the homeless shelter deduction.
+- **Nature 97 / agency 26 variances** (change not required to be reported or
+  acted on) are flagged, not removed: `no_action_required_i` when every
+  variance is 97 / 26, `no_action_partial_i` when some are and some are not.
+  Their elements are recreated like any other, and the QC record (QC side,
+  error amount, finding, variance fields) is left as published. Filter on the
+  flags for analyses of errors.
+- **Smoothing of reconstructed values at the maximum and minimum benefit:**
+  cases whose RAWBEN is the maximum allotment, or the minimum benefit for
+  1-2 person units, only give a bound and were left exactly on the limit.
+  The last continuous variable moved is now redrawn from cases with the same
+  correction between the limits, far enough to leave the limit, matched
+  across states on the kind of mistake QC recorded (for example, a missed
+  income source rather than a wrong amount), household size, 3-year group
+  (FY2017-19, FY2022-24), elderly or disabled members and children, then on
+  mistake, size and years, then years alone; the few cases with fewer than
+  10 such donors are dropped from the data (fixed seed; flagged in
+  `imputed_at_bound`); rent moved up to the shelter cap (or the last few
+  dollars below it) is redrawn above it the same way. The benefit cannot
+  change. Utilities, household size, the homeless deduction and medical at
+  the SMD are left as reconstructed. Replaces the earlier rules ($5 amounts
+  to $0, large income cuts at the max to $0, deductions scaled to
+  `no_change` means), which left about a fifth of these cases on the max and
+  did nothing at the minimum.
+
+### Added
+- **A benefit check in every workbook** (rules 2001-2003, one per
+  household-size group, after the deployed rules on Step 3): it flags a
+  case whose benefit, recalculated from its inputs with the review year's
+  tables, differs from the issued benefit by more than the federal
+  tolerance, the pattern of arithmetic computation errors (QC element 520).
+  The rule text gives its national precision, recall and dollars per
+  flagged case. It is blank on the sample cases shipped in the workbook,
+  whose IDs now start `SAMPLE-`: their inputs are reconstructed from the
+  QC findings, so the check would flag reconstruction gaps rather than
+  errors. It scores a state's own pre-QC records. An optional
+  `ALLOTMENT_ADJUSTMENT` input column lets it skip prorated and restored
+  benefits (codes 2 and 3).
+- **Workbooks for DC and Georgia.**
+- `methods/case_predictions/predict_cases.R`: per-case error probability
+  and expected error dollars for states that deploy a model rather than a
+  workbook (findings sections 46 and 48), with the delivery-list rules
+  that flag each case as an explanation.
+- **A state model package**, `snap_case_model_v2.8.0.zip` on the release
+  page: the model behind `predict_cases.R`, already trained, with a script
+  that scores a state's own case file in R (one package to install,
+  xgboost). The input is one row per case with the 21 columns of the
+  workbook's Step 2; the output gives each case's error probability,
+  predicted error amount, expected error dollars and rank, and the state's
+  workbook rules that flag it. `MODEL_CARD.md` inside says how the model
+  was built and tested. Built by
+  `methods/case_predictions/make_case_model_package.R` and checked by
+  `validate_case_model_package.R`.
+- Proration columns, including `initial_month_i`: a prorated benefit
+  (`ALLADJ = 2`) certified in the sample month (`LASTCERT = 0`), both from
+  the case record.
+- `additional_data/bbce_income.csv` and `bbce_asset.csv`: BBCE income and
+  asset limits by state and fiscal year, FY1996-FY2027 (ERS SNAP Policy
+  Database, QC Technical Documentation, SNAP Screener).
+
+### Fixed
+- **Benefit reconstruction now reaches the issued benefit more often.**
+  Rebuilds that miss it by more than $1 fall from 9,348 to 8,853 cases
+  (from 21.8% to 18.1% of error dollars), and cases issued the maximum
+  benefit whose rebuilt benefit falls below it drop from 579 to 359 in
+  FY2022-24. The changes: the earned-income rebuild no longer adjusts the
+  earned-income deduction element (321) and runs up to 11,000 steps;
+  shelter and other deduction rebuilds stop at the maximum benefit; the
+  homeless deduction is set to zero on cases with a rent or utility error;
+  utility allowances are matched by fiscal year, not calendar year; the
+  rent smoothing step scales rent, not the shelter deduction; and rebuilds
+  that changed nothing are labelled `*_no_change` instead of up or down.
+  The list builders' income-pile count check is updated for this frame
+  (1,399 FY2022-24 pile rows, was 1,394).
+- **Benefit reconstruction:** a unit with the homeless shelter deduction
+  gets no excess shelter deduction (FS and raw side, and the workbook);
+  reported child support counts only where the file allowed it as a
+  deduction or exclusion. These were the 44 rows where the recreated
+  benefit missed `FSBEN`.
+- **Lookup tables corrected against the FY2016-FY2024 QC Technical
+  Documentation** (delivery lists not yet rebuilt):
+  error thresholds for FY2016 and FY2020; standard medical deductions for
+  Iowa, New Hampshire and Georgia; FY2024 element and nature codes added.
+  `state_sua.csv` now holds the lower value where a standard changed
+  mid-year (17 state-years).
 
 ## [2.7.0] - 2026-10-06
 
@@ -33,6 +263,12 @@ workbooks are on the v2.7.0 release page.
   at the standard.**
 - **All delivery lists re-mined** on the updated data: 98 blended lists, 98
   national-only lists, and the rule sheet.
+- **Rules that rest on a reconstruction artifact are excluded** (issue
+  #29). In the public files, many downward income corrections on cases
+  issued the maximum benefit end up at one shared amount; rules with 25%
+  or more of their training flags or errors on those cases are dropped
+  before the lists are filled. Every list carries two new columns after
+  `mm_inflation`, `pile_share_flags` and `pile_share_errors`.
 - **Every state gets a national-only list at both budgets**, beside its
   blended list (v2.6.0 shipped national-only lists only where a
   one-year-ahead test favored them). The blended list stays the default and

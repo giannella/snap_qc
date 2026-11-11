@@ -45,3 +45,21 @@ Untitled.R
 # per-rule evaluation dumps (regenerable from their scripts; summaries are tracked)
 methods/interval_width_decay/per_rule_decay_*.csv
 methods/interval_width_decay/anchor_translation_per_rule_*.csv
+
+# caches, smoke runs, process ids and frame exports (regenerable; the frame itself is tracked)
+__pycache__/
+.build/
+methods/**/smoke/
+methods/case_predictions/prev_*/
+pids
+rebuild_start
+frame_for_profiles.csv
+# lists mined on superseded frames (f1027, f1030, f1104); f1109 is the current frame
+methods/f1027_lists/
+methods/f1030_lists/
+methods/f1104_lists/
+# the f1109 build stages its lists here (runners/run_f1109_build.R); the shipped copy is state_delivery_lists/
+methods/f1109_lists/
+
+# built state model package (make_case_model_package.R); shipped as a release asset
+methods/case_predictions/dist/

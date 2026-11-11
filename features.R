@@ -75,26 +75,6 @@ add_year_col <- function(data, value_col, new_col = value_col) {
   data
 }
 
-#' Add a within-cell percentile column. For `col`, adds 
-#' `<col>_p`: the proportion of non-missing observations in the
-#' same state_name x rawusize cell whose value is <= this one.
-#' Values are CPI-deflated before ranking.
-add_percentile <- function(data, col,
-                           group_vars = c("rawusize", "state_name"),
-                           suffix = "_p") {
-  
-  new_name <- paste0(rlang::as_name(rlang::ensym(col)), suffix)
-  
-  data |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) |>
-    dplyr::mutate("{new_name}" := dplyr::if_else(
-      {{ col }} == 0,
-      0,
-      dplyr::cume_dist(dplyr::na_if({{ col }}, 0) / cpi)
-    )) |>
-    dplyr::ungroup()
-}
-
 # CPI-inflate values
 cpi_inflate <- function(data, vars, base_year, year_col = "year",
                         overwrite = TRUE, suffix = "_real") {
@@ -155,24 +135,21 @@ add_external_data <- function(data) {
     dplyr::mutate(
       bendiff        = RAWBEN - FSBEN,
       absbendiff     = abs(bendiff),
-      over_threshold = factor(as.integer(absbendiff > threshold),
+      over_threshold = factor(as.integer(as.numeric(AMTERR) > threshold),
                               levels = c(0, 1)),
       max_shelter_deduction = ifelse(FSNELDER + FSNDIS > 0,
                                      Inf,
                                      max_shelter_deduction)
     ) |>
     add_state_year_col(state_sua, "max_sua") |>
-    add_state_year_col(smd_by_year, "smd_amt") |>
-    dplyr::left_join(dplyr::select(year_data, year, cpi),       
-                     by = c("fiscal_year" = "year")) |>
-    dplyr::select(-cpi)                                    
+    add_state_year_col(smd_by_year, "smd_amt")
 }
 
 standardize_data <- function(data, using_qc_data = TRUE) {
   if (using_qc_data) {
     data |>
       dplyr::mutate(
-        FSCSDED = FSCSEXP,
+        FSCSDED = ifelse(FSCSDED + dplyr::coalesce(EXCL_FSCSDED, 0) > 0, FSCSEXP, 0),
         FSGRINC = FSEARN + FSUNEARN
       )
   }
@@ -182,15 +159,5 @@ standardize_data <- function(data, using_qc_data = TRUE) {
 add_features <- function(data) {
   data |>
     dplyr::mutate(at_max_ben = rawben_uncapped >= rawbenmax) |>
-    add_sua_tier() |>
-    dplyr::left_join(dplyr::select(year_data, year, cpi),       
-                     by = c("fiscal_year" = "year")) |>
-    add_percentile(rawgrinc) |>
-    add_percentile(rawearn) |>
-    add_percentile(rawunearn) |>
-    add_percentile(rawmedded) |>
-    add_percentile(rawdepded) |>
-    add_percentile(rawcsded) |>
-    add_percentile(rawrent) |>
-    dplyr::select(-cpi)                                    
+    add_sua_tier()
 }

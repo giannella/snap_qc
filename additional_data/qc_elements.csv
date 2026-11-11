@@ -15,6 +15,7 @@
 211,bank accounts or cash on hand
 212,nonrecurring lump-sum payment
 213,other liquid assets
+214,substantial lottery or gambling winnings
 221,real property
 222,vehicles
 224,other nonliquid resources
@@ -37,6 +38,7 @@
 346,other unearned income
 350,child support payments received from absent parent
 361,standard deduction
+362,homeless shelter deduction
 363,shelter deduction
 364,standard utility allowance
 365,medical expense deductions
@@ -45,6 +47,8 @@
 372,combined net income
 520,arithmetic computation
 530,transitional benefits
+540,missing reports
+542,expired certification period
 560,reporting systems
 810,snap simplification project
 820,demonstration projects

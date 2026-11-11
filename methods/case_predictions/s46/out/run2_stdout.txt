@@ -1,0 +1,168 @@
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-01 23:49:20] === phase fit GC,E,D,F (smoke FALSE) 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-01 23:50:24] W1 holdout GC seed 117: 0.9 min 
+[11-01 23:51:17] W1 holdout GC seed 118: 0.9 min 
+[11-01 23:52:10] W1 holdout GC seed 119: 0.9 min 
+[11-01 23:53:03] W1 holdout GC seed 120: 0.9 min 
+[11-01 23:53:56] W1 holdout GC seed 121: 0.9 min 
+[11-01 23:54:49] W1 holdout GC seed 122: 0.9 min 
+[11-01 23:55:42] W1 holdout GC seed 123: 0.9 min 
+[11-01 23:56:35] W1 holdout GC seed 124: 0.9 min 
+[11-01 23:57:28] W1 holdout GC seed 125: 0.9 min 
+[11-01 23:58:20] W1 holdout GC seed 126: 0.9 min 
+[11-01 23:58:36] W1 holdout E seed 117: 0.3 min 
+[11-01 23:58:51] W1 holdout E seed 118: 0.3 min 
+[11-01 23:59:06] W1 holdout E seed 119: 0.3 min 
+[11-01 23:59:21] W1 holdout E seed 120: 0.3 min 
+[11-01 23:59:36] W1 holdout E seed 121: 0.3 min 
+[11-01 23:59:52] W1 holdout E seed 122: 0.3 min 
+[11-02 00:00:07] W1 holdout E seed 123: 0.3 min 
+[11-02 00:00:22] W1 holdout E seed 124: 0.3 min 
+[11-02 00:00:38] W1 holdout E seed 125: 0.3 min 
+[11-02 00:00:53] W1 holdout E seed 126: 0.3 min 
+[11-02 00:01:41] W1 holdout D seed 117: 0.8 min 
+[11-02 00:02:28] W1 holdout D seed 118: 0.8 min 
+[11-02 00:03:14] W1 holdout D seed 119: 0.8 min 
+[11-02 00:04:01] W1 holdout D seed 120: 0.8 min 
+[11-02 00:04:48] W1 holdout D seed 121: 0.8 min 
+[11-02 00:05:35] W1 holdout D seed 122: 0.8 min 
+[11-02 00:06:22] W1 holdout D seed 123: 0.8 min 
+[11-02 00:07:10] W1 holdout D seed 124: 0.8 min 
+[11-02 00:07:57] W1 holdout D seed 125: 0.8 min 
+[11-02 00:08:44] W1 holdout D seed 126: 0.8 min 
+[11-02 00:08:58] W1 holdout F seed 117: 0.2 min 
+[11-02 00:09:10] W1 holdout F seed 118: 0.2 min 
+[11-02 00:09:23] W1 holdout F seed 119: 0.2 min 
+[11-02 00:09:35] W1 holdout F seed 120: 0.2 min 
+[11-02 00:09:48] W1 holdout F seed 121: 0.2 min 
+[11-02 00:10:01] W1 holdout F seed 122: 0.2 min 
+[11-02 00:10:14] W1 holdout F seed 123: 0.2 min 
+[11-02 00:10:26] W1 holdout F seed 124: 0.2 min 
+[11-02 00:10:39] W1 holdout F seed 125: 0.2 min 
+[11-02 00:10:52] W1 holdout F seed 126: 0.2 min 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-02 00:11:55] W2 holdout GC seed 117: 0.9 min 
+[11-02 00:12:51] W2 holdout GC seed 118: 0.9 min 
+[11-02 00:13:46] W2 holdout GC seed 119: 0.9 min 
+[11-02 00:14:42] W2 holdout GC seed 120: 0.9 min 
+[11-02 00:15:38] W2 holdout GC seed 121: 0.9 min 
+[11-02 00:16:34] W2 holdout GC seed 122: 0.9 min 
+[11-02 00:17:31] W2 holdout GC seed 123: 1.0 min 
+[11-02 00:18:27] W2 holdout GC seed 124: 0.9 min 
+[11-02 00:19:23] W2 holdout GC seed 125: 0.9 min 
+[11-02 00:20:19] W2 holdout GC seed 126: 0.9 min 
+[11-02 00:20:53] W2 holdout E seed 117: 0.6 min 
+[11-02 00:21:26] W2 holdout E seed 118: 0.5 min 
+[11-02 00:21:59] W2 holdout E seed 119: 0.6 min 
+[11-02 00:22:32] W2 holdout E seed 120: 0.5 min 
+[11-02 00:23:05] W2 holdout E seed 121: 0.6 min 
+[11-02 00:23:38] W2 holdout E seed 122: 0.5 min 
+[11-02 00:24:11] W2 holdout E seed 123: 0.5 min 
+[11-02 00:24:44] W2 holdout E seed 124: 0.5 min 
+[11-02 00:25:17] W2 holdout E seed 125: 0.6 min 
+[11-02 00:25:50] W2 holdout E seed 126: 0.5 min 
+[11-02 00:27:04] W2 holdout D seed 117: 1.2 min 
+[11-02 00:28:18] W2 holdout D seed 118: 1.2 min 
+[11-02 00:29:33] W2 holdout D seed 119: 1.2 min 
+[11-02 00:30:48] W2 holdout D seed 120: 1.3 min 
+[11-02 00:32:03] W2 holdout D seed 121: 1.3 min 
+[11-02 00:33:17] W2 holdout D seed 122: 1.2 min 
+[11-02 00:34:32] W2 holdout D seed 123: 1.2 min 
+[11-02 00:35:47] W2 holdout D seed 124: 1.2 min 
+[11-02 00:37:02] W2 holdout D seed 125: 1.3 min 
+[11-02 00:38:17] W2 holdout D seed 126: 1.3 min 
+[11-02 00:38:30] W2 holdout F seed 117: 0.2 min 
+[11-02 00:38:43] W2 holdout F seed 118: 0.2 min 
+[11-02 00:38:57] W2 holdout F seed 119: 0.2 min 
+[11-02 00:39:10] W2 holdout F seed 120: 0.2 min 
+[11-02 00:39:24] W2 holdout F seed 121: 0.2 min 
+[11-02 00:39:37] W2 holdout F seed 122: 0.2 min 
+[11-02 00:39:50] W2 holdout F seed 123: 0.2 min 
+[11-02 00:40:03] W2 holdout F seed 124: 0.2 min 
+[11-02 00:40:17] W2 holdout F seed 125: 0.2 min 
+[11-02 00:40:30] W2 holdout F seed 126: 0.2 min 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+Growing trees.. Progress: 59%. Estimated remaining time: 21 seconds.
+[11-02 00:42:36] W3 holdout GC seed 117: 1.9 min 
+Growing trees.. Progress: 59%. Estimated remaining time: 21 seconds.
+[11-02 00:44:31] W3 holdout GC seed 118: 1.9 min 
+Growing trees.. Progress: 59%. Estimated remaining time: 21 seconds.
+[11-02 00:46:26] W3 holdout GC seed 119: 1.9 min 
+Growing trees.. Progress: 59%. Estimated remaining time: 21 seconds.
+[11-02 00:48:22] W3 holdout GC seed 120: 1.9 min 
+Growing trees.. Progress: 59%. Estimated remaining time: 21 seconds.
+[11-02 00:50:17] W3 holdout GC seed 121: 1.9 min 
+Growing trees.. Progress: 59%. Estimated remaining time: 21 seconds.
+[11-02 00:52:13] W3 holdout GC seed 122: 1.9 min 
+Growing trees.. Progress: 59%. Estimated remaining time: 21 seconds.
+[11-02 00:54:09] W3 holdout GC seed 123: 1.9 min 
+Growing trees.. Progress: 59%. Estimated remaining time: 21 seconds.
+[11-02 00:56:05] W3 holdout GC seed 124: 1.9 min 
+Growing trees.. Progress: 59%. Estimated remaining time: 21 seconds.
+[11-02 00:58:01] W3 holdout GC seed 125: 1.9 min 
+Growing trees.. Progress: 59%. Estimated remaining time: 21 seconds.
+[11-02 00:59:58] W3 holdout GC seed 126: 2.0 min 
+[11-02 01:00:33] W3 holdout E seed 117: 0.6 min 
+[11-02 01:01:09] W3 holdout E seed 118: 0.6 min 
+[11-02 01:01:43] W3 holdout E seed 119: 0.6 min 
+[11-02 01:02:18] W3 holdout E seed 120: 0.6 min 
+[11-02 01:02:53] W3 holdout E seed 121: 0.6 min 
+[11-02 01:03:28] W3 holdout E seed 122: 0.6 min 
+[11-02 01:04:02] W3 holdout E seed 123: 0.6 min 
+[11-02 01:04:37] W3 holdout E seed 124: 0.6 min 
+[11-02 01:05:12] W3 holdout E seed 125: 0.6 min 
+[11-02 01:05:47] W3 holdout E seed 126: 0.6 min 
+[11-02 01:07:39] W3 holdout D seed 117: 1.9 min 
+[11-02 01:09:30] W3 holdout D seed 118: 1.9 min 
+[11-02 01:11:22] W3 holdout D seed 119: 1.9 min 
+[11-02 01:13:13] W3 holdout D seed 120: 1.9 min 
+[11-02 01:15:05] W3 holdout D seed 121: 1.9 min 
+[11-02 01:16:56] W3 holdout D seed 122: 1.8 min 
+[11-02 01:18:49] W3 holdout D seed 123: 1.9 min 
+[11-02 01:20:40] W3 holdout D seed 124: 1.9 min 
+[11-02 01:22:32] W3 holdout D seed 125: 1.9 min 
+[11-02 01:24:25] W3 holdout D seed 126: 1.9 min 
+[11-02 01:24:39] W3 holdout F seed 117: 0.2 min 
+[11-02 01:24:53] W3 holdout F seed 118: 0.2 min 
+[11-02 01:25:06] W3 holdout F seed 119: 0.2 min 
+[11-02 01:25:20] W3 holdout F seed 120: 0.2 min 
+[11-02 01:25:34] W3 holdout F seed 121: 0.2 min 
+[11-02 01:25:48] W3 holdout F seed 122: 0.2 min 
+[11-02 01:26:03] W3 holdout F seed 123: 0.2 min 
+[11-02 01:26:16] W3 holdout F seed 124: 0.2 min 
+[11-02 01:26:30] W3 holdout F seed 125: 0.2 min 
+[11-02 01:26:45] W3 holdout F seed 126: 0.2 min 
+Warning messages:
+1: package 'xgboost' was built under R version 4.5.2 
+2: package 'ranger' was built under R version 4.5.2 
+[11-02 01:26:48] === phase score  (smoke FALSE) 
+[11-02 01:26:48] scoring A,B,G,C,GC,E,D,F 
+  note: homeless coerced to 0/1 (1 = "TRUE")
+  note: homeless coerced to 0/1 (1 = "TRUE")
+  note: homeless coerced to 0/1 (1 = "TRUE")
+[11-02 01:30:19] choice B (top F) 
+   cand rank        Q       se_Q  Q_minus_A     se_vs_A Q_equal_weights
+A     A    1 3.391169 0.09146675 0.00000000 0.009372615        3.383143
+B     B    2 3.525858 0.09346991 0.13468902 0.047945704        3.501184
+G     G    2 3.446302 0.09269310 0.05513326 0.061113225        3.429052
+C     C    3 3.525944 0.09596596 0.13477507 0.051066683        3.517338
+GC   GC    3 3.470886 0.09457626 0.07971687 0.058104404        3.462863
+E     E    3 3.494765 0.09316913 0.10359550 0.056356332        3.486090
+D     D    4 3.447432 0.09245959 0.05626269 0.062488662        3.431995
+F     F    5 3.530551 0.09619256 0.13938205 0.051200726        3.521414
+   prec5_pooled eligible
+A     0.2691594     TRUE
+B     0.2814851     TRUE
+G     0.2774479    FALSE
+C     0.2775610     TRUE
+GC    0.2762969     TRUE
+E     0.2751379     TRUE
+D     0.2715332     TRUE
+F     0.2757863     TRUE
+  left_out chosen  gain_vs_A
+1       W1      B 0.01040992
+2       W2      C 0.01020741
+3       W3      B 0.05614920

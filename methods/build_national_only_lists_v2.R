@@ -23,6 +23,12 @@
 # The runner then characterizes the lists (section 29 adapter) and joins
 # the curated columns before they are copied into state_delivery_lists/.
 #
+# PILE GATE (2026-10-07, issue #29): rules with >= 0.25 of their training
+# flags or errors on reconstruction income-pile rows (income_pile_rows())
+# are dropped before the fill, as in the blended builder; the audit columns
+# pile_share_flags / pile_share_errors ride on every list. V250_PILE_GATE=0
+# tags but does not drop.
+#
 # Evaluation-only: never mines; stops if the production cache is absent.
 # Expects `reg_model_data`. Run via runners/run_national_only_build.R.
 
@@ -84,14 +90,18 @@ if (exists("SELECT_OVERRIDE")) {
 }
 
 ## ---- frame (mirrors the v2.5.0 production build) ----------------------------
-stopifnot(nrow(reg_model_data) == 231619L)
+F1030 <- nrow(reg_model_data) == 231602L   # frame f1030 (2026-10-30, Ben's reconstruction rewrite)
+F1104 <- nrow(reg_model_data) == 231551L   # frame f1104 (2026-11-04, Ben's donor matching)
+F1109 <- nrow(reg_model_data) == 237557L   # frame f1109 (2026-11-09, AMTERR labels, 97/26 kept)
+stopifnot(nrow(reg_model_data) == (if (F1109) 237557L else if (F1104) 231551L else if (F1030) 231602L else 231619L))
 adf0 <- reg_model_data %>% filter(fiscal_year %in% c("2022", "2023", "2024"))
 pf  <- prep_features(adf0, VOCAB19)
 adf <- pf$data
 stopifnot(length(setdiff(VOCAB19, pf$features)) == 0)
 st <- as.character(adf$state)
 ie_all <- !is.na(adf$over_threshold) & adf$over_threshold != 0
-stopifnot(nrow(adf) == 115559L, sum(ie_all) == 13161L)
+stopifnot(nrow(adf) == (if (F1109) 118247L else if (F1104) 115528L else if (F1030) 115556L else 115559L),
+          sum(ie_all) == (if (F1109) 13297L else if (F1104) 13135L else if (F1030) 13164L else 13161L))
 hh_all <- hh_group_of(adf$cert_HH_size_FS_n)
 
 ## ---- production national pool from cache (never mine) -----------------------
@@ -108,9 +118,30 @@ top40 <- sum(natl$artifact_i[seq_len(min(40L, nrow(natl)))])
 top10 <- sum(natl$artifact_i[seq_len(min(10L, nrow(natl)))])
 stamp("national pool: %d rules | tagged %d (flag-share %.2f%%) | head: top40 %d, top10 %d",
       nrow(natl), sum(natl$artifact_i), 100 * share_flag, top40, top10)
-if (share_flag > 0.02 || top40 > MM_TOP40_MAX || top10 > MM_TOP10_MAX)
+# V250_HEAD_GATE=report (Eric, 2026-11-05, f1104 build only): a head breach is logged, not halted;
+# tagged rules are still dropped before the fill and the pool-share gate still halts
+if (share_flag <= 0.02 && (top40 > MM_TOP40_MAX || top10 > MM_TOP10_MAX) && identical(Sys.getenv("V250_HEAD_GATE"), "report")) {
+  stamp("HEAD GATE BREACH REPORTED, NOT HALTED (V250_HEAD_GATE=report): top40 %d | top10 %d; tagged rules dropped before the fill", top40, top10)
+} else if (share_flag > 0.02 || top40 > MM_TOP40_MAX || top10 > MM_TOP10_MAX)
   stop("DISPLACEMENT HALT [national]: pool-share or head gate breached (statistician's gate)")
-pool <- natl[!natl$artifact_i, , drop = FALSE]
+# income-pile tags, scored on the pool's own training rows (all FY2022-24
+# rows of the rule's stratum); the recomputed n must equal the pool's n
+PILE_TAG_SHARE <- 0.25
+PILE_GATE <- !identical(Sys.getenv("V250_PILE_GATE"), "0")
+pile_all <- income_pile_rows(adf0)
+stopifnot(sum(pile_all) == (if (F1109) 208L else if (F1104) 212L else if (F1030) 208L else 1399L))   # 208 on f1109; 212 on f1104; 208 on f1030; 1399 on eb989fda; 1394 on the v2.7 frame
+strata_nat <- lapply(setNames(nm = HH_LEVELS), function(h) which(hh_all %in% h))
+sc <- reduce_flags_for_rules(natl, adf, strata_nat, function(ix)
+  c(length(ix), sum(pile_all[ix]), sum(pile_all[ix] & ie_all[ix])))
+stopifnot(all(sc[, 1] == natl$n))
+natl$pile_share_flags  <- round(sc[, 2] / natl$n, 4)
+natl$pile_share_errors <- round(ifelse(natl$k > 0, sc[, 3] / natl$k, 0), 4)
+pile_tag <- natl$pile_share_flags >= PILE_TAG_SHARE | natl$pile_share_errors >= PILE_TAG_SHARE
+natl$pile_i <- PILE_GATE & pile_tag
+stamp("national pool: pile-tagged %d of %d (%.1f%%) | best tagged rank %s | gate %s",
+      sum(pile_tag), nrow(natl), 100 * mean(pile_tag), if (any(pile_tag)) min(which(pile_tag)) else "-",
+      if (PILE_GATE) "ON (dropped before the fill)" else "OFF")
+pool <- natl[!natl$artifact_i & !natl$pile_i, , drop = FALSE]
 pool$pool <- "national"
 
 # the section-29 adapter needs the frame export beside the lists
@@ -181,6 +212,8 @@ for (state in unique(sel_cells$state)) {
       mm_share_flags = pool$mm_share_flags[sel],
       mm_share_errors = pool$mm_share_errors[sel],
       mm_inflation = pool$mm_inflation[sel],
+      pile_share_flags = pool$pile_share_flags[sel],
+      pile_share_errors = pool$pile_share_errors[sel],
       n_flagged_state = nfl[sel])
     un2 <- rep(FALSE, nrow(trs)); nn <- integer(length(sel))
     for (j in seq_along(sel)) {

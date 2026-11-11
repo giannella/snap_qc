@@ -58,6 +58,31 @@ prep_features <- function(df, features) {
   list(data = df, features = pv)
 }
 
+# Reconstruction income piles (2026-10-07, issue #29). The munging
+# reconstruction places a downward earned (unearned) correction on a case
+# issued the maximum benefit at the first amount that reproduces the maximum,
+# then rescales those cases by one ratio per household size, so many
+# different cases share one reconstructed amount (one-person earned income
+# $589 / $622 / $663 in FY2022 / 23 / 24). Returns a logical row flag: a
+# down-correction whose as-recorded amount is shared by at least `min_n`
+# down-corrected cases of the same fiscal year and household size (sizes 6+
+# pooled). Reads the *_nominal columns where present (v2.7+ frames carry the
+# CPI-adjusted amounts in rawearn / rawunearn), else rawearn / rawunearn.
+# Diagnostic: methods/reconstruction_income_piles/pile_diagnostic.R.
+income_pile_rows <- function(df, min_n = 10L) {
+  notes <- as.character(df$correctednotes)
+  size6 <- pmin(suppressWarnings(as.numeric(as.character(df$cert_HH_size_FS_n))), 6)
+  out <- rep(FALSE, nrow(df))
+  for (spec in list(c("earn_down", "rawearn"), c("unearn_down", "rawunearn"))) {
+    col <- if (paste0(spec[2], "_nominal") %in% names(df)) paste0(spec[2], "_nominal") else spec[2]
+    amt <- df[[col]]
+    elig <- !is.na(notes) & notes == spec[1] & !is.na(amt) & amt > 0
+    cnt <- ave(as.integer(elig), paste(df$fiscal_year, size6, amt), FUN = sum)
+    out <- out | (elig & cnt >= min_n)
+  }
+  out
+}
+
 ## ── 1. Generate: tree ensembles -> rule strings ──────────────────────────────
 # A rule is the conjunction of split conditions on the path from the root to a
 # node ("x <= 3.5 & y > 100"). Every non-root node contributes one rule, as in

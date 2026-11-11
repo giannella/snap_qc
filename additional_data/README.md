@@ -160,6 +160,9 @@ validated against, and is also not an input.
 | `max_allotments.csv` | maximum monthly allotment by year and household size 1-20 |
 | `standard_deductions.csv` | standard deduction by year and household size 1-20 |
 | `standard_medical_deductions.csv` | standard medical deduction by state, 2017-2024 |
+| `state_sua.csv` | heating/cooling standard utility allowance by state and year; the lowest value where it varies by size, region or month |
+| `bbce_income.csv` | BBCE gross income limit (% of poverty) by state and fiscal year, 1996-2027, for households without an elderly or disabled member; blank = no BBCE; the higher value where it changed mid-year |
+| `bbce_asset.csv` | BBCE asset limit (dollars), same layout; 0 = no asset test |
 | `year_data.csv` | per-year parameters: error threshold, minimum allotment, maximum shelter deduction, Medicare Part B premium |
 | `state_data.csv` | state name to FIPS code |
 | `qc_elements.csv` | QC element code to description |

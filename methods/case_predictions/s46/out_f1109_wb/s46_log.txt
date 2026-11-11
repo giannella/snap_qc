@@ -1,0 +1,6 @@
+[11-11 14:12:58] wb fy2022 seed 117: 300 rules allotted from methods/v270_seed_replicates/fy2022/pools/admitted_f1109_seed117.rds; 9.9% of FY2022 cases have a vote (max 39) 
+[11-11 14:15:33] wb fy2022 seed 118: 300 rules allotted from methods/v270_seed_replicates/fy2022/pools/admitted_f1109_seed118.rds; 8.7% of FY2022 cases have a vote (max 44) 
+[11-11 14:18:25] wb fy2022 seed 119: 300 rules allotted from methods/v270_seed_replicates/fy2022/pools/admitted_f1109_seed119.rds; 9.7% of FY2022 cases have a vote (max 40) 
+[11-11 14:18:27] wb test 3 scorer: FY2022 votes from FY2017-19 rules, seeds 117-119; curve matches the shipped vote_table.csv; size coefs (votes capped at 7) (Intercept) 4.1202, lben 0.1449, hsz2 0.2361, hsz3 0.1573, hsz4 0.2084, hsz5 0.2401, hsz6+ 0.2924, vote -0.0106; uncapped (Intercept) 4.1190, lben 0.1448, hsz2 0.2354, hsz3 0.1574, hsz4 0.2064, hsz5 0.2383, hsz6+ 0.2903, vote -0.0054 
+[11-11 15:08:33] wb fy2024 seed 117: 300 rules allotted from methods/v270_seed_replicates/pools/admitted_f1109_seed117.rds; 11.3% of FY2024 cases have a vote (max 33) 
+[11-11 15:08:34] wb W3: 40497 cases scored with the FY2022 scorer (rules FY2017-2018-2019); score range 60.7-570.7 

@@ -1,0 +1,42 @@
+[11-10 10:42:26] === f1109 phase setup (out out_f1109_eval) 
+[11-10 10:42:29] W1 B settings: P depth 4 mcw 5 colsample 0.5, 1715 rounds; size depth 3 mcw 25 offset FALSE, 533 rounds; old years FALSE, percentiles TRUE 
+[11-10 10:42:29] W2 B settings: P depth 5 mcw 5 colsample 0.8, 1335 rounds; size depth 4 mcw 25 offset FALSE, 751 rounds; old years FALSE, percentiles FALSE 
+[11-10 10:42:29] W3 B settings: P depth 6 mcw 5 colsample 0.8, 1086 rounds; size depth 2 mcw 5 offset TRUE, 1635 rounds; old years TRUE, percentiles FALSE 
+[11-10 10:42:30] === f1109 phase fit (out out_f1109_eval) 
+[11-10 10:42:51] W1 holdout B seed 117: 0.2 min 
+[11-10 10:43:02] W1 holdout B seed 118: 0.2 min 
+[11-10 10:43:13] W1 holdout B seed 119: 0.2 min 
+[11-10 10:43:24] W1 holdout B seed 120: 0.2 min 
+[11-10 10:43:34] W1 holdout B seed 121: 0.2 min 
+[11-10 10:43:45] W1 holdout B seed 122: 0.2 min 
+[11-10 10:43:55] W1 holdout B seed 123: 0.2 min 
+[11-10 10:44:05] W1 holdout B seed 124: 0.2 min 
+[11-10 10:44:16] W1 holdout B seed 125: 0.2 min 
+[11-10 10:44:26] W1 holdout B seed 126: 0.2 min 
+[11-10 10:44:46] W2 holdout B seed 117: 0.2 min 
+[11-10 10:44:58] W2 holdout B seed 118: 0.2 min 
+[11-10 10:45:10] W2 holdout B seed 119: 0.2 min 
+[11-10 10:45:22] W2 holdout B seed 120: 0.2 min 
+[11-10 10:45:34] W2 holdout B seed 121: 0.2 min 
+[11-10 10:45:46] W2 holdout B seed 122: 0.2 min 
+[11-10 10:45:57] W2 holdout B seed 123: 0.2 min 
+[11-10 10:46:10] W2 holdout B seed 124: 0.2 min 
+[11-10 10:46:21] W2 holdout B seed 125: 0.2 min 
+[11-10 10:46:33] W2 holdout B seed 126: 0.2 min 
+[11-10 10:46:58] W3 holdout B seed 117: 0.3 min 
+[11-10 10:47:13] W3 holdout B seed 118: 0.3 min 
+[11-10 10:47:29] W3 holdout B seed 119: 0.3 min 
+[11-10 10:47:45] W3 holdout B seed 120: 0.3 min 
+[11-10 10:48:01] W3 holdout B seed 121: 0.3 min 
+[11-10 10:48:16] W3 holdout B seed 122: 0.3 min 
+[11-10 10:48:32] W3 holdout B seed 123: 0.3 min 
+[11-10 10:48:47] W3 holdout B seed 124: 0.3 min 
+[11-10 10:49:02] W3 holdout B seed 125: 0.3 min 
+[11-10 10:49:18] W3 holdout B seed 126: 0.3 min 
+[11-10 10:49:19] === f1109 phase score (out out_f1109_eval) 
+[11-10 10:49:53] f1109 W1: L 3.416, at 5%: precision 0.247, $/flag 39, dollar recall 0.178 
+[11-10 10:50:25] f1109 W2: L 3.403, at 5%: precision 0.253, $/flag 52, dollar recall 0.166 
+[11-10 10:51:00] f1109 W3: L 3.522, at 5%: precision 0.309, $/flag 73, dollar recall 0.183 
+[11-10 10:51:30] f1104 W1: L 3.236, at 5%: precision 0.238, $/flag 38, dollar recall 0.169 
+[11-10 10:52:04] f1104 W2: L 3.442, at 5%: precision 0.267, $/flag 55, dollar recall 0.173 
+[11-10 10:52:38] f1104 W3: L 3.495, at 5%: precision 0.310, $/flag 74, dollar recall 0.183 

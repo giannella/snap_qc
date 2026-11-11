@@ -1,0 +1,119 @@
+B2: Masking AMOUNTs in states that report them well. Results (run 2026-10-30 20:30 PT)
+The pre-registration is in b2_mask_amounts_prereg.txt, written at 20:25 before any B2 result. It is not changed here.
+
+Deviation from the plan, disclosed. The first run (20:26) had a coding bug in F2: the training class means were
+keyed by "state-year.class" instead of "class", so every lookup missed, F2 received all-zero AMOUNTs, and it
+reproduced F0 exactly. I fixed the lookup (one line, unname(which(tr))) and reran at 20:30. The design, seed,
+folds, metrics and criteria are unchanged. F0 and F1 numbers are identical across the two runs. The first run's
+log and results are kept as scratch/b2_mask_amounts_run1_f2bug.log and scratch/b2_results_run1_f2bug.rds.
+
+1. Sample
+- 22 state-years meet the report-well rule: Illinois 2022; Kansas 2024; Montana 2017-19 and 2022-24;
+  New Hampshire 2024; North Dakota 2022-24; Virginia 2017-19 and 2022-24; West Virginia 2017-19 and 2024.
+- They hold 517 clean_split cases, of which 413 take the capped path and reach RAWBEN unmasked. These 413
+  are the evaluation cases. 339 have two elements, 65 three, 9 four.
+- The informative "other" cases (41 nationally) count toward the report-well share only, as planned.
+- Sensitivity set: every clean_split case nationally, 820, of which 645 (86 state-years) are capped and reach.
+
+2. Headline results, report-well state-years (n = 413, 22 clusters)
+Agreement = every Step 7 variable within max($10, 2%) of the AMOUNT-guided value. 95% intervals are from a
+cluster bootstrap by state-year, 1,000 resamples.
+
+  Method                          All agree  95% CI       Var agree  MAE   Reach RAWBEN  Slot-1 attr. within 0.10
+  F0 greedy, zero arm               35.1%    30.9-39.3     40.6%     $135     92.7%          36.4%
+  F0 greedy, amount1_only arm       35.1%    30.9-39.3     40.6%     $135     92.7%          36.4%
+  F0 greedy, copied arm             33.2%    28.5-37.4     37.4%     $152     95.9%          33.3%
+  F1 proportional split             18.6%    15.6-22.4     26.1%     $188     94.7%          16.7%
+  F2 typical-largest-first          32.2%    27.4-36.4     38.2%     $162     93.5%          34.0%
+
+  Paired differences against F0 (zero arm):
+  F1 - F0: all agree -16.5 points [-20.5, -11.5]; MAE +$53 [+32, +72]
+  F2 - F0: all agree  -2.9 points [ -5.8,  -0.7]; MAE +$27 [+11, +49]
+
+The amount1_only arm matches the zero arm case for case. Putting AMTERR in slot 1 and zeros elsewhere
+gives the cascade the same order as slot order, so it is the same computation.
+
+3. Breakdowns, report-well (all-agree rate, F0 zero arm unless noted)
+- By number of elements: two 39.8% (n 339); three 15.4% (n 65); four 0% (n 9).
+- By true slot-1 share (the share of the gap that slot 1's variable produces in the AMOUNT-guided result):
+  at least 0.9: 45.2% (n 186); under 0.9: 26.9% (n 227). The median true slot-1 share is 0.83. The
+  interquartile range runs from 0.28 to 1.04, and 10% of cases are below -0.12. In a typical masked case,
+  then, the greedy rule gives slot 1 the whole gap when the true split is shared.
+- By element mix (n >= 15): rent|util 63.6%; earn|unearn 51.9%; unearn|earn 43.8%; earn|rent 41.9%;
+  unearn|rent 38.0%; rent|unearn 36.0%; rent|med 26.7%. F2 helps rent|med (40.0%) and hurts unearn|earn
+  (6.2%) and rent|unearn (12.0%).
+- By state: Virginia 39.8%; Montana 38.1%; West Virginia 37.6%; New Hampshire 33.3%; Illinois 31.2%;
+  Kansas 30.0%; North Dakota 20.0%. Every state is below 50%.
+- By household size: 1, 40.9%; 2, 30.0%; 3, 30.8%; 4+, 30.4%.
+
+4. Sensitivity, all clean_split cases (n = 645, 86 clusters)
+- F0 zero 35.5% [32.1, 38.9], MAE $159; copied 33.5%; amount1_only = zero; F1 18.9%; F2 31.8%.
+- F1 - F0: -16.6 points [-20.7, -12.2]; MAE +$31 [+12, +49].
+  F2 - F0: -3.7 points [-5.9, -1.5]; MAE +$24 [+5, +44].
+- By true slot-1 share: at least 0.9, 50.9%; under 0.9, 23.2%. Under 0.9, F1 (24.0%) roughly equals F0.
+- Small states vary widely (North Carolina 100% of 10; Oregon 52.9% of 17; Alabama 0% of 6). The national
+  rate matches the report-well rate, so the restriction to report-well states did not change the answer.
+
+5. Why the exploratory figure was higher
+The exploratory run counted 47.3% agreement on all 820 clean_split cases. B2 keeps only the cases where the
+unmasked run takes the capped path and reaches RAWBEN, so the truth is well defined. The excluded cases
+include household-size and homeless shifts and cases where the capped path itself stops short. A likely
+reason, not measured, is that masked and unmasked runs of those cases often stop at the same limit and agree
+for that reason. The pre-registered figure, 35%, is the one to use.
+
+6. Conclusion
+- Grade. By the pre-registered rule, the greedy fallback is poor: 35.1% of masked cases [30.9, 39.3]
+  recover every variable within $10 or 2%, well under the 50% line. The result does not depend on how the
+  AMOUNTs are hidden (zeros 35.1%, AMTERR copied 33.2%, AMTERR in slot 1 35.1%). It holds in every
+  report-well state and in the national sensitivity set.
+- Reaching RAWBEN does not validate the split. 93-96% of masked cases still reach RAWBEN exactly. The
+  greedy rule finds a combination of values that produces the issued benefit, but in about two thirds of
+  cases it is not the combination QC's AMOUNTs imply. Agreement on how much of the gap slot 1 carries
+  (within 0.10) is 36%.
+- What can be trusted. On the 83% of multi-element error cases with all_zero, copied or amount1_only
+  AMOUNTs:
+  - Case-level outputs that depend only on reaching RAWBEN are sound.
+  - Single-element cases are not affected by this test.
+  - For multi-element cases, the variable-level values are a plausible split, not a measured one. They are
+    right about four times in ten for two elements and about one time in seven for three or more.
+  - The greedy rule does best when one element truly carries the error (45-51% when slot 1 carries 90% or
+    more). It does worst when the error is shared.
+- Which fallback. Neither alternative beats F0, so F0 stays, as the plan specified.
+  - The proportional split (F1) is much worse: 16.5 points lower, with higher MAE. Average shares put
+    every case at a middle split, but the true splits are spread out, from slot 1 carrying almost nothing
+    to slot 1 carrying more than the whole gap.
+  - Ordering by each variable's typical size (F2) is slightly but reliably worse: 2.9 points lower, MAE
+    $27 higher. QC's slot order carries more information about which element is largest than the
+    variable type does.
+- What this implies for the munging:
+  (a) Keep the greedy rule. It is the best of the three tested rules.
+  (b) Flag uncapped multi-element error cases (cascade_type "uncapped", two or more Step 7 elements)
+      as having an imputed variable split, so analyses can see them.
+  (c) Anything that uses an individual reconstructed variable on error cases should be rerun without
+      these cases, or with them down-weighted. That covers variable-level rules, the share of error
+      dollars attributed to earned income versus shelter, and models trained on reconstructed raw
+      values. Benefit-level labels and dollars do not need this.
+  (d) Do not cite the reconstructed variable split for multi-element cases as data. If a better split
+      is wanted, the next candidate is a model of the slot-1 share conditional on the element mix, natures
+      and the gap size, judged on this same masked set. Because the true shares are spread out, a gain
+      is not assured.
+- Limitations.
+  - The report-well states (WV, MT, VA, ND, IL, KS, NH) are a handful. Their error mix and the way their
+    reviewers split errors may differ from states that report zeros. The national clean_split sensitivity
+    run gives the same answer, but every state in it also writes clean splits, so the limitation stands.
+  - The truth is itself a reconstruction. It assumes QC's AMOUNTs are correct and that the code's order
+    (utilities, then largest AMOUNT) matches the order in which QC computed them. If QC's AMOUNTs are
+    themselves rough, 35% is a measure of agreement with QC, not of accuracy against the real raw values,
+    and could be off in either direction. It is still
+    the only truth available in the public file.
+  - Agreement uses a $10-or-2% tolerance. Looser tolerances would raise all rates. They probably would not
+    change the ordering of the methods, since the MAE differences point the same way (not run).
+
+Files (all under methods/munging_review_2026-10-30/)
+- b2_mask_amounts_prereg.txt (pre-registration, 20:25, unchanged)
+- b2_mask_amounts.R (script; F2 lookup fixed at 20:30, with a comment)
+- b2_mask_amounts_results.txt (this file)
+- scratch/b2_mask_amounts.log, scratch/b2_results.rds (final run)
+- scratch/b2_mask_amounts_run1_f2bug.log, scratch/b2_results_run1_f2bug.rds (first run, F2 bug)
+- scratch/dbg_f2.R, dbg_f2b.R, dbg_f2c.R, dbg_f2d.R (bug diagnosis; dbg_f2b shows that reversing slot order
+  changes the greedy result in 199 of 413 cases, so order matters)

@@ -1,0 +1,63 @@
+[11-01 19:34:56] === phase choices  (smoke TRUE) 
+[11-01 19:35:12] S0 percentiles: out 3.7905, in 3.7591 -> OUT 
+[11-01 19:35:18] === phase tuneB  (smoke TRUE) 
+[11-01 19:35:27] S0 tuneB holdout: 39900 training rows, 1 split(s) 
+[11-01 19:35:31]   tune B P holdout:  max_depth min_child_weight colsample_bytree      crit best |          5                5              0.5 0.2482676  315 |          3               25              0.8 0.2493182  400 
+[11-01 19:35:34]   tune B size holdout:  max_depth min_child_weight   off      crit best |          3                5  TRUE 0.2860289  307 |          3                5 FALSE 0.2876467  397 
+[11-01 19:35:40] S0 tuneB cv: 39900 training rows, 5 split(s) 
+[11-01 19:35:58]   tune B P cv:  max_depth min_child_weight colsample_bytree      crit                best |          5                5              0.5 0.2635840 359/324/398/172/399 |          3               25              0.8 0.2648221 399/400/392/274/400 
+[11-01 19:36:06]   tune B size cv:  max_depth min_child_weight   off      crit                best |          3                5  TRUE 0.2983989  62/398/187/258/215 |          3                5 FALSE 0.3012554 138/324/196/255/205 
+[11-01 19:36:07] === phase freeze  (smoke TRUE) 
+[11-01 19:36:07] freeze: 4 files hashed 
+[11-01 19:36:09] === phase methodB  (smoke TRUE) 
+[11-01 19:36:20] S0 holdout B seed 117: 0.1 min 
+[11-01 19:36:23] S0 holdout B seed 118: 0.0 min 
+[11-01 19:36:32] S0 cv B seed 117: 0.0 min 
+[11-01 19:36:34] S0 cv B seed 118: 0.0 min 
+[11-01 19:36:52] tuning method on B: Q holdout 3.2272, Q cv 3.2669 -> cv 
+[11-01 19:36:59] === phase stage1  (smoke TRUE) 
+[11-01 19:37:19]   tune A P:  max_depth min_child_weight colsample_bytree      crit                best |          5                5              0.5 0.2637542 140/156/359/138/164 |          3               25              0.8 0.2643518 187/235/400/338/272 
+[11-01 19:37:26]   tune A size:  max_depth min_child_weight   off      crit                best |          3                5  TRUE 0.2979133  62/398/190/210/191 |          3                5 FALSE 0.3015793 134/371/191/173/121 
+[11-01 19:37:26] S0 stage1 A done in 0.3 min 
+[11-01 19:37:47]   tune tweedie p=1.2:  max_depth min_child_weight colsample_bytree   off     crit                best |          3               25              0.8  TRUE 35.73867 395/400/400/397/209 |          5                5              0.5 FALSE 35.73985  333/395/389/88/399 
+[11-01 19:38:04]   tune tweedie p=1.5:  max_depth min_child_weight colsample_bytree   off     crit                best |          5                5              0.5 FALSE 18.65952  175/188/319/83/312 |          3               25              0.8  TRUE 18.67313 373/400/400/190/247 
+[11-01 19:38:04]   tweedie p by held-back lift: 1.2:3.4798 1.5:3.3854 
+[11-01 19:38:05] S0 stage1 G done in 0.6 min 
+[11-01 19:38:45]   tune ranger C: best  mtry min.node.size sample.fraction max.depth      crit |     8            25             0.5         0 0.2634895 |     8            25             0.8        12 0.2636060 
+[11-01 19:38:46] S0 stage1 C done in 0.7 min 
+[11-01 19:39:18]   tune ranger GC: best  mtry min.node.size sample.fraction max.depth     crit |     8            25             0.5         0 63.66287 |     8            25             0.8        12 63.74224 
+[11-01 19:39:19] S0 stage1 GC done in 0.6 min 
+[11-01 19:40:09]   tune E multinomial:  max_depth min_child_weight colsample_bytree      crit                best |          5                5              0.5 0.3017474 395/400/400/351/397 |          3               25              0.8 0.3034284 397/400/400/399/397 
+[11-01 19:40:16]   tune E size over:  max_depth min_child_weight   off      crit                best |          3                5  TRUE 0.2741743  26/400/105/215/165 |          3                5 FALSE 0.2929369 104/398/188/216/261 
+[11-01 19:40:20]   tune E size under:  max_depth min_child_weight   off      crit               best |          3                5 FALSE 0.2689125 39/170/135/158/133 |          3                5  TRUE 0.2699182 53/170/148/157/133 
+[11-01 19:40:21] S0 stage1 E done in 1.0 min 
+[11-01 19:40:32]   tune D P 1:  max_depth min_child_weight colsample_bytree      crit                best |          5                5              0.5 0.1934294 112/274/297/154/242 |          3               25              0.8 0.1947560 174/261/286/253/242 
+[11-01 19:40:38]   tune D size 1:  max_depth min_child_weight   off      crit              best |          3                5 FALSE 0.1551020 119/91/377/282/86 |          3                5  TRUE 0.1555396  82/82/162/285/91 
+[11-01 19:41:01]   tune D ranger 1: best  mtry min.node.size sample.fraction max.depth      crit |     8            25             0.5         0 0.1936918 |     8            25             0.8        12 0.1952351 
+[11-01 19:41:09]   tune D P 2-3:  max_depth min_child_weight colsample_bytree      crit                best |          3               25              0.8 0.3100308 174/140/180/101/278 |          5                5              0.5 0.3100436  178/143/158/71/278 
+[11-01 19:41:14]   tune D size 2-3:  max_depth min_child_weight   off      crit               best |          3                5  TRUE 0.3390424 51/104/207/118/125 |          3                5 FALSE 0.3409012 132/104/206/46/125 
+[11-01 19:41:26]   tune D ranger 2-3: best  mtry min.node.size sample.fraction max.depth      crit |     8            25             0.5         0 0.3103694 |     8            25             0.8        12 0.3105306 
+[11-01 19:41:32]   tune D P 4+:  max_depth min_child_weight colsample_bytree      crit              best |          5                5              0.5 0.3966921 88/102/177/121/81 |          3               25              0.8 0.3972474  88/67/254/57/146 
+[11-01 19:41:35]   tune D size 4+:  max_depth min_child_weight   off      crit            best |          3                5  TRUE 0.4324983  5/256/70/29/50 |          3                5 FALSE 0.4383648 49/173/85/50/57 
+[11-01 19:41:46]   tune D ranger 4+: best  mtry min.node.size sample.fraction max.depth      crit |     8            25             0.5         0 0.3978543 |     8            25             0.8        12 0.3978755 
+[11-01 19:41:46] S0 stage1 D done in 1.4 min 
+[11-01 19:41:53] === phase freeze2  (smoke TRUE) 
+[11-01 19:41:53] freeze2: 10 files hashed 
+[11-01 19:41:55] === phase fit A,B,G,C,GC,E,D,F (smoke TRUE) 
+[11-01 19:42:06] S0 cv A seed 117: 0.0 min 
+[11-01 19:42:08] S0 cv A seed 118: 0.0 min 
+[11-01 19:42:10] S0 cv G seed 117: 0.0 min 
+[11-01 19:42:12] S0 cv G seed 118: 0.0 min 
+[11-01 19:42:24] S0 cv C seed 117: 0.2 min 
+[11-01 19:42:37] S0 cv C seed 118: 0.2 min 
+[11-01 19:42:47] S0 cv GC seed 117: 0.2 min 
+[11-01 19:42:57] S0 cv GC seed 118: 0.2 min 
+[11-01 19:43:06] S0 cv E seed 117: 0.1 min 
+[11-01 19:43:14] S0 cv E seed 118: 0.1 min 
+[11-01 19:43:28] S0 cv D seed 117: 0.2 min 
+[11-01 19:43:43] S0 cv D seed 118: 0.2 min 
+[11-01 19:43:56] S0 cv F seed 117: 0.2 min 
+[11-01 19:44:09] S0 cv F seed 118: 0.2 min 
+[11-01 19:44:11] === phase score  (smoke TRUE) 
+[11-01 19:44:11] scoring A,B,G,C,GC,E,D,F 
+[11-01 19:44:26] choice GC (top GC) 

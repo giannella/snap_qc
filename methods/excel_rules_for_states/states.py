@@ -77,6 +77,19 @@ def _default_entry(abbr):
 #                           the state_offset column of the FederalTables
 #                           standard-deduction table (0 for every other state)
 #   federal_tables_visible  ship the FederalTables sheet unhidden
+#   prior_year_tables       mirror the munging's Step 7 "prior_year_tables"
+#                           rule: a case whose inputs miss the issued benefit
+#                           on the review year's tables but hit it on last
+#                           year's takes last year's. The munging applies it
+#                           only to ELEMENT1 361/520 cases, which a state's data
+#                           does not carry, so the workbook applies it to every
+#                           case and fires on look-alikes: on only where that
+#                           nets fewer validation mismatches (2026-10-31 all-
+#                           states check on f1030: MI 24 -> 5; CT 0 -> 23 if on.
+#                           2026-11-06 check on f1104, mismatched cases off -> on:
+#                           CT 16 -> 4, IL 13 -> 1, NM 16 -> 2, TX 42 -> 6,
+#                           VA 11 -> 2, RI 9 -> 2; 32 states worse if on, UT
+#                           would fail; scratchpad diag_py_onoff.py)
 #   start_here_note         (title, body): a state-specific warning under the
 #                           Start Here summary block; {n_rules} and
 #                           {n_benefit_rules} in the body are filled from the
@@ -90,8 +103,20 @@ OVERRIDES = {
     'IL': {
         'std_ded_offset_col': 'IL_OFFSET',
         'federal_tables_visible': True,
+        'prior_year_tables': True,   # f1104: 13 -> 1 mismatched cases (2026-11-06)
         # start_here_note removed 2026-09-18 (Eric): the standard-deduction offset is explained to Illinois directly, not in the workbook
     },
+    # Michigan: 24 FY2022-24 frame cases recreated on last year's tables
+    # failed the validation gate until the workbook mirrored that rule
+    'MI': {'prior_year_tables': True},
+    # f1104 (2026-11-06): these failed the validation gate on unc_rawben_rel_max
+    # (TX also rawben_rel_max) because the frame recreates some of their cases on
+    # last year's tables (TX FY2022: last year's standard deduction)
+    'CT': {'prior_year_tables': True},
+    'NM': {'prior_year_tables': True},
+    'RI': {'prior_year_tables': True},
+    'TX': {'prior_year_tables': True},
+    'VA': {'prior_year_tables': True},
 }
 
 # States excluded from batch builds (make_state.py all), with the reason.

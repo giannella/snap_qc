@@ -1,0 +1,93 @@
+
+== three years ahead (FY2017-19 rules -> FY2022; decides) ==
+Top 5% per state, error $ per reviewed case: score $59.03/$53.51/$57.64 vs simple ordering $45.35/$44.11/$43.84 (seeds 117/118/119)
+Gain by seed: 30.2% / 21.3% / 31.5%; seed mean 27.6% (95% 5.9% to 49.4%; SD 11.1 pts)
+Artifact rows dropped: 46.3% / 26.2% / 34.4%; seed mean 35.7% (95% 6.0% to 65.3%)
+Harm count (states >0.05 worse in dollar recall), seed mean: 4.7 at 5% (null p95 24.7), 6.3 at 10% (null p95 27.3)
+Within-state mean change in dollar recall at 5%: +0.0580 / +0.0351 / +0.0435; states up/down: 34/15 , 31/18 , 34/15
+Arms (seed means):
+     1%  perfect    precision 1.000  dollar recall 0.244  $421.51 per case  artifact share 0.110
+     1%  ref_xgb    precision 0.449  dollar recall 0.059  $101.51 per case  artifact share 0.000
+     1%  full       precision 0.399  dollar recall 0.046  $80.36 per case  artifact share 0.012
+     1%  ref_ridge  precision 0.391  dollar recall 0.046  $78.87 per case  artifact share 0.020
+     1%  vote       precision 0.405  dollar recall 0.042  $71.95 per case  artifact share 0.006
+     1%  simple     precision 0.204  dollar recall 0.033  $56.66 per case  artifact share 0.168
+     1%  lcb        precision 0.363  dollar recall 0.031  $54.18 per case  artifact share 0.014
+     1%  random     precision 0.114  dollar recall 0.010  $17.34 per case  artifact share 0.013
+     2%  perfect    precision 1.000  dollar recall 0.390  $339.71 per case  artifact share 0.090
+     2%  ref_xgb    precision 0.394  dollar recall 0.096  $83.37 per case  artifact share 0.000
+     2%  ref_ridge  precision 0.366  dollar recall 0.083  $72.14 per case  artifact share 0.018
+     2%  full       precision 0.344  dollar recall 0.082  $71.65 per case  artifact share 0.017
+     2%  vote       precision 0.348  dollar recall 0.071  $61.81 per case  artifact share 0.009
+     2%  simple     precision 0.183  dollar recall 0.058  $50.26 per case  artifact share 0.140
+     2%  lcb        precision 0.312  dollar recall 0.057  $49.91 per case  artifact share 0.008
+     2%  random     precision 0.112  dollar recall 0.021  $17.84 per case  artifact share 0.037
+     5%  perfect    precision 0.992  dollar recall 0.681  $236.97 per case  artifact share 0.070
+     5%  ref_xgb    precision 0.327  dollar recall 0.187  $65.26 per case  artifact share 0.019
+     5%  ref_ridge  precision 0.303  dollar recall 0.168  $58.56 per case  artifact share 0.036
+     5%  full       precision 0.284  dollar recall 0.163  $56.73 per case  artifact share 0.042
+     5%  vote       precision 0.277  dollar recall 0.142  $49.39 per case  artifact share 0.017
+     5%  simple     precision 0.180  dollar recall 0.128  $44.43 per case  artifact share 0.093
+     5%  lcb        precision 0.249  dollar recall 0.120  $41.63 per case  artifact share 0.013
+     5%  random     precision 0.112  dollar recall 0.050  $17.43 per case  artifact share 0.035
+    10%  perfect    precision 0.897  dollar recall 0.924  $160.36 per case  artifact share 0.056
+    10%  ref_xgb    precision 0.288  dollar recall 0.315  $54.77 per case  artifact share 0.027
+    10%  ref_ridge  precision 0.245  dollar recall 0.276  $47.94 per case  artifact share 0.048
+    10%  full       precision 0.234  dollar recall 0.268  $46.62 per case  artifact share 0.052
+    10%  vote       precision 0.238  dollar recall 0.248  $42.99 per case  artifact share 0.041
+    10%  simple     precision 0.185  dollar recall 0.237  $41.18 per case  artifact share 0.059
+    10%  lcb        precision 0.228  dollar recall 0.234  $40.64 per case  artifact share 0.042
+    10%  random     precision 0.110  dollar recall 0.101  $17.55 per case  artifact share 0.036
+
+== one year ahead (FY2022-23 rules -> FY2024; must agree) ==
+Top 5% per state, error $ per reviewed case: score $80.93/$84.94/$80.85 vs simple ordering $57.98/$57.93/$57.95 (seeds 117/118/119)
+Gain by seed: 39.6% / 46.6% / 39.5%; seed mean 41.9% (95% 23.8% to 60.1%; SD 9.3 pts)
+Artifact rows dropped: 46.6% / 56.8% / 48.9%; seed mean 50.7% (95% 29.2% to 72.2%)
+Harm count (states >0.05 worse in dollar recall), seed mean: 5.3 at 5% (null p95 20.0), 2.0 at 10% (null p95 24.7)
+Within-state mean change in dollar recall at 5%: +0.0556 / +0.0683 / +0.0556; states up/down: 38/11 , 40/9 , 39/10
+Arms (seed means):
+     1%  perfect    precision 1.000  dollar recall 0.230  $515.92 per case  artifact share 0.134
+     1%  ref_xgb    precision 0.473  dollar recall 0.055  $122.92 per case  artifact share 0.041
+     1%  ref_ridge  precision 0.490  dollar recall 0.053  $119.31 per case  artifact share 0.050
+     1%  full       precision 0.467  dollar recall 0.052  $117.50 per case  artifact share 0.086
+     1%  vote       precision 0.482  dollar recall 0.048  $108.86 per case  artifact share 0.049
+     1%  lcb        precision 0.483  dollar recall 0.041  $92.92 per case  artifact share 0.015
+     1%  simple     precision 0.210  dollar recall 0.029  $65.79 per case  artifact share 0.122
+     1%  random     precision 0.122  dollar recall 0.009  $20.89 per case  artifact share 0.039
+     2%  perfect    precision 1.000  dollar recall 0.369  $413.32 per case  artifact share 0.123
+     2%  ref_xgb    precision 0.433  dollar recall 0.094  $105.74 per case  artifact share 0.045
+     2%  full       precision 0.411  dollar recall 0.094  $104.69 per case  artifact share 0.095
+     2%  ref_ridge  precision 0.435  dollar recall 0.089  $99.89 per case  artifact share 0.051
+     2%  vote       precision 0.433  dollar recall 0.084  $94.49 per case  artifact share 0.042
+     2%  lcb        precision 0.412  dollar recall 0.072  $80.83 per case  artifact share 0.026
+     2%  simple     precision 0.208  dollar recall 0.057  $63.55 per case  artifact share 0.169
+     2%  random     precision 0.123  dollar recall 0.019  $21.40 per case  artifact share 0.054
+     5%  perfect    precision 0.996  dollar recall 0.649  $290.61 per case  artifact share 0.102
+     5%  ref_xgb    precision 0.371  dollar recall 0.205  $91.66 per case  artifact share 0.059
+     5%  ref_ridge  precision 0.369  dollar recall 0.185  $82.86 per case  artifact share 0.059
+     5%  full       precision 0.348  dollar recall 0.184  $82.24 per case  artifact share 0.065
+     5%  vote       precision 0.370  dollar recall 0.180  $80.74 per case  artifact share 0.053
+     5%  lcb        precision 0.333  dollar recall 0.155  $69.63 per case  artifact share 0.044
+     5%  simple     precision 0.202  dollar recall 0.129  $57.95 per case  artifact share 0.114
+     5%  random     precision 0.121  dollar recall 0.046  $20.54 per case  artifact share 0.056
+    10%  perfect    precision 0.916  dollar recall 0.892  $200.26 per case  artifact share 0.078
+    10%  ref_xgb    precision 0.318  dollar recall 0.326  $73.19 per case  artifact share 0.067
+    10%  ref_ridge  precision 0.302  dollar recall 0.306  $68.74 per case  artifact share 0.055
+    10%  full       precision 0.294  dollar recall 0.303  $68.05 per case  artifact share 0.055
+    10%  vote       precision 0.311  dollar recall 0.301  $67.61 per case  artifact share 0.055
+    10%  lcb        precision 0.292  dollar recall 0.275  $61.62 per case  artifact share 0.057
+    10%  simple     precision 0.206  dollar recall 0.234  $52.58 per case  artifact share 0.082
+    10%  random     precision 0.123  dollar recall 0.099  $22.14 per case  artifact share 0.066
+
+== Bars (deciding window: three years ahead) ==
+1. seed-mean gain >= 20% with 95% low end > 20%: FAIL (27.6%, low 5.9%)
+2. same with artifact rows dropped: FAIL (35.7%, low 6.0%)
+3. one year ahead seed-mean gain > 0: PASS (41.9%)
+4. harm count at or below the null's 95th percentile at 5% and 10%: PASS
+5. companions do not contradict (negative within-state mean AND harm above null): PASS
+Ships as a general workbook feature: NO
+Recorded as a real gain under the bar (95% low end above 0) if bar 1 is what failed.
+
+== Secondaries (Holm, family alpha 0.05) ==
+Trend z by window x size group: fy2022 1 25.6; fy2022 2-3 15.5; fy2022 4+ 6.1; fy2024 1 38.0; fy2024 2-3 17.9; fy2024 4+ 10.3; p = 7.2e-10, Holm 1.4e-09
+Vote in the error-size model: fy2022 z 4.7 (coef 0.014); fy2024 z 7.4 (coef 0.024); p = 1.6e-06, Holm 1.6e-06

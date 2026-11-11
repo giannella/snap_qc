@@ -36,9 +36,12 @@ from rule_selection import (COND_PAT, DROP_VARS, STRIP_VAR, cond_mask,   # noqa:
                             low_dollar_band, narrow_interval,
                             ratio_span_too_small, smd_dead_zone)
 
-POOL_CSV = os.path.join(PKG, '.build', 'national_pool_export.csv')
-CHAR_CSV = os.path.join(REPO, 'methods', 'v250_candidate_lists_utilsua',
-                        'rule_characterization_v250.csv')
+# SNAP_POOL_CSV / SNAP_CHAR_CSV (2026-10-07) point a build at another pool
+# export and characterization sheet (the v2.7 pool with its pool-slice
+# characterization); the defaults are the September v2.5 inputs
+POOL_CSV = os.environ.get('SNAP_POOL_CSV') or os.path.join(PKG, '.build', 'national_pool_export.csv')
+CHAR_CSV = os.environ.get('SNAP_CHAR_CSV') or os.path.join(
+    REPO, 'methods', 'v250_candidate_lists_utilsua', 'rule_characterization_v250.csv')
 MIN_POOL_N = 30
 MIN_EXPECTED = 15
 NATURE_MIN = 5
