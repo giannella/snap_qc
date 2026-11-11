@@ -47,6 +47,16 @@ states in the data, DC and Georgia included.
 - **Blank inputs stay blank.** `EXPEDITED`, `HOMELESS_FLAG` and
   `MONTHS_SINCE_CERT` are no longer read as 0 when missing, and a rule on a
   missing input does not flag the case, as in the mining code.
+- **`INCL_mine_internal_and_blend_with_national_v2.R` is renamed
+  `INCL_mine_internal_and_optionally_blend_with_national_v2.R`.** Update
+  any runner or link that calls it by the old name. A new setting,
+  `NATIONAL`, picks the national side: `"published"` (the default, and the
+  only behavior before this release) blends with the published pool;
+  `"remine"` first mines the national pool from the public frame
+  (`PUBLIC_FRAME`, years `NATIONAL_YEARS`) with the recipe that built the
+  published pool, saving it to `REMINED_POOL` for reuse; and
+  `"internal_rules_only"` skips the national pool and writes only the
+  rules admitted from the internal file.
 - **Initial-month proration is backed out before the AMTERR check:**
   prorated cases (`ALLADJ = 2`) get RAWBEN + AMTADJ when that reconciles
   with AMTERR. QC records AMTERR two ways: as the full-month error (used
