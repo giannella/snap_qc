@@ -6,7 +6,7 @@
 # lists stay as they were. Every state gets both list types at both budgets.
 #   1. blended lists: methods/v250_build_staged_lists_utilsua_v2.R (RESUME)
 #   2. the published national pool artifact, now carrying the artifact and
-#      pile tags (INCL_mine_internal_and_blend_with_national_v2.R drops both)
+#      pile tags (INCL_mine_internal_and_optionally_blend_with_national_v2.R drops both)
 #   3. characterization + curated columns on the blended lists
 #   4. national-only lists for all 98 cells: methods/build_national_only_lists_v2.R
 #   5. characterization + curated columns on those; one rule sheet

@@ -11,6 +11,16 @@ moved or behaves differently.
 ## [Unreleased]
 
 ### Changed
+- **`INCL_mine_internal_and_blend_with_national_v2.R` is renamed
+  `INCL_mine_internal_and_optionally_blend_with_national_v2.R`.** Update
+  any runner or link that calls it by the old name. A new setting,
+  `NATIONAL`, picks the national side: `"published"` (the default, and the
+  only behavior before this release) blends with the published pool;
+  `"remine"` first mines the national pool from the public frame
+  (`PUBLIC_FRAME`, years `NATIONAL_YEARS`) with the recipe that built the
+  published pool, saving it to `REMINED_POOL` for reuse; and
+  `"internal_rules_only"` skips the national pool and writes only the
+  rules admitted from the internal file.
 - **The modelling frame is rebuilt on the reconstruction fixes below**
   (sha256 `eb989fda`, 2026-10-27). The cases, error labels and error
   amounts are unchanged. Each rebuilt household-size, income, deduction

@@ -20,7 +20,7 @@ The national pool artifact in this folder,
 `national_rule_pool_2022_2024_v270.rds`, is the admitted candidate pool
 behind these lists (rules test `utilities_sua`; it carries the artifact
 and income-pile tags, `artifact_i` and `pile_i`), and is what
-`INCL_mine_internal_and_blend_with_national_v2.R` blends against. The
+`INCL_mine_internal_and_optionally_blend_with_national_v2.R` blends against. The
 v2.5.0 pool (raw `utilities` dollars) is kept at
 `archive/national_rule_pool_2022_2024_v250.rds`.
 
