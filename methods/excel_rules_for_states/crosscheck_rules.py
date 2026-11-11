@@ -82,10 +82,16 @@ def check_tab(wb, sheet_name, r_rules, r_union, mask_col0, cases):
     """Per-rule static values on `sheet_name` vs R, plus the union recomputed
     from the RuleFlags mask block starting at column `mask_col0`."""
     ws = wb[sheet_name]
-    NR = len(r_rules)
+    # the benefit check's rows carry a national estimate, not frame counts,
+    # and are left out of the R input (see main); their masks are all zero
+    names = []
+    while ws.cell(row=NAT_ROW0 + len(names), column=1).value:
+        names.append(str(ws.cell(row=NAT_ROW0 + len(names), column=1).value))
+    rows = [NAT_ROW0 + j for j, n in enumerate(names) if not n.startswith('Benefit check')]
+    assert len(rows) == len(r_rules), f'{sheet_name}: {len(rows)} rule rows, R scored {len(r_rules)}'
+    NR = len(names)
     fails = 0
-    for j in range(NR):
-        r = NAT_ROW0 + j
+    for r in rows:
         rk = int(str(ws.cell(row=r, column=1).value).split()[-1])
         rr = r_rules[r_rules['rank'] == rk]
         assert len(rr) == 1, f'{sheet_name}: rank {rk} missing from the R output'
@@ -108,7 +114,7 @@ def check_tab(wb, sheet_name, r_rules, r_union, mask_col0, cases):
                 fails += 1
                 print(f'MISMATCH {sheet_name} rule {rk} {name}: '
                       f'workbook={got!r} R={want!r}')
-    print(f'{sheet_name}: {NR} rules x 8 fields checked, {fails} mismatches')
+    print(f'{sheet_name}: {len(rows)} rules x 8 fields checked, {fails} mismatches')
 
     rf = wb['RuleFlags']
     ndata = len(cases)
@@ -158,7 +164,10 @@ def main():
     wb = openpyxl.load_workbook(wbp)
     tmp = tempfile.mkdtemp(prefix='crosscheck_')
 
-    blended, blended_u = run_r(cfg, repo, eff_csv, tmp, 'blended')
+    eff = pd.read_csv(eff_csv)
+    r_csv = os.path.join(tmp, os.path.basename(eff_csv))
+    eff[eff['role'] != 'check'].to_csv(r_csv, index=False)
+    blended, blended_u = run_r(cfg, repo, r_csv, tmp, 'blended')
     # RuleFlags layout (build_workbook_v2): the rule list's hit-mask block
     # starts at column 2
     total = check_tab(wb, BLENDED_SHEET, blended, blended_u, 2, cases)

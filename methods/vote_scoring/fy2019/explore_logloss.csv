@@ -1,0 +1,6 @@
+"step","choice","logloss"
+"1 vote definition (R=300)","any",0.313259708230957
+"1 vote definition (R=300)","rep",0.309068344795431
+"2 P(error) form","vote",0.309068344795431
+"2 P(error) form","lcb",0.310303443662969
+"2 P(error) form","base",0.321666921006422

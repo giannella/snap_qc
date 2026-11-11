@@ -33,6 +33,14 @@ from live_formulas import (countifs, make_table, pack_chunks,
                            read_delivery_tab, rule_terms, selection_refs)
 
 TABLE = 'CaseData'            # table object name; the sheet keeps its name
+# Vote builds with the national vote rules (2026-10-29): each rule is tested
+# once per case, weighted by Include? + VOTE_BASE x Vote?, so one set of
+# chunks gives both the flag (the sum MOD VOTE_BASE) and the vote count
+# (INT of the sum / VOTE_BASE; make_vote.py). Testing every rule twice, once
+# per checkbox, made the WA workbook 36 MB.
+VOTE_BASE = 1000
+MERGED_VOTE = (os.environ.get('SNAP_VOTE') == '1'
+               and bool(os.environ.get('SNAP_VOTE_RULES_CSV')))
 
 
 def main():
@@ -59,6 +67,11 @@ def main():
     sel_by_row = selection_refs(wb, BLENDED_SHEET)
     print('selection columns found: %d' % len(sel_by_row))
     sel_n = lambda i: sel_by_row[N0 + i]
+    if MERGED_VOTE:
+        vcol = next(c for c in range(1, nat.max_column + 1) if nat.cell(row=3, column=c).value == 'Vote?')
+        assert len(nt_rules) < VOTE_BASE, len(nt_rules)
+        sel_n = lambda i: (f'({sel_by_row[N0 + i]}+{VOTE_BASE}*'
+                           f'({qref(BLENDED_SHEET)}!${CL(vcol)}${N0 + i}=TRUE))')
     blocks = [('nat', nt_rules, sel_n)] if nat else []
     newcols = {}
     c = NCOL
@@ -80,6 +93,8 @@ def main():
         newcols[hit] = c
         dat.cell(row=1, column=c, value=hit)
         expr = '+'.join(f'{TABLE}[[#This Row],[{p}]]' for p in parts)
+        if MERGED_VOTE:
+            expr = f'MOD({expr},{VOTE_BASE})'
         for rr in range(2, NROW + 1):
             dat.cell(row=rr, column=c, value=f'=IF({expr}>0,1,0)')
     LAST = CL(c)
@@ -119,7 +134,7 @@ def main():
         # summary-row workload: share of ALL cases, so the household-size
         # rows are the percentage-point portions that sum to the 'all' row
         put('work',    f'IFERROR(${F}{row}/{denom("all","cases")},0)')
-        put('exp',     f'IFERROR(IF(${F}{row}=0,"",${D}{row}/${F}{row}),"")')
+        put('exp',     f'IFERROR(IF(${F}{row}=0,"no flags",${D}{row}/${F}{row}),"")')
 
     NT = dict(prec=4, rec=5, drec=6, flagged=7, errors=8, dollars=9, work=10, exp=11)
     for i, hh in enumerate(['all', '1', '2-3', '4+']):
@@ -149,9 +164,11 @@ def main():
         # rather than a typed label, so the column's formulas are consistent
         # and Excel stops flagging them (feedback 2026-10-07)
         put('work', f'IFERROR(${F}{row}/COUNTIF({TABLE}[hh_group],B{row}),0)')
-        put('exp',  f'IFERROR(IF(${F}{row}=0,"",${D}{row}/${F}{row}),"")')
+        put('exp',  f'IFERROR(IF(${F}{row}=0,"no flags",${D}{row}/${F}{row}),"")')
 
     for i, (conds, hh) in enumerate(nt_rules):
+        # the benefit check's row is live too: its feature is blank on the
+        # testing data, so it scores 0 (national figures are in its text)
         rule_row(nat, N0 + i, conds, hh, NT)
 
     # ── 5. Dashboard: fixed ranges -> table references ───────────────────────

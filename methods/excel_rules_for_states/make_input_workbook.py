@@ -11,9 +11,9 @@ Data tab layout (one Excel table, columns bound by name; see workbook_layout):
                         LEFT): unit counts and indicators, income totals,
                         deductions, shelter costs, and the QC review outcome
                         (ORIGINAL_BENEFIT_AMOUNT, CORRECTED_BENEFIT_AMOUNT,
-                        STATUS). The error amount and the over-threshold flag
-                        are computed from the benefit pair against the
-                        FederalTables error-threshold table. Headers exist
+                        STATUS, ERROR_AMOUNT). The error amount is
+                        ERROR_AMOUNT (QC's AMTERR), and the over-threshold flag
+                        compares it with the FederalTables error-threshold table. Headers exist
                         from the first build stage; this stage fills the
                         values.
   [ feature columns ]   the model features, in the SAME columns the built
@@ -38,6 +38,7 @@ prints the per-feature match rate against the frame on every build.
 Usage:  python make_input_workbook.py <LIVE_workbook.xlsx> -o <out.xlsx> [--state WA]
 Then:   python postprocess_workbook.py <out.xlsx>   (drops the stale calc chain)
 """
+from copy import copy
 import argparse
 import json
 import os
@@ -52,6 +53,8 @@ from openpyxl.utils import get_column_letter as CL
 from openpyxl.worksheet.datavalidation import DataValidation
 
 import states as STATE_REGISTRY
+from rule_selection import CHECK_VAR
+from workbook_layout import VOTE_SHEET, VOTE_RULES_BUILD
 from workbook_layout import (DATA_SHEET, BLENDED_SHEET, DICT_SHEET,
                              EXPORT_SHEET, SCREEN_SHEET, FLAGGED_SHEET, PRIORITY_SHEET,
                              SHARE_SHEET, VIEWER_SHEET, RAW_COLS, qref)
@@ -107,7 +110,7 @@ def raw_frame(cfg, frame_csv):
 
     g = lambda c: pd.to_numeric(frame[c], errors='coerce')
     out = pd.DataFrame({
-        'CASE_ID': frame['hhldno'].astype(str).str.strip(),
+        'CASE_ID': SAMPLE_PREFIX + frame['hhldno'].astype(str).str.strip(),
         'REVIEW_FISCAL_YEAR': g('fiscal_year'),
         'HOUSEHOLD_SIZE': g('hh_size_raw'),
         'NUM_CHILDREN': g('fsnkid'),
@@ -115,9 +118,9 @@ def raw_frame(cfg, frame_csv):
         'NUM_DISABLED': g('fsndis'),
         'NUM_ABAWD': g('count_abawd'),
         'MARRIED_FLAG': g('married').fillna(0).astype(int),
-        'EXPEDITED': g('expedited_i').fillna(0).astype(int),
+        'EXPEDITED': g('expedited_i'),
         'CATEGORICALLY_ELIGIBLE': (g('cat_elig') >= 1).fillna(False).astype(int),
-        'HOMELESS_FLAG': g('homeless').fillna(0).astype(int),
+        'HOMELESS_FLAG': g('homeless'),
         'MONTHS_SINCE_CERT': g('months_since_cert_n'),
         'EARNED_INCOME': g('rawearn_nominal'),
         'UNEARNED_INCOME': g('rawunearn_nominal'),
@@ -132,24 +135,35 @@ def raw_frame(cfg, frame_csv):
         'RENT': g('rawrent_nominal'),
         'UTILITY_COSTS': g('rawutil_nominal'),
         # QC outcome: the benefit as issued (QC manual RAWBEN — the reported
-        # value, exactly what a state's own system holds) and the QC-corrected
-        # benefit (FSBEN). Their rounded absolute difference IS the frame's
-        # total_error_amount by construction, so the workbook's recomputed
-        # outcome matches the frame 100% (R1 check, 2026-08-18).
+        # value, exactly what a state's own system holds), the QC-corrected
+        # benefit (FSBEN) and QC's error amount (AMTERR). Since Ben's
+        # 2026-11-09 munging the frame's total_error_amount IS AMTERR and
+        # over_threshold is AMTERR over the tolerance, so the workbook reads
+        # the error from ERROR_AMOUNT (Eric, 2026-11-10); |RAWBEN - FSBEN|
+        # agrees exactly on only 86% of FY2022-24 errors (mostly $1 apart).
         'ORIGINAL_BENEFIT_AMOUNT': g('rawben'),
         'CORRECTED_BENEFIT_AMOUNT': g('benefit_amount_FS'),
         # review disposition: 2 = overissuance, 3 = underissuance,
         # 4 = ineligible (never present in public files); 1 = correct
         'STATUS': g('status'),
+        'ERROR_AMOUNT': g('total_error_amount'),
+        # optional; blank when the frame predates the column (benefit check)
+        'ALLOTMENT_ADJUSTMENT': (g('alladj') if 'alladj' in frame.columns
+                                 else pd.Series(np.nan, index=frame.index)),
     })
     assert list(out.columns) == RAW_COLS
     # the demo block must carry COMPLETE rows: in the workbook a blank cell
     # means missing (the per-row feature guards blank the case), while the
     # frame's reconstruction already zero-imputes its missing inputs — write
     # those zeros explicitly so the shipped figures match the frame. STATUS
-    # is excluded: 0 is not a code, blank = unknown.
+    # and ALLOTMENT_ADJUSTMENT are excluded: 0 is not a code, blank = unknown.
+    # EXPEDITED, HOMELESS_FLAG and MONTHS_SINCE_CERT are excluded too: the
+    # frame leaves them NA (not imputed), and the research code's rules never
+    # match an NA, so the workbook must see a blank there, not a 0 that
+    # satisfies "<= 6.5" (Eric, 2026-11-10; found on FL, f1109)
     for c in out.columns:
-        if c not in ('CASE_ID', 'STATUS'):
+        if c not in ('CASE_ID', 'STATUS', 'ALLOTMENT_ADJUSTMENT', 'EXPEDITED',
+                     'HOMELESS_FLAG', 'MONTHS_SINCE_CERT'):
             out[c] = out[c].fillna(0)
     # with reconstructed inputs there is no restoration gap; keep the
     # element-free split trivially all-True for the validation report
@@ -512,9 +526,16 @@ def background_tab(wb, state_name, note=None):
         'still set to TRUE, with their exact logic. Filter your caseload in Excel, '
         'turn them into a query, or send them to your vendor.',
         f'      5.1  Input new cases to screen (the "{SCREEN_SHEET}" tab): paste '
+        'cases with no review outcome into its yellow columns. The tab starts with '
+        f'{SCREEN_SAMPLE_N} randomly drawn FY{SCREEN_SAMPLE_FY} cases from the public QC data for your state as an '
+        'example; delete them before pasting your own.' if SCREEN_SAMPLE_N else
         'cases with no review outcome into its yellow columns.',
-        f'      5.2  See the flagged cases (the "{FLAGGED_SHEET}" tab): every new '
+        f'      5.2{".a" if VOTE_RULES_BUILD else ""}  See the flagged cases (the "{FLAGGED_SHEET}" tab): every new '
         'case a selected rule flags, with the rule that flagged it.',
+    ] + ([f'      5.2.b  See the expected error amounts (the "{VOTE_SHEET}" tab): the new cases with '
+          'the highest expected error $, ranked across all new cases (and, beside them, within each household-size '
+          'group), from the national vote rules that flag them, household size and benefit.']
+         if VOTE_RULES_BUILD else []) + [
     ] + ([f'      5.3  Prioritize the flagged cases (the "{PRIORITY_SHEET}" tab): every new '
           'case any rule in the list flags (rules set to FALSE count too), ranked by how many rules flag it times its benefit '
           'amount, with a running share of the pasted cases so you can stop at your review budget.']
@@ -583,7 +604,8 @@ def background_tab(wb, state_name, note=None):
 # the research frame's RECONSTRUCTED (pre-QC-review) value, which puts the
 # workbook's figures on the same scale the rules were mined on.
 RAW_DESC = {
-    'CASE_ID':   'case / review identifier — row identity only. QC manual: HHLDNO.',
+    'CASE_ID':   'case / review identifier — row identity only. QC manual: HHLDNO. '
+                 'The sample cases shipped with the workbook start SAMPLE-.',
     'REVIEW_FISCAL_YEAR': ('federal fiscal year of the review month (Oct-Sep). Also '
                            'sets the inflation of the dollar amounts to FY2026 dollars: '
                            'paste every amount in its own review year\'s dollars.'),
@@ -628,16 +650,26 @@ RAW_DESC = {
                                'manual: RAWBEN. In a state\'s own data this is simply '
                                'the benefit paid.',
     'CORRECTED_BENEFIT_AMOUNT': 'the correct benefit amount as determined by the review, '
-                                '$. QC manual: FSBEN. The workbook computes the error '
-                                'amount as the difference between this and '
-                                'ORIGINAL_BENEFIT_AMOUNT, and flags a payment error '
-                                'when that difference exceeds the review year\'s federal '
-                                'QC tolerance (hidden FederalTables sheet).',
+                                '$. QC manual: FSBEN. Used for the error amount only '
+                                'when ERROR_AMOUNT is blank.',
     'STATUS': 'review disposition code: 2 = overissuance, 3 = underissuance, '
               '4 = ineligible household (the entire benefit is in error), 1 = correct. '
               'QC manual: STATUS. The public demo data carries no code-4 cases (the '
               'public QC files exclude ineligible households); include them when '
               'pasting internal data so ineligibility catches can be counted.',
+    'ERROR_AMOUNT': 'the dollar amount in error as determined by the review, $ (whole '
+                    'dollars). QC manual: AMTERR. The workbook flags a payment error when '
+                    "it exceeds the review year's federal QC tolerance (hidden "
+                    'FederalTables sheet). For a prorated benefit QC records the error on '
+                    'the amount actually paid. If left blank, the workbook uses the '
+                    'difference between ORIGINAL_BENEFIT_AMOUNT and '
+                    'CORRECTED_BENEFIT_AMOUNT instead.',
+    'ALLOTMENT_ADJUSTMENT': 'optional. Allotment adjustment code from the case record: '
+                            '1 = no adjustment, 2 = prorated benefit (initial month), '
+                            '3 = other adjustment. QC manual: ALLADJ. The benefit check '
+                            '(benefit_calc_off) skips cases coded 2 or 3, whose issued '
+                            "benefit is not a full month's benefit. Leave the column "
+                            'blank and every case is checked.',
 }
 FEAT_DESC = {
     'fiscal_year': 'REVIEW_FISCAL_YEAR, unchanged',
@@ -690,8 +722,19 @@ FEAT_DESC = {
     'over_threshold':     '1 when total_error_amount exceeds the review year\'s federal '
                           'QC tolerance (FederalTables error_threshold) — what the rules '
                           'aim to catch',
-    'total_error_amount': 'ABS(ORIGINAL_BENEFIT_AMOUNT - CORRECTED_BENEFIT_AMOUNT), '
-                          'rounded to whole dollars (QC manual: AMTERR)',
+    'total_error_amount': 'ERROR_AMOUNT rounded to whole dollars (QC manual: AMTERR); '
+                          'ABS(ORIGINAL_BENEFIT_AMOUNT - CORRECTED_BENEFIT_AMOUNT) '
+                          'when ERROR_AMOUNT is blank',
+    'benefit_calc_off': ('benefit check (benefit calculation errors, QC element 520): 1 when '
+                         'the benefit recomputed from the pasted amounts with the review '
+                         "year's tables differs from ORIGINAL_BENEFIT_AMOUNT by more than "
+                         "the review year's federal QC tolerance, else 0; 0 for a case "
+                         'with ALLOTMENT_ADJUSTMENT 2 or 3. Blank on the sample cases shipped '
+                         'with the workbook (case IDs starting SAMPLE-): their inputs are '
+                         'reconstructed from review findings, so a gap there mostly marks a '
+                         'failed reconstruction rather than an agency miscalculation. Your '
+                         "own pre-QC records are scored. The rule's description on Step 3 "
+                         'gives its national precision, recall and $ per flagged case'),
 }
 HELPER_NOTE = ('_c_* columns (hidden): two chains. The benefit-recomputation chain '
                'works on the amounts as pasted with the review year\'s values from the '
@@ -726,6 +769,8 @@ RAW_TYPE = {
     'ORIGINAL_BENEFIT_AMOUNT': ('dollars, monthly', '512'),
     'CORRECTED_BENEFIT_AMOUNT': ('dollars, monthly', '468'),
     'STATUS': ('code 1 / 2 / 3 / 4', '2'),
+    'ERROR_AMOUNT': ('dollars, monthly', '44'),
+    'ALLOTMENT_ADJUSTMENT': ('code 1 / 2 / 3, or blank', '1'),
 }
 FEAT_TYPE = {
     'fiscal_year': ('whole number', '2025'), 'hh_size_raw': ('whole number', '3'),
@@ -741,6 +786,7 @@ FEAT_TYPE = {
     'total_deductions_by_hh_size': ('dollars', '312.50'),
     'utilities': ('dollars', '459'), 'utilities_sua': ('tier 0 / 1 / 2', '2'),
     'over_threshold': ('0 or 1', '1'), 'total_error_amount': ('dollars', '44'),
+    'benefit_calc_off': ('0 or 1', '1'),
 }
 
 # the Step 3 tab's columns, one dictionary row each (feedback 2026-08-22:
@@ -778,10 +824,25 @@ STEP3_COLS = [
      'pasted data (in the orange combined rows: a share of ALL cases).'),
     ('Expected error $ by case', 'dollars', '$137',
      'Error $ caught divided by cases flagged: the average error dollars per '
-     'case you would review under this rule.'),
+     'case you would review under this rule. "no flags" means the rule flags '
+     'none of the pasted cases; $0 means it flags cases but none is an error '
+     'above the federal tolerance.'),
     ('Include?', 'TRUE / FALSE', 'TRUE',
      'Set to FALSE to drop the rule from the combined results and from the '
      'export. These yellow cells are the only thing to edit on this tab.'),
+] + ([
+    ('Vote?', 'TRUE / FALSE', 'TRUE',
+     "Set to FALSE to stop the rule from counting toward a case's vote: the "
+     'number of Vote? = TRUE rules that flag the case, which sets its expected '
+     'error $ on the "' + VOTE_SHEET + '" tab. ' + (
+         'By default only the 300 national vote rules vote ("Vote rule 1.001" on, and list rules '
+         'marked "(vote 1.001)" and so on); the '
+         'error rates on the "' + VOTE_SHEET + '" tab were estimated for exactly those '
+         'rules, so changing Vote? makes them approximate. '
+         if os.environ.get('SNAP_VOTE_RULES_CSV') else
+         'Every rule votes by default, including rules set to FALSE under Include?. ') +
+     'Vote? does not change the export.'),
+] if os.environ.get('SNAP_VOTE') == '1' else []) + [
     ('Rule source pool', 'text', 'national',
      'Where the rule was mined: "national" (all 49 states\' public QC data) or '
      '"state" (this state\'s own public QC data).'),
@@ -927,11 +988,18 @@ SCREEN_TABLE = 'ScreenData'
 # same paste contract minus the outcome columns: new cases have no review
 # outcome yet, and the corrected benefit / status only exist after a review
 SCREEN_COLS = [c for c in RAW_COLS
-               if c not in ('CORRECTED_BENEFIT_AMOUNT', 'STATUS')]
+               if c not in ('CORRECTED_BENEFIT_AMOUNT', 'STATUS', 'ERROR_AMOUNT')]
 FLAG_CAP = 5000               # case x rule pairs displayed on Step 5.2
+# Step 5.1 starts with a sample of the state's own FY2024 cases (Eric, 2026-11-05), so
+# Steps 5.2.a and 5.2.b show something before a state pastes its own cases. The rows are
+# from the Data tab's reconstructed (pre-QC-review) inputs, which validate() checks;
+# FY2024 is a training year, so how these cases are flagged is not an out-of-sample result.
+SCREEN_SAMPLE_N = int(os.environ.get('SNAP_SCREEN_SAMPLE', '200'))
+SCREEN_SAMPLE_FY = 2024
+SCREEN_SAMPLE_SEED = 20261105
 
 
-def screening_tabs(wb, R, dat_hdr):
+def screening_tabs(wb, R, dat_hdr, prior_year=False, sample=None):
     """Step 5.1: a second input table with the Step 2 contract minus the
     outcome columns, the same feature formulas, and one hidden 0/1 column per
     rule (weighted by that rule's Include? flag). Step 5.2: one row per
@@ -945,7 +1013,7 @@ def screening_tabs(wb, R, dat_hdr):
     nr = len(rules)
     assert nr and len(sel) == nr, 'rules tab / RuleFlags selection mismatch'
 
-    helpers, feats = feature_formulas(R, SCREEN_TABLE)
+    helpers, feats = feature_formulas(R, SCREEN_TABLE, prior_year)
     feat_cols = [h for h in dat_hdr
                  if h in feats and h not in ('over_threshold', 'total_error_amount')]
     # SNAP_PRIORITY_SHEET=1 (2026-09-17, built for one state): four visible priority columns right after the inputs,
@@ -1034,9 +1102,31 @@ def screening_tabs(wb, R, dat_hdr):
             ws.column_dimensions[get_column_letter(ci)].width = 16
         if name.startswith('_'):
             ws.column_dimensions[get_column_letter(ci)].hidden = True
-    make_table(ws, SCREEN_TABLE, f'A1:{get_column_letter(len(hdr))}2')
+    # the FY2024 sample: input values in the yellow columns, row 2's formulas in every
+    # other column (structured [#This Row] references, except the running count _cum)
+    last = 2
+    if sample is not None and len(sample):
+        ns = len(sample)
+        for ci, name in enumerate(hdr, 1):
+            f2 = ws.cell(row=2, column=ci).value
+            fill2 = ws.cell(row=2, column=ci).fill
+            for k in range(ns):
+                r = 2 + k
+                if name in SCREEN_COLS:
+                    v = sample[name].iloc[k]
+                    ws.cell(row=r, column=ci, value=None if (isinstance(v, float) and np.isnan(v)) else v)
+                elif f2 is not None and r > 2:
+                    ws.cell(row=r, column=ci, value=(f'=${hlet("_hits")}{r}+N(${hlet("_cum")}{r - 1})'
+                                                     if name == '_cum' else f2))
+                    if name in feats or name in PRIO:
+                        ws.cell(row=r, column=ci).fill = copy(fill2)
+        last = 1 + ns
+    make_table(ws, SCREEN_TABLE, f'A1:{get_column_letter(len(hdr))}{last}')
     ws.freeze_panes = 'B2'
     ws.cell(row=1, column=1).comment = Comment(
+        (f'Rows 2-{1 + len(sample)} hold {len(sample)} randomly drawn FY{SCREEN_SAMPLE_FY} cases from the '
+         'public QC data for this state, as an example, so the next tabs show results; delete those rows before '
+         'pasting your own cases. ' if sample is not None and len(sample) else '') +
         'Optional: paste NEW cases to screen against the selected rules. Same '
         f'yellow input columns as the "{DATA_SHEET}" tab minus the outcome '
         'columns (new cases have no review outcome yet); definitions on the '
@@ -1176,7 +1266,6 @@ def share_tab(wb, state_name):
     bq = qref(BLENDED_SHEET)
     rules_ws = wb[BLENDED_SHEET]
     rules = read_delivery_tab(rules_ws)
-    nr = len(rules)
     # SNAP_SUPPRESS_SMALL=1: every count cell self-suppresses (0 shows 0,
     # 1-9 shows "-", 10+ shows the number) so the state can share the tab
     # without a small-cell review; ratio cells built on a suppressed
@@ -1265,8 +1354,13 @@ def share_tab(wb, state_name):
         c = ws.cell(row=HR, column=ci, value=txt)
         c.fill = grayF; c.font = Font(bold=True, size=10)
     tot_ed = f'SUMIFS({TABLE}[total_error_amount],{TABLE}[over_threshold],1)'
+    r = HR
     for j, (conds, hh) in enumerate(rules):
-        r = HR + 1 + j
+        # the benefit check is left out: we don't ask states to send it back
+        # (Eric, 2026-11-09)
+        if conds is not None and any(v == CHECK_VAR for v, _, _ in conds):
+            continue
+        r += 1
         src = 10 + j
         # rule id / stratum / plain text are static on the rules tab — copy
         # the values so this block pastes cleanly as text
@@ -1300,7 +1394,7 @@ def share_tab(wb, state_name):
             c = ws.cell(row=r, column=ci, value=f)
             c.number_format = fmt
     ws.freeze_panes = f'A{HR + 1}'
-    return nr
+    return r - HR
 
 
 # ── feature inputs: which raw columns each feature needs ─────────────────────
@@ -1310,10 +1404,10 @@ def share_tab(wb, state_name):
 # missing value never matches). Deleting a whole input column therefore
 # disables every rule that needs it. The demo block carries the research
 # frame's reconstructed values with its zero-imputation already applied, so
-# the shipped figures are unchanged. The QC outcome features are guarded on
-# the benefit pair (2026-08-18): a case missing either benefit amount gets a
-# blank error amount and a blank over-threshold flag, so it counts as neither
-# an error nor a clean case.
+# the shipped figures are unchanged. The QC outcome features are guarded
+# (2026-08-18; ERROR_AMOUNT added 2026-11-10): a case with no ERROR_AMOUNT and
+# either benefit amount missing gets a blank error amount and a blank
+# over-threshold flag, so it counts as neither an error nor a clean case.
 # Modeling year: pasted dollar amounts are in each case's own review-year
 # dollars, and the workbook repeats the munging script's CPI step itself. The benefit ratios (rawben_rel_max,
 # unc_rawben_rel_max) and the SUA tier come from the pasted amounts with the
@@ -1329,6 +1423,10 @@ MODELING_YEAR = 2026
 # SUA tier 2 = utility costs within this many dollars of the review year's
 # heating/cooling standard, or above it (features.R add_sua_tier tolerance)
 SUA_TOLERANCE = 10
+# last year's tables tried on a case whose inputs miss the issued benefit, in
+# the munging's order (combn over maximum allotment, standard deduction, shelter cap)
+PRIOR_YEAR_SETS = [('max',), ('std',), ('sh',), ('max', 'std'), ('max', 'sh'),
+                   ('std', 'sh'), ('max', 'std', 'sh')]
 BEN_INPUTS = ['REVIEW_FISCAL_YEAR', 'HOUSEHOLD_SIZE', 'EARNED_INCOME',
               'UNEARNED_INCOME', 'MEDICAL_DEDUCTION', 'DEPENDENT_CARE_DEDUCTION',
               'CHILD_SUPPORT_EXPENSES', 'HOMELESS_DEDUCTION', 'RENT',
@@ -1358,27 +1456,82 @@ FEATURE_INPUTS = {
     'total_deductions_by_hh_size': BEN_INPUTS,
     'utilities': ['UTILITY_COSTS', 'REVIEW_FISCAL_YEAR'],
     'utilities_sua': ['UTILITY_COSTS', 'REVIEW_FISCAL_YEAR'],
-    'over_threshold': ['ORIGINAL_BENEFIT_AMOUNT', 'CORRECTED_BENEFIT_AMOUNT',
-                       'REVIEW_FISCAL_YEAR'],
-    'total_error_amount': ['ORIGINAL_BENEFIT_AMOUNT', 'CORRECTED_BENEFIT_AMOUNT'],
+    # the error amount needs ERROR_AMOUNT or else the benefit pair; the formula
+    # itself blanks a case with neither (_erramt in feature_formulas)
+    'over_threshold': ['REVIEW_FISCAL_YEAR'],
+    'benefit_calc_off': BEN_INPUTS + ['ORIGINAL_BENEFIT_AMOUNT'],
 }
+# the shipped sample's case IDs carry this prefix. benefit_calc_off is blank on
+# those rows (Step 2 and the Step 5.1 sample): their inputs are reconstructed
+# from review findings, so a recomputation gap there mostly marks a failed
+# reconstruction (611 non-520 error cases nationally, FY2022-24), not an agency
+# miscalculation. A state's own pre-QC records carry no prefix and are scored
+# (Eric, 2026-11-10); Step 3's rule text quotes benefit_check_national.csv.
+SAMPLE_PREFIX = 'SAMPLE-'
 
 
 def T(col, table=TABLE):
     return f'{table}[[#This Row],[{col}]]'
 
 
-def feature_formulas(R, table=TABLE):
+def feature_formulas(R, table=TABLE, prior_year=False):
     """name -> formula for every feature the current delivery vocabulary uses,
     mirroring 1_data_munging_..._for_using_public_qc_data.R. Helpers are
     prefixed '_c_'; order matters (left to right). Each feature carries a
     per-row guard (FEATURE_INPUTS): a case missing any input the feature
     needs gets a blank, never a zero, so no rule condition can match it.
     `table` parameterizes the structured references so the Step 5.1
-    screening table reuses the exact same formulas (2026-08-18)."""
+    screening table reuses the exact same formulas (2026-08-18).
+    `prior_year` adds the last-year's-tables helpers (states.py
+    prior_year_tables); off, the benefit ratios use the review-year chain."""
     T = lambda col: f'{table}[[#This Row],[{col}]]'   # noqa: E731 — shadow on purpose
     sz = f'MIN(MAX({T("HOUSEHOLD_SIZE")},1),20)'
     hh = f'MAX({T("HOUSEHOLD_SIZE")},1)'
+    fy1 = f'{T("_c_fy")}-1'
+    orig = T('ORIGINAL_BENEFIT_AMOUNT')
+    # QC's error amount (AMTERR); |RAWBEN - FSBEN| if blank; blank if both are
+    ea, corr = T('ERROR_AMOUNT'), T('CORRECTED_BENEFIT_AMOUNT')
+    _erramt = (f'IF(ISNUMBER({ea}),ROUND(ABS({ea}),0),'
+               f'IF(COUNT({orig},{corr})=2,ROUND(ABS({orig}-{corr}),0),""))')
+    minben = (f'IF({T("HOUSEHOLD_SIZE")}<3,'
+              f'INDEX({R["MINAL"]},MATCH({T("_c_fy")},{R["YEARS"]},1)),0)')
+
+    def uncapped(netbs, maxsh, benmax):
+        """the uncapped benefit from these helper columns (the _c_sltded ->
+        _c_netan -> _c_benunc chain in one expression)"""
+        slt = (f'IF({T("HOMELESS_DEDUCTION")}>0,0,MIN(MAX({T("RENT")}+{T("UTILITY_COSTS")}'
+               f'-MAX({T(netbs)}*0.5,0),0),{T(maxsh)}))')
+        netan = f'_xlfn.FLOOR.MATH({T(netbs)}-({slt}+{T("HOMELESS_DEDUCTION")}))'
+        return f'_xlfn.FLOOR.MATH({T(benmax)}-0.3*{netan})'
+    # (net income, shelter cap, maximum) helper columns for each PRIOR_YEAR_SETS entry
+    py_cols = [('_c_netbs_p' if 'std' in s else '_c_netbs', '_c_maxsh_p' if 'sh' in s else '_c_maxsh',
+                '_c_benmax_p' if 'max' in s else '_c_benmax') for s in PRIOR_YEAR_SETS]
+    # last year's tables (munging Step 7 "prior_year_tables"; mirrored in
+    # mirror_features), on for states.py prior_year_tables states only: when
+    # the pasted amounts miss the issued benefit with the review year's maximum
+    # allotment, standard deduction and shelter cap, try last year's
+    # (PRIOR_YEAR_SETS order) and keep the first that hits it exactly.
+    # _c_pyk = the combination used (0 = none).
+    fin = '_f' if prior_year else ''     # final benefit columns
+    prior_helpers = [
+        ('_c_stdded_p', f'=INDEX({R["SDBLK"]},MATCH({fy1},{R["SDYRS"]},1),{sz})'
+                        f'-INDEX({R["SDOFF"]},MATCH({fy1},{R["SDYRS"]},1))'),
+        ('_c_benmax_p', f'=INDEX({R["MABLK"]},MATCH({fy1},{R["MAYRS"]},1),{sz})'),
+        ('_c_maxsh_p', f'=IF({T("_c_eld")}=1,1000000000,'
+                       f'INDEX({R["MAXSH"]},MATCH({fy1},{R["YEARS"]},1)))'),
+        ('_c_netbs_p', f'={T("_c_gross")}-({T("_c_ernded")}+{T("DEPENDENT_CARE_DEDUCTION")}'
+                       f'+{T("MEDICAL_DEDUCTION")}+{T("CHILD_SUPPORT_EXPENSES")}+{T("_c_stdded_p")})'),
+        *[(f'_c_pyu{k}', '=' + uncapped(*cols)) for k, cols in enumerate(py_cols, 1)],
+        ('_c_pyk',     f'=IFERROR(IF(OR(NOT(ISNUMBER({orig})),{T("_c_benrec")}={orig}),0,'
+                       + ''.join(f'IF(MIN(MAX({T(f"_c_pyu{k}")},{minben}),{T(cols[2])})={orig},{k},'
+                                 for k, cols in enumerate(py_cols, 1))
+                       + '0' + ')' * len(py_cols) + '),0)'),
+        ('_c_benmax_f', f'=CHOOSE({T("_c_pyk")}+1,{T("_c_benmax")},'
+                        + ','.join(T(cols[2]) for cols in py_cols) + ')'),
+        ('_c_benunc_f', f'=CHOOSE({T("_c_pyk")}+1,{T("_c_benunc")},'
+                        + ','.join(T(f'_c_pyu{k}') for k in range(1, len(py_cols) + 1)) + ')'),
+        ('_c_benrec_f', f'=MIN(MAX({T("_c_benunc_f")},{minben}),{T("_c_benmax_f")})'),
+    ]
     helpers = [
         ('_c_fy',      f'={T("REVIEW_FISCAL_YEAR")}'),
         ('_c_eld',     f'=IF({T("NUM_ELDERLY")}+{T("NUM_DISABLED")}>0,1,0)'),
@@ -1407,9 +1560,8 @@ def feature_formulas(R, table=TABLE):
         ('_c_netan',   f'=_xlfn.FLOOR.MATH({T("_c_netbs")}-({T("_c_sltded")}'
                        f'+{T("HOMELESS_DEDUCTION")}))'),
         ('_c_benunc',  f'=_xlfn.FLOOR.MATH({T("_c_benmax")}-0.3*{T("_c_netan")})'),
-        ('_c_benrec',  f'=MIN(MAX({T("_c_benunc")},IF({T("HOUSEHOLD_SIZE")}<3,'
-                       f'INDEX({R["MINAL"]},MATCH({T("_c_fy")},{R["YEARS"]},1)),0)),'
-                       f'{T("_c_benmax")})'),
+        ('_c_benrec',  f'=MIN(MAX({T("_c_benunc")},{minben}),{T("_c_benmax")})'),
+        *(prior_helpers if prior_year else []),
         # SUA tier on the pasted amount against the review year's standard
         # (add_sua_tier runs before the CPI step): 2 within SUA_TOLERANCE of
         # the standard or above it; blank when the year has no published
@@ -1483,12 +1635,12 @@ def feature_formulas(R, table=TABLE):
         'earned_by_hh_size':   f'={T("_c_earn_i")}/{hh}',
         'unearned_by_hh_size': f'={T("_c_unearn_i")}/{hh}',
         'gross_by_hh_size':    f'={T("_c_gross_i")}/{hh}',
-        'rawben_rel_max':      f'={T("_c_benrec")}/{T("_c_benmax")}',
+        'rawben_rel_max':      f'={T(f"_c_benrec{fin}")}/{T(f"_c_benmax{fin}")}',
         'shelter_expenses_by_hh_size': f'=({T("_c_rent_i")}+{T("_c_util_i")})/{hh}',
         'total_deductions_by_hh_size':
             f'=({T("_c_dep_i")}+{T("_c_cs_i")}+{T("_c_sltded_i")}+{T("_c_med_i")}'
             f'+{T("_c_hless_i")}+{T("_c_ernded_i")}+{T("_c_stdded_i")})/{hh}',
-        'unc_rawben_rel_max': f'={T("_c_benunc")}/{T("_c_benmax")}',
+        'unc_rawben_rel_max': f'={T(f"_c_benunc{fin}")}/{T(f"_c_benmax{fin}")}',
         'utilities':   f'={T("_c_util_i")}',
         # SUA tier (features.R add_sua_tier; helper _c_tier above): 0 = no
         # utility amount, 1 = more than SUA_TOLERANCE below the state's
@@ -1496,17 +1648,28 @@ def feature_formulas(R, table=TABLE):
         # above. The anchor is the
         # static per-year max_sua block on FederalTables (state_sua.csv).
         'utilities_sua': f'={T("_c_tier")}',
-        # the QC outcome, recomputed from the benefit pair exactly as the
-        # munging script defines it: error amount = |RAWBEN - FSBEN| rounded,
+        # the QC outcome as the munging script defines it since Ben's
+        # 2026-11-09 change: error amount = QC's AMTERR (ERROR_AMOUNT) rounded,
         # error flag = amount STRICTLY OVER the year's federal QC tolerance
-        # (FederalTables error_threshold; munging script lines 165/198)
+        # (FederalTables error_threshold). A blank ERROR_AMOUNT falls back to
+        # |RAWBEN - FSBEN| (Eric, 2026-11-10)
         'over_threshold':
-            f'=IF(ROUND(ABS({T("ORIGINAL_BENEFIT_AMOUNT")}'
-            f'-{T("CORRECTED_BENEFIT_AMOUNT")}),0)'
-            f'>INDEX({R["ERRTHR"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["YEARS"]},1)),1,0)',
-        'total_error_amount':
-            f'=ROUND(ABS({T("ORIGINAL_BENEFIT_AMOUNT")}'
-            f'-{T("CORRECTED_BENEFIT_AMOUNT")}),0)',
+            f'=IF(ISNUMBER({_erramt}),IF({_erramt}'
+            f'>INDEX({R["ERRTHR"]},MATCH({T("REVIEW_FISCAL_YEAR")},{R["YEARS"]},1)),1,0),"")',
+        'total_error_amount': f'={_erramt}',
+        # the benefit check (element 520, Eric 2026-11-09): the benefit
+        # recomputed with the REVIEW year's tables (_c_benrec, never the
+        # last-year's-tables _c_benrec_f, so a case budgeted on last year's
+        # tables is flagged) against the issued benefit, over the year's
+        # federal tolerance. ALLOTMENT_ADJUSTMENT 2 (prorated) or 3 (other)
+        # skips the case; IFERROR(--x) reads a typed "2" as 2 and a blank as 0.
+        # blank on the shipped sample's rows (SAMPLE_PREFIX)
+        'benefit_calc_off':
+            f'=IF(LEFT({T("CASE_ID")},{len(SAMPLE_PREFIX)})="{SAMPLE_PREFIX}","",'
+            f'IF(OR(IFERROR(--{T("ALLOTMENT_ADJUSTMENT")},0)=2,'
+            f'IFERROR(--{T("ALLOTMENT_ADJUSTMENT")},0)=3),0,'
+            f'IF(ROUND(ABS({T("_c_benrec")}-{orig}),0)'
+            f'>INDEX({R["ERRTHR"]},MATCH({T("_c_fy")},{R["YEARS"]},1)),1,0)))',
     }
     for name, f in list(feats.items()):
         cols = list(dict.fromkeys(FEATURE_INPUTS.get(name, [])))
@@ -1529,7 +1692,7 @@ def _excel_floor(x, sig=1.0):
 
 
 def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None,
-                    smd_by_year=None):
+                    smd_by_year=None, prior_year=False):
     """Compute what the Excel formulas will produce, from the raw block.
     `sua_by_year` maps fiscal year -> the state's max SUA (state_sua.csv);
     `sd_offset_by_year` maps fiscal year -> the state's standard-deduction
@@ -1559,18 +1722,45 @@ def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None,
     stdded = stdded_at(fy)
     benmax = np.array([ma.loc[ma.year <= y, str(s)].iloc[-1] for y, s in zip(fy, sz20)])
     ernded = _excel_floor(g('EARNED_INCOME') * 0.2)
-    netbs = (g('EARNED_INCOME') + g('UNEARNED_INCOME')
-             - (ernded + g('DEPENDENT_CARE_DEDUCTION') + g('MEDICAL_DEDUCTION')
-                + g('CHILD_SUPPORT_EXPENSES') + stdded))
     maxsh = np.where(eld == 1, 1e9, lk(yd, 'max_shelter_deduction'))
-    sltded = np.minimum(np.maximum(g('RENT') + g('UTILITY_COSTS')
-                                   - np.maximum(netbs * 0.5, 0), 0), maxsh)
-    sltded = np.where(g('HOMELESS_DEDUCTION') > 0, 0, sltded)
-    netan = _excel_floor(netbs - (sltded + g('HOMELESS_DEDUCTION')))
-    benunc = _excel_floor(benmax - 0.3 * netan)
     minal = lk(yd, 'min_allotment')
-    benrec = np.minimum(np.maximum(
-        benunc, np.where(g('HOUSEHOLD_SIZE') < 3, minal, 0)), benmax)
+
+    def ben_chain(stdded, benmax, maxsh):
+        netbs = (g('EARNED_INCOME') + g('UNEARNED_INCOME')
+                 - (ernded + g('DEPENDENT_CARE_DEDUCTION') + g('MEDICAL_DEDUCTION')
+                    + g('CHILD_SUPPORT_EXPENSES') + stdded))
+        sltded = np.minimum(np.maximum(g('RENT') + g('UTILITY_COSTS')
+                                       - np.maximum(netbs * 0.5, 0), 0), maxsh)
+        sltded = np.where(g('HOMELESS_DEDUCTION') > 0, 0, sltded)
+        netan = _excel_floor(netbs - (sltded + g('HOMELESS_DEDUCTION')))
+        benunc = _excel_floor(benmax - 0.3 * netan)
+        benrec = np.minimum(np.maximum(
+            benunc, np.where(g('HOUSEHOLD_SIZE') < 3, minal, 0)), benmax)
+        return benunc, benrec
+
+    benunc, benrec = ben_chain(stdded, benmax, maxsh)
+    if prior_year:
+        # Last year's tables (munging Step 7 "prior_year_tables"): a case whose
+        # inputs miss the issued benefit with the review year's maximum
+        # allotment, standard deduction and shelter cap, but hit it exactly with
+        # last year's (alone, in pairs, then all three; first hit kept), takes
+        # last year's. The munging limits this to ELEMENT1 361 / 520, which a
+        # state's data does not carry; the issued benefit is known before review.
+        issued = pd.to_numeric(raw['ORIGINAL_BENEFIT_AMOUNT'], errors='coerce').values
+        py = fy - 1
+        prev = {'max': np.array([ma.loc[ma.year <= y, str(s)].iloc[-1] for y, s in zip(py, sz20)]),
+                'std': stdded_at(py),
+                'sh': np.where(eld == 1, 1e9, np.array(
+                    [yd.loc[yd.year <= y, 'max_shelter_deduction'].iloc[-1] for y in py]))}
+        cur = {'max': benmax, 'std': stdded, 'sh': maxsh}
+        todo = ~np.isnan(issued) & (benrec != issued)
+        for combo in PRIOR_YEAR_SETS:
+            t = {k: (prev if k in combo else cur)[k] for k in cur}
+            u, r = ben_chain(t['std'], t['max'], t['sh'])
+            hit = todo & (r == issued)
+            benunc, benrec = np.where(hit, u, benunc), np.where(hit, r, benrec)
+            benmax = np.where(hit, t['max'], benmax)
+            todo &= ~hit
     # SUA tier: pasted amount against the review year's standard. A year
     # with no published standard (csv value 0) gives a blank tier (NaN).
     util = g('UTILITY_COSTS')
@@ -1629,16 +1819,26 @@ def mirror_features(raw, ftabs, sua_by_year, sd_offset_by_year=None,
         'utilities': util_i,
         'utilities_sua': tier,
     }
-    # QC outcome recomputed from the benefit pair, mirroring the Excel
-    # formulas (and the munging script's own definition)
-    errdiff = np.round(np.abs(g('ORIGINAL_BENEFIT_AMOUNT')
-                              - g('CORRECTED_BENEFIT_AMOUNT')))
+    # QC outcome mirroring the Excel formulas (and the munging script's own
+    # definition): ERROR_AMOUNT (AMTERR), or |ORIGINAL - CORRECTED| where blank
+    ea = pd.to_numeric(raw['ERROR_AMOUNT'], errors='coerce').values
+    errdiff = np.round(np.abs(np.where(
+        np.isnan(ea), g('ORIGINAL_BENEFIT_AMOUNT') - g('CORRECTED_BENEFIT_AMOUNT'), ea)))
     out['total_error_amount'] = errdiff
     out['over_threshold'] = (errdiff > lk(yd, 'error_threshold')).astype(int)
-    return pd.DataFrame(out)
+    out = pd.DataFrame(out)
+    # the workbook's per-row guard: a feature is blank where any of its inputs
+    # is blank (g() above reads a blank as 0, as Excel arithmetic does)
+    for name, cols in FEATURE_INPUTS.items():
+        if name in out.columns:
+            gap = raw[[c for c in cols if c in raw.columns]].isna().any(axis=1).values
+            if gap.any():
+                out[name] = out[name].astype(float).where(~gap, np.nan)
+    return out
 
 
-def validate(raw, frame, elem_free, feat_names, state_name, offset_col=None):
+def validate(raw, frame, elem_free, feat_names, state_name, offset_col=None,
+             prior_year=False):
     ad = os.path.join(REPO, 'additional_data')
     yd = pd.read_csv(os.path.join(ad, 'year_data.csv')).sort_values('year')
     sd = pd.read_csv(os.path.join(ad, 'standard_deductions.csv')).sort_values('year')
@@ -1667,7 +1867,7 @@ def validate(raw, frame, elem_free, feat_names, state_name, offset_col=None):
     smd_by_year = ({int(c): float(mrow.iloc[0][c]) for c in smd.columns
                     if c != 'state_name'} if len(mrow) else {})
     mir = mirror_features(raw, (yd, sd, ma), sua_by_year, sd_offset_by_year,
-                          smd_by_year)
+                          smd_by_year, prior_year)
     print(f'\nformula validation vs the munged frame '
           f'({len(frame)} rows, reconstructed pre-QC-review inputs):')
     print(f'  {"feature":32s} {"all rows":>9s}')
@@ -1695,8 +1895,19 @@ def validate(raw, frame, elem_free, feat_names, state_name, offset_col=None):
                 b = np.round(np.abs(pd.to_numeric(
                     frame[c], errors='coerce').fillna(0).values))
             else:
-                b = pd.to_numeric(frame[c], errors='coerce').fillna(0).values
-            ok = np.isclose(a, b, atol=1e-6, rtol=1e-9)
+                # NaN-aware: a frame NA must meet a blank feature, never a 0
+                # (a 0 would satisfy a "<=" rule the research code skips)
+                b = pd.to_numeric(frame[c], errors='coerce').values
+            ok = ((np.isnan(a) & np.isnan(b)) |
+                  np.isclose(np.nan_to_num(a, nan=-1.0),
+                             np.nan_to_num(b, nan=-2.0), atol=1e-6, rtol=1e-9))
+            if c == 'total_error_amount':
+                # the workbook sums error dollars only over over_threshold
+                # rows. Below the tolerance the f1030 frame zeroes the error
+                # on nature 97 / agency 26 "no action required" cases while
+                # FSBEN still differs from RAWBEN (intentional, Eric
+                # 2026-10-30), so compare the error cases only
+                ok = ok[frame['is_error'].astype(bool).values]
         r_all = ok.mean()
         print(f'  {c:32s} {r_all:9.1%}')
         worst.append((c, r_all))
@@ -1745,7 +1956,8 @@ def main():
     offset_col = cfg.get('std_ded_offset_col')          # Illinois: IL_OFFSET
     ft_visible = bool(cfg.get('federal_tables_visible'))
     R = federal_tables(wb, cfg['name'], offset_col=offset_col, visible=ft_visible)
-    helpers, feats = feature_formulas(R)
+    prior_year = bool(cfg.get('prior_year_tables'))   # Michigan
+    helpers, feats = feature_formulas(R, prior_year=prior_year)
 
     missing = [h for h in hdr
                if not h.startswith('_') and h not in feats and h not in RAW_COLS]
@@ -1758,7 +1970,7 @@ def main():
     dups = sorted({n for n in low if low.count(n) > 1})
     assert not dups, f'case-insensitive duplicate Data columns: {dups}'
     ok = validate(raw, frame, elem_free, [h for h in hdr if h in feats],
-                  cfg['name'], offset_col=offset_col)
+                  cfg['name'], offset_col=offset_col, prior_year=prior_year)
     if not ok:
         # HARD GATE (2026-08-16): the demo must sit on the reconstructed
         # pre-QC-review scale the rules were mined on — a state's internal
@@ -1804,7 +2016,8 @@ def main():
     for ci, name in enumerate(hdr, 1):
         if name in feats:
             for rr in range(2, NROW + 1):
-                dat.cell(row=rr, column=ci, value=feats[name])
+                dat.cell(row=rr, column=ci,
+                         value=feats[name])
             n_swapped += 1
     print(f'features -> formulas: {n_swapped} columns | helpers: {len(helpers)} | '
           f'raw: {len(RAW_COLS)} -> Data!A1:{LAST}{NROW}')
@@ -1873,7 +2086,12 @@ def main():
         title, body = note
         note = (title, body.format(**effective_rule_counts(cfg['abbr'])))
     background_tab(wb, cfg['name'], note=note)
-    n51 = screening_tabs(wb, R, hdr)
+    fy = pd.to_numeric(raw['REVIEW_FISCAL_YEAR'], errors='coerce')
+    pool = raw[fy == SCREEN_SAMPLE_FY]
+    sample = (pool.sample(min(SCREEN_SAMPLE_N, len(pool)), random_state=SCREEN_SAMPLE_SEED)
+              .sort_values('CASE_ID').reset_index(drop=True)[SCREEN_COLS]) if SCREEN_SAMPLE_N else None
+    print(f'Step 5.1 sample: {0 if sample is None else len(sample)} of {len(pool)} FY{SCREEN_SAMPLE_FY} cases')
+    n51 = screening_tabs(wb, R, hdr, prior_year, sample)
     n6 = share_tab(wb, cfg['name'])
     print(f'screening tabs: {n51} rule columns | share-back rows: {n6}')
 

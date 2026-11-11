@@ -51,6 +51,7 @@ import pandas as pd
 import states as STATE_REGISTRY
 import tuning
 import rule_selection
+from workbook_layout import VOTE_SHEET
 from workbook_layout import (DATA_SHEET, BLENDED_SHEET, EXPORT_SHEET,
                              VIEWER_SHEET, RAW_COLS, RAW_OFF, qref)
 
@@ -185,6 +186,9 @@ if bad.any():
     df = df[~bad].reset_index(drop=True)
 print(f'error rate: {df.over_threshold.mean():.3f} '
       f'({int(df.over_threshold.sum())} errors)')
+# the benefit check's feature is blank on the shipped sample (make_input_workbook
+# .SAMPLE_PREFIX), which is this frame, so its rules flag nothing here
+df[rule_selection.CHECK_VAR] = np.nan
 
 df.to_csv(CASES_CSV, index=False)
 
@@ -219,6 +223,45 @@ CHAR_COLS = [
     ('found_in_case_record',   'Share discovered in case file',    '0%',     13),
     ('timing_at_certification','Share at certification',           '0%',     12),
 ]
+# SNAP_VOTE=1 (2026-10-28, case scoring by rule votes, issues #16/#21): a
+# second yellow TRUE/FALSE column, Vote?, right after Include?. Include?
+# still selects the rules that are exported and that flag cases; Vote?
+# selects the rules whose count of flags on a case drives its expected error
+# dollars (make_vote.py). Every rule ships Vote? = TRUE. Off by default, so
+# the standard build's columns do not move.
+VOTE_ON = os.environ.get('SNAP_VOTE') == '1'
+# SNAP_VOTE_RULES_CSV (2026-10-29): the national vote rules are appended
+# (rule_selection.py) with Vote? = TRUE; the state's list rules then ship
+# Vote? = FALSE, because the shipped vote table counts the national rules only.
+VOTE_RULES = VOTE_ON and bool(os.environ.get('SNAP_VOTE_RULES_CSV'))
+CHAR0 = 14 if VOTE_ON else 13           # first characterization column
+
+
+# Rule names shown to readers (Eric, 2026-11-05). A list rule is "Rule 12"; when it
+# is also one of the national vote rules its vote ID follows, "Rule 12 (vote 4.013)".
+# A vote-only rule is "Vote rule 4.060": the size group's first number (1, 2 for
+# 2-3, 4 for 4+) and the rule's rank within that group. The internal numbers
+# (1001-1300 for vote-only rules, rule_selection.VOTE_NUM0) are never displayed.
+def vote_id(group):
+    hh, k = str(group).rsplit('-', 1)
+    return f'{hh[0]}.{k}'
+
+
+def rule_name(rule):
+    if rule.get('check'):
+        return 'Benefit check'
+    if rule.get('vote_only'):
+        return f'Vote rule {vote_id(rule["group"])}'
+    return f'Rule {rule["num"]}' + (f' (vote {vote_id(rule["group"])})' if rule.get('group') else '')
+
+
+def preset_name(rule):
+    """The dropdown name on the Grid Search and viewer tabs (unique per rule)."""
+    if rule.get('check'):
+        return f'Benefit check (HH {rule["hh"]})'
+    if rule.get('vote_only'):
+        return rule_name(rule)
+    return f'Rule {rule["num"]} (HH {rule["hh"]})'
 
 # ── plain-English rendering of a rule's conditions ────────────────────────────
 # The 19-variable vocabulary, phrased for program staff. Indicators render as
@@ -245,6 +288,9 @@ PLAIN_VARS = {
     'unc_rawben_rel_max':         ('uncapped benefit relative to the maximum', 'n'),
     'months_since_cert_n':        ('months since certification', 'n'),
     'count_divisible_by_100':     ('number of round-$100 amounts', 'n'),
+    rule_selection.CHECK_VAR:     ('recomputed benefit differs from the issued benefit '
+                                   'by more than the federal tolerance (benefit '
+                                   'calculation errors, QC element 520)', 'i'),
 }
 
 
@@ -336,7 +382,7 @@ for v in RULE_VARS:
 # snapped_grid steps by variable type (dollar 50, ratio 0.05, months/counts 1)
 RATIO_VARS = {'rawben_rel_max', 'unc_rawben_rel_max', 'percent_abawd'}
 UNIT_VARS  = {'months_since_cert_n', 'HH_size_n', 'count_divisible_by_100', 'cat_elig',
-              'utilities_sua',
+              'utilities_sua', rule_selection.CHECK_VAR,
               'bbce_state_i', 'expedited_i', 'elderly_disabled_i', 'married',
               'children_i', 'homeless'}
 def base_step(v):
@@ -477,7 +523,7 @@ summary_cells = []   # per rule: dict of metric cell refs
 for bi, rule in enumerate(RULES):
     r0 = BASE_ROW + bi * BLOCK_HEIGHT
     merge(ws,r0,1,r0,9,
-          value=(f'Rule {rule["num"]}  │  HH size {rule["hh"]}  │  {rule["engine"]}, '
+          value=(f'{rule_name(rule)}  │  HH size {rule["hh"]}  │  {rule["engine"]}, '
                  f'{rule["frame"]}  │  train precision {rule["prec_train"]:.1%} '
                  f'(LCB {rule["prec_lcb"]:.1%})'),
           fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=11,color='FFFFFF'), align=left)
@@ -531,7 +577,7 @@ for bi, rule in enumerate(RULES):
     sr = SUMM_ROW + 2 + bi
     cc = summary_cells[bi]
     fill_r = BLUE_LIGHT if bi % 2 == 0 else WHITE
-    vals = [(f'Rule {rule["num"]}', None), (rule['hh'], None),
+    vals = [(rule_name(rule), None), (rule['hh'], None),
             (rule['prec_train'], '0.0%'), (f'={cc["precision"]}', '0.0%'),
             (f'={cc["recall (count)"]}', '0.0%'), (f'={cc["dollar recall"]}', '0.0%'),
             (f'={cc["n_flagged"]}', '#,##0'), (f'={cc["errors caught"]}', '#,##0')]
@@ -627,7 +673,7 @@ ws_g.row_dimensions[1].height = 32
 NP = len(RULES)
 set_cell(ws_g,1,25,'Custom')                          # Y1
 for p, rule in enumerate(RULES):
-    pname = f'Rule {rule["num"]} (HH {rule["hh"]})'
+    pname = preset_name(rule)
     set_cell(ws_g,2+p,27,pname)                       # AA
     set_cell(ws_g,2+p,25,pname)                       # Y (dropdown source)
     for i in range(NSLOTS):
@@ -643,7 +689,7 @@ merge(ws_g,4,1,4,13,
       value='Step 1 — Pick a rule preset, or pick "Custom" and fill the custom block on the right',
       fill=BLUE_DARK, font=Font(name=FONT,bold=True,size=12,color='FFFFFF'), align=left)
 set_cell(ws_g,5,1,'Rule preset', font=bold_font(), fill=GRAY, align=left)
-set_cell(ws_g,5,2,f'Rule {RULES[0]["num"]} (HH {RULES[0]["hh"]})', fill=YELLOW,
+set_cell(ws_g,5,2,preset_name(RULES[0]), fill=YELLOW,
          align=center, border=thin(), font=bold_font(), number_format='@')
 set_cell(ws_g,5,4,'← delivery rules sorted by error dollars caught on this state\'s data, or "Custom"',
          font=Font(name=FONT,size=9,color='808080'), align=left)
@@ -935,6 +981,21 @@ TOT_ERR = max(int(is_err_all.sum()), 1)
 TOT_ED  = max(float(ed_all.sum()), 1e-9)
 
 
+# the benefit check flags nothing on the shipped sample, so its Step 3 rows
+# score 0 there like any rule, and the description carries the national estimate per
+# household-size group (benefit_check_national.R): precision, recall and $ per
+# flagged case (Eric, 2026-11-10)
+_cn = pd.read_csv(os.path.join(PKG, 'benefit_check_national.csv'), dtype={'hh': str})
+CHECK_NATIONAL = {row['hh']: row for _, row in _cn.iterrows()}
+
+
+def check_label(hh):
+    nat = CHECK_NATIONAL[hh]
+    return (f'. Blank on the shipped sample cases; scores your own pre-QC records. '
+            f'Nationally, {nat["years"]}: precision {nat["prec"]:.0%}, '
+            f'recall {nat["rec"]:.1%}, ${nat["dollars_per_flag"]:.0f} per flagged case.')
+
+
 def score_list(rules_list):
     """Static per-rule metrics, each rule ALONE. Recall and $ Recall are
     shares of ALL errors / error dollars on the frame (decision 2026-08-18:
@@ -944,7 +1005,7 @@ def score_list(rules_list):
     make_live.rule_row's live formulas (risk R4)."""
     masks = [rule_selection.rule_mask(df, r) for r in rules_list]
     scores = []
-    for m in masks:
+    for r, m in zip(rules_list, masks):
         n, tp = int(m.sum()), int((m & is_err_all).sum())
         dol = float(ed_all[m].sum())
         scores.append({'prec': tp / n if n else 0.0, 'rec': tp / TOT_ERR,
@@ -1002,13 +1063,16 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     ws = wb.create_sheet(sheet_name, position)
     ws.sheet_view.showGridLines = False
     ws.sheet_properties.tabColor = '2F5496'
-    LASTC = 13 + len(CHAR_COLS)          # ..., Include?(12), char block, Exact expression
+    LASTC = CHAR0 + len(CHAR_COLS)       # ..., Include?(12), [Vote?(13)], char block, Exact expression
     # D is wide because below 10 flagged cases the live build shows text
     # ('2 errors of 9 cases flagged') instead of a percentage
     for col_letter, width in {'A':9,'B':9,'C':60,'D':26,'E':11,'F':11,'G':10,'H':10,
                               'I':14,'J':12,'K':21,'L':9}.items():
         ws.column_dimensions[col_letter].width = width
-    for ci, (_, _, _, w) in enumerate(CHAR_COLS, 13):
+    if VOTE_ON:
+        ws.column_dimensions['M'].width = 9
+        ws.column_dimensions['A'].width = 20     # "Rule 12 (vote 4.013)", "Vote rule 4.060" (rule_name)
+    for ci, (_, _, _, w) in enumerate(CHAR_COLS, CHAR0):
         ws.column_dimensions[get_column_letter(ci)].width = w
     ws.column_dimensions[get_column_letter(LASTC)].width = 100
     merge(ws,1,1,1,LASTC, value=f'{title} — {STATE_NAME} FY{FY_LABEL}',
@@ -1027,7 +1091,7 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     # headers hyperlink to their dictionary rows.
     for col, txt in enumerate(['Rule','HH size','What the rule says','Precision','Recall',
                                '$ Recall','Flagged','Errors','Error $ caught','Workload %',
-                               'Expected error $ by case','Include?'] +
+                               'Expected error $ by case','Include?'] + (['Vote?'] if VOTE_ON else []) +
                               [h for _, h, _, _ in CHAR_COLS] + ['Exact expression'], 1):
         set_cell(ws,3,col,txt, font=bold_font(10), fill=GRAY, align=center, border=thin())
 
@@ -1069,11 +1133,13 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
             (8, f'=SUMPRODUCT(({u_rng}){sterm}*({D_OV}))',                '#,##0'),
             (9, f'=SUMPRODUCT(({u_rng}){sterm}*({D_OV})*({D_AM}))',       '$#,##0'),
             (10,f'=$G{r}/{tot_n}',                                        '0.0%'),
-            (11,f'=IFERROR(IF($G{r}=0,"",$I{r}/$G{r}),"")',               '$#,##0'),
+            (11,f'=IFERROR(IF($G{r}=0,"no flags",$I{r}/$G{r}),"")',               '$#,##0'),
         ]:
             set_cell(ws,r,col,formula=f, align=center, border=thin(),
                      number_format=fmt, fill=ORANGE60)
         set_cell(ws,r,12,None, align=center, border=thin(), fill=ORANGE60)
+        if VOTE_ON:
+            set_cell(ws,r,13,None, align=center, border=thin(), fill=ORANGE60)
 
     merge(ws,9,1,9,3, value='Individual rules — original thresholds, no tuning',
           fill=BLUE_LIGHT, font=bold_font(10), align=left)
@@ -1083,26 +1149,30 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     for j, rule in enumerate(rules_list):   # already sorted by error $ caught
         r = NAT_ROW0 + j
         sc = scores[j]
-        set_cell(ws,r,1,f'Rule {rule["num"]}', align=center, border=thin(), fill=GREEN)
+        set_cell(ws,r,1,rule_name(rule),
+                 align=center, border=thin(), fill=GREEN)
         set_cell(ws,r,2,rule['hh'], align=center, border=thin(), fill=GREEN)
-        set_cell(ws,r,3,render_plain(rule['conds']), align=plain_align, border=thin(),
-                 font=Font(name=FONT,size=10))
+        set_cell(ws,r,3,render_plain(rule['conds']) + (check_label(rule['hh']) if rule.get('check') else ''),
+                 align=plain_align, border=thin(), font=Font(name=FONT,size=10))
         for col, key, fmt in [(4,'prec','0.0%'),(5,'rec','0.0%'),(6,'drec','0.0%'),
                               (7,'n','#,##0'),(8,'tp','#,##0'),(9,'dollars','$#,##0')]:
             set_cell(ws,r,col,round(float(sc[key]),4), align=center, border=thin(),
                      number_format=fmt, fill=GREEN)
-        set_cell(ws,r,10,round(sc['n']/cases_by[rule['hh']],4), align=center, border=thin(),
+        set_cell(ws,r,10,round(sc.get('work', sc['n']/cases_by[rule['hh']]),4), align=center, border=thin(),
                  number_format='0.0%', fill=GREEN)
-        set_cell(ws,r,11,(round(sc['dollars']/sc['n'], 2) if sc['n'] else '—'),
+        set_cell(ws,r,11,(round(sc['dollars']/sc['n'], 2) if sc['n'] else 'no flags'),
                  align=center, border=thin(), number_format='$#,##0', fill=GREEN)
         # measurement-tier rules ship Include? = FALSE (zero deployed
         # capacity; present for the Step 6 read-out only)
         set_cell(ws,r,12,bool(rule.get('ship', True)), fill=YELLOW, align=center,
                  border=thin(), font=Font(name=FONT))
+        if VOTE_ON:   # every rule votes by default, shipped or not; only the national vote rules with VOTE_RULES
+            set_cell(ws,r,13,bool(rule.get('vote', not VOTE_RULES)), fill=YELLOW, align=center, border=thin(),
+                     font=Font(name=FONT))
         # the whole characterization block (M onward) reads left-aligned so
         # its content is legible before any column resize (feedback
         # 2026-08-21 for T-W, extended to M-Q 2026-08-22)
-        for ci, (key, _, fmt, _) in enumerate(CHAR_COLS, 13):
+        for ci, (key, _, fmt, _) in enumerate(CHAR_COLS, CHAR0):
             v = rule.get('char', {}).get(key)
             if v is None or (isinstance(v, float) and np.isnan(v)):
                 v = ''
@@ -1118,6 +1188,8 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
     dv_incl = DataValidation(type='list', formula1='"TRUE,FALSE"', allow_blank=False)
     ws.add_data_validation(dv_incl)
     dv_incl.add(f'L{NAT_ROW0}:L{NAT_ROW0 + len(rules_list) - 1}')
+    if VOTE_ON:
+        dv_incl.add(f'M{NAT_ROW0}:M{NAT_ROW0 + len(rules_list) - 1}')
     return ws
 
 
@@ -1134,7 +1206,16 @@ ws_n = delivery_list_tab(
            'with judgment about what the rules flag and what can be found and fixed in '
            'secondary review (see the "Start Here" tab for background). To remove a rule, set '
            'the text in the yellow "Include?" column to FALSE, which will decrease the '
-           'workload % in cell J5. Columns to the right of "Include?" characterize each rule '
+           'workload % in cell J5. ' + (('The yellow "Vote?" column picks the rules whose count of flags on a case '
+           'sets its expected error $ on the "' + VOTE_SHEET + '" tab. By default only the 300 national vote rules at the '
+           'bottom ("Vote rule 1.001" on: household size 1, 2-3 or 4+, then the rule rank within that group) vote; '
+           'they are set to FALSE under Include?, so they do not change the flagged cases or the export unless you '
+           'include them. A list rule that is also a vote rule shows its vote ID, as in "Rule 12 (vote 4.013)", and '
+           'votes too. ')
+           if VOTE_RULES else ('The yellow "Vote?" column picks the rules whose count of flags on a case '
+           'sets its expected error $ on the "' + VOTE_SHEET + '" tab (every rule votes by default, including '
+           'rules set to FALSE under Include?). ') if VOTE_ON else '') +
+           'Columns to the right of "' + ('Vote?' if VOTE_ON else 'Include?') + '" characterize each rule '
            'as applied to NATIONAL data; they are fixed context and do not recompute from '
            'pasted data. If removing rules for a smaller workload percentage, start from '
            'the bottom.'))
@@ -1208,7 +1289,7 @@ merge(ws_e,2,G0,2,14,
       align=Alignment(horizontal='left', vertical='top', wrap_text=True))
 ws_e.row_dimensions[2].height = 60
 set_cell(ws_e,3,G0,'Rule', font=bold_font(10), fill=GRAY, align=center, border=thin())
-set_cell(ws_e,3,G0+1,f'Rule {RULES[0]["num"]} (HH {RULES[0]["hh"]})',
+set_cell(ws_e,3,G0+1,preset_name(RULES[0]),
          fill=YELLOW, align=center, border=thin(), font=bold_font(), number_format='@')
 ws_e.merge_cells(start_row=3, start_column=G0+1, end_row=3, end_column=G0+3)
 set_cell(ws_e,3,G0+6,'Show', font=bold_font(10), fill=GRAY, align=center, border=thin())
