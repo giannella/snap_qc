@@ -26,6 +26,11 @@ states in the data, DC and Georgia included.
   mostly because nature 97 / agency 26 cases are now kept and flagged
   rather than dropped; FY2022-24 has 118,247 cases and 13,297 over-threshold
   errors. Cases on a reconstructed income pile fall from 1,399 to 208.
+- **Delivery lists carry `pile_share_flags` and `pile_share_errors`**
+  after `mm_inflation` (columns 15 and 16 of 25), so every later column
+  sits two places to the right; read the lists by column name. The columns
+  came with the income-pile gate (see 2.7.0), which reached the lists the
+  day after the v2.7.0 tag: lists checked out at that tag do not have them.
 - **The workbooks rank new cases by expected error dollars from rule
   votes** (issues #16 and #21; findings sections 43-45). Step 3 adds 300
   national rules, 100 per household-size group, that vote rather than
@@ -192,6 +197,16 @@ states in the data, DC and Georgia included.
   and expected error dollars for states that deploy a model rather than a
   workbook (findings sections 46 and 48), with the delivery-list rules
   that flag each case as an explanation.
+- **A state model package**, `snap_case_model_v2.8.0.zip` on the release
+  page: the model behind `predict_cases.R`, already trained, with a script
+  that scores a state's own case file in R (one package to install,
+  xgboost). The input is one row per case with the 21 columns of the
+  workbook's Step 2; the output gives each case's error probability,
+  predicted error amount, expected error dollars and rank, and the state's
+  workbook rules that flag it. `MODEL_CARD.md` inside says how the model
+  was built and tested. Built by
+  `methods/case_predictions/make_case_model_package.R` and checked by
+  `validate_case_model_package.R`.
 - Proration columns, including `initial_month_i`: a prorated benefit
   (`ALLADJ = 2`) certified in the sample month (`LASTCERT = 0`), both from
   the case record.
@@ -252,8 +267,8 @@ workbooks are on the v2.7.0 release page.
   #29). In the public files, many downward income corrections on cases
   issued the maximum benefit end up at one shared amount; rules with 25%
   or more of their training flags or errors on those cases are dropped
-  before the lists are filled. Every list carries two new columns at the
-  end, `pile_share_flags` and `pile_share_errors`.
+  before the lists are filled. Every list carries two new columns after
+  `mm_inflation`, `pile_share_flags` and `pile_share_errors`.
 - **Every state gets a national-only list at both budgets**, beside its
   blended list (v2.6.0 shipped national-only lists only where a
   one-year-ahead test favored them). The blended list stays the default and
