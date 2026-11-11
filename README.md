@@ -1,12 +1,12 @@
 # snap_qc
 
-![Map: how many times more error dollars the delivered rule lists flag than random sampling at a 10% review volume, by state; 2.7x nationwide](presentation_figures/state_dollar_recall_map_budget10.png)
+![Map: how many times more error dollars the workbook vote score flags than random sampling at a 10% review volume, by state, with the full per-case model in parentheses; 2.6x nationwide (3.0x for the model)](presentation_figures/state_dollar_recall_map_budget10.png)
 
 Code and data for modeling SNAP payment errors as interpretable, easy-to-implement decision rules.
 
 Released under the Apache 2.0 license: use and build on the code, ideas, or results freely.
 
-**State agencies:** download your state's ready-made Excel workbook (`SNAP_flagging_rules_<ST>.xlsx`) from the [latest release](https://github.com/giannella/snap_qc/releases/latest). Paste your internal cases into its yellow columns and every figure recomputes; no R or Python needed on your side.
+**State agencies:** download your state's ready-made Excel workbook (`SNAP_flagging_rules_<ST>.xlsb`) from the [latest release](https://github.com/giannella/snap_qc/releases/latest). Paste your internal cases into its yellow columns and every figure recomputes; no R or Python needed on your side.
 
 **[Updates & compatibility](VERSIONING.md)** · **[Modeling research and takeaways](GUIDANCE.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Changelog](CHANGELOG.md)**
 
