@@ -8,9 +8,45 @@ If you only read one thing before updating: the **Changed** and **Removed**
 sections of each release tell you whether anything you currently run or read
 moved or behaves differently.
 
-## [Unreleased]
+## [2.8.0] - 2026-11-11
+
+If you use the delivery lists or the state workbooks, re-download them:
+every list was re-mined on a rebuilt frame, so rules and rule numbers differ
+from v2.7.0. The workbooks are on the v2.8.0 release page, under the same
+file names as v2.7.0 (`SNAP_flagging_rules_XX.xlsb`), and now cover all 49
+states in the data, DC and Georgia included.
 
 ### Changed
+- **All delivery lists re-mined on frame f1109**
+  (`additional_data/reg_model_data.rds`, sha256 `08e0e825`, 2026-11-09):
+  98 blended lists, 98 national-only lists, the rule sheet and the national
+  pool in `state_delivery_lists/`. The walk and gates, the income-pile gate
+  included, are v2.7.0's. The frame carries the reconstruction and labelling
+  changes below. It has 237,557 rows against v2.7.0's 231,619 (`1dbe8733`),
+  mostly because nature 97 / agency 26 cases are now kept and flagged
+  rather than dropped; FY2022-24 has 118,247 cases and 13,297 over-threshold
+  errors. Cases on a reconstructed income pile fall from 1,399 to 208.
+- **The workbooks rank new cases by expected error dollars from rule
+  votes** (issues #16 and #21; findings sections 43-45). Step 3 adds 300
+  national rules, 100 per household-size group, that vote rather than
+  flag. A case's votes, its household-size group and
+  issued benefit give its expected error dollars from a fixed table: rules
+  mined on FY2017-19 and fitted on FY2022, times a size model of the error
+  amount. Dollars are scaled so they add up to the state's FY2025 payment
+  error rate as FNS published it; the scaling does not change the order.
+  Step 5.2 is now "Step 5.2.a Flagged New Cases", and the new tab "5.2.b
+  Expected Error Amounts" lists the Step 5.1 cases from the highest expected
+  error dollars down, all cases together and by household-size group. Seven
+  or more votes count as seven and show as "7+". In the confirmation test
+  (on the v2.7.0 frame), a state's top 5% by this ranking held 41.9% more
+  error dollars per case on FY2024 cases than ranking by issued benefit
+  times the group's error rate (FY2022: 27.6%, 95% interval 5.9-49.4%).
+- **Step 2 takes the error amount QC recorded** in a new input column,
+  `ERROR_AMOUNT` (AMTERR), matching the frame. Total error amount falls
+  back to |original - corrected benefit| when it is blank.
+- **Blank inputs stay blank.** `EXPEDITED`, `HOMELESS_FLAG` and
+  `MONTHS_SINCE_CERT` are no longer read as 0 when missing, and a rule on a
+  missing input does not flag the case, as in the mining code.
 - **Initial-month proration is backed out before the AMTERR check:**
   prorated cases (`ALLADJ = 2`) get RAWBEN + AMTADJ when that reconciles
   with AMTERR. QC records AMTERR two ways: as the full-month error (used
@@ -28,12 +64,6 @@ moved or behaves differently.
   full-month amount used to reconstruct restored prorated cases is the new
   working column `amterr_full_month`; `amterr_qc` is gone (it equals
   AMTERR). The frame now also keeps `absbendiff`.
-- **The modelling frame is rebuilt on the reconstruction fixes below**
-  (sha256 `eb989fda`, 2026-10-27). The cases, error labels and error
-  amounts are unchanged. Each rebuilt household-size, income, deduction
-  or benefit-ratio feature changes on at most about 2,000 of the 115,559
-  FY2022-24 cases. The delivery lists are not yet re-mined on it; the
-  v2.7.0 lists were mined on the earlier frame (`1dbe8733`).
 - **Household size rises by one person** where the issued benefit exceeds
   the maximum allotment for the corrected size (and does not equal the
   prior year's maximum): 337 cases, 299 of them errors. 163 move from the
@@ -135,6 +165,23 @@ moved or behaves differently.
   did nothing at the minimum.
 
 ### Added
+- **A benefit check in every workbook** (rules 2001-2003, one per
+  household-size group, after the deployed rules on Step 3): it flags a
+  case whose benefit, recalculated from its inputs with the review year's
+  tables, differs from the issued benefit by more than the federal
+  tolerance, the pattern of arithmetic computation errors (QC element 520).
+  The rule text gives its national precision, recall and dollars per
+  flagged case. It is blank on the sample cases shipped in the workbook,
+  whose IDs now start `SAMPLE-`: their inputs are reconstructed from the
+  QC findings, so the check would flag reconstruction gaps rather than
+  errors. It scores a state's own pre-QC records. An optional
+  `ALLOTMENT_ADJUSTMENT` input column lets it skip prorated and restored
+  benefits (codes 2 and 3).
+- **Workbooks for DC and Georgia.**
+- `methods/case_predictions/predict_cases.R`: per-case error probability
+  and expected error dollars for states that deploy a model rather than a
+  workbook (findings sections 46 and 48), with the delivery-list rules
+  that flag each case as an explanation.
 - Proration columns, including `initial_month_i`: a prorated benefit
   (`ALLADJ = 2`) certified in the sample month (`LASTCERT = 0`), both from
   the case record.
