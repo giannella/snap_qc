@@ -59,9 +59,9 @@ Each test reran the same fitting procedure on earlier years only, re-choosing th
 - **Weakest states at 10%.**
   - FY2024: North Dakota, at 1.69 times random.
   - FY2022: Wyoming, at 0.32 times random (1 error among 28 flags), and Delaware, at 0.98 times random (13 flags).
-- **Against the workbook.** On the FY2022 and FY2024 tests, at each state's top 5% of cases, the model caught 3.42 and 3.52 times its share of error dollars; the vote score in the state Excel workbooks caught 3.01 and 3.24 (findings §46, on the earlier frame f1030).
+- **Against the workbook.** On the FY2024 test, the vote score in the state Excel workbooks was rebuilt on the same frame and given the same number of flags per state. At each state's top 10% of cases it caught 26.9% of error dollars, against the model's 30.7% (16.2% against 18.3% at the top 5%). The model did better in 36 of 49 states at 10% and 33 at 5%. The FY2019 and FY2022 tests were not run for the vote score.
 - **Optimism.** The same three tests chose this model from eight candidates (findings §46), so the figures carry some optimism. §46 reports a leave-one-test-out check.
-- **Sources.** Snap_qc repo: `methods/case_predictions/s46/out_f1109_eval/B_f1109_summary_5_10pct.csv` and `B_f1109_by_state_5_10pct.csv`. The method is in findings §46 and §48.
+- **Sources.** Snap_qc repo: `methods/case_predictions/s46/out_f1109_eval/B_f1109_summary_5_10pct.csv` and `B_f1109_by_state_5_10pct.csv`. The results are logged in findings §51; the method is in §46 and §48.
 
 ## Checks of this package
 

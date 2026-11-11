@@ -312,6 +312,12 @@ we learned is recoverable. Each points to its numbered section.
   table. Lists flag 80-81% of the same cases; vote-score FY2023 gain at the
   top 5% 31% (32% on 1dbe8733); vote coverage 10.1% of cases (interim rules
   14.1%).
+- **11-10 to 11-11**: The per-case model B (#46, #48) refit on frame
+  f1109 and packaged for states (#51): at each state's top 10% one year
+  ahead, precision 0.272 against base 0.111 and 30.7% of error dollars;
+  the package reproduces the repo's scoring; columns a state lacks are
+  filled with 0; on the same FY2024 flags the workbook vote score catches
+  26.9% of error dollars at 10%.
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -5872,3 +5878,269 @@ FY2022 errors than A at both budgets on all three seeds. A candidate then
 needs the shipped engines (xgboost + ranger) and a one-year-ahead check
 before it can ship. If B fails, the question is closed for the lists. Any use
 in the per-case model (§46 candidate B) would need its own pre-registration.
+
+## 51. The shipped per-case model on frame f1109: held-out results at 5% and 10% workloads, the state package's checks, the workbook vote score on the same cases, and what a missing input column does (2026-11-11)
+
+> **Takeaway (about our pipeline).** Refit on f1109 with its frozen §46
+> settings, candidate B ranks cases about as well as on f1104. At each state's
+> top 10% of FY2024 cases (one year ahead), 27.2% of flagged cases have an
+> over-tolerance error against 11.1% at random, and the flags hold 30.7% of
+> error dollars; three years ahead (FY2022) the figures are 24.3% against
+> 10.0%, and 29.7%. On the same FY2024 cases and flag counts, the workbook
+> vote score catches 26.9% of error dollars at 10% and 16.2% at 5%,
+> against B's 30.7% and 18.3%. The state package built from the deployed
+> model reproduces the repo's own scoring, and a column a state does not
+> record changes the ranking far less filled with 0 than left blank.
+
+**Why this entry.** The state model package
+(`methods/case_predictions/snap_case_model/`, commit 8b39309) ships B's deploy
+bundle refit on f1109. Its guide and model card quote held-out figures from a
+run on 2026-11-10 that no section recorded. This entry records that run, the
+deploy refit, the package's checks, and two measurements made for the guide.
+It is descriptive: nothing was chosen from these numbers.
+
+**Terms.**
+- *B*: §46's selected per-case model. A P model (xgboost, binary logistic)
+  gives each case's probability of an error over the year's federal tolerance;
+  a size model (xgboost, gamma, fit on error cases only) gives the error amount
+  if there is one. Both carry a one-hot state term and are bagged over seeds
+  117-126. Cases are ranked within a state by expected error dollars, P times
+  size.
+- *Workload*: the share of a state's cases flagged, from the top of the
+  ranking. Flags = round(5% or 10% of the state's full case count).
+- *Precision*: share of flagged cases with an error over the tolerance. *Base
+  rate*: that share among all scored cases. *Dollar recall*: share of all
+  error dollars that fall in the flagged cases. *Times random*: dollar recall
+  divided by the workload, so 1.0 is what random review would catch.
+
+**Design (the §48 rerun with only the frame changed).** Driver
+`methods/case_predictions/s46/s46_f1109.R` (setup, fit, score) and
+`s46_f1109_states.R` (by state, 5% and 10%); outputs in
+`methods/case_predictions/s46/out_f1109_eval/`; code, ledger and both frames
+hashed in `manifest_f1109.txt` (2026-11-10 10:42) before scoring.
+- **Model.** B as frozen in §46 Amendment 2. Each test's stage-1 settings,
+  training-year choice and percentile choice are copied from `out_a2`; nothing
+  is retuned. Test 1 uses within-state percentile inputs, tests 2 and 3 do
+  not; test 3 adds the older years to FY2022-23.
+- **Data.** f1109 (`additional_data/reg_model_data.rds`, 237,557 rows, sha256
+  08e0e825). Its label is AMTERR over the tolerance; f1104's was |RAWBEN -
+  FSBEN| over the tolerance (driver header), so the frame comparison below
+  mixes a label change with the data change.
+- **Tests.** Each scores a later year than any training year; none is
+  interpolated. Test 1: train FY2017-18, score FY2019. Test 2: train
+  FY2017-19, score FY2022, three years ahead, the gap the shipped model faces
+  on FY2027 cases. Test 3: train FY2017-19 and FY2022-23, score FY2024, one
+  year ahead.
+- **Scoring rows.** As in §46 (`keep_of`), rows with an income pile, a
+  maximum-benefit mismatch, a Step-7 recreation, or a recreated-versus-issued
+  gap over the cut are set aside before scoring: 937 of 39,239 cases (2.4%),
+  892 of 37,680 (2.4%) and 1,026 of 40,497 (2.5%) in tests 1-3. Training used
+  all rows. Error dollars are nominal dollars of the scored year.
+
+### Results: pooled over 49 states
+
+`out_f1109_eval/B_f1109_summary_5_10pct.csv`; medians and percentiles over
+states from `B_f1109_by_state_5_10pct.csv`.
+
+| Test | Workload | Flags | Precision | Base rate | Error $ per flag | Dollar recall | Times random, pooled | Times random, median state (10th-90th pct) | Median state precision |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 (FY2019) | 5% | 1,961 | 0.247 | 0.093 | $39.39 | 17.8% | 3.56 | 3.48 (1.90-4.79) | 0.233 |
+| 1 (FY2019) | 10% | 3,926 | 0.221 | 0.093 | $32.67 | 29.5% | 2.95 | 3.08 (1.89-3.85) | 0.207 |
+| 2 (FY2022) | 5% | 1,883 | 0.253 | 0.100 | $51.96 | 16.6% | 3.32 | 3.37 (2.08-5.14) | 0.273 |
+| 2 (FY2022) | 10% | 3,765 | 0.243 | 0.100 | $46.47 | 29.7% | 2.97 | 2.85 (2.15-4.22) | 0.260 |
+| 3 (FY2024) | 5% | 2,027 | 0.309 | 0.111 | $73.20 | 18.3% | 3.66 | 3.65 (2.35-5.10) | 0.290 |
+| 3 (FY2024) | 10% | 4,049 | 0.272 | 0.111 | $61.35 | 30.7% | 3.07 | 2.94 (2.12-4.06) | 0.265 |
+
+**Weakest and strongest states (times random).**
+- Test 1: lowest Nebraska, 1.22 at 5% (6 errors in 45 flags) and 1.23 at 10%
+  (10 in 91); highest Nevada 6.70 (5%) and Louisiana 5.39 (10%). One state
+  below its base rate at 5%, none at 10%.
+- Test 2: Wyoming 0.00 at 5% (0 errors in 14 flags) and 0.32 at 10% (1 in 28);
+  Delaware 0.98 at 10%; next lowest at 5% Maryland 1.58. Highest Vermont 7.86
+  (5%) and South Dakota 7.21 (10%). One state below its base rate at 5%, two at
+  10%.
+- Test 3: New Hampshire 1.41 at 5% (2 errors in 32 flags); North Dakota 1.69
+  at 10% (7 in 45). Highest South Dakota 7.02 (5%) and Kentucky 4.95 (10%). One
+  state below its base rate at 5%, none at 10%; no state below 1.0 at either.
+
+**Against f1104 (§48), at the 5% workload** (`out_f1109_eval/B_f1109_vs_f1104.csv`,
+both frames scored with the same code):
+
+| Test | Precision f1104 / f1109 | Error $ per flag f1104 / f1109 | Dollar recall f1104 / f1109 |
+|---|---|---|---|
+| 1 (FY2019) | 0.238 / 0.247 | $37.96 / $39.39 | 16.9% / 17.8% |
+| 2 (FY2022) | 0.267 / 0.253 | $55.02 / $51.96 | 17.3% / 16.6% |
+| 3 (FY2024) | 0.310 / 0.309 | $74.22 / $73.20 | 18.3% / 18.3% |
+
+At 10%, f1104 (§48 addendum) had precision 0.225, 0.245 and 0.272 and dollar
+recall 29.8%, 29.3% and 30.2% in tests 1-3, against f1109's 0.221, 0.243 and
+0.272 and 29.5%, 29.7% and 30.7%. Test 3 is unchanged; test 2 is lower at 5%
+and level at 10%; test 1 is higher at 5% and level at 10%. The two frames keep
+different cases and carry different labels, so these differences cannot be
+assigned to either cause.
+
+### Against the workbook vote score (test 3, FY2024)
+
+**What was compared.** *WB* is the vote score the state workbooks ship: each
+case's count of rule votes is turned into an expected error amount by a vote
+curve and a size model, and cases are ranked within a state by that amount.
+We rebuilt it on f1109 as §46 Amendment 2 built it on the earlier frame, and
+scored it on test 3 only:
+- **Votes on FY2024** come from a national mine of FY2022-23 f1109 cases at
+  one seed (117); 11.3% of FY2024 cases have at least one vote.
+- **The scorer** (vote curve and size model) is fit on FY2022 votes from the
+  FY2017-19 f1109 rule pools (seeds 117-119). The refit vote curve matched
+  the shipped `vote_scoring/deploy/vote_table.csv`.
+- **Vote cap.** The size model caps votes at 7, as the shipped workbook does.
+  The uncapped score is reported beside it.
+- **Benefit.** The size model reads the recreated benefit; the shipped
+  workbook reads the issued benefit.
+- **Rows.** Both scores flag the same number of cases per state from the same
+  kept rows (2,027 at 5%, 4,049 at 10%, of 40,497 cases). The by-state script
+  stops unless each state's cases, kept rows, flags, errors and error dollars
+  match B's file; it ran through.
+
+| Score | Workload | Errors caught | Precision (base 0.111) | Error $ per flag | Dollar recall | Pooled times random | Median state times random (10th-90th pct) | Lowest state |
+|---|---|---|---|---|---|---|---|---|
+| B | 5% | 627 | 0.309 | $73.20 | 18.3% | 3.66 | 3.65 (2.35-5.10) | New Hampshire 1.41 (2 errors in 32 flags) |
+| WB | 5% | 595 | 0.294 | $64.58 | 16.2% | 3.23 | 3.24 (1.72-4.73) | Maryland 1.01 (7 in 34) |
+| WB, uncapped | 5% | 599 | 0.296 | $65.03 | 16.3% | 3.26 | 3.21 (1.66-4.73) | Maryland 1.01 (7 in 34) |
+| B | 10% | 1,100 | 0.272 | $61.35 | 30.7% | 3.07 | 2.94 (2.12-4.06) | North Dakota 1.69 (7 in 45) |
+| WB | 10% | 1,001 | 0.247 | $53.76 | 26.9% | 2.69 | 2.74 (1.55-3.46) | Idaho 1.10 (6 in 97) |
+| WB, uncapped | 10% | 997 | 0.246 | $53.55 | 26.8% | 2.68 | 2.74 (1.50-3.44) | Idaho 1.10 (6 in 97) |
+
+- **State by state.** B's times random is higher than WB's in 33 of 49
+  states at 5% and 36 of 49 at 10%. The median state difference (B minus WB)
+  is 0.47 at both workloads (10th-90th percentile -0.90 to 2.05 at 5%, -0.45
+  to 1.06 at 10%).
+- **Where WB does better.** WB leads by more than 0.5 in 10 states at 5% and
+  4 at 10%. The largest at 5% are Utah (4.82 against 2.65; 8 errors against
+  7 in 51 flags), Nebraska (4.70 against 3.02) and Kentucky (5.03 against
+  3.38); at 10%, Illinois (3.17 against 2.46), New Jersey (3.27 against 2.59)
+  and Oregon (3.32 against 2.74). At 5% these rest on 32-51 flags per state.
+- **No state below random.** Neither score falls below 1.0 times random in
+  any state at either workload.
+- **In §46's terms.** L (error dollars per flagged case as a multiple of the
+  mean per case, averaged over the 2%, 3%, 5%, 7.5% and 10% workloads): B
+  3.522, WB 2.983, WB uncapped 3.011. At 5% alone: 3.512, 3.071 and 3.091.
+- **The cap.** Capping votes at 7 changes little: 595 against 599 errors
+  caught at 5%, 1,001 against 997 at 10%.
+- **Limits.** WB's votes rest on one mine seed, so its seed-to-seed spread is
+  not measured here. Tests 1 and 2 were not scored for WB on f1109. The
+  comparison was run after B was chosen and decided nothing.
+- **Artifacts.** `methods/case_predictions/s46/wb_ref_f1109.R` (votes, curve,
+  size model and WB's expected dollars; `wb_ref.R` with the frame set to
+  f1109, the vote cap, and test 3 only), `s46_f1109_wb_states.R` (by state
+  and national figures) and the runner `run_wb_f1109.cmd`. Outputs in
+  `s46/out_f1109_wb/`: `WB_f1109_by_state_5_10pct.csv`,
+  `WB_f1109_uncapped_by_state_5_10pct.csv`, `WB_f1109_national.csv`, and
+  `s46_log.txt` and `phases.txt` (run 2026-11-11, 14:11 to 15:08; the step
+  logs `1_wb_votes_fy2022.log` to `5_states.log` are gitignored). The FY2022-23 rule pool is
+  `methods/v270_seed_replicates/pools/admitted_f1109_seed117.rds`
+  (gitignored).
+
+### The deploy refit on f1109
+
+`methods/case_predictions/s46/s46_deploy_f1109.R` runs `s46_post.R`'s deploy
+step with only the frame changed: `s46/out_f1109/deploy_B_bundle.rds` (sha256
+cf317959, built 2026-11-10 from staging commit 8b8d99f; committed in
+4c51de0). Settings were re-chosen with FY2024 held back (197,060 fitting
+rows): P depth 6, minimum child weight 5, column sample 0.5, 1,250 rounds best
+on the holdout and 1,507 in the fit on all 237,557 rows; size depth 4, minimum
+child weight 25, offset on, 850 rounds. The size model's starting value is
+log(size) = 3.894 + 0.227 x log(1 + recomputed benefit). The f1104 bundle
+(9c702979) is superseded. The deployed settings themselves were not scored on
+a held-out year: the tests above rerun the fitting procedure with each test's
+frozen settings.
+
+### The state package's checks
+
+`methods/case_predictions/validate_case_model_package.R`; log and CSVs in
+`methods/case_predictions/case_model_validation/`. The package (built by
+`make_case_model_package.R`) rebuilds the 18 inputs from the 21 raw columns
+of the workbook's Step 2 with an R port of the workbook's feature code.
+- **Model file.** The package's model (`snap_case_model.rds`, sha256 08591382)
+  holds the bundle's twenty fitted models, inputs, states, offset and CPI
+  values unchanged.
+- **Features.** Built from the raw columns, all 18 inputs match the frame for
+  99.919% of FY2022-24 cases (118,247) and 99.769% of FY2017-19 cases
+  (119,310). Every difference is in the two benefit ratios (`rawben_rel_max`
+  99.964% and 99.841%; `unc_rawben_rel_max` 99.919% and 99.769%). Lowest
+  states: Utah 99.702% and Indiana 99.544% in FY2022-24; Michigan 96.656% and
+  96.616% in FY2017-19.
+- **Scores.** P identical for 99.929% (FY2022-24) and 99.864% (FY2017-19) of
+  cases; largest P difference 0.029 and 0.030; largest expected-dollar
+  difference $10.84 and $6.70. Lowest state Spearman correlation of expected
+  dollars 0.9999 in both. Lowest state overlap of the top 10%: 0.985
+  (Maryland, FY2022-24) and 1.000 (FY2017-19).
+- **Against the repo's scoring script.** On Washington's 710 FY2024 cases the
+  package and `predict_cases.R` give the same P and expected dollars (largest
+  difference 0), the same rank for every case, and the same rules listed.
+
+### What a missing input column does
+
+Training data hold few blank inputs: the largest blank shares are
+`months_since_cert_n` 0.062%, `homeless` 0.020% and `expedited_i` 0.007%. On
+each state's FY2024 frame cases (a training year), one raw column at a time
+was set blank, or set to 0, for every case, and the state's top 10% compared
+with its top 10% with every column present
+(`case_model_validation/column_effects_fy2024.csv`). Cells give the median
+state's overlap (lowest state in brackets).
+
+| Column | Left blank | Filled with 0 |
+|---|---|---|
+| HOMELESS_DEDUCTION | 0.54 (0.32) | 1.00 (0.99) |
+| HOMELESS_FLAG | 0.86 (0.65) | 1.00 (0.89) |
+| CHILD_SUPPORT_EXPENSES | 0.54 (0.32) | 0.99 (0.95) |
+| NUM_ABAWD | 0.68 (0.53) | 0.98 (0.83) |
+| EXPEDITED | 0.88 (0.79) | 0.98 (0.92) |
+| DEPENDENT_CARE_DEDUCTION | 0.54 (0.32) | 0.97 (0.89) |
+| MEDICAL_DEDUCTION | 0.46 (0.24) | 0.97 (0.86) |
+| MARRIED_FLAG | 0.66 (0.40) | 0.96 (0.85) |
+| NUM_ELDERLY | 0.39 (0.15) | 0.94 (0.80) |
+| NUM_DISABLED | 0.39 (0.15) | 0.94 (0.89) |
+| CATEGORICALLY_ELIGIBLE | 1.00 (0.77) | 0.92 (0.87) |
+| NUM_CHILDREN | 0.67 (0.48) | 0.88 (0.74) |
+| MONTHS_SINCE_CERT | 0.78 (0.64) | 0.81 (0.59) |
+| UTILITY_COSTS | 0.47 (0.27) | 0.75 (0.62) |
+| EARNED_INCOME | 0.48 (0.26) | 0.68 (0.46) |
+| RENT | 0.48 (0.30) | 0.67 (0.52) |
+| UNEARNED_INCOME | 0.50 (0.30) | 0.32 (0.08) |
+| ORIGINAL_BENEFIT_AMOUNT | 1.00 (1.00) | not run |
+
+The package stops on a column blank for every case. For the first ten rows it
+tells the state to fill 0 (median overlap 0.94-1.00 filled, 0.39-0.88 blank);
+without the next seven it says the model should not be used (0.32-0.92 even
+filled with 0). The issued benefit enters the score only as a fallback for the
+size model's starting value, which is why blanking it changes nothing here.
+
+### The gap between published error rates and the model's dollar rate
+
+`methods/case_predictions/rate_gap_fy2024.R` (output
+`case_model_validation/rate_gap_fy2024.csv`), on each state's FY2024 cases, a
+year the model was trained on, with every amount in FY2024 dollars:
+- FNS FY2025 payment error rate / the model's dollar error rate (sum of P x
+  size over sum of issued benefit): median 1.89 (0.92 to 3.28).
+- FNS rate / the error dollars visible in the public file over the same
+  issued benefit: median 1.53 (0.96 to 3.17).
+- Visible error dollars / the model's predicted error dollars: median 1.20
+  (0.74 to 1.83). The cause of this part has not been found.
+- Across states, FNS / model falls as the share of a state's FY2022-24 error
+  cases visible in the public file rises (Spearman -0.34; shares from
+  `methods/state_error_accounting/visibility_by_state_2022_2024.csv`). If the
+  missing error cases were the size of the visible ones on average, missing
+  cases alone would give a median of 1.37 (100 / share visible). The FNS rate
+  is also for FY2025 and weighted by the QC sample design; neither difference
+  is separated here.
+
+**Caveats.**
+- The same three tests chose B from eight candidates (§46), so these figures
+  carry selection optimism; §46 reports a leave-one-test-out check.
+- Test 1 uses within-state percentile inputs, which the deployed model and the
+  package do not build.
+- Public QC files omit households found ineligible (each state's file shows
+  43-81% of its error cases, `methods/state_error_accounting/`); the model
+  learns from, and is scored on, the visible errors only.
+- Neither the tests nor the package checks use a state's own case records.
+- Wyoming and Delaware in test 2 and New Hampshire in test 3 rest on 13-32
+  flags; at that size one or two cases move a state's figure.

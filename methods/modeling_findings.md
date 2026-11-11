@@ -2054,3 +2054,58 @@ that flag 12.0% of FY2022 cases.
   project lead's decision.
 
 -> detailed record: modeling_findings_detailed.md section 45.
+
+## 51. The shipped per-case model on frame f1109: held-out results at 5% and 10% workloads, the state package's checks, the workbook vote score on the same cases, and what a missing input column does (2026-11-11)
+
+> **Takeaway (about our pipeline).** Refit on f1109 with its frozen §46
+> settings, candidate B ranks cases about as well as on f1104. At each state's
+> top 10% of FY2024 cases (one year ahead), 27.2% of flagged cases have an
+> over-tolerance error against 11.1% at random, and the flags hold 30.7% of
+> error dollars; three years ahead (FY2022) the figures are 24.3% against
+> 10.0%, and 29.7%. On the same FY2024 cases and flag counts, the workbook
+> vote score catches 26.9% of error dollars at 10% and 16.2% at 5%,
+> against B's 30.7% and 18.3%. The state package built from the deployed
+> model reproduces the repo's own scoring, and a column a state does not
+> record changes the ranking far less filled with 0 than left blank.
+
+B is the per-case model chosen in §46: a probability of an error over the
+federal tolerance times a predicted error size, both with a state term. Each
+test refits it on earlier years with its frozen settings and flags each
+state's top 5% or 10% of a later year's cases.
+
+| Test | Workload | Precision (base rate) | Share of error $ caught | Median state, times random (10th-90th pct) |
+|---|---|---|---|---|
+| Three years ahead (FY2017-19 to FY2022) | 5% | 0.253 (0.100) | 16.6% | 3.37 (2.08-5.14) |
+| | 10% | 0.243 (0.100) | 29.7% | 2.85 (2.15-4.22) |
+| One year ahead (FY2017-19, FY2022-23 to FY2024) | 5% | 0.309 (0.111) | 18.3% | 3.65 (2.35-5.10) |
+| | 10% | 0.272 (0.111) | 30.7% | 2.94 (2.12-4.06) |
+
+- **Against f1104 (§48).** At 5%, precision 0.267 vs 0.253 three years ahead
+  and 0.310 vs 0.309 one year ahead (f1104 / f1109). The frames also differ
+  in the label (AMTERR now), so the change is not assigned to either cause.
+- **Weak states.** Three years ahead at 10%, Wyoming caught 0.32 times its
+  share (1 error in 28 flags) and Delaware 0.98; one year ahead the lowest
+  is North Dakota at 1.69.
+- **Against the workbook (FY2024 only).** The vote score the state
+  workbooks ship, rebuilt on f1109 and given the same flags per state:
+  precision 0.294 at 5% and 0.247 at 10%, against B's 0.309 and 0.272;
+  median state 3.24 and 2.74 times random, against 3.65 and 2.94. B is
+  ahead in 33 of 49 states at 5% and 36 at 10%; the workbook leads by
+  more than 0.5 in 10 states at 5% (Utah, Nebraska, Kentucky the most)
+  and 4 at 10%. Its votes rest on one mine seed.
+- **Package checks.** All 18 inputs rebuilt from the workbook's raw columns
+  match the frame for 99.92% of FY2022-24 cases; every state's top 10%
+  overlaps the frame-scored top 10% by at least 98.5%; Washington's FY2024
+  scores match `predict_cases.R` exactly.
+- **Missing columns.** A column blank for every case keeps a median 39-88%
+  of each state's top 10% for the ten mostly-zero columns, against 94-100%
+  when filled with 0. Income, rent, utilities, children, categorical
+  eligibility and months since certification keep 32-92% even filled.
+- **Levels.** The FNS FY2025 rate is a median 1.89 times the model's dollar
+  rate on FY2024 cases: 1.53 between the public file and FNS (larger where
+  the file shows fewer error cases), 1.20 between the model and the public
+  file (cause not found).
+- **Caveats.** The same tests chose B among eight candidates (§46), and
+  nothing here uses a state's own records.
+
+-> detailed record: modeling_findings_detailed.md section 51.
