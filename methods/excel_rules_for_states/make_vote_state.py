@@ -5,10 +5,16 @@ on the rules tab and the "5.2.b Expected Error Amounts" tab after Step 5.2.a
 (make_vote.py; called "Vote Score" until 2026-10-29).
 
 The rules tab carries the state's shipped list exactly as in the standard
-build (Include? = TRUE, Vote? = FALSE) and, below it, the 300 national vote
-rules (Rule 1001 on; Include? = FALSE, Vote? = TRUE). Expected error $ comes
-from the fixed national table (methods/vote_scoring/deploy/), scaled to the
-state's FNS FY2025 payment error rate.
+build (Include? = TRUE; Vote? follows Include? since 2026-11-12, so the
+included rules vote; before, Vote? = FALSE) and, below it, the 300 national
+vote rules (Rule 1001 on; Include? = FALSE, Vote? = TRUE). Expected error $
+comes from the fixed national table (methods/vote_scoring/deploy/), scaled to
+the state's FNS FY2025 payment error rate. "Start Here" leads with the 5.2.b
+ranking's figures on the testing data (make_vote.py, 2026-11-12).
+
+SNAP_VOTE_DEST_DIR (2026-11-12) puts the finished workbooks in another folder
+instead of custom_one_off/<state>/, for test builds that must not overwrite a
+delivered file.
 
 Size (2026-10-29): each rule is tested once per case for both checkboxes
 (make_live.MERGED_VOTE: Include? + 1000 x Vote?), and the Step 2 formulas
@@ -48,10 +54,12 @@ VOTE_RULES = os.environ.get('SNAP_VOTE_RULES_CSV') or os.path.join(
 
 def vote_expectations(plain_xlsx, effective_csv):
     """(total votes, cases with any vote) from the plain build's static
-    RuleFlags hit matrix, counting only the rules that ship Vote? = TRUE."""
+    RuleFlags hit matrix, counting the rules that vote as shipped: the
+    national vote rules (vote = True) and, since 2026-11-12, every rule that
+    ships Include? = TRUE (ship = True), whose Vote? cell follows Include?."""
     import openpyxl
     with open(effective_csv, newline='') as fh:
-        votes = [r['vote'] == 'True' for r in csv.DictReader(fh)]
+        votes = [r['vote'] == 'True' or r.get('ship', 'True') == 'True' for r in csv.DictReader(fh)]
     wb = openpyxl.load_workbook(plain_xlsx, read_only=True)
     rf = wb['RuleFlags']
     nr = sum(1 for c in next(rf.iter_rows(min_row=1, max_row=1))[1:] if isinstance(c.value, int))
@@ -98,7 +106,8 @@ def build_vote(state):
         from make_state import static_union
         g5, h5 = static_union(out, state)    # the shipped (Include? = TRUE) union, from the vote build's effective list
         print(f'expected: {total} votes on Step 2, {anyv} cases with a vote')
-        dest_dir = os.path.join(REPO, 'custom_one_off', FOLDER.get(state, cfg['name'].lower().replace(' ', '_')))
+        dest_dir = os.environ.get('SNAP_VOTE_DEST_DIR') or os.path.join(
+            REPO, 'custom_one_off', FOLDER.get(state, cfg['name'].lower().replace(' ', '_')))
         os.makedirs(dest_dir, exist_ok=True)
         dest = os.path.join(dest_dir, f'SNAP_flagging_rules_{state}_vote.xlsx')
         if in_use(dest):
@@ -114,6 +123,7 @@ def build_vote(state):
         probes += [f'{V}!J4={total}', f'{V}!J5={anyv}', f"{V}!J6={lay['per']}", f'{V}!E6',
                    *[f'{V}!{c}' for c in lay['list_cells']],
                    f'{V}!B7', f'{V}!C7'] + [f'{V}!{c}{r}' for r in (rc, rc + 1, rc + 2, rc + 3) for c in 'EFI']
+        probes += ['Start Here!B4', 'Start Here!B5', 'Start Here!B6', 'Start Here!B8']   # the 5.2.b headline figures
         verify(dest, probes)
         # Excel Binary copy, checked with the same probes
         xlsb = dest.replace('.xlsx', '.xlsb')

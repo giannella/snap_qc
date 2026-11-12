@@ -531,10 +531,13 @@ def background_tab(wb, state_name, note=None):
         'example; delete them before pasting your own.' if SCREEN_SAMPLE_N else
         'cases with no review outcome into its yellow columns.',
         f'      5.2{".a" if VOTE_RULES_BUILD else ""}  See the flagged cases (the "{FLAGGED_SHEET}" tab): every new '
-        'case a selected rule flags, with the rule that flagged it.',
+        'case a selected rule flags, with the rule that flagged it.' + (
+            ' This tab is for states that apply the rules one at a time.' if VOTE_RULES_BUILD else ''),
     ] + ([f'      5.2.b  See the expected error amounts (the "{VOTE_SHEET}" tab): the new cases with '
           'the highest expected error $, ranked across all new cases (and, beside them, within each household-size '
-          'group), from the national vote rules that flag them, household size and benefit.']
+          'group), from the rules that flag them (the rules you include and the national vote rules), household '
+          'size and benefit. Most states should review new cases from this tab. The figures at the top of the '
+          '"Start Here" tab show how its ranking does on your testing data.']
          if VOTE_RULES_BUILD else []) + [
     ] + ([f'      5.3  Prioritize the flagged cases (the "{PRIORITY_SHEET}" tab): every new '
           'case any rule in the list flags (rules set to FALSE count too), ranked by how many rules flag it times its benefit '

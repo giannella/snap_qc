@@ -8,6 +8,47 @@ If you only read one thing before updating: the **Changed** and **Removed**
 sections of each release tell you whether anything you currently run or read
 moved or behaves differently.
 
+## [2.8.1] - 2026-11-12
+
+If you use the state workbooks, re-download them: the "5.2.b Expected Error
+Amounts" tab ranks cases differently. The delivery lists, the rules on
+Step 3 and their numbers are unchanged from v2.8.0. Released as a patch
+because it follows v2.8.0 by a day, although the ranking change is a
+behavior change.
+
+### Changed
+- **The rules a state includes now vote** (findings section 52). On the
+  Step 3 tab, a list rule's Vote? cell follows its Include? cell, so every
+  rule a state keeps counts toward its cases' votes on the "5.2.b Expected
+  Error Amounts" tab, along with the 300 national vote rules. A state can
+  still type TRUE or FALSE over a Vote? cell. In v2.8.0 only the national
+  vote rules voted. Expected error dollars still come from the same fixed
+  table and size model. Held out, with each state reviewing 10% of its
+  cases (rules mined on FY2022-23, FY2024 cases), the ranking with included
+  rules voting found 2.34 times as many errors per reviewed case as random
+  review and 2.81 times the error dollars, against 2.22 and 2.69 for the
+  v2.8.0 ranking and 2.32 and 2.57 for the rule lists alone. At 5% the
+  figures were 2.51 and 3.13, against 2.64 and 3.23, and 2.55 and 2.88.
+  On FY2023 cases (rules mined on FY2017-19 and FY2022), at 10%: 2.27 and
+  2.75, against 2.09 and 2.60, and 2.32 and 2.53.
+- **"Start Here" leads with the 5.2.b ranking.** Its figures for cases,
+  errors, precision and error dollars per case now describe the top share of
+  the testing cases by expected error dollars (the share in cell E4 of
+  5.2.b, 10% as shipped), not the cases the selected rules flag. The
+  selected rules' figures stay on the Step 3 tab and in the comparison block
+  on 5.2.b. A line under the figures says why Step 3's differ (its rules
+  were chosen on the same FY2022-24 cases the workbook carries) and
+  recommends 5.2.b. The comparison block's note says the same, and its last
+  row, the ranking given as many cases as the rules flag, is labeled as the
+  row to compare with the rules.
+- **Start Here points most states to 5.2.b.** It describes Step 5.2.a as
+  the tab for states that apply the rules one at a time.
+
+### Added
+- **`make_vote_state.py` reads `SNAP_VOTE_DEST_DIR`**, a folder for test
+  builds, so they do not overwrite the workbook in
+  `custom_one_off/<state>/`.
+
 ## [2.8.0] - 2026-11-11
 
 If you use the delivery lists or the state workbooks, re-download them:

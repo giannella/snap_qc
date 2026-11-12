@@ -231,8 +231,9 @@ CHAR_COLS = [
 # the standard build's columns do not move.
 VOTE_ON = os.environ.get('SNAP_VOTE') == '1'
 # SNAP_VOTE_RULES_CSV (2026-10-29): the national vote rules are appended
-# (rule_selection.py) with Vote? = TRUE; the state's list rules then ship
-# Vote? = FALSE, because the shipped vote table counts the national rules only.
+# (rule_selection.py) with Vote? = TRUE. The state's list rules shipped
+# Vote? = FALSE until 2026-11-12; since then their Vote? cell follows Include?
+# (Eric: "included rules are voting rules"; held-out test in the findings).
 VOTE_RULES = VOTE_ON and bool(os.environ.get('SNAP_VOTE_RULES_CSV'))
 CHAR0 = 14 if VOTE_ON else 13           # first characterization column
 
@@ -1166,7 +1167,14 @@ def delivery_list_tab(sheet_name, position, rules_list, scores, conds_text,
         # capacity; present for the Step 6 read-out only)
         set_cell(ws,r,12,bool(rule.get('ship', True)), fill=YELLOW, align=center,
                  border=thin(), font=Font(name=FONT))
-        if VOTE_ON:   # every rule votes by default, shipped or not; only the national vote rules with VOTE_RULES
+        if VOTE_ON and VOTE_RULES and not rule.get('vote', False):
+            # included rules are voting rules (Eric, 2026-11-12): a list rule's Vote? cell follows its
+            # Include? cell, so the rules a state keeps also count toward its cases' votes (a state can
+            # type TRUE or FALSE over it). The national vote rules, and list rules that are also national
+            # vote rules, always vote (the branch below).
+            set_cell(ws,r,13,formula=f'=L{r}', fill=YELLOW, align=center, border=thin(),
+                     font=Font(name=FONT))
+        elif VOTE_ON:   # without VOTE_RULES every rule votes by default, shipped or not
             set_cell(ws,r,13,bool(rule.get('vote', not VOTE_RULES)), fill=YELLOW, align=center, border=thin(),
                      font=Font(name=FONT))
         # the whole characterization block (M onward) reads left-aligned so
@@ -1207,11 +1215,12 @@ ws_n = delivery_list_tab(
            'secondary review (see the "Start Here" tab for background). To remove a rule, set '
            'the text in the yellow "Include?" column to FALSE, which will decrease the '
            'workload % in cell J5. ' + (('The yellow "Vote?" column picks the rules whose count of flags on a case '
-           'sets its expected error $ on the "' + VOTE_SHEET + '" tab. By default only the 300 national vote rules at the '
-           'bottom ("Vote rule 1.001" on: household size 1, 2-3 or 4+, then the rule rank within that group) vote; '
-           'they are set to FALSE under Include?, so they do not change the flagged cases or the export unless you '
-           'include them. A list rule that is also a vote rule shows its vote ID, as in "Rule 12 (vote 4.013)", and '
-           'votes too. ')
+           'sets its expected error $ on the "' + VOTE_SHEET + '" tab. A rule you include votes: its Vote? cell '
+           'follows its Include? cell (type TRUE or FALSE over it to decide separately). The 300 national vote rules '
+           'at the bottom ("Vote rule 1.001" on: household size 1, 2-3 or 4+, then the rule rank within that group) '
+           'always vote; they are set to FALSE under Include?, so they do not change the flagged cases or the export '
+           'unless you include them. A list rule that is also a vote rule shows its vote ID, as in "Rule 12 (vote '
+           '4.013)", and votes whether or not it is included. ')
            if VOTE_RULES else ('The yellow "Vote?" column picks the rules whose count of flags on a case '
            'sets its expected error $ on the "' + VOTE_SHEET + '" tab (every rule votes by default, including '
            'rules set to FALSE under Include?). ') if VOTE_ON else '') +
