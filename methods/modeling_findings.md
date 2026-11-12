@@ -2055,6 +2055,325 @@ that flag 12.0% of FY2022 cases.
 
 -> detailed record: modeling_findings_detailed.md section 45.
 
+## 46. Pre-registered: per-case models against the blended lists, one year ahead, with a state term, per-state trees and FNS-set over/under priors (2026-11-01; run 2026-11-01/02 under Amendment 1, results at the end of this section)
+
+> **Takeaway (about our pipeline).** For states that would rather run a
+> model than a workbook, eight per-case models were fixed in advance, each
+> fit on earlier years and judged on later ones, and a pre-set rule froze
+> one: B, an xgboost model of the chance that a case has an error over the
+> federal tolerance, times a model of the error's size, both with a term for
+> the state. On three tests (FY2019, FY2022, FY2024), averaged over review
+> budgets of 2% to 10% of each state's cases, B's flagged cases hold 3.50
+> times the error dollars of an average case, against 3.39 for the same
+> model without the state term. Picked on two tests and scored on the third,
+> B's gain over that model is 0.4% to 3.8%. Stacked and per-state models
+> scored within 1% of B, so the rule took the simpler one. The vote score
+> the workbooks ship, scored the same way on FY2022 and FY2024, comes to
+> 3.04, against B's 3.53.
+
+**The question changed before anything ran.** The 11-01 pre-registration
+compared per-case models with the blended rule lists. Amendment 1, the same
+day and before any fit, turned it into a search for the best frozen model
+(Eric: "absolutely, 100% the best frozen model") and dropped the two list
+arms. This section therefore holds no held-out results for the rule lists.
+
+**How the models were judged.**
+- **Tests.** Fit on FY2017-18 and score FY2019 (weight 0.20); fit on
+  FY2017-19 and score FY2022 (0.40); fit on FY2022-23, plus FY2017-19 where
+  that did better on the training years, and score FY2024 (0.40). Settings
+  are chosen on the training years only.
+- **Score.** In each state, flag the top 2, 3, 5, 7.5 and 10% of cases. L is
+  the error dollars per flagged case, averaged over states and budgets, as a
+  multiple of the year's average error dollars per case; a random pick
+  scores 1. Q is the weighted mean of the three tests' L.
+- **Rule.** Among candidates that pass three guards (pooled precision at 5%
+  no more than 1.5 points below A's, a calibration slope within 0.8-1.25,
+  and a top-5% shape ratio within 20%), find the highest Q, then take the
+  simplest candidate within 1% of it.
+- **A leak closed first.** The benefit-ratio inputs come from the benefit
+  the munging recreates. On about 2% of rows the recreation misses the
+  issued benefit; those rows err at 0.41-0.51, against 0.09-0.10 elsewhere,
+  and hold 10-11% of error dollars. A model that also sees the issued
+  benefit can read the gap. So the issued benefit never enters a tree, and
+  scoring drops every row whose recreated benefit misses the issued one by
+  more than $5, along with the mismatch, income-pile and Step-7 rows.
+  Amendment 2 (11-03) built the size model's benefit term from the recreated
+  benefit too and reran all eight candidates. The table is that rerun, on
+  frame f1030.
+
+| Candidate | L FY2019 | L FY2022 | L FY2024 | Q | Precision at 5% | Eligible |
+|---|---|---|---|---|---|---|
+| A: chance of error x error size, no state term | 3.348 | 3.369 | 3.430 | 3.389 | 0.270 | yes |
+| **B: A with a state term** | **3.397** | **3.495** | **3.561** | **3.502** | **0.280** | yes |
+| G: one model of error dollars, with state | 3.336 | 3.468 | 3.528 | 3.466 | 0.277 | no (slope 0.76) |
+| C: B plus a ranger forest, stacked | 3.451 | 3.403 | 3.616 | 3.498 | 0.278 | yes |
+| GC: G plus a ranger forest, stacked | 3.489 | 3.382 | 3.639 | 3.506 | 0.275 | yes |
+| E: over- and underpayments modeled apart, FNS priors | 3.415 | 3.422 | 3.576 | 3.482 | 0.277 | yes |
+| D: C fit separately by household size | 3.333 | 3.341 | 3.551 | 3.423 | 0.270 | yes |
+| F: C plus a per-state adjustment | 3.446 | 3.416 | 3.620 | 3.504 | 0.277 | yes |
+
+- **Selection.** GC has the top Q (3.506). B, C, E and F are within 1% of
+  it, and B is the simplest. B − A = 0.113 (SE 0.048), 3.3%. Amendment 1,
+  with the issued benefit in the size term, also chose B (Q 3.526 against
+  A's 3.391).
+- **The honest gain.** Choosing on two tests and scoring the third picks B,
+  GC and B, with gains over A of 1.4%, 0.4% and 3.8%. Choosing on all three
+  overstates the gain.
+- **The benefit term.** B with its size model's benefit term switched off
+  scores 0.017 higher (SE 0.019), no detectable difference. The deployed
+  model keeps the term because the pre-set settings search chose it.
+- **The earlier option-D model**, scored by the same code under Amendment 1,
+  trails B by 0.339 in Q (SE 0.080), about 11%.
+- **The workbook vote score**, scored as a reference and not a candidate
+  (one mine seed; recreated benefit; ties broken by row): L 2.90 on FY2022
+  and 3.18 on FY2024, a mean of 3.04 against B's 3.53 (B − WB = 0.487, SE
+  0.103). Precision at 5%: 0.244 and 0.300, against B's 0.268 and 0.310.
+
+**Deploy.** B was refit on FY2017-19 and FY2022-24 (231,602 rows) and bagged
+over ten seeds. Its expected error dollars over issued dollars have a median
+of 5.6% by state, against a median FY2025 FNS payment error rate of 9.4%. A
+per-state factor (median 1.75) would align the two without changing any
+state's order; none is applied. The fit was redone on frames f1104 (section
+48) and f1109 (section 51).
+
+**What this does and does not show.**
+- **Selection.** B is the best of eight models fixed in advance, on three
+  tests; the leave-one-test-out gains are the figures to quote.
+- **No lists.** It does not compare the model with the rule lists; those
+  arms were dropped before the run.
+- **Horizon.** The tests run one and three years ahead. There is no FY2025
+  case file to check deployment directly.
+- **Workbook reference.** It rests on one mine seed.
+
+-> detailed record: modeling_findings_detailed.md section 46.
+
+## 47. Frame f1104 (Ben's donor matching): the lists' head check is set to report, not halt, for this build by the project lead's ruling (2026-11-05)
+
+> **Takeaway (about our pipeline).** On frame f1104 the list build stopped
+> at its head check, which halts a build when rules tagged as resting on the
+> benefit-reconstruction mismatch sit near the top of the national pool. Two
+> such rules ranked 4th and 8th, where the check allows none. Eric ruled to
+> build anyway on this frame, with the check reporting instead of halting,
+> provided tagged rules are still dropped before the lists are filled. Both
+> rules were dropped from every list. Judged on each state's FY2022-24 cases
+> (in-sample), the f1104 lists flag 73-80% of the cases the f1030 lists
+> flag and catch slightly more errors: blended-list precision at 5% is
+> 0.333 against 0.322.
+
+**What f1104 changed.** Ben's donor matching drops cases stuck at an
+imputation bound with fewer than 10 donors at every matching level: 51 error
+cases, 28 of them in FY2022-24, and one FY2022-24 error becomes a clean case.
+FY2022-24 now has 115,528 cases, 13,135 errors and 212 income-pile rows. A
+plain xgboost model and the vote score rank cases about as well as on f1030
+(AUC within 0.004; the vote score's FY2023 gain at 5% is 12.4% against
+12.5%).
+
+**Why the check fired.** Only 1 of the pool's 58,951 rules is tagged by its
+share of flags, far below the 2% limit. The two rules at the top are
+household 2-3 rules on a few dollars of earned income per person, and 8 or 9
+of each rule's roughly 21 errors are mismatch rows. The pool's head is a near
+tie of rules with 30 to 60 cases each, so which rules lead depends on small
+changes in the data; the f1104 national top 10 shares no rule with f1030's.
+
+**The ruling.** For this build only, `V250_HEAD_GATE=report` logs a breach
+instead of halting. Tagged rules (mismatch and income pile) are still dropped
+before the fill, the 2% pool limit still halts, and the runner still checks
+that no list carries a tagged rule. The default still halts.
+
+**Results.** The check logged 47 breaches (the national pool and 46 of 49
+state blends), all from the same two rules, and both were dropped. All 196
+lists passed the runner's checks: no fill gaps and no tagged rule.
+
+| List | Cases flagged, f1030 -> f1104 | f1030 flags still flagged | Errors | Precision | States with more / fewer errors |
+|---|---|---|---|---|---|
+| Blended 5% | 17,150 -> 17,306 | 73% | 5,529 -> 5,764 | 0.322 -> 0.333 | 33 / 11 |
+| Blended 10% | 34,423 -> 34,639 | 80% | 8,656 -> 8,810 | 0.251 -> 0.254 | 34 / 12 |
+| National-only 5% | 17,176 -> 17,306 | 73% | 4,794 -> 4,969 | 0.279 -> 0.287 | 34 / 10 |
+| National-only 10% | 34,354 -> 34,639 | 80% | 7,671 -> 7,888 | 0.223 -> 0.228 | 35 / 11 |
+
+**What this does and does not show.**
+- **In-sample.** Both list sets are judged on cases the f1104 lists were
+  mined on, which slightly favors them. The comparison shows the lists are
+  stable, not that they are better.
+- **Scope.** One seed; staging only; the f1104 lists were not shipped.
+
+-> detailed record: modeling_findings_detailed.md section 47.
+
+## 48. Pre-registered: candidate B refit on frame f1104 with its frozen settings, scored as in §46 (2026-11-06)
+
+> **Takeaway (about our pipeline).** Refit on frame f1104 with the settings
+> frozen in section 46, B ranks cases about as well as on f1030. At each
+> state's top 5% of FY2024 cases it flags 1,981 cases, 31.0% of them errors
+> over the tolerance, and catches 18.3% of all error dollars, $74 per
+> flagged case; on f1030 the figures were 31.0%, 18.4% and $75. On the
+> FY2022 test it is 1.5% lower on L, and on FY2019 4.7% lower. Nothing was
+> chosen from this run.
+
+**How it was run.** B as frozen in section 46 (Amendment 2), refit on f1104
+(231,551 rows) for the three section-46 tests, with nothing retuned. The
+f1030 rows were rescored with the same code and reproduce Amendment 2
+exactly. L is defined in section 46; lift at 5% is error dollars per flag
+over the average case's.
+
+| Test (scored year) | Frame | L | Precision at 5% | Error $ per flag | Share of error $ caught | Lift at 5% |
+|---|---|---|---|---|---|---|
+| FY2019 | f1104 | 3.236 | 0.238 | $37.96 | 16.9% | 3.23 |
+| | f1030 | 3.397 | 0.244 | $39.43 | 17.6% | 3.36 |
+| FY2022 | f1104 | 3.442 | 0.267 | $55.02 | 17.3% | 3.37 |
+| | f1030 | 3.495 | 0.268 | $55.85 | 17.5% | 3.42 |
+| FY2024 | f1104 | 3.495 | 0.310 | $74.22 | 18.3% | 3.51 |
+| | f1030 | 3.561 | 0.310 | $74.72 | 18.4% | 3.52 |
+
+A random pick would find 9.4%, 10.1% and 11.2% errors and $11.51, $16.25 and
+$20.81 per case in the three years.
+
+- **At a 10% workload, FY2024.** 3,954 flags, precision 0.272 against a base
+  rate of 0.113, 30.2% of error dollars, 3.0 times random. By state the
+  median is 2.98 times random (10th-90th percentile 2.08-4.07; North Dakota
+  1.53 to South Dakota 5.27), and no state falls below its base error rate.
+  On FY2019 and FY2022: precision 0.225 and 0.245, 29.8% and 29.3% of error
+  dollars; on FY2022 one state falls below its base rate.
+- **Deploy.** The deploy fit was redone on f1104 and `predict_cases.R`
+  switched to it, with the option-D model archived. Scoring each state's
+  FY2024 rows reproduces the fit's own figures exactly in all 49 states. The
+  f1109 fit (section 51) has since replaced it.
+
+**What this does and does not show.**
+- **Noise.** The ten-seed bag's own noise in L is about 0.01. The FY2019 gap
+  (0.16) and the FY2024 gap (0.066) are larger; at 5% alone, FY2024 differs
+  by 0.01.
+- **Causes mixed.** The frames differ in both training and scored cases, so
+  the gaps mix the data change with refitting. Settings tuned on f1030 can
+  only disadvantage f1104.
+
+-> detailed record: modeling_findings_detailed.md section 48.
+
+## 49. A benefit check for arithmetic errors (QC element 520) goes into every workbook: on the national data about two in three of its flags are element-520 errors, at 0.18% of cases (2026-11-09; staging, figures provisional on frame f1104)
+
+> **Takeaway (about our pipeline).** Every workbook gets a benefit check. It
+> recalculates each case's benefit from the case's own inputs with the
+> review year's tables and flags the case when the result differs from the
+> issued benefit by more than the federal tolerance ($56 in FY2024). It
+> targets arithmetic computation errors (QC element 520). On FY2022-24
+> national data it flags 211 cases, 0.18% of the total; 136 of them (0.645)
+> are element-520 errors, carrying $86 of error per flag, against a base
+> error rate of 0.114 and about $20 per random case. It finds 0.8% of all
+> error dollars: a narrow check for a kind of error the ranked lists are not
+> built to find. Element-520 errors are 2.7% of errors nationally but 38% in
+> West Virginia.
+
+**How it works in the workbook.** The recalculation is the one the workbook
+already makes for its benefit features, capped at the maximum allotment. The
+check ships as three rules, one per household-size group, with Include? set
+to TRUE, and it is not part of the vote. An optional input column,
+`ALLOTMENT_ADJUSTMENT` (1 none, 2 prorated, 3 other), lets a state skip cases
+whose issued benefit is not a full month's; left blank, every case is
+checked. The v2.8.0 workbooks carry it as rules 2001-2003.
+
+**Where element-520 errors are.** Of the 13,135 errors over the tolerance in
+FY2022-24, 350 list element 520: 2.7% of errors and 2.4% of error dollars.
+The median state's share is 0.8%. Six states are at 5% or more: West
+Virginia 38% (66 of 175 errors), the District of Columbia 9.3%, Michigan
+8.2%, Illinois 6.8%, Rhode Island 5.6% and Indiana 5.4%.
+
+| Group | Flagged | Element-520 errors | Precision | Error $ per flag |
+|---|---|---|---|---|
+| All | 211 | 136 | 0.645 | $86 |
+| HH 1 | 33 | 23 | 0.70 | $75 |
+| HH 2-3 | 106 | 66 | 0.62 | $82 |
+| HH 4+ | 72 | 47 | 0.65 | $98 |
+
+A flag is about 5.7 times as likely as a random case to be an error and
+carries about 4.3 times the dollars. The check catches at least one
+element-520 error in 35 states; Michigan, Georgia, Illinois and Indiana hold
+52 of the 136 catches.
+
+**Why the testing data cannot score it.** The Step 2 testing data hold
+inputs reconstructed from the QC reviewer's values. Where the reconstruction
+misses the issued benefit, the gap marks a failed reconstruction, not an
+agency error, and those rows err at 0.48 against 0.11 overall. Scoring the
+check there would reward it for finding reconstruction failures, so it never
+fires on Step 2. Step 3 shows the national estimate, labeled as such, and the
+check is left out of the Step 6 share-back. On Step 5.1, where a state pastes
+its own pre-review records, it runs like any other rule.
+
+**How the estimate counts.** Of the 823 cases the recalculation flags on the
+frame, 136 are element-520 errors and 75 are clean cases: false flags, where
+the workbook's simplified calculation differs from the agency's correct one.
+The other 612 are errors that do not list element 520. They are left out on
+the assumption that a state's own records would reproduce the issued
+benefit, which public data cannot test. The 1,345 prorated or otherwise
+adjusted cases are skipped.
+
+**What this does and does not show.**
+- **Recall is likely understated.** The check misses 214 of the 350
+  element-520 errors. For 180 of them the munging moved an input until the
+  recreated benefit equaled the issued one, so the arithmetic error looks
+  like an input difference; in West Virginia the check catches 2 of 66. With
+  a state's own records those errors should show, by an amount public data
+  cannot measure.
+- **Verified in Excel.** On a West Virginia test build, the Step 5.1 check
+  matched an independent calculation on all 200 sample rows, and 17 altered
+  rows behaved as designed.
+- **Frame.** The figures are from frame f1104; the detailed record marks
+  them provisional, to be recomputed on the next frame.
+
+-> detailed record: modeling_findings_detailed.md section 49.
+
+## 50. Pre-registered: a proration flag (`prorated_i`, ALLADJ = 2) as a candidate input, in place of `initial_month_i`; to run on the post-munging frame (2026-11-09; not yet run)
+
+> **Takeaway (about our pipeline).** Not yet run. If a proration input is
+> tested, it will be `prorated_i`: 1 when a case's allotment-adjustment code
+> is 2 (prorated), else 0. A state has that code before any review, so the
+> input does not leak the outcome. On FY2022-24 (frame f1104), the 417
+> prorated cases err at 0.172 against 0.114 overall. But the planned test
+> trains on FY2017-19, which holds only 547 prorated cases with error rates
+> near the base rate, so we expect no detectable gain unless the newer
+> munging keeps many more of them.
+
+**Why this variable and not `initial_month_i`.** Ben's `initial_month_i`
+marks cases that were prorated and certified in the sample month. Requiring
+the sample-month certification adds little: prorated cases certified earlier
+err at 0.148, against 0.197 for those certified in the sample month, and the
+broader flag doubles the group. No current input shows proration: the
+adjustment code is not an input, and the frame restores prorated benefits to
+a full month. `initial_month_i` stays in the frame but is not a model input
+(Eric, 2026-11-09).
+
+**What the flag captures.** Among cases certified in the sample month,
+unprorated new certifications err at about 0.10 and renewals at about 0.125;
+prorated ones err at 0.157 (153 new certifications) and 0.309 (55 renewals).
+Of the 41 errors among initial-month cases, 8 (20%) have arithmetic
+computation (element 520) as their first element, against under 1% of all
+errors.
+
+| Year | Prorated cases | Their error rate | All cases |
+|---|---|---|---|
+| FY2017 | 189 | 0.106 | 0.087 |
+| FY2018 | 183 | 0.137 | 0.094 |
+| FY2019 | 175 | 0.103 | 0.101 |
+
+**The pre-set design.**
+1. On the new frame, report the prorated count and error rate by year first.
+2. If FY2017-19 holds fewer than 1,000 prorated cases, stop and record "too
+   few cases to test."
+3. Otherwise run the section-42 screen with only the frame changed: ranger
+   alone, mined on FY2017-19 and scored on FY2022, 49 states, 5% and 10%
+   budgets, three seeds. Arm A is the shipped 19 features; arm B adds
+   `prorated_i`.
+
+**The rule.** B is a candidate only if it catches more FY2022 errors than A
+at both budgets on all three seeds. A candidate then needs the shipped
+engines and a one-year-ahead check before it can ship. If B fails, the
+question is closed for the lists; use in the per-case model would need its
+own pre-registration.
+
+**Status.** Ben's 2026-11-09 proration changes keep far more prorated cases
+(964 to 6,972 reaching Step 8, all years). Frame f1109 carries them, so step
+1 can now be run.
+
+-> detailed record: modeling_findings_detailed.md section 50.
+
 ## 51. The shipped per-case model on frame f1109: held-out results at 5% and 10% workloads, the state package's checks, the workbook vote score on the same cases, and what a missing input column does (2026-11-11)
 
 > **Takeaway (about our pipeline).** Refit on f1109 with its frozen §46

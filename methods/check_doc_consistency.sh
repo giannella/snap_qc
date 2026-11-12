@@ -2,11 +2,14 @@
 # Doc-consistency checker for the SNAP QC docs.
 #
 # Run this after logging a validated finding and before cutting a release/tag.
-# It guards against the two drift modes we have actually hit:
-#   1. em-dashes creeping back into the docs (a standing style rule), and
+# It guards against the drift modes we have actually hit:
+#   1. em-dashes creeping back into the docs (a standing style rule);
 #   2. a claim retired in the findings docs still being asserted in a derived doc
 #      (README / GUIDANCE), e.g. a strata claim retired in modeling_findings but
-#      left standing in GUIDANCE.
+#      left standing in GUIDANCE; and
+#   3. a section logged in modeling_findings_detailed.md with no plain-language
+#      entry in modeling_findings.md (sections 46-50 went unsummarized until
+#      2026-11-11).
 #
 # This is the cheap first pass; it does NOT replace the periodic reader-expectation
 # audit (numbers-trace + completeness + right-altitude), which should still run at
@@ -70,6 +73,26 @@ EOF2
   else
     echo "  ok:   all $n GUIDANCE bullets cite a findings section"
   fi
+fi
+
+echo "== 4. findings summary check (every detailed section has a plain-language entry) =="
+DET=methods/modeling_findings_detailed.md
+SUM=methods/modeling_findings.md
+if [ -f "$DET" ] && [ -f "$SUM" ]; then
+  # numbered sections are the '## N.' headings in each file
+  secs() { grep -oE '^## [0-9]+\.' "$1" | grep -oE '[0-9]+' | sort -u; }
+  missing=$(comm -23 <(secs "$DET") <(secs "$SUM") | sort -n | paste -sd' ' -)
+  extra=$(comm -13 <(secs "$DET") <(secs "$SUM") | sort -n | paste -sd' ' -)
+  nd=$(secs "$DET" | wc -l | tr -d ' ')
+  if [ -n "$missing" ]; then
+    echo "  FAIL: $SUM has no entry for detailed section(s): $missing"; fail=1
+  fi
+  if [ -n "$extra" ]; then
+    echo "  FAIL: $SUM has section(s) missing from $DET: $extra"; fail=1
+  fi
+  [ -z "$missing$extra" ] && echo "  ok:   all $nd numbered sections in $DET have an entry in $SUM"
+else
+  echo "  skip (missing): $DET or $SUM"
 fi
 
 echo
