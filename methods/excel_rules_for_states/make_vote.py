@@ -5,8 +5,10 @@ findings section 44; shipped by Eric's decision of 2026-10-29).
 
 The rules tab carries a second yellow TRUE/FALSE column, Vote? (written by
 build_workbook_v2.py when SNAP_VOTE=1). With SNAP_VOTE_RULES_CSV the 300
-national vote rules are appended to the tab with Vote? = TRUE and the state's
-list rules ship Vote? = FALSE. This stage adds:
+national vote rules are appended to the tab with Vote? = TRUE, and each of
+the state's list rules votes when it is included: its Vote? cell follows its
+Include? cell (2026-11-12, Eric: "included rules are voting rules"; until
+then the list rules shipped Vote? = FALSE). This stage adds:
 
   Step 2 data   hidden per-case vote columns (one term per rule, weighted by
                 that rule's Vote? cell) and visible ones: Votes (how many
@@ -71,6 +73,24 @@ ORANGE = PatternFill('solid', fgColor='F8CBAD')
 THIN = Border(*(Side(style='thin', color='BFBFBF'),) * 4)
 WRAP = Alignment(horizontal='left', vertical='top', wrap_text=True)
 CENTER = Alignment(horizontal='center', vertical='center')
+
+# Wording of the comparison block's note, its last row's label and the line under the "Start Here" figures
+# (Eric, 2026-11-12). patch_v281_text.py reads these to update the v2.8.1 workbooks built before them.
+COMPARISON_NOTE = (
+    'On the testing data (Step 2). The first two rows take the share of cases in E4, ranked by expected error $. '
+    'The last two rows compare the rules with Include? = TRUE against the same number of cases ranked by expected '
+    'error $. Every row is optimistic, the rules row most: your list rules were chosen on these same cases (the '
+    'public QC cases for your state, FY22-24), while the vote rules and the table behind expected error $ are '
+    'national. On cases none of the rules were chosen on, the two found about the same number of errors and the '
+    'ranking found more error dollars (findings section 52). Paste your own recent cases on Step 2 for a fair '
+    'comparison.')
+SAME_N_LABEL = 'The same number of cases, selected based on expected error $ (compare with row above)'
+START_NOTE = (
+    'These figures are for the top share of your testing cases by expected error $ (cell E4 on 5.2.b). Note that '
+    'the Step 3 figures will be different: they reflect performance based on simple flagging rules chosen using '
+    'the very same FY22-24 cases included in this workbook and so they look better than they would on new cases. '
+    'We recommend using the expected $ approach in 5.2.b if possible.')
+START_NOTE_ROW = 10        # blank in make_input_workbook.background_tab's layout: the figures fill rows 3-9
 
 
 def size_coefs():
@@ -218,7 +238,8 @@ def main():
     vs.cell(row=2, column=1, value=(
         'The main list (left) ranks all the new cases pasted on the "' + SCREEN_SHEET + '" tab together by expected '
         'error $; review from the top. The three lists on the right rank the same cases within one household-size '
-        "group each, for a state that reviews a set share of each group. A vote is one rule with Vote? = TRUE on the \"" + BLENDED_SHEET + '" tab that flags the case. '
+        "group each, for a state that reviews a set share of each group. A vote is one rule with Vote? = TRUE on the \"" + BLENDED_SHEET + '" tab that flags the case: '
+        'the rules you include there and the 300 national vote rules. '
         "Expected error $ = the national error rate for the case's household size and number of votes (fixed "
         f'table at row {H0}) x the typical size of an error for its issued benefit, household size and votes, '
         'scaled to the state payment error rate in E5. ' + f'{VOTE_CAP} or more votes show as {VOTE_CAP}+ in the lists. Each case\'s figures are also on the "' + SCREEN_SHEET + '" tab '
@@ -249,7 +270,8 @@ def main():
     vs.merge_cells(f'A{H0 - 1}:{last_col}{H0 - 1}')
     c = vs.cell(row=H0 - 1, column=1, value=(
         'How expected error $ is computed. Relative error rate: fixed national figures for rules about three years '
-        'old (rules mined on FY2017-19, counted on FY2022 cases). Expected error $ = scale (E6) x relative error '
+        'old (national vote rules mined on FY2017-19, counted on FY2022 cases); votes from your included rules are '
+        'read off the same table. Expected error $ = scale (E6) x relative error '
         'rate x typical error size for the case\'s issued benefit, household size and votes. The scale makes the '
         'expected error $ of the Step 2 cases total E5 x their issued benefits. The columns on the right show '
         'this state\'s Step 2 cases for comparison; they are not used.'))
@@ -392,12 +414,9 @@ def main():
 
     # ── comparison block: the same workload chosen two ways ──
     vs.merge_cells(f'A{RC}:{last_col}{RC}')
-    c = vs.cell(row=RC, column=1, value=(
-        'On the testing data (Step 2), at the share in E4: the top cases by expected error $, ranked across all '
-        'cases and within each group, against the rules with Include? = TRUE. All are optimistic here: the vote '
-        'rules and the list rules were partly mined on these cases.'))
+    c = vs.cell(row=RC, column=1, value=COMPARISON_NOTE)
     c.font = Font(bold=True); c.fill = GRAY; c.alignment = WRAP
-    vs.row_dimensions[RC].height = 32
+    vs.row_dimensions[RC].height = 48
     for ci, (h_, w_) in enumerate([('', 0), ('Cases', 0), ('Errors', 0), ('Error $', 0), ('Precision', 0),
                                    ('Error $ per case', 0), ('Share of error $', 0)], 1):
         cc = vs.cell(row=RC + 1, column=ci if ci == 1 else ci + 3, value=h_ or None)
@@ -420,7 +439,7 @@ def main():
         (RC + 3, 'Top share of each group by expected error $ (as the group lists rank new cases)', f'={nlist}',
          f'={errs_list}', f'={dols_list}', GREEN),
         (RC + 4, 'Rules with Include? = TRUE (a case is flagged if any of them flags it)', f'={union}!$G$5', f'={union}!$H$5', f'={union}!$I$5', ORANGE),
-        (RC + 5, 'Top cases by expected error $ across all groups, as many as the Include? rules flag',
+        (RC + 5, SAME_N_LABEL,
          f'={union}!$G$5', *top_all(f'E{RC + 5}'), GREEN),
     ]
     for r, label, fn, fe, fd, fill in blocks:
@@ -436,6 +455,30 @@ def main():
             vs.cell(row=r, column=ci).border = THIN
             vs.cell(row=r, column=ci).fill = fill
         vs.row_dimensions[r].height = 30
+    # Start Here's headline figures (Eric, 2026-11-12): the main list's ranking on the testing data (Step 2) at
+    # the share in E4, the comparison row above, replaces the selected rules' union. The base error rate (row 7)
+    # and the overissuance share (row 9) stay; make_input_workbook.background_tab writes the block at rows 3-9.
+    sh = wb['Start Here']
+    want = {4: 'Cases flagged by the selected rules', 5: 'Errors flagged by the selected rules',
+            6: 'Precision: share of flagged cases that are true errors',
+            8: 'Average error $ per case flagged (includes $0 error cases)'}
+    for row, label in want.items():
+        assert sh.cell(row=row, column=1).value == label, f'Start Here row {row}: {sh.cell(row=row, column=1).value!r}'
+    for row, label, col, fmt in [
+            (4, f'Cases listed by expected error $ (the top share of cases set in E4 of "{VOTE_SHEET}")', 'E', '#,##0'),
+            (5, 'Errors among the listed cases', 'F', '#,##0'),
+            (6, 'Precision: share of listed cases that are true errors', 'H', '0.0%'),
+            (8, 'Average error $ per case listed (includes $0 error cases)', 'I', '$#,##0')]:
+        sh.cell(row=row, column=1).value = label
+        c = sh.cell(row=row, column=2)
+        c.value = f'={VQ}!{col}{RC + 2}'
+        c.number_format = fmt
+    # and a line under them on how they differ from Step 3's (Eric's wording, 2026-11-12)
+    assert sh.cell(row=START_NOTE_ROW, column=1).value is None and sh.cell(row=START_NOTE_ROW, column=2).value is None
+    sh.merge_cells(f'A{START_NOTE_ROW}:B{START_NOTE_ROW}')
+    c = sh.cell(row=START_NOTE_ROW, column=1, value=START_NOTE)
+    c.font = Font(italic=True, size=11); c.alignment = WRAP
+    sh.row_dimensions[START_NOTE_ROW].height = 60
     vs.freeze_panes = f'A{L0}'
     dv = DataValidation(type='decimal', operator='between', formula1='0', formula2='1')
     vs.add_data_validation(dv); dv.add('E4')

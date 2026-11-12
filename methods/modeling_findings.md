@@ -2428,3 +2428,62 @@ state's top 5% or 10% of a later year's cases.
   nothing here uses a state's own records.
 
 -> detailed record: modeling_findings_detailed.md section 51.
+
+## 52. Rule lists against the vote score on frame f1109, held out: which one does better in a state does not carry from FY2023 to FY2024; letting the rules a state includes vote matches the lists on errors and leads both on error dollars at a 10% workload, and the workbooks adopt it (2026-11-12)
+
+> **Takeaway (about our pipeline).** Held out on FY2024 with each state
+> reviewing 10% of its cases, the rule lists find 2.32 times as many errors
+> per reviewed case as random review and 2.57 times the error dollars; the
+> v2.8.0 vote score finds 2.22 and 2.69. Which of the two does better in a
+> given state does not carry from FY2023 to FY2024. Letting the rules a
+> state includes vote, alongside the 300 national vote rules, gives one
+> ranking that at a 10% workload keeps the rule lists' error rate and finds
+> more error dollars than the vote score: 2.34 and 2.81 times random on
+> FY2024 (lists 2.32 on errors, vote score 2.69 on dollars) and 2.27 and
+> 2.75 on FY2023 (2.32 and 2.60). At 5% it does not: it trails the rule
+> lists on errors in both years and the vote score on dollars on FY2024.
+> Letting the lists' buffer rules vote as well costs errors in every test.
+> The workbooks adopt the included-rules version.
+
+All figures are on kept cases (the §51 cases, without reconstruction
+artifacts), with every method given the same number of flags per state.
+"Times random" is errors per reviewed case over the state's error-case rate,
+or the share of error dollars caught over the workload. FY2024 columns use
+rules mined on FY2022-23; FY2023 columns use rules mined on FY2017-19 and
+FY2022.
+
+| Times random (errors / dollars) | 10%, FY2024 | 10%, FY2023 | 5%, FY2024 | 5%, FY2023 |
+|---|---|---|---|---|
+| Rule lists | 2.32 / 2.57 | 2.32 / 2.53 | 2.55 / 2.88 | 2.56 / 2.87 |
+| Vote score (v2.8.0) | 2.22 / 2.69 | 2.09 / 2.60 | 2.64 / 3.23 | 2.39 / 3.03 |
+| Included rules vote (adopted) | 2.34 / 2.81 | 2.27 / 2.75 | 2.51 / 3.13 | 2.44 / 3.04 |
+| Included rules and the lists' buffer rules vote | 2.19 / 2.64 | 2.12 / 2.59 | 2.23 / 2.89 | 2.24 / 3.01 |
+| Model B (§51) | 2.44 / 3.07 | not run | 2.78 / 3.66 | not run |
+
+- **The lists on f1109.** The median state's precision is 0.277 at 5% and
+  0.264 at 10% on all FY2024 cases. The pile gate tags no rule on f1109.
+  Blended and national-only lists catch 1,105 and 1,109 errors at 10%.
+- **No year-to-year consistency by state.** Across 49 states, a state's
+  rules-minus-votes gap in FY2023 against its gap in FY2024 correlates
+  +0.14 to +0.17 at 10% (permutation p 0.11-0.17) and -0.04 to +0.01 at 5%;
+  the same method wins both years in 43-66% of states, against 49-57% if
+  the years were independent.
+- **Which list rules vote matters.** The included rules are the lists'
+  core rules, the ones a workbook ships with Include? = TRUE. With the
+  buffer rules voting too, errors fall to 2.12-2.37 times random, below the
+  rule lists in every cell. With the included rules only, at 10% errors
+  are within 0.05 of the rule lists and error dollars 0.11-0.15 above the
+  vote score in all three settings tested (the two above, and FY2024 with
+  the FY2017-19 + FY2022 rules: 2.30 and 2.80, against 2.33 and 2.57 for
+  the lists and 2.16 and 2.69 for the vote score).
+- **By state.** At 10% the adopted design comes within 2 errors of the
+  better of rules and votes in 33-39 of 49 states.
+- **In the workbook.** A list rule's Vote? cell follows its Include? cell;
+  "Start Here" now leads with the 5.2.b ranking's figures. Vermont's test
+  build passed every check.
+- **Caveats.** The vote table was not refit for the added voters; the
+  held-out included rules skip the workbook's build-time rule filters; not
+  tested three years ahead; the design was chosen after the results were
+  seen, with no pass bar.
+
+-> detailed record: modeling_findings_detailed.md section 52.
