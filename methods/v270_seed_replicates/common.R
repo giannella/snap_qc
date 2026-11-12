@@ -38,8 +38,11 @@ stopifnot(identical(TRAIN_YEARS, c("2022", "2023")), identical(TEST_YEAR, "2024"
 # pools live in that study's folder, never beside the fy2024 pools.
 # deploy (2026-10-29) mines FY2022-24 for the vote rules the workbooks ship
 # (methods/vote_scoring/export_vote_rules.R); it has no test year.
+# stab23 / stab24 (2026-11-11) are the year-to-year stability check (methods/stability_fy2324/; Eric: "see if
+# there's consistency in what works for states over time"): one national mine on FY2017-19 + FY2022, scored
+# on FY2023 (stab23) and on FY2024 (stab24). The two windows share training years and pools.
 WINDOW <- Sys.getenv("SR_WINDOW", "fy2024")
-stopifnot(WINDOW %in% c("fy2024", "fy2022", "fy2019", "deploy"))
+stopifnot(WINDOW %in% c("fy2024", "fy2022", "fy2019", "deploy", "stab23", "stab24"))
 if (WINDOW == "fy2022") {
   TRAIN_YEARS <- c("2017", "2018", "2019"); TEST_YEAR <- "2022"
   EXPECT_TRAIN_ROWS <- 116060L; EXPECT_TRAIN_ERRS <- 10920L
@@ -55,9 +58,16 @@ if (WINDOW == "deploy") {
   EXPECT_TRAIN_ROWS <- 115559L; EXPECT_TRAIN_ERRS <- 13161L
   EXPECT_TEST_ROWS <- 0L; EXPECT_TEST_ERRS <- 0L
 }
+if (WINDOW %in% c("stab23", "stab24")) {   # counts are f1109's (the only frame this check runs on)
+  TRAIN_YEARS <- c("2017", "2018", "2019", "2022"); TEST_YEAR <- if (WINDOW == "stab23") "2023" else "2024"
+  EXPECT_TRAIN_ROWS <- 156990L; EXPECT_TRAIN_ERRS <- 15070L
+  EXPECT_TEST_ROWS <- if (WINDOW == "stab23") 40070L else 40497L
+  EXPECT_TEST_ERRS <- if (WINDOW == "stab23") 4455L else 4820L
+}
 SMOKE <- identical(Sys.getenv("SMOKE"), "1")
 OUT_DIR <- switch(WINDOW, fy2022 = "methods/v270_seed_replicates/fy2022",
                   fy2019 = "methods/vote_scoring/fy2019", deploy = "methods/vote_scoring/deploy",
+                  stab23 = , stab24 = "methods/stability_fy2324",
                   "methods/v270_seed_replicates")
 if (SMOKE) { XGB$nrounds <- 40; RF$num_trees <- 40; OUT_DIR <- file.path(OUT_DIR, "smoke") }
 POOL_DIR <- file.path(OUT_DIR, "pools")
@@ -99,7 +109,8 @@ EXPECT_F1030 <- list(fy2024 = c(76028L, 8404L, 39528L, 4760L), fy2022 = c(116046
 EXPECT_F1104 <- list(fy2024 = c(76009L, 8385L, 39519L, 4750L), fy2022 = c(116023L, 10891L, 36844L, 3983L),
                      fy2019 = c(77882L, 7033L, 38141L, 3858L), deploy = c(115528L, 13135L, 0L, 0L))
 EXPECT_F1109 <- list(fy2024 = c(77750L, 8477L, 40497L, 4820L), fy2022 = c(119310L, 11048L, 37680L, 4022L),
-                     fy2019 = c(80071L, 7122L, 39239L, 3926L), deploy = c(118247L, 13297L, 0L, 0L))
+                     fy2019 = c(80071L, 7122L, 39239L, 3926L), deploy = c(118247L, 13297L, 0L, 0L),
+                     stab23 = c(156990L, 15070L, 40070L, 4455L), stab24 = c(156990L, 15070L, 40497L, 4820L))
 # each frame's seed-117 national pool as the v2.7 benchmark arms cached it
 BENCH_POOL <- c(
   nominal = "methods/v270_cpi_benchmark/fy2024_nominal/cache/bench_national_117.rds",
@@ -108,7 +119,7 @@ BENCH_POOL <- c(
 if (WINDOW == "fy2022") BENCH_POOL <- c(
   final = "methods/v270_cpi_benchmark/fy2022_cpi/cache/bench_national_117.rds",
   f0928 = "methods/v270_cpi_benchmark/fy2022_cpi_annualcpi_20260928/cache/bench_national_117.rds")
-if (WINDOW %in% c("fy2019", "deploy")) BENCH_POOL <- character(0)   # no cached pool to anchor against
+if (WINDOW %in% c("fy2019", "deploy", "stab23", "stab24")) BENCH_POOL <- character(0)   # no cached pool to anchor against
 BENCH_CSV <- c(
   f0925 = "methods/v270_cpi_benchmark/fy2024_cpi_run2_20260925/v250_benchmark_2024.csv",
   final = "methods/v270_cpi_benchmark/fy2024_cpi/v250_benchmark_2024.csv")
