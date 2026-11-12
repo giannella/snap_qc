@@ -2,7 +2,7 @@
 
 ![Map: how many times more error dollars the workbook ranking finds than random sampling at a 10% review volume, by state, with the full per-case model in parentheses; 2.7x nationwide (3.0x for the model)](presentation_figures/state_dollar_recall_map_budget10.png)
 
-Code and data for modeling SNAP payment errors as interpretable, easy-to-implement decision rules.
+Code and data for modeling SNAP payment errors as interpretable, easy-to-implement flagging rules.
 
 Released under the Apache 2.0 license: use and build on the code, ideas, or results freely.
 
@@ -18,13 +18,13 @@ See [VERSIONING.md](VERSIONING.md): tagged releases, plain-language change summa
 
 ## Two versions of this pipeline
 
-**v2 (recommended, below)** mines rules with gradient-boosted trees (xgboost) plus a random forest (ranger), and filters each rule on a statistical lower bound on its precision (precision = the share of flagged cases that truly have an error). It replaces the earlier RuleFit/{pre}-based pipeline.
+**v2 (recommended, below)** generates rules with two popular tree-based methods, gradient-boosted trees (xgboost) and a random forest (ranger) limited to 2 randomly chosen variables per split, and filters each rule on a statistical lower bound on its precision (precision = the share of flagged cases that truly have an error). It replaces the earlier RuleFit/{pre}-based pipeline.
 
 **v1 (preserved, [further down](#v1-documentation-legacy))** is the original {pre}-based pipeline. Everything v1 still works and its documentation is kept intact below. If you have invested in v1, nothing you built is broken or removed. New projects should start with v2.
 
-**Why v2 exists.** Shortlisting mined rules by their raw training precision suffers a strong winner's curse: a rule looks best partly because it got lucky, so a list built to hit 20% precision delivered only ~10% on data it hadn't seen. v2 filters on the **lower confidence bound (Wilson LCB)** of each rule's training precision instead. A rule that clears a 20% filter now delivers about 20% on hold-out data (data set aside and never used to build or pick the rules).
+**Why v2 exists.** Shortlisting generated rules by their raw training precision suffers a strong winner's curse: a rule looks best partly because it got lucky, so a list built to hit 20% precision delivered only ~10% on data it hadn't seen. v2 filters on the **lower confidence bound (Wilson LCB)** of each rule's training precision instead. A rule that clears a 20% filter now delivers about 20% on hold-out data (data set aside and never used to build or pick the rules).
 
-The rebuild paid off in other ways. The pipeline runs several times faster (v1 mined one error-type dataset in about 40 minutes; v2 mines all four typed datasets plus the pooled all-errors model in about 45) and fits on a 16 GB laptop, where v1's internal lasso needed 40+ GB at scale. It scores every rule against **all** error types, so a rule mined for earned-income errors still gets credit when the case it flags turns out to have a deduction error, which is what happens in deployment. And it mines the largest error category v1 left out, `other_error`, which is mostly **deductions**. The engine change alone catches 55% of error dollars at the 0.20 filter floor versus 47% for the CART-based generator {pre} used. That is about eight more points of error-dollar recall (the share of all error dollars caught), at slightly higher precision. The [research-takeaways section](#modeling-research-and-takeaways) summarizes these results; [`methods/modeling_findings.md`](methods/modeling_findings.md) gives them in full.
+The rebuild paid off in other ways. The pipeline runs several times faster (v1 generated rules from one error-type dataset in about 40 minutes; v2 generates rules from all four typed datasets plus the pooled all-errors model in about 45) and fits on a 16 GB laptop, where v1's internal lasso needed 40+ GB at scale. It scores every rule against **all** error types, so a rule generated for earned-income errors still gets credit when the case it flags turns out to have a deduction error, which is what happens in deployment. And it generates rules for the largest error category v1 left out, `other_error`, which is mostly **deductions**. The engine change alone catches 55% of error dollars at the 0.20 filter floor versus 47% for the CART-based generator {pre} used. That is about eight more points of error-dollar recall (the share of all error dollars caught), at slightly higher precision. The [research-takeaways section](#modeling-research-and-takeaways) summarizes these results; [`methods/modeling_findings.md`](methods/modeling_findings.md) gives them in full.
 
 ---
 
@@ -49,31 +49,31 @@ Rscript runners/run_blended_delivery_batch.R > blended_delivery_run.log 2>&1
 
 ## Where to start
 
-**The best-validated approach in this repo is the blended delivery list**, built by `INCL_build_blended_delivery_list_v2.R`: one frozen, ranked rule list per state. It works in three steps:
+**The best-validated approach in this repo is the ranked list (blended = state + national)**, built by `INCL_build_blended_delivery_list_v2.R`: one frozen, ranked rule list per state. It works in three steps:
 
 1. **Admit rules.** Each rule pool keeps only rules that both statistically beat the base error rate (a false-discovery-rate test) *and* flag at least 30 training cases, so poorly-measured rules stay out of the ranking (details in the folder README).
 2. **Rank on one scale.** The state's own rules are merged into the national pool, and every rule is ranked by the 99% lower bound of its own training precision, so state and national rules compete on comparable, confidence-discounted evidence.
-3. **Fill to budget.** The list is filled against the state's caseload to a 5% or 10% review budget (the *core*) and extended with ranked *buffer* rules out to 3x that depth. The fill is overlap-aware: a rule enters the list only if it flags cases no higher-ranked rule already flagged, so `rank` on a delivered list is the walk order among kept rules and every listed rule added new cases at build time. The state activates rules in rank order until review capacity fills, with no outcome data needed at any step.
+3. **Fill to capacity.** The list is filled against the state's caseload to a 5% or 10% review capacity (the *main list*) and extended with ranked *buffer* rules out to 3x that depth. The fill is overlap-aware: a rule enters the list only if it flags cases no higher-ranked rule already flagged, so `rank` on a delivered list is the walk order among kept rules and every listed rule added new cases at build time. The state activates rules in rank order until review capacity fills, with no outcome data needed at any step.
 
-Tested a full year ahead of the training data (mined on 2022-23, scored on each state's 2024), this recipe beat the national-only list at the 5% budget (median precision 0.324 vs 0.294, catching 15% vs 12% of error dollars), came out about even at 10% (0.262 vs 0.270), and cleared every one of 18 states' base error rate (national ~11%, a 1.5-3.4x lift over reviewing at random). Since v2.4.0 the fill walk also applies a **fresh-share floor** (a rule earns its list slot only if at least half of what it flags is new work), validated on two independent eras: about a point of delivered precision at the 5% budget (median within-state change +0.012, mean +0.015) and half a point at 10% (+0.006 median, +0.009 mean), at unchanged review workload and essentially unchanged dollar recall; the off switch and full readouts are in `modeling_findings.md` sections 33-34. The current lists are the v2.5.0 build: a fresh mine on the corrected 2022-24 frame, which on the same one-year-ahead design (all 49 states) delivers a median precision of 0.3182 at the 5% budget and 0.2976 at 10%, beating the v2.4.0 lists paired per state by +0.0232 and +0.0300 median (sections 38-39). Ready-built lists are in [`state_delivery_lists/`](state_delivery_lists/).
+Tested a full year ahead of the training data (generated on 2022-23, scored on each state's 2024), this recipe beat the national-only list at the 5% capacity (median precision 0.324 vs 0.294, catching 15% vs 12% of error dollars), came out about even at 10% (0.262 vs 0.270), and cleared every one of 18 states' base error rate (national ~11%, a 1.5-3.4x lift over random sampling). Since v2.4.0 the fill walk also applies a **fresh-share floor** (a rule earns its list slot only if at least half of what it flags is new work), validated on two independent eras: about a point of delivered precision at the 5% capacity (median within-state change +0.012, mean +0.015) and half a point at 10% (+0.006 median, +0.009 mean), at unchanged review workload and essentially unchanged dollar recall; the off switch and full readouts are in `modeling_findings.md` sections 33-34. The current lists are the v2.5.0 build: a fresh set of rules generated on the corrected 2022-24 frame, which on the same one-year-ahead design (all 49 states) delivers a median precision of 0.3182 at the 5% capacity and 0.2976 at 10%, beating the v2.4.0 lists paired per state by +0.0232 and +0.0300 median (sections 38-39). Ready-built lists are in [`state_delivery_lists/`](state_delivery_lists/).
 
-![The delivery-list build: mine rule pools, rank them on one confidence scale, fill to the review budget](presentation_figures/pipeline_option_B.png)
+![The delivery-list (ranked list) build: generate rule pools, rank them on one confidence scale, fill to the review capacity](presentation_figures/pipeline_option_B.png)
 
 That figure collapses each filter into "passed the filter". [`PIPELINE.md`](PIPELINE.md) is the expanded read: every gate in the order it is applied, the counts entering and leaving each one, what has since been settled by measurement, and what is still open.
 
-A state can also run the same script as a hybrid. It mines its own pool from internal case files (which include the ineligible determinations the public files leave out) and blends that with the pool mined from other states' public QC data. The confidence-bound scale is what makes rules from the two sources directly comparable, so nothing else in the recipe changes.
+A state can also run the same script as a hybrid. It generates its own pool from internal case files (which include the ineligible determinations the public files leave out) and blends that with the pool generated from other states' public QC data. The confidence-bound scale is what makes rules from the two sources directly comparable, so nothing else in the recipe changes.
 
 Two alternate routes, depending on your use case:
 
 **I have a pile of cases already flagged for review and want to cut it down** → `EXCL_find_exclusion_rules_by_hh_size_v2.R`: instead of flagging likely errors, it finds rules for cases that are very likely error-free (scored on the clean rate with a confidence bound), so you can drop those low-risk cases and shrink the pile while keeping as much of the error dollars as possible.
 
-**I don't have a flagging system and want to identify which cases are most likely to have an error** → `INCL_build_blended_delivery_list_v2.R` builds the blended delivery list described above and is self-contained: it mines the national and state rule pools itself. 
+**I don't have a flagging system and want to identify which cases are most likely to have an error** → `INCL_build_blended_delivery_list_v2.R` builds the ranked list described above and is self-contained: it generates the national and state rule pools itself. 
 
-If you only want to use internal data, use `INCL_find_inclusion_rules_by_hh_size_v2.R` since it does not expect the national data as an input. You can also use `INCL_find_inclusion_rules_by_hh_size_v2.R` when you want the full exploration outputs instead: rules mined per error type as well as pooled, filtered shortlists, and the filter-floor sweep curves (see `state_delivery_lists/README.md` for the delivery lists' column definitions and caveats). 
+If you only want to use internal data, use `INCL_find_inclusion_rules_by_hh_size_v2.R` since it does not expect the national data as an input. You can also use `INCL_find_inclusion_rules_by_hh_size_v2.R` when you want the full exploration outputs instead: rules generated per error type as well as pooled, filtered shortlists, and the filter-floor sweep curves (see `state_delivery_lists/README.md` for the delivery lists' column definitions and caveats). 
 
 If you want to keep it very simple, start from the rule lists for your state in `state_delivery_lists/`. Note that per-state threshold tuning (`state_threshold_gridsearch_v2.R`) remains available, but in an 18-state future-year test it did not beat deploying the national ranking as-is for the median state, so treat tuning as a fallback and validate it on your own hold-out year first.
 
-The scripts expect a data frame with one row per case, a column indicating whether the case is a true error, and your features. Update the config block at the top of the script: the `features` vector and `TARGET_IS_ERROR` expression are the main things to change. Features must be numeric, logical, or two-level factors (multi-level factors are rejected with a clear message, so recode upstream). See [the data dictionary](DATA_DICTIONARY.md) for the default feature set.
+The scripts expect a data frame with one row per case, a column indicating whether the case is a true error, and your features (case variables). Update the config block at the top of the script: the `features` vector and `TARGET_IS_ERROR` expression are the main things to change. Features must be numeric, logical, or two-level factors (multi-level factors are rejected with a clear message, so recode upstream). See [the data dictionary](DATA_DICTIONARY.md) for the default feature set.
 
 To use the national public QC data, build `reg_model_data` with `1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R` (unchanged from v1).
 
@@ -101,7 +101,7 @@ The five-stage machinery is general purpose: for every rule it produces the same
 |---|---|:-:|---|
 | find errors at a fixed review workload | 99% Wilson lower bound of any-error precision (`lcb99_workloadfill`) | [1] | validated twice with hold-out testing on 2019 (train 2017-18) and 2024 (train 2022-23), 18 states (see [`modeling_findings.md`](methods/modeling_findings.md) §20) |
 | cut an existing review pile safely | 95% lower bound of the clean rate among dropped cases | [2] | reported on a held-out year (2023): a workload-cut vs error-dollar-retention curve (e.g. drop the safest ~17% of the pile and keep ~96% of its error dollars) under a relative safety standard (excluded cases at least 5x safer than the pile average); not yet multi-era or multi-state validated (see [`modeling_findings.md`](methods/modeling_findings.md) §23) |
-| prioritize error dollars | dollars per flagged case (plus a heavy-tail-robust variant) | [3] | an option you can use, though not the default: it ranks by error dollars per flagged case, and was only modestly better at error-dollar recall than `lcb99_workloadfill` (+3.5pp at the 10% budget on 2024, +1.0pp on the 2019 replication), below the pre-set 2-point adoption bar (see [`modeling_findings.md`](methods/modeling_findings.md) §21) |
+| prioritize error dollars | dollars per flagged case (plus a heavy-tail-robust variant) | [3] | an option you can use, though not the default: it ranks by error dollars per flagged case, and was only modestly better at error-dollar recall than `lcb99_workloadfill` (+3.5pp at the 10% capacity on 2024, +1.0pp on the 2019 replication), below the pre-set 2-point adoption bar (see [`modeling_findings.md`](methods/modeling_findings.md) §21) |
 
 Scripts: **[1]** `INCL_build_blended_delivery_list_v2.R` (writes `state_delivery_lists/`) · **[2]** `EXCL_find_exclusion_rules_by_hh_size_v2.R` · **[3]** `methods/dollaryield_audition_v2.R`
 
@@ -111,11 +111,11 @@ Scripts: **[1]** `INCL_build_blended_delivery_list_v2.R` (writes `state_delivery
 |---|---|
 | `rule_mining_helpers.R` | all shared logic (the five stages) |
 | `methods/test_rule_mining_helpers.R` | 29-check regression test on synthetic data; run after touching the helpers |
-| `INCL_find_inclusion_rules_by_hh_size_v2.R` | inclusion rules per mining frame (earned, unearned, underissuance, other, + pooled all-errors) x household size |
+| `INCL_find_inclusion_rules_by_hh_size_v2.R` | inclusion (flagging) rules per mining frame (earned, unearned, underissuance, other, + pooled all-errors) x household size |
 | `EXCL_find_exclusion_rules_by_hh_size_v2.R` | exclusion rules: filter safe-to-skip cases by clean-rate LCB; reports workload cut vs error-dollar retention |
 | `state_threshold_gridsearch_v2.R` | tunes national rule thresholds per state and tests on a hold-out year, incl. a "deploy national as-is" benchmark |
-| `INCL_build_blended_delivery_list_v2.R` (+ `runners/run_blended_delivery_batch.R`) | builds a state's deployable ranked list: blends the state's own mined rules into the national pool on the confidence-bound scale, sized to a review budget with buffer rules |
-| `INCL_mine_internal_and_optionally_blend_with_national_v2.R` | for a state running on its own INTERNAL case file: mines rules internally with the same recipe (any-error target, FDR admission, 99% confidence-bound ranking) and blends them with the published national pool artifact `state_delivery_lists/national_rule_pool_2022_2024_v270.rds`, scoring every rule on the internal data; the public frame is not needed. Judge the resulting list on a held-out later period of internal data, never on its own training numbers |
+| `INCL_build_blended_delivery_list_v2.R` (+ `runners/run_blended_delivery_batch.R`) | builds a state's deployable ranked list: blends the state's own modeled rules into the national pool on the confidence-bound scale, sized to a review capacity with buffer rules |
+| `INCL_mine_internal_and_optionally_blend_with_national_v2.R` | for a state running on its own INTERNAL case file: generates its own rules internally with the same recipe (any-error target, FDR admission, 99% confidence-bound ranking) and blends them with the published national pool artifact `state_delivery_lists/national_rule_pool_2022_2024_v270.rds`, scoring every rule on the internal data; the public frame is not needed. Judge the resulting list on a held-out later period of internal data, never on its own training numbers |
 | `methods/deployment_benchmark_train2223_test24.R`, `methods/frozen_list_experiment_v2.R`, `methods/blended_frozen_lists_v2.R` | the deployment studies behind the delivery recipe (train 2022-23, test 2024, 18 states) |
 | `methods/tune_engine_params_v2.R` | one-at-a-time engine hyperparameter sweeps, judged by hold-out frontier |
 | `compare_*_v2.R` | the studies behind the design choices (engines, engine pairs, typed-vs-pooled mining, HH strata) |
@@ -154,13 +154,13 @@ Each script's tunable settings sit at the top of the file (or can be set in a ru
 
 ### Delivery builder: `INCL_build_blended_delivery_list_v2.R`
 
-The recommended path (the blended, budget-filled state list). Changing `ADMISSION`, `FDR_ALPHA`, `PAIRING`, or `MINING_FRAMES` needs a fresh pool cache (delete `POOL_CACHE`), since the admitted set and per-rule statistics are computed at pool-build time.
+The recommended path (the blended state list, filled to review capacity). Changing `ADMISSION`, `FDR_ALPHA`, `PAIRING`, or `MINING_FRAMES` needs a fresh pool cache (delete `POOL_CACHE`), since the admitted set and per-rule statistics are computed at pool-build time.
 
 | setting | default | meaning |
 |---|---|---|
 | `DELIVERY_STATE` | `"Connecticut"` | the state the list is built and sized for |
-| `BUDGETS` | `0.05, 0.10` | review budgets (share of caseload) to size the core list to |
-| `BUFFER_MULT` | `3` | how far past the budget to extend buffer (substitute) rules |
+| `BUDGETS` | `0.05, 0.10` | review capacities (share of caseload) to size the core list to |
+| `BUFFER_MULT` | `3` | how far past the capacity to extend substitute rules |
 | `MINING_FRAMES` | typed + pooled | which frames feed the vocabulary; set to `"any_error"` for the pooled model only |
 | `ADMISSION` | `"fdr10"` | which candidate rules to keep by a false-discovery-rate (**FDR**) test vs the stratum base rate, plus `n >= 30`; set `"legacy"` for the old raw-precision filter |
 | `FDR_ALPHA` | `0.10` | the FDR level (default 10%), used when `ADMISSION` is `"fdr10"` |
@@ -174,7 +174,7 @@ The fresh-share floor was validated on two eras (findings 33-34): rules whose fl
 
 ### Inclusion finder: `INCL_find_inclusion_rules_by_hh_size_v2.R`
 
-Finds and scores candidate inclusion rules per error type and household size.
+Finds and scores candidate inclusion (flagging) rules per error type and household size.
 
 | setting | default | meaning |
 |---|---|---|
