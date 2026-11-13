@@ -1,7 +1,8 @@
 # additional_data
 
 Lookup tables used by the SNAP QC modelling code, plus the SNAP State Options
-panel and the script that builds it.
+panel and the script that builds it, and the benchmark that held-out tests are
+scored on.
 
 ## SNAP State Options panel
 
@@ -170,3 +171,117 @@ validated against, and is also not an input.
 | `snap_qc_exclusion_all_years.csv` | per state, month and stratum: sampling interval, sample sizes, SNAP units, ineligible and failing units, and the derived weights and rates |
 | `fns_payment_error_rates_fy2024.csv` | official FY2024 over-, under- and total payment error rates by jurisdiction, transcribed from `snap-fy24QC-PER.pdf` (FNS, dated June 30, 2025) |
 | `fns_state_issuance_fy2024.csv` | FY2024 annual SNAP benefits issued, in dollars, by jurisdiction (53 jurisdictions; no Puerto Rico, American Samoa or CNMI). From the FY24 workbook in the FNS SNAP data tables state-level zip (`snap-zip-fy69tocurrent-7.zip`, National Data Bank, data as of July 10, 2026); each value is the state's fiscal-year Total cost row. Sums to $93.5B |
+
+## Evaluation benchmark
+
+| file | what it is |
+|---|---|
+| `eval_benchmark_f1109.rds` | one row per case of frame f1109 (`reg_model_data.rds`, sha256 `08e0e825`; 237,557 cases, FY2017-19 and FY2022-24): the error label, the error dollars, and whether held-out scoring counts the case |
+
+The file fixes what a held-out test is scored on, so that results from
+different scripts, and from people outside the project, count the same cases
+the same way. It holds no model inputs: join it to the frame by `frame_row`,
+or by `fiscal_year`, `state` and `hhldno`, which identify a case uniquely.
+`methods/eval_benchmark/build_eval_benchmark.R` builds it, and
+`methods/eval_benchmark/score_ranking.R` scores a ranking on it.
+
+### Which cases count
+
+Scoring counts only the cases whose rebuilt inputs we trust (`kept`). The
+public QC file records each case as QC corrected it, and the munging script
+(`1_data_munging_and_raw_variable_reconstruction_for_using_public_qc_data.R`)
+rebuilds the inputs the agency used by undoing the errors QC found. A case is
+dropped when any of these hold:
+
+- `drop_gap`: the benefit recreated from the rebuilt inputs misses the issued
+  benefit by more than $5;
+- `drop_max_mismatch`: the case was issued the maximum allotment or more, but
+  its rebuilt inputs give less than the maximum before the cap;
+- `drop_income_pile`: its rebuilt income sits on a reconstructed income pile
+  (`income_pile_rows()` in `rule_mining_helpers.R`);
+- `drop_prior_year_tables`: it was rebuilt from prior-year tables.
+
+In FY2024, 1,026 of 40,497 cases (2.5%) are dropped. 41.7% of them have an
+over-tolerance error, against 11.1% of kept cases, because the rebuild fails
+mostly where QC found an error; they hold 8.9% of errors and 9.5% of error
+dollars. A state's own case file has no such cases, since its inputs produce
+the benefit it issued, so a method that flags them would be credited for
+finding failures of our rebuild. The cost is that nothing is scored on those
+errors, whose true inputs are unknown. The rule was set in findings section
+46 and is used in sections 46 to 52 and for the results map.
+
+| FY | Cases | Errors | Kept cases | Kept errors |
+|---|---|---|---|---|
+| 2017 | 41,014 | 3,512 | 40,057 | 3,207 |
+| 2018 | 39,057 | 3,610 | 37,944 | 3,256 |
+| 2019 | 39,239 | 3,926 | 38,302 | 3,571 |
+| 2022 | 37,680 | 4,022 | 36,788 | 3,682 |
+| 2023 | 40,070 | 4,455 | 39,061 | 3,980 |
+| 2024 | 40,497 | 4,820 | 39,471 | 4,392 |
+
+### Columns
+
+| column | meaning |
+|---|---|
+| `frame_row` | row number in the frame |
+| `fiscal_year`, `state`, `hhldno` | the case key |
+| `error` | TRUE when the case has an error over the year's tolerance (`over_threshold`, from QC's AMTERR) |
+| `error_dollars` | the error amount QC recorded (AMTERR, `total_error_amount`), in nominal dollars, for errors; 0 otherwise |
+| `error_direction` | `over` or `under` (the sign of `bendiff`) for errors; `none` otherwise |
+| `issued_benefit` | the benefit issued (RAWBEN) |
+| `recreated_benefit` | the benefit recreated from the rebuilt inputs |
+| `gap` | the absolute difference between the two; 0 where either is missing |
+| `drop_gap`, `drop_max_mismatch`, `drop_income_pile`, `drop_prior_year_tables` | the reasons above; a case can have more than one |
+| `kept` | TRUE when none of the four holds |
+
+The file's attributes record the frame tag, file and sha256, the build time,
+the $5 cutoff, and the keep and flag rules in words.
+
+### How a ranking is scored
+
+```r
+source("methods/eval_benchmark/score_ranking.R")
+bench <- read_benchmark()                         # this file
+tab <- score_ranking(bench, score, year = "2024") # per state, at 5% and 10%
+summarise_ranking(tab)                            # pooled and median-state figures
+```
+
+`score` gives every case of the year a number, higher meaning review first:
+either a vector in `frame_row` order or a data frame keyed by `fiscal_year`,
+`state` and `hhldno`. At budget b, a state flags max(1, round(b x all of its
+cases that year)) cases. The count comes from all cases, dropped ones
+included, and the flags go to the highest-scored kept cases, ties broken by
+`frame_row`. R's `round()` rounds halves to even; code in another language
+should do the same. Errors and error dollars are summed over the flags.
+Dollar recall divides by the error dollars of the state's kept cases, and
+times random is dollar recall divided by b. A rule list that takes a rule
+whole or skips it is not a ranking; it needs its own walk, on the same kept
+cases and flag count.
+
+### Checks
+
+`methods/eval_benchmark/check_eval_benchmark.R` (log beside it) confirms,
+case by case, that the kept flag, error and error dollars equal those behind
+findings sections 46 to 52 and the rule-list runs. It also confirms that
+`score_ranking()` reproduces the published per-state tables exactly: model B
+on FY2019, FY2022 and FY2024 (section 51) and the workbook vote score on
+FY2024.
+
+### Error rates against the public QC files
+
+`methods/eval_benchmark/state_year_rates.R` sets each state-year's error
+rates on the kept cases beside the same rates on the public QC file and on
+the frame, all weighted by the public file's `FYWGT`, and counts the cases
+and errors each step drops (the munging's SSI-CAP, MFIP, proration and
+AMTERR-consistency drops, then the four reasons above). Its output,
+`methods/eval_benchmark/state_year_rates_f1109.csv`, is the place to check
+whether a state's evaluation rests on an unusually thinned sample.
+
+### When the frame changes
+
+A frame rebuild changes some cases, labels or drop flags, so results compare
+only within one benchmark file. A new frame gets a new file under its own tag
+(`build_eval_benchmark.R <tag> <frame path>`); keep the old file for the
+results scored on it. The frame is not in the repository. If you rebuild it
+with the munging script, join this file to your build by key and check that
+`error` and `error_dollars` match before using it.
