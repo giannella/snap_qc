@@ -1,3 +1,6 @@
+# Counting note (2026-11-12): core10 counts a core list rule that is also one of the 300 vote rules twice, once as
+# a vote rule and once as a list rule; the workbook counts it once. dedup/score_dedup.R reruns this script with the
+# corrected set core10nv; findings section 52 and the results map use its outputs (dedup/*_dedup.csv).
 # Included rules as voting rules, the scoring (2026-11-12; Eric: "included rules are voting rules"). Ways of
 # letting a workbook's list rules enter the vote score, held out, in three settings, each on kept cases with the
 # map's flag counts (flags = max(1, round(budget x the state's cases)), filled from kept cases):

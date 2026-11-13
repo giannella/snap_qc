@@ -8,6 +8,51 @@ If you only read one thing before updating: the **Changed** and **Removed**
 sections of each release tell you whether anything you currently run or read
 moved or behaves differently.
 
+## [Unreleased]
+
+Nothing a state downloads has changed: the v2.8.1 workbooks, lists and case
+model stand. The fixes below correct figures reported about them.
+
+### Fixed
+- **The held-out figures for the v2.8.1 ranking counted some rules twice**
+  (findings section 52). A list rule that is also one of the 300 national
+  vote rules was counted once as a vote rule and again as a list rule. The
+  workbook counts it once (`rule_selection.py` merges the two into one row
+  that votes once), so the shipped workbooks were not affected. Rescored
+  with each rule counted once, the figures move by 0.04 or less: at 10% on
+  FY2024, 2.33 times random on errors and 2.81 on error dollars (first
+  published as 2.34 and 2.81); at 5%, 2.54 and 3.14 (2.51 and 3.13); on
+  FY2023 at 10%, 2.25 and 2.73 (2.27 and 2.75). At 10% the ranking comes
+  within 0.07 of the rule lists on errors (first reported as within 0.05).
+  Corrected in section 52, in the 2.8.1 entry below, in the v2.8.1 release
+  notes and in the results map's data. The rescoring is in
+  `methods/included_rules_vote/dedup/`.
+- **The 2.8.0 entry gave the wrong reason the frame grew.** It said f1109
+  has more rows than v2.7.0's frame mostly because nature 97 / agency 26
+  cases are now kept. All 6,006 rows added since frame f1104 are prorated
+  cases restored by backing out the proration (see the proration entry
+  under 2.8.0); 580 of them also have only 97 / 26 variances, while the
+  37,171 such cases already in f1104 were kept there too. Corrected in the
+  2.8.0 entry.
+
+### Added
+- **An evaluation benchmark,** `additional_data/eval_benchmark_f1109.rds`:
+  one row per case of frame f1109 with its error label, error dollars and
+  whether held-out scoring counts it (the "kept" cases of findings sections
+  46-53). `methods/eval_benchmark/score_ranking.R` scores a ranking on it
+  the way those sections do, and `check_eval_benchmark.R` confirms that it
+  reproduces the published tables for the case model and the vote score
+  exactly. See "Evaluation benchmark" in `additional_data/README.md`.
+- **Error rates by state and year against the public QC files**
+  (`methods/eval_benchmark/state_year_rates.R`, output
+  `state_year_rates_f1109.csv`): each state-year's case and dollar error
+  rates on the public file, on the frame and on the kept cases, with the
+  cases and errors each step drops.
+- **Findings section 53: a refit of the vote table with the included rules
+  voting, tested and not adopted.** Error dollars moved by -0.021 to +0.030
+  times random, short of the pre-set +0.05 bar in both test windows. The
+  v2.8.1 table and size model stay.
+
 ## [2.8.1] - 2026-11-12
 
 If you use the state workbooks, re-download them: the "5.2.b Expected Error
@@ -25,12 +70,14 @@ behavior change.
   vote rules voted. Expected error dollars still come from the same fixed
   table and size model. Held out, with each state reviewing 10% of its
   cases (rules mined on FY2022-23, FY2024 cases), the ranking with included
-  rules voting found 2.34 times as many errors per reviewed case as random
+  rules voting found 2.33 times as many errors per reviewed case as random
   review and 2.81 times the error dollars, against 2.22 and 2.69 for the
   v2.8.0 ranking and 2.32 and 2.57 for the rule lists alone. At 5% the
-  figures were 2.51 and 3.13, against 2.64 and 3.23, and 2.55 and 2.88.
-  On FY2023 cases (rules mined on FY2017-19 and FY2022), at 10%: 2.27 and
-  2.75, against 2.09 and 2.60, and 2.32 and 2.53.
+  figures were 2.54 and 3.14, against 2.64 and 3.23, and 2.55 and 2.88.
+  On FY2023 cases (rules mined on FY2017-19 and FY2022), at 10%: 2.25 and
+  2.73, against 2.09 and 2.60, and 2.32 and 2.53. (Figures corrected
+  2026-11-12 to count each rule once, as the workbook does; first published
+  as 2.34 and 2.81, 2.51 and 3.13, and 2.27 and 2.75. See Unreleased.)
 - **"Start Here" leads with the 5.2.b ranking.** Its figures for cases,
   errors, precision and error dollars per case now describe the top share of
   the testing cases by expected error dollars (the share in cell E4 of
@@ -63,10 +110,17 @@ states in the data, DC and Georgia included.
   98 blended lists, 98 national-only lists, the rule sheet and the national
   pool in `state_delivery_lists/`. The walk and gates, the income-pile gate
   included, are v2.7.0's. The frame carries the reconstruction and labelling
-  changes below. It has 237,557 rows against v2.7.0's 231,619 (`1dbe8733`),
-  mostly because nature 97 / agency 26 cases are now kept and flagged
-  rather than dropped; FY2022-24 has 118,247 cases and 13,297 over-threshold
-  errors. Cases on a reconstructed income pile fall from 1,399 to 208.
+  changes below. It has 237,557 rows against v2.7.0's 231,619 (`1dbe8733`):
+  6,006 prorated cases (2,719 of them in FY2022-24, of which 179 have an
+  over-threshold error) are restored by backing out the proration instead
+  of being dropped (see the proration entry below), and 68 cases fewer come
+  through the rebuild (51 stuck at an imputation bound with fewer than 10
+  donors, findings section 47, and 17 dropped in the 2026-10-30 rebuild,
+  15 of them issued the maximum benefit). FY2022-24 has 118,247 cases and
+  13,297 over-threshold errors. Cases on a reconstructed income pile fall
+  from 1,399 to 208. (Corrected 2026-11-12: this entry first credited the
+  growth to nature 97 / agency 26 cases; 37,171 cases with only 97 / 26
+  variances were already in frame f1104.)
 - **Delivery lists carry `pile_share_flags` and `pile_share_errors`**
   after `mm_inflation` (columns 15 and 16 of 25), so every later column
   sits two places to the right; read the lists by column name. The columns

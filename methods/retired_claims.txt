@@ -38,3 +38,8 @@ Mine per error type AND pooled, then combine
 # be stated as current:
 A feature fix is designed but not yet validated
 
+
+# Findings section 52 was corrected 2026-11-12 (a list rule that is also a vote rule was counted twice): at 10% the
+# included-rules ranking comes within 0.07 of the rule lists on errors, and finds 2.33 times random on FY2024.
+within 0.05 of the rule lists
+2.34 times as many errors
