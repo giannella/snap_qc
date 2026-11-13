@@ -318,6 +318,19 @@ we learned is recoverable. Each points to its numbered section.
   the package reproduces the repo's scoring; columns a state lacks are
   filled with 0; on the same FY2024 flags the workbook vote score catches
   26.9% of error dollars at 10%.
+- **11-11 to 11-12**: Rule lists against the vote score on f1109, and the
+  included-rules vote adopted for v2.8.1 (#52): at 10% on FY2024 kept
+  cases, 2.33 / 2.81 times random (errors / dollars) against the lists'
+  2.32 / 2.57 and the v2.8.0 vote score's 2.22 / 2.69; which method wins in
+  a state does not carry from FY2023 to FY2024. Figures corrected on 11-12
+  for a double count of list rules that are also vote rules (2.34 / 2.81
+  as first published); the workbooks count such a rule once.
+- **11-12**: The vote table refit with the included rules voting,
+  pre-registered (#53): error dollars -0.021 to +0.030 times random across
+  two windows and two workloads; no workload clears the +0.05 bar; not
+  shipped. Same day, `additional_data/eval_benchmark_f1109.rds` puts the
+  kept-case rule and the error labels in one file, with a scorer that
+  reproduces the §51 and §52 tables exactly (`methods/eval_benchmark/`).
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -6145,7 +6158,7 @@ year the model was trained on, with every amount in FY2024 dollars:
 - Wyoming and Delaware in test 2 and New Hampshire in test 3 rest on 13-32
   flags; at that size one or two cases move a state's figure.
 
-## 52. Rule lists against the vote score on frame f1109, held out: which one does better in a state does not carry from FY2023 to FY2024; letting the rules a state includes vote matches the lists on errors and leads both on error dollars at a 10% workload, and the workbooks adopt it (2026-11-12)
+## 52. Rule lists against the vote score on frame f1109, held out: which one does better in a state does not carry from FY2023 to FY2024; letting the rules a state includes vote comes within 0.07 of the lists on errors and leads both on error dollars at a 10% workload, and the workbooks adopt it (2026-11-12; counting corrected the same day)
 
 > **Takeaway (about our pipeline).** Held out on FY2024 with each state
 > reviewing 10% of its cases, the rule lists find 2.32 times as many errors
@@ -6153,17 +6166,41 @@ year the model was trained on, with every amount in FY2024 dollars:
 > v2.8.0 vote score finds 2.22 and 2.69. Which of the two does better in a
 > given state does not carry from FY2023 to FY2024 (correlation of the
 > state gaps +0.14 to +0.17 at 10%, -0.04 to +0.01 at 5%). Letting the rules
-> a state includes vote, alongside the 300 national vote rules, gives one
-> ranking that at a 10% workload keeps the rule lists' error rate and finds
-> more error dollars than the vote score: 2.34 and 2.81 times random on
-> FY2024 and 2.27 and 2.75 on FY2023 (with rules mined on FY2017-19 and
-> FY2022); errors are within 0.05 of the lists and dollars 0.11-0.15 above
-> the vote score in all three settings tested. At 5% it does not: it trails
-> the rule lists on errors in every setting and the vote score on dollars on
-> FY2024 (2.51 and 3.13 against 2.64 and 3.23). Letting the lists' buffer
-> rules vote as well costs errors in every setting (2.12-2.37 times random).
-> The project lead adopted the included-rules version for the workbooks on
-> 2026-11-12.
+> a state includes vote, alongside the 300 national vote rules and with
+> each rule counted once, gives one ranking that at a 10% workload comes
+> within 0.07 of the rule lists on errors and finds 0.11-0.13 more error
+> dollars (times random) than the vote score in all three settings tested:
+> 2.33 and 2.81 times random on FY2024 and 2.25 and 2.73 on FY2023 (rules
+> mined on FY2017-19 and FY2022; lists 2.32 and 2.53, vote score 2.09 and
+> 2.60). At 5% it does not: it trails the rule lists on errors in every
+> setting and the vote score on dollars on FY2024 (2.54 and 3.14 against
+> 2.64 and 3.23). Letting the lists' buffer rules vote as well costs errors
+> in every setting (2.12-2.37 times random). The project lead adopted the
+> included-rules version for the workbooks on 2026-11-12. Figures corrected
+> the same day: the first version counted a list rule that is also a vote
+> rule twice.
+
+**Correction (2026-11-12).** The first version of this section, the v2.8.1
+CHANGELOG entry, the v2.8.1 release notes and the results map counted a
+core list rule that is also one of the 300 vote rules twice: once as a vote
+rule and once as a list rule. The workbook counts it once
+(`rule_selection.py` merges a list rule that duplicates a vote rule into one
+row that votes once), so the shipped workbooks were not affected; the
+held-out figures were. The overlap is large because the lists and the vote
+rules come from the same national pool: a median of 37 of a state's 10% core
+rules (range 1-62) are also vote rules in the map setting, and 67 (26-86) in
+the year-to-year setting. The fresh senior-statistician review of the
+vote-table refit (§53) found the double count. `methods/included_rules_vote/dedup/`
+reruns the list counts with the vote rules' keys (each rerun first
+reproduces the stored lists: all 98 map-setting lists and all 196
+year-to-year lists) and rescores every core-rule ranking with each rule
+counted once. The tables below carry the corrected figures. The adopted
+design moved by 0.04 or less in every cell: at 10%, 2.34 / 2.81 to 2.33 /
+2.81 (map, FY2024), 2.27 / 2.75 to 2.25 / 2.73 (year to year, FY2023) and
+2.30 / 2.80 to 2.28 / 2.80 (year to year, FY2024); at 5%, 2.51 / 3.13 to
+2.54 / 3.14, 2.44 / 3.04 to 2.43 / 3.06 and 2.50 / 3.12 to 2.47 / 3.08. The
+rankings with the lists' buffer rules ("all" below) still count such rules
+twice; they were not adopted and were not rerun.
 
 **Why this entry.** Three runs made for the results map and the workbook,
 2026-11-11 and 12: (1) the rule lists' held-out benchmark on f1109; (2) a
@@ -6197,7 +6234,8 @@ below were seen.
   FY2022 votes from FY2017-19 rules; votes capped at 7 in the size model).
   Here it is §46's WB, test 3, as rebuilt on f1109 in §51.
 - *Included rules*: in a workbook, the list rules with Include? = TRUE. In
-  these held-out tests, the 10% list's core rules.
+  these held-out tests, the 10% list's core rules. A core rule that is also
+  one of the 300 vote rules counts once, as in the workbook.
 
 **1. The rule lists on f1109, one year ahead.**
 `runners/run_f1109_list_bench.R` runs the benchmark recipe on f1109 (stage
@@ -6257,7 +6295,7 @@ against 2.94). A state has about 800 cases a year, so about 80 flags at 10%.
 flag counts above: the map setting (part 1's blended lists and §51's vote
 rules, FY2022-23, scored on FY2024) and the year-to-year setting (part 2's
 national lists and vote rules, scored on FY2023 and on FY2024). The vote
-score's table and size model are not refit. Rankings:
+score's table and size model are not refit (§53 tests a refit). Rankings:
 - *Flagged first*: cases flagged by a vote rule or a list rule first, then
   the vote score.
 - *Each list rule votes*: a case's votes are its national vote rules plus
@@ -6270,8 +6308,8 @@ List rule sets: *core* (the 10% list's core rules) and *all* (both lists'
 core and buffer rules; the 10% list's core and buffer rules alone score
 within 0.01 of it in every cell). On FY2024 kept cases the 300 vote rules
 give 11.2% of cases a vote, the core rules 8.4%, and the two together 14.1%;
-a kept case averages 0.41 votes from the vote rules and 0.53 with the core
-rules added.
+a kept case averages 0.41 votes from the vote rules and 0.48 with the core
+rules added, each rule counted once (0.53 with duplicates counted twice).
 
 Times random, errors / dollars, 49 states pooled:
 
@@ -6281,9 +6319,9 @@ Times random, errors / dollars, 49 states pooled:
 | Vote score (v2.8.0) | 2.22 / 2.69 | 2.09 / 2.60 | 2.16 / 2.69 |
 | Flagged first, all | 2.30 / 2.67 | 2.26 / 2.65 | 2.32 / 2.71 |
 | Flagged first, core | 2.37 / 2.67 | 2.32 / 2.66 | 2.34 / 2.65 |
-| **Each list rule votes, core (adopted)** | **2.34 / 2.81** | **2.27 / 2.75** | **2.30 / 2.80** |
+| **Each list rule votes, core (adopted)** | **2.33 / 2.81** | **2.25 / 2.73** | **2.28 / 2.80** |
 | Each list rule votes, all | 2.19 / 2.64 | 2.12 / 2.59 | 2.23 / 2.72 |
-| The list as one vote, core | 2.33 / 2.80 | 2.26 / 2.74 | 2.29 / 2.81 |
+| The list as one vote, core | 2.32 / 2.80 | 2.25 / 2.73 | 2.28 / 2.80 |
 | The list as one vote, all | 2.20 / 2.71 | 2.11 / 2.61 | 2.18 / 2.69 |
 
 | 5% workload | Map, FY2024 | Year to year, FY2023 | Year to year, FY2024 |
@@ -6292,23 +6330,28 @@ Times random, errors / dollars, 49 states pooled:
 | Vote score (v2.8.0) | 2.64 / 3.23 | 2.39 / 3.03 | 2.54 / 3.22 |
 | Flagged first, all | 2.63 / 3.18 | 2.42 / 3.01 | 2.54 / 3.15 |
 | Flagged first, core | 2.64 / 3.19 | 2.45 / 3.02 | 2.53 / 3.11 |
-| **Each list rule votes, core (adopted)** | **2.51 / 3.13** | **2.44 / 3.04** | **2.50 / 3.12** |
+| **Each list rule votes, core (adopted)** | **2.54 / 3.14** | **2.43 / 3.06** | **2.47 / 3.08** |
 | Each list rule votes, all | 2.23 / 2.89 | 2.24 / 3.01 | 2.37 / 3.17 |
-| The list as one vote, core | 2.53 / 3.14 | 2.48 / 3.12 | 2.54 / 3.16 |
+| The list as one vote, core | 2.54 / 3.14 | 2.45 / 3.06 | 2.50 / 3.11 |
 | The list as one vote, all | 2.29 / 3.03 | 2.27 / 3.06 | 2.32 / 3.15 |
+
+In both tables the "core" rows count each rule once (corrected 2026-11-12);
+the "all" rows count a list rule that is also a vote rule twice, as first
+run. The flagged-first rankings do not depend on the count: they score the
+same either way.
 
 - **Buffer rules are what hurt.** With both lists' rules voting, errors run
   2.12-2.37 times random: below the rule lists in all six cells and below
   the vote score in four. With the core rules only, errors at 10% are within
-  0.05 of the rule lists and above the vote score in all three settings; at
-  5% they are 0.13 and 0.04 below the vote score on FY2024 and 0.05 above it
-  on FY2023.
+  0.07 of the rule lists (+0.01, -0.07 and -0.05 in table order) and above
+  the vote score in all three settings; at 5% they are 0.10 and 0.07 below
+  the vote score on FY2024 and 0.04 above it on FY2023.
 - **By state, adopted design.** At 10% it catches at least as many errors as
-  the rule list in 27, 30 and 30 of 49 states (the three settings in table
-  order) and as the vote score in 39, 41 and 42; it is within 2 errors of
-  the better of the two in 33, 39 and 35 states. At 5%: 28, 23 and 26
-  against the lists, 24, 34 and 28 against the vote score, within 2 errors
-  in 31, 38 and 34.
+  the rule list in 23, 27 and 28 of 49 states (the three settings in table
+  order) and as the vote score in 37, 40 and 41; it is within 2 errors of
+  the better of the two in 33, 39 and 36 states. At 5%: 30, 25 and 23
+  against the lists, 25, 36 and 30 against the vote score, within 2 errors
+  in 34, 39 and 36.
 - **Order of discovery.** The first design tried, flagged first with all
   list rules, was picked on the map setting alone. On FY2023 it trailed the
   rule lists on errors (2.26 against 2.32 at 10%, 2.42 against 2.56 at 5%).
@@ -6343,9 +6386,9 @@ probes again in .xlsx and .xlsb.
 
 **Caveats.**
 - The fixed table and size model were fit on vote counts from the 300
-  national rules. Votes from list rules are read off the same table; a refit
-  with list rules as voters was not run and could move the figures either
-  way.
+  national rules. Votes from list rules are read off the same table. A refit
+  with list rules as voters was tested afterward and not adopted: it moved
+  error dollars by -0.021 to +0.030 times random and cleared no bar (§53).
 - The held-out included rules are the 10% list's core rules as the benchmark
   walk builds them. A workbook's included rules also pass `rule_selection.py`
   (it drops `count_divisible_by_100` rules and other fragile rules and
@@ -6371,4 +6414,202 @@ probes again in .xlsx and .xlsb.
   `methods/v270_seed_replicates/common.R`.
 - Part 3: `methods/included_rules_vote/` (`list_flags_f1109.R`,
   `list_flags_y2y.R`, `votes_cases_y2y.R`, `score_variants.R`,
-  `variants_by_state.csv`, `IR_f1109_by_state_5_10pct.csv`, logs).
+  `variants_by_state.csv`, `IR_f1109_by_state_5_10pct.csv`, logs). These
+  files hold the first scoring, with duplicates counted twice.
+- Counting correction: `methods/included_rules_vote/dedup/`
+  (`vote_keys_s52.R`, `list_flags_dedup.R`, `score_dedup.R`,
+  `variants_by_state_dedup.csv` with the `*_core10nv` rankings, and
+  `IR_f1109_by_state_5_10pct_dedup.csv`, the adopted ranking by state that
+  the results map reads; logs `1_vote_keys_*.log` to `3_score_dedup.log`).
+  `vote_keys_s52.R map` and `y2y` run first; `list_flags_dedup.R` and
+  `score_dedup.R` run from `methods/included_rules_vote/refit/run_refit_and_dedup.sh`.
+
+## 53. Pre-registered: refitting the vote table with the included rules voting moves error dollars by -0.02 to +0.03 times random and clears no bar; not adopted, the v2.8.1 table stays (2026-11-12)
+
+> **Takeaway (about our pipeline).** Since v2.8.1 a case's votes count the
+> state's included list rules as well as the 300 national vote rules, but
+> the table that turns votes into an error rate, and the size model, were
+> fit on national votes alone. Refitting both on the combined votes, each
+> rule counted once, did not find more error dollars. On kept cases, two
+> test years pooled and three mine seeds averaged, error dollars went from
+> 3.14 to 3.17 times random at a 5% workload (paired 95% interval for the
+> change -0.05 to +0.09) and from 2.73 to 2.71 at 10% (-0.03 to +0.01) with
+> the table fit on FY2022 and tested on FY2023-24; fit on FY2023 instead,
+> 3.12 to 3.12 and 2.76 to 2.76. The pre-set bar, a gain of at least +0.05
+> with the interval above zero at either workload, was not met in either
+> window, and the project lead decided not to ship the refit.
+
+**Why this entry.** §52's caveat: the shipped table (relative error rate by
+household-size group and vote count) and size model were fit on votes from
+the 300 national vote rules only, and v2.8.1 reads list-rule votes off them.
+Two in-sample looks suggested a refit could help: on FY2023, households of
+4+ with 4-6 and 7+ combined votes produced 1.21 and 1.44 times the error
+dollars the table predicts (senior statistician), and a quick refit on
+FY2023 scored on FY2024 gave 3.34 against 3.13 times random on dollars at 5%
+(principal data scientist; both looks counted duplicated rules twice). Eric
+decided to refit, with error dollars as the goal ("we want to maximize error
+dollars, not precision"), and to drop a state x household-size term tested
+the same day. The design note
+(`methods/included_rules_vote/design_note_table_refit_2026-11-12.md`) fixed
+the windows, checks and bars before the run; a fresh senior-statistician
+review asked for revisions (among them the double count, which also
+corrected §52) and approved the revised note.
+
+**Terms.**
+- *Combined votes*: a case's national vote rules plus the 10% list's core
+  rules that are not among the 300 vote rules, so each rule counts once, as
+  in the workbook. Both arms rank on the same combined votes.
+- *Table*: for each household-size group (1, 2-3, 4+), the error-case rate
+  by vote count, made non-decreasing in votes, with bins pooled from the top
+  until each holds 150 errors (three seeds stacked); read as a rate relative
+  to the fit year's national error rate.
+- *Size model*: a gamma model of the error amount on log benefit, household
+  size and votes (capped at 7), fit on error cases.
+- *Kept cases, flags, times random*: as in §52.
+- *Harmed*: a state whose dollar recall falls by more than 0.05.
+
+**Design.** Rules: per seed (117, 118, 119), the 300 national vote rules
+allotted from that seed's FY2017-19 pool
+(`methods/v270_seed_replicates/fy2022/pools/`), and each state's national
+10% list walked from the same pool (core rules; artifact and pile gates on;
+no `rule_selection.py` filters). No FY2017-19 state pools exist on f1109,
+so the lists are national only. Frame f1109; evaluation on the recreated
+benefit, as in §52.
+
+| Window | Fit year | Test years | Refit arm | Baseline arm |
+|---|---|---|---|---|
+| A (deployment order) | FY2022 | FY2023, FY2024 | table and size model fit on combined votes | the shipped table with §52's size model, on the combined votes (the v2.8.1 design) |
+| B (years swapped) | FY2023 | FY2022, FY2024 | the same, fit on FY2023 | a national-only table and size model fit on FY2023 by the same rules, on the combined votes |
+
+Paired 95% intervals: 2,000 bootstrap draws of kept cases within state and
+test year, seeds averaged inside each draw. They are conditional on the
+fitted tables and leave out fit-year and mining variance. FY2023 and FY2024
+had been read for this question before the run (the quick look), so neither
+window is confirmatory; FY2022, window B's first test year, had not.
+
+Bars, on the window's two test years pooled and averaged over seeds: (1)
+error dollars no worse than -0.05 at either workload; (2) error dollars up
+at least +0.05 at 5% or 10%, interval above zero; (3) errors no worse than
+-0.05; (4) at the budget that rises, the within-state mean and median change
+in dollar recall each at least 0; (5) at most 3 harmed states at each
+workload. Decision rule: pass A and B, ship window A's fit (refit on the
+issued benefit); pass A only, the project lead decides; fail A, do not ship.
+
+**Checks (all passed; the run stops on any failure).** (1) With list votes
+set to zero, the window A fit reproduces the shipped `vote_table.csv`
+(tolerance 1e-9), §52's size model (`scorer_W3.rds`, recreated benefit) and
+the shipped `size_coefs.csv` (issued benefit), each to 1e-6. (2) Seed 117's
+FY2022 national votes equal `votes_W2.rds`. (3) Every state's 10% list fills
+its budget on FY2017-19 (shortfall 0); a state's list has a median of 99
+core rules, of which a median of 60 (62%) are also vote rules. (4) The three
+seeds hold the same 118,247 FY2022-24 cases in the same order, with the same
+kept flags.
+
+Per seed and test year, 8.7-10.0% of cases have a national vote, 3.9-5.0%
+a list vote from a rule that is not a vote rule, and 11.2-12.2% either; list
+rules add 0.052-0.068 votes per case (0.130-0.142 if duplicates counted
+twice).
+
+**Results.** Times random, two test years pooled, three seeds averaged;
+change with its paired 95% interval. The rule lists alone and the national
+votes alone (the v2.8.0 design) are context, scored on the same flags.
+
+| Window, workload | Error dollars: baseline to refit (change; interval) | Errors: baseline to refit (change; interval) | Rule lists, errors / dollars | National votes alone, errors / dollars |
+|---|---|---|---|---|
+| A, 5% | 3.138 to 3.168 (+0.030; -0.049 to +0.091) | 2.474 to 2.499 (+0.025; -0.026 to +0.074) | 2.470 / 2.781 | 2.436 / 3.017 |
+| A, 10% | 2.734 to 2.714 (-0.021; -0.029 to +0.012) | 2.269 to 2.276 (+0.006; -0.001 to +0.029) | 2.299 / 2.524 | 2.184 / 2.656 |
+| B, 5% | 3.124 to 3.124 (+0.001; -0.082 to +0.097) | 2.450 to 2.481 (+0.031; -0.009 to +0.096) | 2.461 / 2.749 | 2.449 / 2.995 |
+| B, 10% | 2.756 to 2.760 (+0.004; -0.028 to +0.021) | 2.273 to 2.293 (+0.020; -0.003 to +0.033) | 2.299 / 2.527 | 2.196 / 2.681 |
+
+- **Bars.** Both windows pass 1, 3 and 5 and fail 2: no workload gains
+  +0.05 with the interval above zero. Bar 4 is read at the workload that
+  passes bar 2, so it fails with it. Window A fails, so by the decision rule
+  the refit does not ship.
+- **Within states.** No state is harmed in any cell. Mean and median change
+  in dollar recall: A 5% +0.0003 and +0.0025 (29 states up, 18 down); A 10%
+  -0.0024 and 0.0000 (19 up, 24 down); B 5% +0.0010 and -0.0017 (23 up, 26
+  down); B 10% -0.0001 and 0.0000 (24 up, 18 down).
+- **By test year and seed** (change in error dollars). A 5%: FY2023 +0.019,
+  FY2024 +0.040; seeds -0.017, +0.041, +0.067. A 10%: FY2023 -0.006, FY2024
+  -0.033; seeds -0.035, -0.020, -0.007. B 5%: FY2022 -0.044, FY2024 +0.033;
+  seeds -0.035, -0.003, +0.040. B 10%: FY2022 -0.020, FY2024 +0.022; seeds
+  +0.008, -0.004, +0.009. FY2022, the year not read before, is negative at
+  both workloads.
+- **California and Texas** (errors / error dollars caught, two test years
+  summed, seeds averaged). A 10%: California 37.0 / $7,821 to 37.3 /
+  $7,916; Texas 45.7 / $8,002 to 45.3 / $7,865. A 5%: California 20.3 /
+  $4,307 to 18.7 / $3,997; Texas 26.3 / $4,507 to 22.0 / $3,804. B 10%:
+  California 40.7 / $7,498 to 40.3 / $7,350; Texas 41.0 / $7,483 to 40.3 /
+  $7,408.
+- **The pair that would have shipped** (the shipped table and
+  `size_coefs.csv` against window A's refit, both on the issued benefit;
+  reported, not judged): error dollars 3.158 to 3.192 at 5%, 2.722 to 2.714
+  at 10%.
+- **Against the context arms.** In window A the v2.8.1 design (the baseline)
+  finds more error dollars than the rule lists (3.138 against 2.781 at 5%,
+  2.734 against 2.524 at 10%) and than the national votes alone (3.017,
+  2.656); on errors it ties the lists at 5% (2.474 against 2.470) and trails
+  them by 0.030 at 10% (2.269 against 2.299). This repeats §52's pattern on
+  rules a year older, with each rule counted once.
+
+**What the refit changed in the table.** Error-case rate on FY2022 by vote
+count, shipped table against window A's refit (the refit's curve is the same
+on either benefit basis):
+
+| Votes | 1 person: shipped | 1 person: refit | 2-3: shipped | 2-3: refit | 4+: shipped | 4+: refit |
+|---|---|---|---|---|---|---|
+| 0 | 6.7% | 6.7% | 12.0% | 11.9% | 16.6% | 15.3% |
+| 1 | 17.2% | 16.9% | 23.1% | 23.6% | 24.6% | 22.5% |
+| 2 | 21.9% | 20.8% | 27.0% | 27.0% | 25.0% | 25.5% |
+| 3 | 21.9% | 20.8% | 27.0% | 27.0% | 25.0% | 25.6% |
+| 4-6 | 27.8% | 27.6% | 29.2% | 28.2% | 25.0% | 25.6% |
+| 7+ | 31.7% | 32.0% | 31.3% | 32.1% | 25.0% | 25.6% |
+
+- One-person and 2-3 person rates move by at most 1.1 points. The list
+  rules add almost no votes to one-person cases: cases per seed at 1, 2-3,
+  4-6 and 7+ votes are 478, 303, 181 and 174 in the shipped fit and 478,
+  306, 183 and 186 in the refit.
+- In 4+ households about 680 cases per seed leave the 0-vote bin (4,010 to
+  3,328) and 1-vote cases rise from 603 to 903; the 0- and 1-vote rates fall
+  from 16.6% and 24.6% to 15.3% and 22.5%. From 2 votes up the refit is flat
+  at 25.6%: the raw rates at 3, 4-5 and 6+ votes (26.6%, 27.4%, 23.2%) were
+  pooled to keep the curve non-decreasing.
+- Window B's refit (fit on FY2023) differs from window A's by more than A's
+  differs from the shipped table: one person at 1 vote 19.9% (A 16.9%); 2-3
+  people at 2-6 votes 24.0% (A 27.0-28.2%); 4+ at 5 or more votes 29.1% (A
+  25.6%).
+- Size model, vote coefficient on the log scale: shipped -0.0119 and refit
+  -0.0126 on the issued benefit (log-benefit coefficient 0.205 in both);
+  -0.0106 and -0.0114 on the recreated benefit used for evaluation.
+
+**What did not move.** Errors (changes of +0.006 to +0.031 in the four
+cells), the harmed tail (0 everywhere), and the two
+named states at 10%.
+
+**Caveats.**
+- The intervals leave out fit-year and mining variance. Window B's table
+  differs from window A's more than either differs from the shipped one,
+  so that variance is not small.
+- Neither window is confirmatory: FY2023 and FY2024 were read for this
+  question before the bars were set. There is no FY2025 case data.
+- The lists are national-only lists from FY2017-19 pools without the
+  workbook's `rule_selection.py` filters; the shipped workbooks use blended
+  FY2022-24 lists. A list vote is assumed to mean the same in both.
+- The quick look that prompted the study (5%: 3.34 against 3.13) was
+  in-sample for the question and counted duplicated rules twice; it did not
+  hold up.
+- One frame (f1109), three seeds of one mining recipe.
+
+**Decision.** Eric, 2026-11-12: "Okay, let's not ship it."
+`methods/vote_scoring/deploy/vote_table.csv` and `size_coefs.csv` stay as
+shipped in v2.8.1.
+
+**Artifacts.** `methods/included_rules_vote/design_note_table_refit_2026-11-12.md`
+(design, bars, and the result in its section 10);
+`methods/included_rules_vote/refit/`: `refit_votes.R`, `refit_lists.R`,
+`refit_fit_score.R`, runner `run_refit_and_dedup.sh`, logs
+(`votes_seed*.log`, `lists_seed*.log`, `fit_score.log`, `run_progress.txt`),
+`refit_summary.csv`, `refit_by_state.csv`, `refit_by_year_seed.csv`. The
+vote, list and scorer files (`votes_seed*.rds`, `lists_seed*.rds`,
+`votekeys_seed*.rds`, `scorer_A.rds`, `scorer_A_issued.rds`,
+`scorer_B.rds`) are local only (`*.rds` is not tracked).

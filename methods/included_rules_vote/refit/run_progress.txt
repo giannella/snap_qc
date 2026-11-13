@@ -1,0 +1,15 @@
+[16:00:14] lists 117 start
+[16:00:14] lists 118 start
+[17:19:58] lists 117 done
+[17:19:58] lists 119 start
+[17:21:45] lists 118 done
+[17:21:45] dedup map start
+[17:51:09] dedup map done
+[17:51:09] dedup y2y start
+[18:32:19] lists 119 done
+[18:33:46] dedup y2y done
+[18:33:46] score_dedup start
+[18:33:50] score_dedup done
+[18:33:50] fit_score start
+[18:38:01] fit_score done
+[18:38:01] ALL DONE
