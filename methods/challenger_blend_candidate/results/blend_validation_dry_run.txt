@@ -1,0 +1,30 @@
+DRY RUN on the three spent test years (the machinery check; statistician: +0.74 at 10% with xgboost pairs i, i+5)
+
+Levels, percent of error dollars caught (map weights):
+  FY2019  blend: at 5% 19.56, at 10% 32.06, mean 25.99   ref: at 5% 20.33, at 10% 30.51, mean 25.63   twin: at 5% 20.17, at 10% 29.58, mean 24.86
+  FY2022  blend: at 5% 17.31, at 10% 29.85, mean 23.55   ref: at 5% 16.99, at 10% 28.31, mean 22.59   twin: at 5% 16.80, at 10% 28.34, mean 22.76
+  FY2024  blend: at 5% 18.55, at 10% 29.68, mean 24.28   ref: at 5% 18.33, at 10% 29.93, mean 24.12   twin: at 5% 18.96, at 10% 30.18, mean 24.74
+
+blend minus matched two-fit xgboost (the contrast the rule reads): points (SE) z
+  at 5%                combined +0.06 (0.37) z +0.2   |   FY2019 -0.77 (0.67)   FY2022 +0.31 (0.61)   FY2024 +0.23 (0.61)
+  5-10% band           combined +0.76 (0.59) z +1.3   |   FY2019 +2.32 (0.98)   FY2022 +1.22 (1.04)   FY2024 -0.48 (0.94)
+  at 10%               combined +0.82 (0.45) z +1.8   |   FY2019 +1.54 (0.71)   FY2022 +1.53 (0.85)   FY2024 -0.25 (0.66)
+  mean of 5/7.5/10%    combined +0.52 (0.26) z +2.0   |   FY2019 +0.35 (0.43)   FY2022 +0.97 (0.46)   FY2024 +0.16 (0.39)
+  sample-pooled at 10% combined +0.26 (0.33) z +0.8   |   FY2019 +1.25 (0.56)   FY2022 +0.22 (0.60)   FY2024 -0.19 (0.50)
+
+the same with exponent 1: points (SE) z
+  at 5%                combined +0.21 (0.37) z +0.6   |   FY2019 -0.59 (0.72)   FY2022 +0.12 (0.62)   FY2024 +0.71 (0.58)
+  5-10% band           combined +0.01 (0.60) z +0.0   |   FY2019 +1.83 (1.03)   FY2022 +0.18 (1.00)   FY2024 -1.06 (0.98)
+  at 10%               combined +0.23 (0.46) z +0.5   |   FY2019 +1.24 (0.73)   FY2022 +0.30 (0.81)   FY2024 -0.35 (0.75)
+  mean of 5/7.5/10%    combined +0.39 (0.27) z +1.4   |   FY2019 +0.20 (0.53)   FY2022 +0.60 (0.48)   FY2024 +0.27 (0.40)
+  sample-pooled at 10% combined +0.11 (0.32) z +0.3   |   FY2019 +1.03 (0.54)   FY2022 -0.19 (0.58)   FY2024 -0.06 (0.50)
+
+blend minus the B-recipe twin (5 fits, B inputs, no exponent): points (SE) z
+  at 5%                combined -0.08 (0.42) z -0.2   |   FY2019 -0.61 (0.63)   FY2022 +0.50 (0.75)   FY2024 -0.41 (0.67)
+  5-10% band           combined +0.98 (0.59) z +1.7   |   FY2019 +3.09 (1.14)   FY2022 +1.00 (0.95)   FY2024 -0.09 (0.97)
+  at 10%               combined +0.90 (0.48) z +1.9   |   FY2019 +2.48 (0.95)   FY2022 +1.51 (0.84)   FY2024 -0.50 (0.74)
+  mean of 5/7.5/10%    combined +0.36 (0.32) z +1.1   |   FY2019 +1.12 (0.62)   FY2022 +0.79 (0.59)   FY2024 -0.45 (0.44)
+  sample-pooled at 10% combined +0.69 (0.31) z +2.2   |   FY2019 +2.03 (0.56)   FY2022 +0.51 (0.52)   FY2024 +0.20 (0.51)
+
+READING by the written rule (at least +0.25 at 10% and above zero on the mean share): PROMISING
+  blend minus matched xgboost: at 10% +0.82 (SE 0.45); mean of shares +0.52 (SE 0.26); weights {"FY2019": 0.2, "FY2022": 0.4, "FY2024": 0.4}

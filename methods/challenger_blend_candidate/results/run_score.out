@@ -1,0 +1,168 @@
+W1: three largest weights: California, Texas, New York
+W1 (FY2019) scored: B, bart_long, bart_rev, blend, cb_rev, xgb_es, xgb_exp, xgb_rev_b1, xgb_rev, bart, catboost, xgb_ref, xgb_tuned  [4.0 min so far]
+W2: three largest weights: California, New York, Pennsylvania
+W2 (FY2022) scored: B, bart_long, bart_rev, blend, cb_rev, xgb_es, xgb_exp, xgb_rev_b1, xgb_rev, bart, catboost, xgb_ref, xgb_tuned  [7.9 min so far]
+W3: three largest weights: California, New York, Florida
+W3 (FY2024) scored: B, bart_long, bart_rev, blend, cb_rev, xgb_es, xgb_exp, xgb_rev_b1, xgb_rev, bart, catboost, xgb_ref, xgb_tuned  [12.0 min so far]
+
+B (stored, 10 seeds): at 5% 18.12, 5-10% band 11.39, at 10% 29.51; mean of 5/7.5/10% 23.87; at 10% without the three largest states 29.56; sample-pooled at 10% 30.07; precision at 5% 27.42
+Bars: ahead z >= 1.96 (primary, fallback), 2.39 (secondary, 3 fitted); supported z >= 1.645 / 2.13 on the mean share; 5% guard z >= -1.645.
+
+TOP METRICS: national share of error dollars caught, %, map state weights, three tests weighted 0.2 / 0.4 / 0.4. diff = points against the stored 10-seed B;
+se = paired standard error (bootstrap over cases plus half-bag seed terms); z = diff / se; zt = z against the xgboost twin (xgb_es); zr = z against the primary arm (xgb_rev).
+        arm       role fits  at_5  diff    z  band  diff    z at_10  diff   se    z   zt   zr mean_5_10  diff   se    z
+  bart_long  component    8 17.30 -0.82 -1.2 12.44 +1.05 +1.2 29.73 +0.23 0.79 +0.3 +0.2 +0.3     23.72 -0.15 0.60 -0.3
+   bart_rev  secondary    8 17.35 -0.77 -1.1 12.42 +1.03 +1.1 29.77 +0.26 0.83 +0.3 +0.2 +0.4     23.45 -0.42 0.59 -0.7
+      blend  secondary    5 18.26 +0.13 +0.3 11.97 +0.58 +0.9 30.22 +0.72 0.48 +1.5 +1.3 +1.7     24.33 +0.46 0.30 +1.5
+     cb_rev  secondary    5 18.06 -0.07 -0.1 12.07 +0.68 +0.9 30.12 +0.62 0.59 +1.0 +0.9 +1.1     24.26 +0.39 0.37 +1.0
+     xgb_es  component   10 18.34 +0.22 +0.6 11.22 -0.16 -0.3 29.56 +0.05 0.41 +0.1               24.05 +0.18 0.22 +0.8
+    xgb_exp  component   10 18.28 +0.16 +0.4 11.40 +0.01 +0.0 29.68 +0.17 0.39 +0.4 +0.3 +0.4     24.04 +0.17 0.22 +0.8
+ xgb_rev_b1   fallback   10 18.20 +0.08 +0.2 11.59 +0.20 +0.3 29.79 +0.28 0.48 +0.6 +0.5 +1.0     24.06 +0.19 0.32 +0.6
+    xgb_rev    primary   10 18.22 +0.09 +0.2 11.26 -0.13 -0.2 29.47 -0.03 0.49 -0.1 -0.2          23.89 +0.01 0.32 +0.0
+       bart last night    4 17.53 -0.59 -0.9 12.44 +1.05 +1.3 29.97 +0.46 0.81 +0.6               23.78 -0.10 0.63 -0.2
+   catboost last night    5 17.80 -0.32 -0.6 12.25 +0.87 +1.2 30.05 +0.54 0.58 +0.9               24.09 +0.22 0.38 +0.6
+    xgb_ref last night   10 18.28 +0.15 +0.4 11.19 -0.20 -0.4 29.46 -0.05 0.41 -0.1               23.96 +0.09 0.21 +0.4
+  xgb_tuned last night   10 18.12 -0.00 -0.0 11.12 -0.26 -0.5 29.24 -0.27 0.43 -0.6               23.81 -0.07 0.22 -0.3
+
+Robustness beside the lead figure: the share at 10% without the three largest states, the sample-pooled share, states up/down against B at 10% by test (FY2019 FY2022 FY2024), precision, harmed states.
+        arm at_10_without_big3  diff    z pooled_10  diff    z    states_up_down precision_5 harmed          guards
+  bart_long              29.80 +0.24 +0.4     29.87 -0.20 -0.4 26/22 23/25 22/25       27.12   4-11 not met: pooled
+   bart_rev              29.92 +0.36 +0.5     29.96 -0.10 -0.2 20/27 22/25 23/26       25.98    7-9 not met: pooled
+      blend              30.55 +0.99 +2.3     30.89 +0.83 +2.3 30/17 26/20 24/23       27.32    1-4             met
+     cb_rev              30.01 +0.45 +0.9     30.29 +0.22 +0.5 29/20 23/25 24/24       27.92    4-9             met
+     xgb_es              29.97 +0.41 +1.2     30.18 +0.11 +0.4 14/23 18/21 25/16       27.66    0-5             met
+    xgb_exp              30.04 +0.48 +1.3     30.34 +0.27 +0.9 15/28 16/26 22/18       27.09    0-2             met
+ xgb_rev_b1              30.21 +0.65 +1.5     30.57 +0.51 +1.5 34/15 22/22 25/22       28.27    1-4             met
+    xgb_rev              30.07 +0.51 +1.2     30.56 +0.49 +1.4 27/18 22/24 27/21       27.92    1-4             met
+       bart              29.53 -0.03 -0.0     29.68 -0.39 -0.7 24/23 23/25 20/29       27.29    7-9 not met: pooled
+   catboost              29.78 +0.22 +0.4     30.03 -0.03 -0.1 29/20 23/25 21/28       27.81    3-9 not met: pooled
+    xgb_ref              29.78 +0.22 +0.7     30.08 +0.01 +0.0 19/21 17/23 21/15       27.57    0-4             met
+  xgb_tuned              29.49 -0.07 -0.2     30.04 -0.02 -0.1 21/23 20/24 19/19       27.40    1-5 not met: pooled
+
+FY2024 alone (the only test the era pieces change), points against B:
+        arm  at_5  diff    z at_10  diff    z mean_5_10  diff    z pooled_10  diff    z
+  bart_long 16.17 -2.35 -1.8 28.78 -1.05 -0.8     22.64 -1.51 -1.5     30.42 -0.26 -0.3
+   bart_rev 16.80 -1.72 -1.4 29.31 -0.52 -0.4     22.97 -1.18 -1.2     30.59 -0.09 -0.1
+      blend 18.55 +0.03 +0.0 29.68 -0.15 -0.2     24.28 +0.13 +0.3     31.40 +0.72 +1.3
+     cb_rev 18.93 +0.41 +0.5 29.66 -0.17 -0.2     24.49 +0.34 +0.6     31.04 +0.36 +0.6
+     xgb_es 18.96 +0.44 +0.7 30.24 +0.41 +0.7     24.77 +0.62 +1.8     31.02 +0.34 +0.8
+    xgb_exp 19.10 +0.58 +0.9 30.35 +0.51 +0.9     24.76 +0.61 +1.8     31.54 +0.86 +1.8
+ xgb_rev_b1 18.20 -0.32 -0.4 30.12 +0.29 +0.3     24.36 +0.21 +0.4     31.48 +0.80 +1.4
+    xgb_rev 18.15 -0.37 -0.5 29.89 +0.06 +0.1     24.16 +0.00 +0.0     31.56 +0.88 +1.6
+       bart 16.51 -2.00 -1.7 29.79 -0.05 -0.0     23.17 -0.98 -1.1     29.76 -0.92 -1.2
+   catboost 18.29 -0.23 -0.3 29.49 -0.35 -0.4     24.06 -0.09 -0.2     30.40 -0.28 -0.5
+    xgb_ref 18.96 +0.45 +0.7 30.00 +0.16 +0.3     24.66 +0.51 +1.7     30.94 +0.26 +0.6
+  xgb_tuned 18.68 +0.16 +0.2 29.95 +0.11 +0.2     24.43 +0.28 +0.8     30.76 +0.08 +0.2
+
+Diagnostics on the test years, no reading rests on them (lower is better): Poisson deviance of error dollars against P x size, against B; log loss of P, against the xgboost twin.
+        arm dollar_deviance minus_B    z z_twin P_log_loss minus_twin z_twin
+  bart_long         68.8619  0.5775 +4.9   +5.2    0.30386    0.00201   +6.2
+   bart_rev         68.8619  0.5775 +4.9   +5.2    0.30386    0.00201   +6.2
+      blend         67.9259 -0.3585 -5.6   -5.0    0.30105   -0.00081   -4.8
+     cb_rev         68.2572 -0.0272 -0.3   +0.1    0.30239    0.00054   +2.2
+     xgb_es         68.2459 -0.0385 -1.2           0.30185         NA       
+    xgb_exp         68.2459 -0.0385 -1.2   +0.0    0.30185    0.00000   +0.0
+ xgb_rev_b1         68.0724 -0.2120 -3.2   -2.8    0.30140   -0.00045   -2.7
+    xgb_rev         68.0724 -0.2120 -3.2   -2.8    0.30140   -0.00045   -2.7
+       bart         69.1172  0.8328 +6.6           0.30488         NA       
+   catboost         68.3366  0.0522 +0.6           0.30247         NA       
+    xgb_ref         68.2603 -0.0241 -0.8           0.30187         NA       
+  xgb_tuned         68.2912  0.0068 +0.2           0.30202         NA       
+
+READING
+  bart_long   (component, no claim) not distinguishable from B
+  bart_rev    not distinguishable from B
+  blend       not distinguishable from B
+  cb_rev      not distinguishable from B
+  xgb_es      (component, no claim) not distinguishable from B
+  xgb_exp     (component, no claim) not distinguishable from B
+  xgb_rev_b1  (fallback, read only if xgb_rev misses a guard) not distinguishable from B
+  xgb_rev     not distinguishable from B
+  bart        (last night, no claim) not distinguishable from B
+  catboost    (last night, no claim) not distinguishable from B
+  xgb_ref     (last night, no claim) not distinguishable from B
+  xgb_tuned   (last night, no claim) not distinguishable from B
+
+Harness check (xgb_ref, last night's refit of B's recipe): z = +0.41 at 5%, -0.11 at 10% against B.
+
+By test year and workload (state columns are changes against the 10-seed B; harmed = states whose share falls by more than 0.05):
+   window    learner seeds budget precision national_share dollar_recall times_random states_below_1x state_mean_change states_ahead states_behind states_harmed rank_cor_with_B
+1      W1          B    10   0.05    0.2468         0.1992        0.1779        3.557               0         0.0000000            0             0             0          1.0000
+2      W1          B    10   0.10    0.2213         0.3042        0.2954        2.954               0         0.0000000            0             0             0          1.0000
+3      W1  bart_long     8   0.05    0.2412         0.1921        0.1798        3.597               1         0.0559092           24            23             8          0.9568
+4      W1  bart_long     8   0.10    0.2165         0.3112        0.2943        2.943               1         0.0058696           26            22             9          0.9568
+5      W1   bart_rev     8   0.05    0.2290         0.1852        0.1705        3.409               1        -0.1189502           20            27             9          0.9524
+6      W1   bart_rev     8   0.10    0.2071         0.3036        0.2913        2.913               1        -0.0430181           20            27             9          0.9524
+7      W1      blend     5   0.05    0.2422         0.1956        0.1781        3.562               0         0.0721489           22            23             3          0.9864
+8      W1      blend     5   0.10    0.2254         0.3206        0.3107        3.107               0         0.1107121           30            17             4          0.9864
+9      W1     cb_rev     5   0.05    0.2489         0.1976        0.1780        3.560               1         0.0062188           23            24             6          0.9656
+10     W1     cb_rev     5   0.10    0.2247         0.3151        0.3030        3.030               2        -0.0255505           29            20             9          0.9656
+11     W1     xgb_es    10   0.05    0.2499         0.2006        0.1803        3.605               0         0.0300387           20            18             2          0.9976
+12     W1     xgb_es    10   0.10    0.2170         0.3004        0.2924        2.924               0        -0.0232625           14            23             5          0.9976
+13     W1    xgb_exp    10   0.05    0.2453         0.2017        0.1804        3.608               0         0.0529190           19            19             2          0.9964
+14     W1    xgb_exp    10   0.10    0.2114         0.3038        0.2897        2.897               0        -0.0480992           15            28             2          0.9964
+15     W1 xgb_rev_b1    10   0.05    0.2529         0.2052        0.1839        3.678               0         0.1399295           26            20             3          0.9888
+16     W1 xgb_rev_b1    10   0.10    0.2208         0.3136        0.2992        2.992               0         0.0373238           34            15             4          0.9888
+17     W1    xgb_rev    10   0.05    0.2489         0.2050        0.1834        3.667               0         0.1222905           22            20             3          0.9879
+18     W1    xgb_rev    10   0.10    0.2175         0.3105        0.2993        2.993               0         0.0253179           27            18             4          0.9879
+19     W1       bart     4   0.05    0.2432         0.1964        0.1753        3.507               1         0.0234711           22            25             9          0.9506
+20     W1       bart     4   0.10    0.2173         0.3049        0.2911        2.911               1        -0.0207352           24            23             9          0.9506
+21     W1   catboost     5   0.05    0.2489         0.1976        0.1780        3.560               1         0.0062188           23            24             6          0.9656
+22     W1   catboost     5   0.10    0.2247         0.3151        0.3030        3.030               2        -0.0255505           29            20             9          0.9656
+23     W1    xgb_ref    10   0.05    0.2504         0.2057        0.1818        3.636               0         0.0911126           20            14             1          0.9978
+24     W1    xgb_ref    10   0.10    0.2191         0.3067        0.2928        2.928               0        -0.0260341           19            21             4          0.9978
+25     W1  xgb_tuned    10   0.05    0.2478         0.1997        0.1784        3.567               0         0.0066676           18            19             2          0.9963
+26     W1  xgb_tuned    10   0.10    0.2193         0.2973        0.2940        2.940               0        -0.0287985           21            23             3          0.9963
+27     W2          B    10   0.05    0.2528         0.1683        0.1662        3.324               1         0.0000000            0             0             0          1.0000
+28     W2          B    10   0.10    0.2433         0.2872        0.2972        2.972               2         0.0000000            0             0             0          1.0000
+29     W2  bart_long     8   0.05    0.2629         0.1747        0.1700        3.401               1        -0.0161331           29            19            11          0.9590
+30     W2  bart_long     8   0.10    0.2428         0.3000        0.2954        2.954               1        -0.0425494           23            25             8          0.9590
+31     W2   bart_rev     8   0.05    0.2523         0.1731        0.1680        3.360               1        -0.0381885           24            24             9          0.9558
+32     W2   bart_rev     8   0.10    0.2351         0.2992        0.2975        2.975               2        -0.0307529           22            25             8          0.9558
+33     W2      blend     5   0.05    0.2501         0.1731        0.1697        3.394               1        -0.0082914           25            19             2          0.9874
+34     W2      blend     5   0.10    0.2412         0.2985        0.3030        3.030               2         0.0449479           26            20             1          0.9874
+35     W2     cb_rev     5   0.05    0.2560         0.1633        0.1660        3.320               1        -0.0432108           25            18             4          0.9726
+36     W2     cb_rev     5   0.10    0.2428         0.2989        0.2954        2.954               1        -0.0593066           23            25             9          0.9726
+37     W2     xgb_es    10   0.05    0.2539         0.1686        0.1639        3.279               1         0.0146007           20            19             0          0.9981
+38     W2     xgb_es    10   0.10    0.2462         0.2864        0.2982        2.982               2        -0.0254984           18            21             2          0.9981
+39     W2    xgb_exp    10   0.05    0.2438         0.1651        0.1617        3.234               1        -0.0442176           20            23             2          0.9973
+40     W2    xgb_exp    10   0.10    0.2388         0.2865        0.2983        2.983               2        -0.0391731           16            26             1          0.9973
+41     W2 xgb_rev_b1    10   0.05    0.2661         0.1705        0.1739        3.477               1         0.1479459           26            17             2          0.9875
+42     W2 xgb_rev_b1    10   0.10    0.2417         0.2867        0.2999        2.999               1         0.0253982           22            22             1          0.9875
+43     W2    xgb_rev    10   0.05    0.2623         0.1714        0.1736        3.473               1         0.1506505           25            20             2          0.9866
+44     W2    xgb_rev    10   0.10    0.2351         0.2826        0.2987        2.987               1        -0.0009622           22            24             1          0.9866
+45     W2       bart     4   0.05    0.2613         0.1749        0.1717        3.434               2        -0.0616455           26            22             8          0.9554
+46     W2       bart     4   0.10    0.2412         0.2988        0.2988        2.988               1         0.0058373           23            25             7          0.9554
+47     W2   catboost     5   0.05    0.2560         0.1633        0.1660        3.320               1        -0.0432108           25            18             4          0.9726
+48     W2   catboost     5   0.10    0.2428         0.2989        0.2954        2.954               1        -0.0593066           23            25             9          0.9726
+49     W2    xgb_ref    10   0.05    0.2528         0.1644        0.1637        3.274               1         0.0027457           20            21             0          0.9982
+50     W2    xgb_ref    10   0.10    0.2428         0.2832        0.2961        2.961               2        -0.0428915           17            23             2          0.9982
+51     W2  xgb_tuned    10   0.05    0.2517         0.1663        0.1621        3.242               1        -0.0182273           22            20             2          0.9971
+52     W2  xgb_tuned    10   0.10    0.2430         0.2828        0.2965        2.965               2        -0.0322322           20            24             5          0.9971
+53     W3          B    10   0.05    0.3093         0.1852        0.1832        3.665               0         0.0000000            0             0             0          1.0000
+54     W3          B    10   0.10    0.2717         0.2984        0.3068        3.068               0         0.0000000            0             0             0          1.0000
+55     W3  bart_long     8   0.05    0.2945         0.1617        0.1743        3.486               1        -0.2365660           17            32            10          0.9663
+56     W3  bart_long     8   0.10    0.2724         0.2878        0.3042        3.042               0        -0.0263869           22            25             4          0.9663
+57     W3   bart_rev     8   0.05    0.2827         0.1680        0.1772        3.543               2        -0.2060844           18            31             9          0.9638
+58     W3   bart_rev     8   0.10    0.2611         0.2931        0.3059        3.059               0         0.0088887           23            26             7          0.9638
+59     W3      blend     5   0.05    0.3118         0.1855        0.1934        3.868               0         0.2219271           27            21             3          0.9843
+60     W3      blend     5   0.10    0.2727         0.2968        0.3140        3.140               0         0.0516303           24            23             2          0.9843
+61     W3     cb_rev     5   0.05    0.3177         0.1893        0.1910        3.821               0         0.1372320           24            24             4          0.9754
+62     W3     cb_rev     5   0.10    0.2739         0.2966        0.3104        3.104               0         0.0058069           24            24             4          0.9754
+63     W3     xgb_es    10   0.05    0.3128         0.1896        0.1863        3.727               0         0.0559113           24            17             2          0.9972
+64     W3     xgb_es    10   0.10    0.2744         0.3024        0.3102        3.102               0         0.0473126           25            16             0          0.9972
+65     W3    xgb_exp    10   0.05    0.3108         0.1910        0.1882        3.764               0         0.0707844           22            20             2          0.9965
+66     W3    xgb_exp    10   0.10    0.2712         0.3035        0.3154        3.154               0         0.0759043           22            18             0          0.9965
+67     W3 xgb_rev_b1    10   0.05    0.3143         0.1820        0.1903        3.805               0         0.1537481           27            22             2          0.9854
+68     W3 xgb_rev_b1    10   0.10    0.2778         0.3012        0.3148        3.148               0         0.1020418           25            22             1          0.9854
+69     W3    xgb_rev    10   0.05    0.3113         0.1815        0.1921        3.842               0         0.2075882           29            20             3          0.9836
+70     W3    xgb_rev    10   0.10    0.2739         0.2989        0.3156        3.156               0         0.1054599           27            21             2          0.9836
+71     W3       bart     4   0.05    0.2995         0.1651        0.1783        3.566               1        -0.1639609           18            31             8          0.9609
+72     W3       bart     4   0.10    0.2655         0.2979        0.2976        2.976               0        -0.1035927           20            29             8          0.9609
+73     W3   catboost     5   0.05    0.3148         0.1829        0.1842        3.684               1         0.0085562           27            22             3          0.9830
+74     W3   catboost     5   0.10    0.2699         0.2949        0.3040        3.040               0        -0.0299505           21            28             4          0.9830
+75     W3    xgb_ref    10   0.05    0.3113         0.1896        0.1859        3.718               0         0.0411356           21            17             1          0.9978
+76     W3    xgb_ref    10   0.10    0.2724         0.3000        0.3094        3.094               0         0.0151207           21            15             0          0.9978
+77     W3  xgb_tuned    10   0.05    0.3093         0.1868        0.1860        3.720               0         0.0313755           24            15             3          0.9968
+78     W3  xgb_tuned    10   0.10    0.2719         0.2995        0.3076        3.076               0        -0.0069599           19            19             1          0.9968
+SCORING DONE
