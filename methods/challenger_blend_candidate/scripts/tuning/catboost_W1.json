@@ -1,0 +1,119 @@
+{
+ "P": {
+  "depth": 8,
+  "state": "ctr"
+ },
+ "P_nr": 352,
+ "S": {
+  "depth": 4,
+  "state": "ctr",
+  "off": false
+ },
+ "S_nr": 538,
+ "val_wll": 0.2741129680487562,
+ "val_gamma_dev": 0.32046098608632195,
+ "val_lift": 3.1844757226003035,
+ "grid_P": [
+  {
+   "depth": 4,
+   "state": "onehot",
+   "crit": 0.2749523565449232,
+   "best": 782
+  },
+  {
+   "depth": 4,
+   "state": "ctr",
+   "crit": 0.2752572033624345,
+   "best": 554
+  },
+  {
+   "depth": 6,
+   "state": "onehot",
+   "crit": 0.2745793507613157,
+   "best": 407
+  },
+  {
+   "depth": 6,
+   "state": "ctr",
+   "crit": 0.2743296802087123,
+   "best": 393
+  },
+  {
+   "depth": 8,
+   "state": "onehot",
+   "crit": 0.2744460742165973,
+   "best": 290
+  },
+  {
+   "depth": 8,
+   "state": "ctr",
+   "crit": 0.2741129680487562,
+   "best": 180
+  }
+ ],
+ "grid_S": [
+  {
+   "depth": 4,
+   "state": "onehot",
+   "off": false,
+   "crit": 0.32148066220529137,
+   "best": 280
+  },
+  {
+   "depth": 4,
+   "state": "onehot",
+   "off": true,
+   "crit": 0.3256190514293342,
+   "best": 185
+  },
+  {
+   "depth": 4,
+   "state": "ctr",
+   "off": false,
+   "crit": 0.32046098608632195,
+   "best": 265
+  },
+  {
+   "depth": 4,
+   "state": "ctr",
+   "off": true,
+   "crit": 0.3218970398375856,
+   "best": 250
+  },
+  {
+   "depth": 6,
+   "state": "onehot",
+   "off": false,
+   "crit": 0.32406966862130065,
+   "best": 139
+  },
+  {
+   "depth": 6,
+   "state": "onehot",
+   "off": true,
+   "crit": 0.323962963496329,
+   "best": 141
+  },
+  {
+   "depth": 6,
+   "state": "ctr",
+   "off": false,
+   "crit": 0.3233457010864135,
+   "best": 181
+  },
+  {
+   "depth": 6,
+   "state": "ctr",
+   "off": true,
+   "crit": 0.323153430491759,
+   "best": 160
+  }
+ ],
+ "tune_minutes": 4.94,
+ "rows": {
+  "train": 80071,
+  "fit": 41014,
+  "val": 39057,
+  "test": 39239
+ }
+}

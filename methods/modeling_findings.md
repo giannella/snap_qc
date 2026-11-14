@@ -2555,3 +2555,115 @@ shipped v2.8.1 table on the same combined votes.
   rule filters.
 
 -> detailed record: modeling_findings_detailed.md section 53.
+
+## 54. Other learners and changes to model B's structure, on B's three tests: none is distinguishable from B; a blend of xgboost and CatBoost is kept as a candidate, not adopted (2026-11-14)
+
+> **Takeaway (about our pipeline).** No other learner and no change to the
+> per-case model's structure found more error dollars than model B (§46,
+> §51) on its three held-out tests. On the national share of error dollars
+> caught, weighted as on the results map, B catches 18.1% at a 5% workload
+> and 29.5% at 10%. LightGBM (29.3% at 10%), CatBoost (30.1%), BART (30.0%;
+> 29.7% in a longer run), an EBM with pair terms (29.0%), TabNet (28.3%)
+> and a re-tuned xgboost (29.2%) are all within two standard errors of B;
+> an EBM with main effects only is behind (27.6%). Ratio inputs, an era
+> indicator and a size exponent, each chosen on held-back training years,
+> fit the test years better but left the share where it was (29.5%). A
+> blend of xgboost and CatBoost was the nearest to a gain (30.2% at 10%,
+> +0.7 points, standard error 0.5) and read "promising" on three further
+> years by a rule written beforehand, with no gain at 10% in FY2023 or
+> FY2024; it is kept as a documented candidate, not adopted. Standard
+> errors are about half a point, so a real gain of a few tenths cannot be
+> ruled out or confirmed on these data.
+
+Model B is xgboost. This entry asks whether a different learner, or a change
+to B's structure, ranks cases better. Every arm was fit on exactly the rows
+and inputs B used, on B's three tests (train FY2017-18, score FY2019; train
+FY2017-19, score FY2022; train FY2017-19 and FY2022-23, score FY2024), and
+scored with the reference evaluation dataset. Each state flags the top 5%
+or 10% of its own cases. The measure is the national share of error dollars
+caught, with each state weighted by its official error dollars as on the
+results map, and the three tests combined 0.2 / 0.4 / 0.4. Settings and
+structural changes were chosen on held-back training years (FY2018,
+FY2023), never on a test year. Differences are in points of share against
+B; the standard error comes from resampling test cases.
+
+| Arm | At 5% | Added from 5% to 10% | At 10% | Difference at 10% (SE) |
+|---|---|---|---|---|
+| Model B | 18.12 | 11.39 | 29.51 | |
+| B's recipe refit (harness check) | 18.28 | 11.19 | 29.46 | -0.05 (0.41) |
+| xgboost re-tuned on this frame | 18.12 | 11.12 | 29.24 | -0.27 (0.43) |
+| LightGBM | 17.77 | 11.55 | 29.32 | -0.19 (0.50) |
+| CatBoost | 17.80 | 12.25 | 30.05 | +0.54 (0.58) |
+| BART, short run | 17.53 | 12.44 | 29.97 | +0.46 (0.81) |
+| BART, long run with a tuned prior | 17.30 | 12.44 | 29.73 | +0.23 (0.79) |
+| EBM with pair terms | 16.99 | 12.01 | 29.00 | -0.50 (0.63) |
+| EBM, main effects only | 15.75 | 11.87 | 27.63 | -1.88 (0.80) |
+| TabNet | 16.76 | 11.55 | 28.31 | -1.19 (0.82) |
+| xgboost with ratio inputs, era indicator and size exponent | 18.22 | 11.26 | 29.47 | -0.03 (0.49) |
+| The same without the size exponent | 18.20 | 11.59 | 29.79 | +0.28 (0.48) |
+| CatBoost with the era indicator | 18.06 | 12.07 | 30.12 | +0.62 (0.59) |
+| Blend of xgboost and CatBoost | 18.26 | 11.97 | 30.22 | +0.72 (0.48) |
+
+The standard errors for LightGBM, the two EBMs and TabNet come from the
+first run's scorer, which understated the seed term; the corrected scorer
+raised the other first-run arms' standard errors by 7 to 21%.
+
+- **No learner is ahead of B.** None is 2 standard errors above B at 5%,
+  in the 5-10% band or at 10%. The additive EBM with main effects only is
+  behind at both workloads (1.9 points at 10%, 2.4 at 5%). TabPFN and Nori
+  were not run; both need a GPU.
+- **Better fit did not buy share.** Ratio inputs, an indicator for FY2022
+  and later, and scoring by P x size^1.153 were each promoted on held-back
+  years by a written rule. On the test years they lowered the model's
+  dollar deviance (z -3.2) and log loss (z -2.7), and the share at 10% was
+  B's (29.47 against 29.51).
+- **More seeds cannot settle gaps this small.** Over 90% of the variance of
+  a difference between two learners is which cases were sampled, not the
+  seed. On these three tests an observed difference clears two standard
+  errors at about 1.0 to 1.2 points, and a true gain has to be about 1.5
+  points to be detected four times in five.
+- **The blend has a reason behind it and a modest record.** The blend
+  averages the error probability and the error size from one xgboost fit
+  and one CatBoost fit. The two learners share 76 to 81% of the top-10%
+  list, where two xgboost bags share 92 to 96%, and they are about equally
+  accurate, so the average fits better than either. How the +0.72
+  splits depends on the size exponent: with it the xgboost changes alone
+  are -0.03 against B, without it +0.28. Against a matched average of two xgboost
+  fits, the blend was +0.8 points at 10% on the three tests (SE 0.45) and,
+  on three further years (FY2017 scored backward, FY2018 and FY2023 from
+  held-back predictions), +0.53 at 10% (SE 0.55) and +0.57 on the mean of
+  the shares at 5%, 7.5% and 10% (SE 0.32). The rule written before that
+  read (at least +0.25 at 10% and above zero on the mean share) reads
+  "promising"; it passes a learner with no gain about one time in four
+  at the planned standard error (0.42) and about three in ten at the
+  realised one (0.55). All six years combined, weighted by precision:
+  +0.65 at 10% (SE 0.32), +0.47 on the mean share (SE 0.19) and +0.12 at
+  5% (SE 0.31); +0.38 at 10% (SE 0.34) without the size exponent.
+- **Where the blend shows nothing.** At 10% the difference by year is +1.5,
+  +1.5 and -0.3 on FY2019, FY2022 and FY2024, and +2.2, +0.2 and -0.1 on
+  FY2017, FY2018 and FY2023. The two years with the most training data,
+  FY2023 and FY2024, show no gain at 10% (-0.20 together, SE 0.51). Both
+  are one-year-ahead tests. FY2022, the only test three years ahead, the
+  gap that matches deployment (§41), reads +1.53 at 10% (SE 0.85). The
+  reviewers expect a true gain of 0.2 to 0.5 points at 10% and none at 5%.
+- **State by state** (read afterwards, no rule written). B's median state
+  catches 17.5% of its error dollars at 5% and 29.3% at 10%. No learner
+  clearly raises the typical state, and the EBM lowers it. CatBoost, BART
+  and TabNet alone push 4 to 14 states down by more than 5 points per test
+  at 10%, against 0 to 5 for the xgboost arms and the blend. The blend's
+  mean paired state change at 10% is about +0.6 points on both sets of
+  years (+0.61, SE 0.35, against B on the tests; +0.69, SE 0.40, against a
+  refit of B's recipe on the further years, two of which chose the xgboost
+  changes inside the blend; those changes alone read -0.05 there). The
+  xgboost changes without the exponent had a median paired state change of
+  +0.82 points at 5% on the tests (+0.52 with the exponent) and +0.05 on
+  the further years, so that did not replicate.
+- **Caveats.** The three tests are the tests that chose B, and all six
+  years have now been read for the blend, so nothing more can be confirmed
+  until FY2025 data arrive. The blend was the best of several arms on the
+  tests, which flatters it. One frame (f1109).
+- **Decision.** The blend is kept as a documented candidate for others to
+  test (`methods/challenger_blend_candidate/`). Model B and the state
+  package are unchanged.
+
+-> detailed record: modeling_findings_detailed.md section 54.

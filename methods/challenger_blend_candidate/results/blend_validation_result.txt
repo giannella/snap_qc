@@ -1,0 +1,30 @@
+BLEND VALIDATION: FY2023 and FY2018 (saved held-back predictions), FY2017 (backward, new fits)
+
+Levels, percent of error dollars caught (map weights):
+  FY2023  blend: at 5% 17.98, at 10% 29.67, mean 24.02   ref: at 5% 17.80, at 10% 29.80, mean 23.65   twin: at 5% 17.66, at 10% 27.72, mean 22.58
+  FY2018  blend: at 5% 15.87, at 10% 27.25, mean 21.60   ref: at 5% 16.15, at 10% 27.02, mean 21.68   twin: at 5% 15.06, at 10% 26.46, mean 20.89
+  FY2017  blend: at 5% 19.26, at 10% 31.72, mean 25.35   ref: at 5% 16.97, at 10% 29.57, mean 23.71   twin: at 5% 17.58, at 10% 31.07, mean 24.37
+
+blend minus matched two-fit xgboost (the contrast the rule reads): points (SE) z
+  at 5%                combined +0.59 (0.59) z +1.0   |   FY2023 +0.18 (0.83)   FY2018 -0.27 (1.14)   FY2017 +2.29 (1.25)
+  5-10% band           combined -0.06 (0.83) z -0.1   |   FY2023 -0.31 (1.21)   FY2018 +0.51 (1.42)   FY2017 -0.14 (1.81)
+  at 10%               combined +0.53 (0.55) z +1.0   |   FY2023 -0.13 (0.82)   FY2018 +0.24 (0.76)   FY2017 +2.15 (1.27)
+  mean of 5/7.5/10%    combined +0.57 (0.32) z +1.8   |   FY2023 +0.37 (0.47)   FY2018 -0.09 (0.58)   FY2017 +1.64 (0.68)
+  sample-pooled at 10% combined +0.49 (0.33) z +1.5   |   FY2023 +0.51 (0.47)   FY2018 +0.57 (0.66)   FY2017 +0.38 (0.60)
+
+the same with exponent 1: points (SE) z
+  at 5%                combined +0.24 (0.58) z +0.4   |   FY2023 -0.10 (0.86)   FY2018 -0.14 (1.03)   FY2017 +1.30 (1.19)
+  5-10% band           combined +0.46 (0.89) z +0.5   |   FY2023 +0.75 (1.36)   FY2018 -0.22 (1.21)   FY2017 +0.58 (1.93)
+  at 10%               combined +0.70 (0.60) z +1.2   |   FY2023 +0.65 (0.86)   FY2018 -0.36 (0.78)   FY2017 +1.88 (1.47)
+  mean of 5/7.5/10%    combined +0.42 (0.32) z +1.3   |   FY2023 +0.40 (0.43)   FY2018 -0.56 (0.54)   FY2017 +1.43 (0.74)
+  sample-pooled at 10% combined +0.52 (0.32) z +1.6   |   FY2023 +0.93 (0.47)   FY2018 +0.20 (0.61)   FY2017 +0.02 (0.63)
+
+blend minus the B-recipe twin (5 fits, B inputs, no exponent): points (SE) z
+  at 5%                combined +0.78 (0.53) z +1.5   |   FY2023 +0.32 (0.80)   FY2018 +0.81 (0.72)   FY2017 +1.69 (1.16)
+  5-10% band           combined +0.55 (0.72) z +0.8   |   FY2023 +1.62 (1.13)   FY2018 -0.02 (1.06)   FY2017 -1.04 (1.46)
+  at 10%               combined +1.33 (0.58) z +2.3   |   FY2023 +1.94 (0.91)   FY2018 +0.80 (0.86)   FY2017 +0.65 (1.15)
+  mean of 5/7.5/10%    combined +1.15 (0.41) z +2.8   |   FY2023 +1.45 (0.60)   FY2018 +0.70 (0.58)   FY2017 +0.98 (0.94)
+  sample-pooled at 10% combined +0.65 (0.35) z +1.9   |   FY2023 +0.77 (0.55)   FY2018 +0.92 (0.59)   FY2017 +0.15 (0.60)
+
+READING by the written rule (at least +0.25 at 10% and above zero on the mean share): PROMISING
+  blend minus matched xgboost: at 10% +0.53 (SE 0.55); mean of shares +0.57 (SE 0.32); weights {"FY2017": 0.25, "FY2018": 0.25, "FY2023": 0.5}

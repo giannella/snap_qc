@@ -1,0 +1,4 @@
+"window","score_year","last_train_year","old","pct","P_max_depth","P_min_child_weight","P_colsample_bytree","P_rounds","S_max_depth","S_min_child_weight","S_offset","S_rounds"
+"W1","2019","2018",FALSE,TRUE,4,5,0.5,1715,3,25,FALSE,533
+"W2","2022","2019",FALSE,FALSE,5,5,0.8,1335,4,25,FALSE,751
+"W3","2024","2023",TRUE,FALSE,6,5,0.8,1086,2,5,TRUE,1635

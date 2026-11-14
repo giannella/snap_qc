@@ -331,6 +331,16 @@ we learned is recoverable. Each points to its numbered section.
   shipped. Same day, `additional_data/eval_benchmark_f1109.rds` puts the
   kept-case rule and the error labels in one file, with a scorer that
   reproduces the §51 and §52 tables exactly (`methods/eval_benchmark/`).
+- **11-12 to 11-14**: Other learners and changes to model B's structure on
+  B's three tests (#54): LightGBM, CatBoost, BART, EBM, TabNet and a
+  re-tuned xgboost are within two standard errors of B on the national
+  share of error dollars (B 29.5% at 10%); an EBM with main effects only is
+  behind (27.6%). Ratio inputs, an era indicator and a size exponent,
+  promoted on held-back years, improve fit and not the share. A blend of
+  xgboost and CatBoost (+0.7 points at 10%, standard error 0.5) reads
+  "promising" on three further years and is kept as a documented candidate
+  (`methods/challenger_blend_candidate/`); B and the state package are
+  unchanged.
 
 Charting/documentation conventions (2026-07-12): state-by-state charts list
 states alphabetically; every benchmark CSV has a visualize_*_v2.R script
@@ -6613,3 +6623,375 @@ shipped in v2.8.1.
 vote, list and scorer files (`votes_seed*.rds`, `lists_seed*.rds`,
 `votekeys_seed*.rds`, `scorer_A.rds`, `scorer_A_issued.rds`,
 `scorer_B.rds`) are local only (`*.rds` is not tracked).
+
+## 54. Other learners and changes to model B's structure, on B's three tests: none is distinguishable from B; a blend of xgboost and CatBoost is kept as a candidate, not adopted (2026-11-14)
+
+> **Takeaway (about our pipeline).** No other learner and no change to the
+> per-case model's structure found more error dollars than model B (§46,
+> §51) on its three held-out tests. On the national share of error dollars
+> caught, weighted as on the results map, B catches 18.1% at a 5% workload
+> and 29.5% at 10%. LightGBM (29.3% at 10%), CatBoost (30.1%), BART (30.0%;
+> 29.7% in a longer run), an EBM with pair terms (29.0%), TabNet (28.3%)
+> and a re-tuned xgboost (29.2%) are all within two standard errors of B;
+> an EBM with main effects only is behind (27.6%). Ratio inputs, an era
+> indicator and a size exponent, each chosen on held-back training years,
+> fit the test years better but left the share where it was (29.5%). A
+> blend of xgboost and CatBoost was the nearest to a gain (30.2% at 10%,
+> +0.7 points, standard error 0.5) and read "promising" on three further
+> years by a rule written beforehand, with no gain at 10% in FY2023 or
+> FY2024; it is kept as a documented candidate, not adopted. Standard
+> errors are about half a point, so a real gain of a few tenths cannot be
+> ruled out or confirmed on these data.
+
+**Why this entry.** Model B is xgboost. Eric asked (2026-11-12) what it
+would take to benchmark other learners against it, with runs "comparable to
+what we're already doing", scored on the reference evaluation dataset
+(`additional_data/eval_benchmark_f1109.rds`, built the same day) and read on
+three top metrics: the share of error dollars caught at a 5% workload, the
+share added between 5% and 10%, and the share at 10%. States were to count
+as they do in the results map's national figure, by their actual error
+dollars, not reweighted for balance. The work ran in four steps over three
+days: a first benchmark of six learners; two reviews of its half-point
+leads; a follow-up run of changes to B's structure, CatBoost variants, a
+longer BART run and a blend; and a validation of the blend on three further
+years. A state-by-state reading was added afterwards.
+
+**Terms.**
+- *Model B*: the per-case model of §46 and §51 on frame f1109. Score =
+  P(error over tolerance) x error size, both xgboost with 49 state
+  indicators, a bag of 10 seeds.
+- *The three tests*: test 1 trains on FY2017-18 and scores FY2019 (39,239
+  cases); test 2 trains on FY2017-19 and scores FY2022 (37,680); test 3
+  trains on FY2017-19 and FY2022-23 and scores FY2024 (40,497). These are
+  the tests that chose B.
+- *Flags*: each state flags the top 5% or 10% of its own kept cases by
+  score (B's flag rule, §51).
+- *National share, map weights*: each state's share of its own error
+  dollars caught, averaged over 48 states with weights equal to the state's
+  FNS payment error rate times its FY2024 issuance (the results map's
+  nationwide line; the District of Columbia has no weight). The three tests
+  are combined with weights 0.2 / 0.4 / 0.4. This is the reading measure.
+- *Sample-pooled share*: error dollars caught over all QC sample cases in
+  49 states, the model card's basis (B: 30.07% at 10%).
+- *Band*: the share at 10% minus the share at 5%.
+- *Points*: percentage points of share. *SE*: paired standard error of the
+  difference from B, from a bootstrap of test cases within state plus a
+  seed term. *z*: difference over SE.
+- *Twin*: B's recipe refit in the benchmark's own code (`xgb_ref`,
+  `xgb_es`), the check that the harness reproduces B.
+- *Held-back years*: FY2018 (the last training year of test 1) and FY2023
+  (the last training year of test 3), used to choose settings, rounds and
+  promoted pieces. No test-year label was used for any choice.
+- *Harmed*: a state whose share of error dollars caught falls by more than
+  5 points against B.
+- *Ratio inputs*: eight columns built from B's inputs, which are amounts
+  scaled by household size: earned income as a share of earned plus
+  unearned income; shelter expenses over gross income; total deductions
+  over gross income; the uncapped reconstructed benefit minus the capped
+  one, both relative to the maximum benefit; gross income minus total
+  deductions; gross income times household size; a flag for any medical
+  deduction; a flag for zero gross income.
+
+### Step 1: six learners on B's rows and inputs (run 2026-11-12/13)
+
+Every learner was fit on exactly the rows and input columns B used
+(exported from the frozen §46 code), tuned on the held-back training year,
+refit on all training years and scored once on the test years. Design note
+and two pre-run reviews: `methods/challenger_blend_candidate/design_note_first_run.md`.
+TabPFN and Synthefy Nori were not run: both need a GPU at these training
+sizes and the machine has none; TabPFN's current weights also bar
+production use without a commercial license.
+
+| Learner | Fits | At 5% (diff, SE) | Band | At 10% (diff, SE) | z at 10% | Sample-pooled at 10% |
+|---|---|---|---|---|---|---|
+| B, stored scores | 10 | 18.12 | 11.39 | 29.51 | | 30.07 |
+| xgboost twin (`xgb_ref`) | 10 | 18.28 (+0.15, 0.31) | 11.19 | 29.46 (-0.05, 0.34) | -0.1 | 30.08 |
+| xgboost re-tuned on f1109 | 10 | 18.12 (-0.00, 0.33) | 11.12 | 29.24 (-0.27, 0.38) | -0.7 | 30.04 |
+| LightGBM | 10 | 17.77 (-0.35, 0.44) | 11.55 | 29.32 (-0.19, 0.50) | -0.4 | 30.22 |
+| CatBoost | 5 | 17.80 (-0.32, 0.48) | 12.25 | 30.05 (+0.54, 0.54) | +1.0 | 30.03 |
+| BART (4 chains, default priors) | 4 | 17.53 (-0.59, 0.67) | 12.44 | 29.97 (+0.46, 0.73) | +0.6 | 29.68 |
+| EBM with pair terms | 3 | 16.99 (-1.13, 0.58) | 12.01 | 29.00 (-0.50, 0.63) | -0.8 | 29.46 |
+| EBM, main effects only | 3 | 15.75 (-2.37, 0.66) | 11.87 | 27.63 (-1.88, 0.80) | -2.4 | 28.18 |
+| TabNet | 3 | 16.76 (-1.36, 0.72) | 11.55 | 28.31 (-1.19, 0.82) | -1.4 | 29.69 |
+
+- No learner is 2 standard errors above B on any of the three metrics. At
+  5% no learner's figure is above B's except the twin's.
+- The additive EBM is behind B at 10% (z -2.4) and at 5% (z -3.6). Pair
+  terms recover most of the gap at 10% and not at 5%.
+- Re-tuning xgboost on f1109 changed nothing measurable, so B's
+  carried-over settings are not costing it.
+- Seed noise alone, for scale: B from its first 5 seeds reads -0.03 at 10%
+  (SE 0.22) against the 10-seed B.
+- Pooled precision at 5% is within 1.2 points of B's 27.4% for every
+  learner.
+
+### Step 2: two reviews of the half-point leads (2026-11-13)
+
+A senior statistician and a principal data scientist, both fresh to the
+work, asked whether CatBoost and BART were tuned well and whether their
+half point at 10% was real
+(`methods/challenger_blend_candidate/reviews/followup_statistician_review.md`,
+`followup_principal_ds_review.md`).
+
+- The half point is carried by California, New York and Florida on the map
+  weights. Without those three states CatBoost reads -0.15 and BART -0.30
+  against B; sample-pooled, -0.03 and -0.39.
+- More seeds cannot settle differences this small. The bootstrap over test
+  cases is 93% of the variance of the CatBoost difference at 10% and 91% of
+  BART's; 30 seeds would move the standard error from 0.55 to 0.54
+  (CatBoost) and from 0.75 to 0.70 (BART). On these three tests an observed
+  difference clears 2 standard errors at about 1.0 to 1.2 points; a true
+  gain needs to be about 1.5 points to be detected four times in five.
+- CatBoost's tuning was adequate. BART was under-run: default priors, log
+  loss still falling at sweep 1,500.
+- The first run's scorer understated a bag's seed variance by about a
+  factor of 2 at five fits; its standard errors, the ones in the step 1
+  table, are 7 to 21% low (rescored in step 3: twin 0.41 for 0.34,
+  re-tuned 0.43 for 0.38, CatBoost 0.58 for 0.54, BART 0.81 for 0.73). No
+  reading changes. The follow-up scorer uses half-bag seed terms.
+- Leads found on held-back years, all changes to B's structure and none
+  specific to a learner: eight ratio inputs; up-weighting FY2022-on training
+  rows or an indicator for them (test 3 only); a size exponent, score = P x
+  size^b with b near 1.2.
+
+### Step 3: the follow-up run (2026-11-13/14)
+
+Design, reading rules and the two pre-run reviews:
+`methods/challenger_blend_candidate/design_note_followup.md`. Each piece was
+judged on the held-back years by a written rule (seed-paired mean
+difference better by more than 2 standard errors on both FY2018 and FY2023,
+5 seeds; era pieces on FY2023 only), frozen in `results/promoted.json`,
+then fit once on the test years and scored in one read.
+
+Promoted: ratio inputs and the era indicator for the xgboost P model (log
+loss t -4.9 and -27.4; era t -9.9); the era indicator for the size model (t
+-46.5); a size exponent of 1.153 (1.222 on FY2018, 1.115 on FY2023; each
+year's value improves the other year); the era indicator for CatBoost (t
+-3.8); the blend against an average of two xgboost fits (t -6.9 and -3.8);
+BART at prior scale k = 1 with exponent 1.330. Not promoted: ratio inputs
+for the size model (worse on FY2018, t +8.0); CatBoost regularisation
+(passes FY2018 at t -3.6, misses FY2023 at t -1.8); CatBoost ratio inputs;
+the CatBoost exponent. The era indicator beat row weights of 2, 3 and 5.
+
+Reading rules fixed before the run: ahead of B at z >= 1.96 at 10% for the
+primary arm and 2.39 for each of three secondary arms; "supported, not
+confirmed" at z >= 1.645 (primary) or 2.13 (secondary) on the mean of the
+shares at 5%, 7.5% and 10%, with guards on the 5% share, pooled precision
+and the sample-pooled share.
+
+| Arm | Fits | At 5% (diff) | Band | At 10% (diff, SE) | z | Mean of 5/7.5/10% (diff, SE) | Sample-pooled at 10% (diff) | States harmed |
+|---|---|---|---|---|---|---|---|---|
+| B, stored scores | 10 | 18.12 | 11.39 | 29.51 | | 23.87 | 30.07 | |
+| xgboost twin (`xgb_es`) | 10 | 18.34 (+0.22) | 11.22 | 29.56 (+0.05, 0.41) | +0.1 | 24.05 (+0.18, 0.22) | 30.18 (+0.11) | 0-5 |
+| Twin with the exponent only | 10 | 18.28 (+0.16) | 11.40 | 29.68 (+0.17, 0.39) | +0.4 | 24.04 (+0.17, 0.22) | 30.34 (+0.27) | 0-2 |
+| xgboost, all promoted pieces (primary) | 10 | 18.22 (+0.09) | 11.26 | 29.47 (-0.03, 0.49) | -0.1 | 23.89 (+0.01, 0.32) | 30.56 (+0.49) | 1-4 |
+| The same without the exponent | 10 | 18.20 (+0.08) | 11.59 | 29.79 (+0.28, 0.48) | +0.6 | 24.06 (+0.19, 0.32) | 30.57 (+0.51) | 1-4 |
+| CatBoost with the era indicator | 5 | 18.06 (-0.07) | 12.07 | 30.12 (+0.62, 0.59) | +1.0 | 24.26 (+0.39, 0.37) | 30.29 (+0.22) | 4-9 |
+| Blend of xgboost and CatBoost | 5 | 18.26 (+0.13) | 11.97 | 30.22 (+0.72, 0.48) | +1.5 | 24.33 (+0.46, 0.30) | 30.89 (+0.83) | 1-4 |
+| BART, k = 1, 8 chains x 4,500 sweeps | 8 | 17.30 (-0.82) | 12.44 | 29.73 (+0.23, 0.79) | +0.3 | 23.72 (-0.15, 0.60) | 29.87 (-0.20) | 4-11 |
+| The same with its exponent | 8 | 17.35 (-0.77) | 12.42 | 29.77 (+0.26, 0.83) | +0.3 | 23.45 (-0.42, 0.59) | 29.96 (-0.10) | 7-9 |
+
+- **No arm is distinguishable from B** by the rules above.
+- **Better fit did not buy share.** The primary arm's dollar deviance on
+  the test years is lower than B's (z -3.2) and its P log loss lower than
+  the twin's (z -2.7), yet its share at 10% is B's (-0.03). FY2024 alone,
+  the only test the era pieces change: +0.06 at 10%, -0.37 at 5%.
+- **The blend** is +0.72 at 10% (z +1.5), +0.99 without the three largest
+  states (z +2.3) and +0.83 sample-pooled (z +2.3), with all guards met. It
+  missed the bars (2.39 at 10%, 2.13 on the mean share). Its fit is better
+  than every other arm's (dollar deviance z -5.6 against B, P log loss z
+  -4.8 against the twin).
+- **The longer BART run did not help**: 29.73 at 10% against 29.97 for the
+  short run, 0.8 points behind B at 5%, a worse fit than the twin (P log
+  loss z +6.2), and it missed the sample-pooled guard.
+- **Power.** With a standard error near 0.5 the primary arm would show a
+  gain of 1.5 points about 85 to 90% of the time, 1.0 point 55 to 60%, 0.5
+  point 17 to 20%.
+
+### Step 4: the blend, reviewed and validated (2026-11-14)
+
+Eric asked whether there is a conceptual reason to expect the combination
+to rank better, and for a check that it is "at least promising on at least
+one other held-out test" before it is kept for others to test. Two fresh
+reviews worked from the saved files
+(`reviews/blend_review_statistician.md`, `blend_review_principal_ds.md`).
+
+*The blend*: each bag member averages P over one xgboost fit and one
+CatBoost fit, and averages size the same way; score = P x size^1.153; a bag
+is 5 members. *Matched xgboost arm*: the same with two xgboost fits per
+member, so the blend gets no credit for the number of fits.
+
+- **Reason to expect a gain.** An xgboost bag and a CatBoost bag share 76
+  to 81% of the top-10% list; two xgboost bags share 92 to 96%. The two
+  learners are about equally accurate, and the blend fits better than the
+  matched xgboost arm (dollar deviance z -3.2). Averaging two xgboost fits
+  adds 0.00 to the share. The gain is in P; blending size alone gives 0.00.
+- **How the +0.72 splits depends on the exponent.** With the exponent the
+  xgboost arm is -0.03 against B, so the second learner accounts for all of
+  the +0.72; without it the xgboost changes are +0.28 against B. Against the matched xgboost arm on the three tests the
+  blend is +0.74 at 10% (SE 0.40, statistician's pairing of fits) or +0.82
+  (SE 0.45, the validation script's pairing), +0.04 to +0.06 at 5%. By
+  test: +1.0 to +1.5 (FY2019), +1.5 to +1.6 (FY2022), -0.2 to -0.3
+  (FY2024). With exponent 1 on the same fits: 0.00 to +0.23. On B's own
+  inputs without the promoted pieces: +0.20. Both reviewers expect a true
+  gain of 0.2 to 0.4 points at 10% and none at 5%.
+
+*Validation* (`design_note_blend_validation.md`, written before the read;
+the statistician's design). Blend minus the matched xgboost arm on three
+years no test had used: FY2017, scored backward from new fits on FY2018-19
+(78,296 training rows, 41,014 scored; no FY2017 label had chosen
+anything); FY2018 and FY2023, from predictions saved on the held-back
+years (those years chose the rounds, settings and pieces, on fit, for both
+arms alike). Weights 0.25 / 0.25 / 0.5. Rule: *promising* if the difference
+at 10% is at least +0.25 points and the difference on the mean of the
+shares at 5%, 7.5% and 10% is above zero. By the statistician's simulation
+the rule reads promising 23% of the time when the true gain is zero, 69%
+at half a point and 87% at three quarters. That simulation assumed a
+standard error of 0.42 at 10%; at the realised 0.55 a null arm passes
+about three times in ten.
+
+| Blend minus matched xgboost | Combined (SE) | FY2023 | FY2018 | FY2017 |
+|---|---|---|---|---|
+| At 5% | +0.59 (0.59) | +0.18 | -0.27 | +2.29 |
+| Band | -0.06 (0.83) | -0.31 | +0.51 | -0.14 |
+| At 10% | +0.53 (0.55) | -0.13 | +0.24 | +2.15 |
+| Mean of 5 / 7.5 / 10% | +0.57 (0.32) | +0.37 | -0.09 | +1.64 |
+| Sample-pooled at 10% | +0.49 (0.33) | +0.51 | +0.57 | +0.38 |
+
+Levels at 10%, blend / matched xgboost / twin: FY2023 29.67 / 29.80 /
+27.72; FY2018 27.25 / 27.02 / 26.46; FY2017 31.72 / 29.57 / 31.07. With
+exponent 1 the combined difference at 10% is +0.70 (SE 0.60).
+
+- **Reading: promising**, by the written rule.
+- **FY2017 carries the figure at 10%.** There the matched xgboost arm
+  (ratio inputs and exponent) was itself 1.5 points below the twin. On
+  FY2018 and FY2023 alone the difference at 10% is 0.0 and the mean-share
+  difference is +0.2.
+- **FY2023 and FY2024 show no gain at 10%** (-0.20 together, SE 0.51).
+  These are the years with the most training data; both are
+  one-year-ahead tests. FY2022, the only three-years-ahead test and the
+  gap the ledger treats as primary (§41), reads +1.53 at 10% (SE 0.85),
+  +0.97 on the mean share (SE 0.46), +0.22 sample-pooled (SE 0.60) and
+  +0.30 at 10% with exponent 1 (SE 0.81). By year the difference at 10%
+  is +1.5 (FY2019), +1.5 (FY2022), -0.3 (FY2024), -0.1 (FY2023), +0.2
+  (FY2018) and +2.2 (FY2017).
+- **All six years combined**, weighted by precision (the senior
+  statistician's inclusion review): +0.65 at 10% (SE 0.32), +0.47 on the
+  mean share (SE 0.19), +0.43 sample-pooled (SE 0.23), +0.12 at 5% (SE
+  0.31). With exponent 1: +0.38 at 10% (SE 0.34), +0.32 on the mean share
+  (SE 0.20). Without FY2017: +0.54 at 10% (SE 0.34). The test-year half
+  was the best of several arms, which flatters the combination.
+- **The sample-pooled difference** at 10% is positive in five of the six
+  years.
+
+### State by state (added 2026-11-14, descriptive)
+
+The reading measure weights states by error dollars. The same scores read
+state by state: the median over 49 states of the state's share of its own
+error dollars caught, and the median and mean of the paired state changes
+against B. Three tests combined 0.2 / 0.4 / 0.4; bootstrap SE over cases.
+No rule was written for this reading, and it covers 13 arms. B's median
+state share is 17.51% at 5% and 29.32% at 10%.
+
+| Arm | Median state share at 5% | Median paired change at 5% (SE) | Mean paired change at 5% (SE) | Median state share at 10% | Median paired change at 10% (SE) | Mean paired change at 10% (SE) | States harmed at 10%, by test |
+|---|---|---|---|---|---|---|---|
+| xgboost twin (`xgb_es`) | 16.95 | +0.00 (0.03) | +0.17 (0.24) | 29.75 | +0.03 (0.05) | +0.04 (0.25) | 5, 2, 0 |
+| xgboost re-tuned | 17.08 | +0.00 (0.03) | +0.03 (0.26) | 29.60 | +0.00 (0.07) | -0.21 (0.27) | 3, 5, 1 |
+| LightGBM | 17.76 | +0.12 (0.15) | -0.12 (0.34) | 30.40 | +0.15 (0.24) | +0.06 (0.38) | 4, 2, 1 |
+| CatBoost (step 1) | 17.38 | +0.13 (0.20) | -0.06 (0.38) | 30.70 | +0.06 (0.32) | -0.41 (0.40) | 9, 9, 4 |
+| CatBoost with the era indicator | 17.92 | +0.10 (0.21) | +0.19 (0.38) | 30.73 | +0.18 (0.31) | -0.27 (0.41) | 9, 9, 4 |
+| EBM with pair terms | 15.78 | -0.42 (0.31) | -0.98 (0.40) | 28.95 | -0.98 (0.42) | -1.13 (0.49) | 12, 11, 8 |
+| EBM, main effects only | 15.70 | -1.58 (0.49) | -1.66 (0.50) | 28.04 | -2.45 (0.60) | -1.66 (0.58) | 11, 16, 12 |
+| TabNet | 17.63 | +0.11 (0.42) | -0.01 (0.51) | 29.40 | +0.09 (0.51) | -0.15 (0.55) | 14, 10, 5 |
+| BART (step 1) | 16.60 | +0.06 (0.37) | -0.43 (0.44) | 29.50 | -0.60 (0.47) | -0.43 (0.52) | 9, 7, 8 |
+| BART, long run | 16.66 | +0.09 (0.38) | -0.45 (0.45) | 29.81 | -0.19 (0.46) | -0.26 (0.50) | 9, 8, 4 |
+| xgboost, all promoted pieces | 17.42 | +0.52 (0.22) | +0.84 (0.36) | 29.64 | +0.45 (0.25) | +0.47 (0.38) | 4, 1, 2 |
+| The same without the exponent | 17.74 | +0.82 (0.24) | +0.74 (0.37) | 29.86 | +0.26 (0.24) | +0.58 (0.37) | 4, 1, 1 |
+| Blend of xgboost and CatBoost | 17.59 | +0.22 (0.19) | +0.50 (0.35) | 30.98 | +0.34 (0.21) | +0.61 (0.35) | 4, 1, 2 |
+
+The same paired changes on the three validation years, against the twin
+(5 fits each; weights 0.25 / 0.25 / 0.5):
+
+| Arm | Median paired change at 5% (SE) | Mean at 5% (SE) | Median at 10% (SE) | Mean at 10% (SE) | States harmed at 10% (FY2017, FY2018, FY2023) |
+|---|---|---|---|---|---|
+| xgboost, promoted pieces, no exponent | +0.05 (0.14) | +0.35 (0.34) | +0.17 (0.22) | +0.06 (0.40) | 5, 3, 6 |
+| xgboost, promoted pieces | +0.01 (0.12) | +0.25 (0.34) | +0.21 (0.25) | -0.05 (0.41) | 7, 2, 4 |
+| CatBoost | -0.06 (0.22) | +0.16 (0.42) | +0.77 (0.40) | +0.49 (0.46) | 5, 7, 4 |
+| Blend of xgboost and CatBoost | +0.29 (0.16) | +0.66 (0.36) | +0.86 (0.29) | +0.69 (0.40) | 3, 4, 3 |
+
+- No learner clearly raises the typical state. EBM lowers it.
+- CatBoost, BART and TabNet move states around more than the xgboost arms
+  and the blend do: 4 to 14 states harmed per test at 10% against 0 to 5.
+- The promoted xgboost pieces raised the median paired change at 5% on the
+  test years (+0.82 without the exponent, z +3.4; +0.52 with it, z +2.3) while the national figure
+  was flat. On the validation years the same contrast is +0.05 (z +0.4).
+  Not replicated.
+- The blend's mean paired state change at 10% is about +0.6 points on both
+  sets of years (+0.61, SE 0.35; +0.69, SE 0.40). The validation figures
+  are against the twin, and FY2018 and FY2023 chose the xgboost pieces
+  inside the blend; those pieces alone read +0.21 (median) and -0.05
+  (mean) on the same years, so they do not explain it. The median figure
+  there (+0.86, z +2.9) is the largest z in the blend's record and comes
+  from a reading with no rule.
+
+**What did not move.** The share at 5% for any learner; the share at any
+workload for ratio inputs, the era indicator or the size exponent; BART
+with four times the sweeps and a tuned prior; xgboost re-tuned on f1109.
+
+**Caveats.**
+- The three tests are the tests that chose B, and all six years have now
+  been read on the blend contrast. There is no FY2025 case data. Further
+  work on these years is descriptive.
+- Standard errors of a difference at 10% are 0.4 to 0.5 points for the
+  xgboost arms and the blend, 0.5 to 0.6 for CatBoost and LightGBM, 0.6 to
+  0.8 for BART, EBM and TabNet. A gain under about one point would not
+  register in one comparison. Nearly all of that variance is case
+  sampling, so more seeds do not help.
+- The blend was the largest of several arms on the test years, which
+  flatters it. Its validation reads promising under a rule that passes a
+  null arm about one time in four at the planned standard error and about
+  three in ten at the realised one.
+- FY2017 is a backward test within the pre-pandemic years; FY2018 trains
+  on one year, which B never does; the FY2018 and FY2023 predictions come
+  from fits early-stopped on those years (both arms alike). The principal
+  data scientist would have refit FY2023 forward with rounds chosen on
+  FY2022; the statistician judged that unnecessary and it was not run.
+- The state-by-state reading was made after the fact.
+- The follow-up run was stopped twice for low memory. `dbarts::bart` holds
+  about 2 x training rows x sweeps x chains x 8 bytes during burn-in (38 to
+  94 GB at 8 chains x 4,000 sweeps here). The BART test stage was changed
+  to run the burn-in in pieces of 250 sweeps, which reproduces the draws to
+  1e-14; that change was made after promotion was frozen and was not
+  reviewed. It touches only BART.
+- The ratio inputs carry two untested cautions from the design note. A
+  ratio of two reconstructed amounts could mark a reconstructed case (the
+  ledger's pile hazard). In the state package a zero-filled gross income
+  column would set the zero-income flag for every case and blank two
+  ratios. The blend as tested includes the ratio inputs.
+- TabPFN and Nori are untested.
+- One frame (f1109); B's stored scores and settings as shipped.
+
+**Decision.** Eric, 2026-11-14, on the blend: "Agree - keep it as a
+documented candidate." Model B and the state package are unchanged. The
+exploration of other learners is closed until new data arrive.
+
+**Artifacts.** `methods/challenger_blend_candidate/`: `README.md` (the
+candidate, its evidence and how to test it); `design_note_first_run.md`,
+`design_note_followup.md`, `design_note_blend_validation.md`;
+`benchmark_README.md` (the working folder's full record); `reviews/` (the
+pre-run design reviews, the two follow-up reviews, the two blend reviews,
+and the statistician's decomposition and overlap outputs); `scripts/`
+(`01_export.R`, `02_fit.py`, `03_fit_bart.R`, `04_score.R`,
+`05_followup.py`, `06_bart_proper.R`, `07_score_followup.R`,
+`08_blend_validation.py`, `09_state_medians.py`,
+`09b_state_medians_validation.py`, `lib.py`, runners, `settings_B.csv`,
+`tuning/`); `results/`: `first_run_top_metrics.csv` and
+`first_run_04_score_log.txt` (step 1), `promoted.json`, `run_score.out` and
+`top_metrics.csv` (step 3), `blend_validation_result.txt` and
+`blend_validation_dry_run.txt` (step 4), `state_medians.csv` and
+`state_medians_validation.csv`. The scripts are copies as run from a
+working folder outside the repo, which also holds the exported data and the
+per-fit score files (not tracked). Two further reviews
+(`reviews/inclusion_review_statistician.md`,
+`reviews/inclusion_review_principal_ds.md`) checked this section against
+the result files; their corrections are applied.
